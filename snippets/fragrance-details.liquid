@@ -1,0 +1,45 @@
+{%- comment -%}
+  Fragrance / perfume-dupe details, driven by product metafields (namespace: custom).
+  Define these metafields in Shopify admin → Settings → Custom data → Products:
+    custom.inspired_by   (Single line text)  e.g. "Dior Sauvage"
+    custom.scent_family  (Single line text)  e.g. "Aromatic / Fresh"
+    custom.size          (Single line text)  e.g. "50 ml"
+    custom.top_notes     (Single line text)
+    custom.heart_notes   (Single line text)
+    custom.base_notes    (Single line text)
+  Any field left empty is simply hidden.
+{%- endcomment -%}
+{%- liquid
+  assign mf = product.metafields.custom
+  assign inspired = mf.inspired_by.value
+  assign family = mf.scent_family.value
+  assign size = mf.size.value
+  assign top = mf.top_notes.value
+  assign heart = mf.heart_notes.value
+  assign base = mf.base_notes.value
+
+  assign has_any = false
+  if inspired != blank or family != blank or size != blank or top != blank or heart != blank or base != blank
+    assign has_any = true
+  endif
+-%}
+{%- if has_any -%}
+  <div class="fragrance">
+    {%- if inspired != blank -%}
+      <div class="fragrance__inspired">
+        <span class="fragrance__inspired-label">{{ 'products.fragrance.inspired_by' | t }}</span>
+        <span class="fragrance__inspired-name">{{ inspired }}</span>
+      </div>
+    {%- endif -%}
+
+    {%- if family != blank or size != blank or top != blank or heart != blank or base != blank -%}
+      <dl class="fragrance__grid">
+        {%- if family != blank -%}<div class="fragrance__row"><dt>{{ 'products.fragrance.scent_family' | t }}</dt><dd>{{ family }}</dd></div>{%- endif -%}
+        {%- if size != blank -%}<div class="fragrance__row"><dt>{{ 'products.fragrance.size' | t }}</dt><dd>{{ size }}</dd></div>{%- endif -%}
+        {%- if top != blank -%}<div class="fragrance__row"><dt>{{ 'products.fragrance.top_notes' | t }}</dt><dd>{{ top }}</dd></div>{%- endif -%}
+        {%- if heart != blank -%}<div class="fragrance__row"><dt>{{ 'products.fragrance.heart_notes' | t }}</dt><dd>{{ heart }}</dd></div>{%- endif -%}
+        {%- if base != blank -%}<div class="fragrance__row"><dt>{{ 'products.fragrance.base_notes' | t }}</dt><dd>{{ base }}</dd></div>{%- endif -%}
+      </dl>
+    {%- endif -%}
+  </div>
+{%- endif -%}

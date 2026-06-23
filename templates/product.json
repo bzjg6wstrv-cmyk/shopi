@@ -5,6 +5,7 @@
       "settings": {
         "show_vendor": true,
         "show_share": true,
+        "show_fragrance_details": true,
         "enable_sticky_atc": true
       }
     }

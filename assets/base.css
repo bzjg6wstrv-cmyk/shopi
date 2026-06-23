@@ -583,3 +583,20 @@ body.overflow-hidden { overflow: hidden; }
 /* Inline form error */
 .form-error { color: var(--color-sale); font-size: 0.9rem; margin-top: 0.5rem; }
 .form-error[hidden] { display: none; }
+
+/* Fragrance / perfume-dupe details */
+.fragrance { margin-block: 1.5rem; }
+.fragrance__inspired {
+  display: flex; flex-direction: column; gap: 0.15rem;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--card-radius);
+  padding: 0.9rem 1.1rem; margin-bottom: 1rem;
+}
+.fragrance__inspired-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(var(--color-text-rgb), 0.55); }
+.fragrance__inspired-name { font-family: var(--font-heading-family); font-weight: 700; font-size: 1.15rem; }
+.fragrance__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.5rem; margin: 0; }
+.fragrance__row { display: flex; justify-content: space-between; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--color-border); }
+.fragrance__row dt { margin: 0; color: rgba(var(--color-text-rgb), 0.6); font-size: 0.9rem; }
+.fragrance__row dd { margin: 0; font-weight: 600; text-align: right; }
+@media (max-width: 749px) { .fragrance__grid { grid-template-columns: 1fr; } }

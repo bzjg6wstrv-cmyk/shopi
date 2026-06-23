@@ -51,6 +51,15 @@
     "facets": {
       "sort_by": "Sortieren nach",
       "product_count": "{{ count }} Produkte"
+    },
+    "fragrance": {
+      "title": "Duft-Details",
+      "inspired_by": "Inspiriert von",
+      "scent_family": "Duftfamilie",
+      "size": "Inhalt",
+      "top_notes": "Kopfnote",
+      "heart_notes": "Herznote",
+      "base_notes": "Basisnote"
     }
   },
   "cart": {

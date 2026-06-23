@@ -5,7 +5,7 @@
     "footer": {
       "type": "footer",
       "settings": {
-        "tagline": "Modern essentials, made to last.",
+        "tagline": "Premium-Duftzwillinge, inspiriert von Designerdüften.",
         "show_social": true,
         "show_payment": true
       },
@@ -20,15 +20,15 @@
         "about": {
           "type": "text",
           "settings": {
-            "heading": "About",
-            "content": "<p>Tell customers about your brand and what makes it special.</p>"
+            "heading": "Über uns",
+            "content": "<p>Hochwertige Duftzwillinge, inspiriert von bekannten Designerdüften – langanhaltend und fair im Preis.</p>"
           }
         },
         "newsletter": {
           "type": "newsletter",
           "settings": {
             "heading": "Newsletter",
-            "text": "Subscribe for news and offers."
+            "text": "Sichere dir 10% Rabatt auf deine erste Bestellung."
           }
         }
       },

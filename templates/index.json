@@ -3,10 +3,10 @@
     "banner": {
       "type": "image-banner",
       "settings": {
-        "subheading": "New collection",
-        "heading": "Designed for modern living",
-        "text": "Discover pieces made to last.",
-        "button_label": "Shop now",
+        "subheading": "Duftzwillinge",
+        "heading": "Dein Lieblingsduft – neu interpretiert",
+        "text": "Premium-Düfte, inspiriert von deinen Lieblingsmarken. Faire Preise, große Wirkung.",
+        "button_label": "Jetzt entdecken",
         "text_color": "light",
         "height": 540
       }
@@ -14,8 +14,8 @@
     "featured": {
       "type": "featured-collection",
       "settings": {
-        "heading": "Featured products",
-        "subheading": "Our favourites, hand-picked for you",
+        "heading": "Bestseller",
+        "subheading": "Unsere beliebtesten Duftzwillinge",
         "products_to_show": 8,
         "columns": 4,
         "show_view_all": true
@@ -24,8 +24,9 @@
     "rich_text": {
       "type": "rich-text",
       "settings": {
-        "subheading": "Our story",
-        "heading": "Crafted with care"
+        "subheading": "Über uns",
+        "heading": "Großer Duft, fairer Preis",
+        "text": "<p>Unsere Duftzwillinge sind hochwertige Interpretationen beliebter Designerdüfte – mit langanhaltender Sillage und einem Bruchteil des Preises. Entdecke deinen neuen Signature-Duft.</p>"
       }
     },
     "newsletter": {

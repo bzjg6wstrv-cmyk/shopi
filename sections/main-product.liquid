@@ -125,6 +125,10 @@
           {%- endform -%}
         </product-form>
 
+        {%- if section.settings.show_fragrance_details -%}
+          {% render 'fragrance-details', product: product %}
+        {%- endif -%}
+
         {%- if product.description != blank -%}
           <div class="product__description rte">{{ product.description }}</div>
         {%- endif -%}
@@ -169,6 +173,7 @@
   "settings": [
     { "type": "checkbox", "id": "show_vendor", "label": "Show vendor", "default": true },
     { "type": "checkbox", "id": "show_share", "label": "Show share button", "default": true },
+    { "type": "checkbox", "id": "show_fragrance_details", "label": "Show fragrance details (metafields)", "default": true },
     { "type": "checkbox", "id": "enable_sticky_atc", "label": "Enable sticky add-to-cart bar", "default": true }
   ]
 }

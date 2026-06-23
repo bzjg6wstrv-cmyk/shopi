@@ -51,6 +51,15 @@
     "facets": {
       "sort_by": "Sort by",
       "product_count": "{{ count }} products"
+    },
+    "fragrance": {
+      "title": "Fragrance details",
+      "inspired_by": "Inspired by",
+      "scent_family": "Scent family",
+      "size": "Size",
+      "top_notes": "Top notes",
+      "heart_notes": "Heart notes",
+      "base_notes": "Base notes"
     }
   },
   "cart": {

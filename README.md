@@ -57,6 +57,38 @@ shopify theme push     # Theme in den Store hochladen
 - **Farben & Schriften:** Theme-Einstellungen → *Colors* / *Typography*.
 - **Startseite:** Über den Theme-Editor Sektionen (Hero, Featured Collection, Rich Text, Newsletter) anpassen.
 
+## 🌸 Für deinen Duftzwillinge-Shop
+
+Auf der Produktseite gibt es einen **„Duft-Details"**-Block (Inspiriert von,
+Duftfamilie, Inhalt, Kopf-/Herz-/Basisnote). Er wird über **Metafelder** befüllt.
+
+**Einmalig einrichten:** Shopify-Admin → **Einstellungen → Benutzerdefinierte Daten
+→ Produkte → Definition hinzufügen**. Lege diese an (Typ: *Einzeiliger Text*,
+Namespace/Schlüssel `custom`):
+
+| Schlüssel | Beispiel |
+|---|---|
+| `custom.inspired_by` | Dior Sauvage |
+| `custom.scent_family` | Aromatisch / Frisch |
+| `custom.size` | 50 ml |
+| `custom.top_notes` | Bergamotte, Pfeffer |
+| `custom.heart_notes` | Lavendel, Geranie |
+| `custom.base_notes` | Ambroxan, Zedernholz |
+
+Leere Felder werden automatisch ausgeblendet. Pro Produkt einfach die Werte eintragen.
+
+> 💡 **125 Produkte schnell anlegen:** Du kannst sie per **CSV-Import**
+> (Produkte → Importieren) in einem Rutsch hochladen – inkl. der Metafelder.
+> Sag Bescheid, dann erstelle ich dir eine fertige CSV-Vorlage.
+
+## 🖼️ Logo einbinden
+
+Zwei Wege:
+
+1. **Im Theme-Editor (am einfachsten):** *Customize → Header → Logo image → Upload*.
+2. **Per Datei:** Lege dein Logo als Bild in den Ordner `assets/` (z. B. `assets/logo.png`)
+   und wähle es im Theme-Editor aus.
+
 ## 🧪 Hinweis zum Testen
 
 Die interaktiven Funktionen (Cart Drawer, Live-Suche, Varianten) sprechen die
