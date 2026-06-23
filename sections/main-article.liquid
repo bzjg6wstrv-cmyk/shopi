@@ -1,0 +1,52 @@
+<article class="section">
+  <div class="page-width page-width--narrow">
+    <div class="reveal">
+      <a href="{{ blog.url }}" class="link-underline">&larr; {{ blog.title }}</a>
+      <h1 style="margin-top:1rem;">{{ article.title }}</h1>
+      <p class="card__vendor">
+        {{ article.published_at | date: '%B %-d, %Y' }}
+        {%- if article.author != blank %} · {{ 'blogs.article.by' | t: author: article.author }}{% endif -%}
+      </p>
+    </div>
+
+    {%- if article.image -%}
+      {%- assign article_alt = article.title | escape -%}
+      <div class="media" style="border-radius:var(--card-radius);overflow:hidden;margin:1.5rem 0;">
+        {{ article.image | image_url: width: 1400 | image_tag: loading: 'eager', alt: article_alt }}
+      </div>
+    {%- endif -%}
+
+    <div class="rte">{{ article.content }}</div>
+
+    {%- if blog.comments_enabled? -%}
+      <div style="margin-top:3rem;border-top:1px solid var(--color-border);padding-top:2rem;">
+        <h2>{{ 'blogs.article.comments' | t }} ({{ article.comments_count }})</h2>
+
+        {%- if article.comments_count > 0 -%}
+          {%- for comment in article.comments -%}
+            <div style="margin-bottom:1.5rem;">
+              <strong>{{ comment.author }}</strong>
+              <p>{{ comment.content }}</p>
+            </div>
+          {%- endfor -%}
+        {%- endif -%}
+
+        {%- form 'new_comment', article -%}
+          {%- if form.errors -%}
+            <p style="color:var(--color-sale);">{{ form.errors | default_errors }}</p>
+          {%- elsif form.posted_successfully? -%}
+            <p>{{ 'general.newsletter.success' | t }}</p>
+          {%- endif -%}
+          <div class="field"><input type="text" name="comment[author]" placeholder="Name" required></div>
+          <div class="field"><input type="email" name="comment[email]" placeholder="Email" required></div>
+          <div class="field"><textarea name="comment[body]" rows="4" placeholder="Comment" required></textarea></div>
+          <button type="submit" class="button button--primary">{{ 'blogs.article.comments' | t }}</button>
+        {%- endform -%}
+      </div>
+    {%- endif -%}
+  </div>
+</article>
+
+{% schema %}
+{ "name": "Article", "settings": [] }
+{% endschema %}

@@ -1,0 +1,13 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "settings": {
+        "show_vendor": true,
+        "show_share": true,
+        "enable_sticky_atc": true
+      }
+    }
+  },
+  "order": ["main"]
+}

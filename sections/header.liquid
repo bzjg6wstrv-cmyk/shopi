@@ -1,0 +1,111 @@
+{%- liquid
+  assign menu = section.settings.menu
+-%}
+<div class="header-wrapper">
+  <header class="header page-width" role="banner">
+    <button class="header__icon menu-toggle" data-menu-toggle type="button" aria-label="{{ 'general.menu.menu' | t }}">
+      {% render 'icon', name: 'menu' %}
+    </button>
+
+    {%- if section.settings.logo != blank -%}
+      {%- assign logo_alt = shop.name | escape -%}
+      {%- capture logo_style -%}max-height:{{ section.settings.logo_height }}px;width:auto;{%- endcapture -%}
+      <a href="{{ routes.root_url }}" class="header__logo" aria-label="{{ shop.name }}">
+        {{
+          section.settings.logo
+          | image_url: width: 600
+          | image_tag:
+            widths: '150,300,450,600',
+            alt: logo_alt,
+            style: logo_style
+        }}
+      </a>
+    {%- else -%}
+      <a href="{{ routes.root_url }}" class="header__logo">{{ shop.name }}</a>
+    {%- endif -%}
+
+    <nav class="header__inline-menu" role="navigation" aria-label="{{ 'general.menu.menu' | t }}">
+      <ul class="header__nav">
+        {%- for link in menu.links -%}
+          <li><a href="{{ link.url }}"{% if link.active %} aria-current="page"{% endif %}>{{ link.title }}</a></li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+
+    <div class="header__icons">
+      <button class="header__icon" data-search-toggle type="button" aria-label="{{ 'general.search.search' | t }}">
+        {% render 'icon', name: 'search' %}
+      </button>
+
+      {%- if shop.customer_accounts_enabled -%}
+        <a href="{{ routes.account_url }}" class="header__icon" aria-label="{{ 'customer.account.title' | t }}">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        </a>
+      {%- endif -%}
+
+      {%- if settings.cart_type == 'drawer' -%}
+        <button class="header__icon" data-cart-toggle type="button" aria-label="{{ 'cart.title' | t }}">
+          {% render 'icon', name: 'cart' %}
+          <span class="cart-count{% if cart.item_count == 0 %} is-empty{% endif %}" data-cart-count>{{ cart.item_count }}</span>
+        </button>
+      {%- else -%}
+        <a href="{{ routes.cart_url }}" class="header__icon" aria-label="{{ 'cart.title' | t }}">
+          {% render 'icon', name: 'cart' %}
+          <span class="cart-count{% if cart.item_count == 0 %} is-empty{% endif %}" data-cart-count>{{ cart.item_count }}</span>
+        </a>
+      {%- endif -%}
+    </div>
+  </header>
+</div>
+
+{%- comment -%} Mobile slide-in menu {%- endcomment -%}
+<div class="mobile-menu" aria-hidden="true">
+  <div class="mobile-menu__header">
+    <span class="header__logo">{{ shop.name }}</span>
+    <button class="header__icon" data-menu-close type="button" aria-label="{{ 'general.close' | t }}">
+      {% render 'icon', name: 'close' %}
+    </button>
+  </div>
+  <ul class="mobile-menu__nav">
+    {%- for link in menu.links -%}
+      <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+      {%- for child in link.links -%}
+        <li><a href="{{ child.url }}" style="padding-left:1.5rem;font-size:1rem;">{{ child.title }}</a></li>
+      {%- endfor -%}
+    {%- endfor -%}
+  </ul>
+</div>
+
+{% render 'search-modal' %}
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo image"
+    },
+    {
+      "type": "range",
+      "id": "logo_height",
+      "min": 20,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "label": "Logo height",
+      "default": 40
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "default": "main-menu",
+      "label": "Menu"
+    }
+  ],
+  "enabled_on": {
+    "groups": ["header"]
+  }
+}
+{% endschema %}

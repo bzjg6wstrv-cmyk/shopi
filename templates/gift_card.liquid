@@ -1,0 +1,28 @@
+{% layout none %}
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'gift_cards.issued.title' | t: value: gift_card.initial_value | money, shop: shop.name }}</title>
+    {% render 'theme-styles' %}
+    {{ 'base.css' | asset_url | stylesheet_tag }}
+    <style>
+      .gift-card { max-width: 460px; margin: 6vh auto; padding: 0 1.5rem; text-align: center; }
+      .gift-card__value { font-size: 3rem; font-weight: 800; color: var(--color-accent); }
+      .gift-card__media { background: var(--color-bg-alt); border-radius: var(--card-radius); padding: 2rem; margin: 1.5rem 0; }
+      .gift-card__code { font-size: 1.4rem; letter-spacing: 0.15em; font-weight: 700; padding: 0.75rem 1rem; border: 2px dashed var(--color-border); border-radius: var(--button-radius); display: inline-block; margin-top: 1rem; }
+    </style>
+  </head>
+  <body>
+    <div class="gift-card">
+      <h1>{{ shop.name }}</h1>
+      <p>{{ 'gift_cards.issued.subtext' | t }}</p>
+      <div class="gift-card__media">
+        <div class="gift-card__value">{{ gift_card.balance | money }}</div>
+        <div class="gift-card__code">{{ gift_card.code | format_code }}</div>
+      </div>
+      <a href="{{ shop.url }}" class="button button--primary">{{ 'gift_cards.issued.shop_link' | t }}</a>
+    </div>
+  </body>
+</html>

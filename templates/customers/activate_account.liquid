@@ -1,0 +1,20 @@
+<section class="section">
+  <div class="page-width page-width--narrow">
+    <h1>{{ 'customer.register.title' | t }}</h1>
+    {%- form 'activate_customer_password' -%}
+      {{ form.errors | default_errors }}
+      <div class="field">
+        <label class="field__label" for="apw">{{ 'customer.login.password' | t }}</label>
+        <input type="password" name="customer[password]" id="apw" autocomplete="new-password" required>
+      </div>
+      <div class="field">
+        <label class="field__label" for="apw2">{{ 'customer.login.password' | t }}</label>
+        <input type="password" name="customer[password_confirmation]" id="apw2" autocomplete="new-password" required>
+      </div>
+      <div style="display:flex;gap:1rem;">
+        <button type="submit" name="commit" class="button button--primary">{{ 'customer.register.submit' | t }}</button>
+        <button type="submit" name="decline" class="button button--secondary">{{ 'customer.recover_password.cancel' | t }}</button>
+      </div>
+    {%- endform -%}
+  </div>
+</section>

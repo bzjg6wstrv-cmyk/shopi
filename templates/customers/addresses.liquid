@@ -1,0 +1,64 @@
+<section class="section">
+  <div class="page-width page-width--narrow">
+    <a class="link-underline" href="{{ routes.account_url }}">&larr; {{ 'customer.account.title' | t }}</a>
+    <h1 style="margin-top:1rem;">{{ 'customer.addresses.title' | t }}</h1>
+
+    <details style="margin-bottom:2rem;" open>
+      <summary style="cursor:pointer;font-weight:700;font-size:1.1rem;margin-bottom:1rem;">{{ 'customer.addresses.add' | t }}</summary>
+      {%- form 'customer_address', customer.new_address -%}
+        {{ form.errors | default_errors }}
+        <div class="field"><input name="address[first_name]" placeholder="{{ 'customer.register.first_name' | t }}" autocomplete="given-name"></div>
+        <div class="field"><input name="address[last_name]" placeholder="{{ 'customer.register.last_name' | t }}" autocomplete="family-name"></div>
+        <div class="field"><input name="address[address1]" placeholder="Address" autocomplete="address-line1"></div>
+        <div class="field"><input name="address[address2]" placeholder="Address line 2" autocomplete="address-line2"></div>
+        <div class="field"><input name="address[city]" placeholder="City" autocomplete="address-level2"></div>
+        <div class="field"><input name="address[province]" placeholder="State / Province" autocomplete="address-level1"></div>
+        <div class="field"><input name="address[zip]" placeholder="ZIP / Postal code" autocomplete="postal-code"></div>
+        <div class="field"><select name="address[country]">{{ country_option_tags }}</select></div>
+        <div class="field"><input name="address[phone]" placeholder="Phone" autocomplete="tel"></div>
+        <button type="submit" class="button button--primary">{{ 'customer.addresses.add' | t }}</button>
+      {%- endform -%}
+    </details>
+
+    {%- if customer.addresses.size > 0 -%}
+      {%- for address in customer.addresses -%}
+        <div style="border:1px solid var(--color-border);border-radius:var(--card-radius);padding:1.25rem;margin-bottom:1rem;">
+          {%- if address == customer.default_address -%}
+            <span class="badge badge--sale" style="position:static;margin-bottom:0.5rem;">{{ 'customer.addresses.default' | t }}</span>
+          {%- endif -%}
+          <div>{{ address | format_address }}</div>
+          <div style="display:flex;gap:1rem;margin-top:0.75rem;">
+            <a class="link-underline" href="#edit_{{ address.id }}" onclick="document.getElementById('edit_{{ address.id }}').hidden=false;return false;">{{ 'customer.addresses.edit' | t }}</a>
+            <form method="post" action="{{ address.url }}" onsubmit="return confirm('{{ 'customer.addresses.delete' | t }}?');">
+              <input type="hidden" name="_method" value="delete">
+              <button type="submit" class="cart-item__remove">{{ 'customer.addresses.delete' | t }}</button>
+            </form>
+          </div>
+
+          <div id="edit_{{ address.id }}" hidden style="margin-top:1rem;">
+            {%- form 'customer_address', address -%}
+              {{ form.errors | default_errors }}
+              <div class="field"><input name="address[first_name]" value="{{ address.first_name }}" placeholder="{{ 'customer.register.first_name' | t }}"></div>
+              <div class="field"><input name="address[last_name]" value="{{ address.last_name }}" placeholder="{{ 'customer.register.last_name' | t }}"></div>
+              <div class="field"><input name="address[address1]" value="{{ address.address1 }}" placeholder="Address"></div>
+              <div class="field"><input name="address[address2]" value="{{ address.address2 }}" placeholder="Address line 2"></div>
+              <div class="field"><input name="address[city]" value="{{ address.city }}" placeholder="City"></div>
+              <div class="field"><input name="address[province]" value="{{ address.province }}" placeholder="State / Province"></div>
+              <div class="field"><input name="address[zip]" value="{{ address.zip }}" placeholder="ZIP / Postal code"></div>
+              <div class="field"><select name="address[country]" data-default="{{ address.country | escape }}">{{ country_option_tags }}</select></div>
+              <div class="field"><input name="address[phone]" value="{{ address.phone }}" placeholder="Phone"></div>
+              <label style="display:flex;gap:0.5rem;align-items:center;margin-bottom:1rem;"><input type="checkbox" name="address[default]" value="1" style="width:auto;"> {{ 'customer.addresses.default' | t }}</label>
+              <button type="submit" class="button button--primary">{{ 'customer.addresses.edit' | t }}</button>
+            {%- endform -%}
+          </div>
+        </div>
+      {%- endfor -%}
+    {%- endif -%}
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll('select[data-default]').forEach(function (s) {
+    if (s.dataset.default) s.value = s.dataset.default;
+  });
+</script>

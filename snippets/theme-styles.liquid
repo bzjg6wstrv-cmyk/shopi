@@ -1,0 +1,45 @@
+{%- comment -%} Global CSS custom properties & font faces, shared by all layouts {%- endcomment -%}
+{%- liquid
+  assign body_font = settings.body_font
+  assign heading_font = settings.heading_font
+-%}
+{% style %}
+  {{ body_font | font_face: font_display: 'swap' }}
+  {{ heading_font | font_face: font_display: 'swap' }}
+
+  :root {
+    --font-body-family: {{ body_font.family }}, {{ body_font.fallback_families }};
+    --font-body-weight: {{ body_font.weight }};
+    --font-body-weight-bold: {% if body_font.weight < 700 %}700{% else %}{{ body_font.weight | plus: 100 }}{% endif %};
+    --font-heading-family: {{ heading_font.family }}, {{ heading_font.fallback_families }};
+    --font-heading-weight: {{ heading_font.weight }};
+
+    --font-size-base: {{ settings.base_font_size }}px;
+    --heading-scale: {{ settings.heading_scale | divided_by: 100.0 }};
+
+    --color-bg: {{ settings.color_background }};
+    --color-bg-alt: {{ settings.color_background_alt }};
+    --color-text: {{ settings.color_text }};
+    --color-text-rgb: {{ settings.color_text.red }}, {{ settings.color_text.green }}, {{ settings.color_text.blue }};
+    --color-accent: {{ settings.color_accent }};
+    --color-accent-rgb: {{ settings.color_accent.red }}, {{ settings.color_accent.green }}, {{ settings.color_accent.blue }};
+    --color-accent-text: {{ settings.color_accent_text }};
+    --color-border: {{ settings.color_border }};
+    --color-sale: {{ settings.color_sale }};
+
+    --page-width: {{ settings.page_width }}px;
+    --section-spacing: {{ settings.section_spacing }}px;
+    --gutter: clamp(16px, 4vw, 40px);
+
+    --button-radius: {{ settings.button_radius }}px;
+    --card-radius: {{ settings.card_radius }}px;
+    --input-radius: {{ settings.input_radius }}px;
+
+    --header-height: 70px;
+    --duration: 250ms;
+    --easing: cubic-bezier(0.16, 1, 0.3, 1);
+    --shadow-sm: 0 1px 2px rgba(var(--color-text-rgb), 0.06);
+    --shadow-md: 0 8px 24px rgba(var(--color-text-rgb), 0.10);
+    --shadow-lg: 0 20px 50px rgba(var(--color-text-rgb), 0.16);
+  }
+{% endstyle %}

@@ -1,0 +1,36 @@
+<div id="predictive-results">
+  {%- if predictive_search.performed -%}
+    {%- assign products = predictive_search.resources.results.products -%}
+    {%- if products.size > 0 -%}
+      <p class="predictive__heading">{{ 'general.search.products' | t }}</p>
+      <ul class="predictive__list">
+        {%- for product in products -%}
+          <li class="predictive__item">
+            <a href="{{ product.url }}">
+              <span class="predictive__thumb">
+                {%- if product.featured_media -%}
+                  {{ product.featured_media | image_url: width: 96 | image_tag: loading: 'lazy', alt: '' }}
+                {%- endif -%}
+              </span>
+              <span>
+                <span class="predictive__title">{{ product.title }}</span>
+                <span class="predictive__price">{{ product.price | money }}</span>
+              </span>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+      <a class="link-underline" href="{{ routes.search_url }}?q={{ predictive_search.terms | escape }}&type=product">
+        {{ 'general.search.view_all' | t }}
+      </a>
+    {%- else -%}
+      <p class="predictive__empty">{{ 'general.search.no_results' | t: terms: predictive_search.terms }}</p>
+    {%- endif -%}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Predictive search"
+}
+{% endschema %}

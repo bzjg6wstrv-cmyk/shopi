@@ -1,0 +1,246 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Shopi Modern",
+    "theme_version": "1.0.0",
+    "theme_author": "Shopi",
+    "theme_documentation_url": "https://shopify.dev/themes",
+    "theme_support_url": "https://shopify.dev/themes"
+  },
+  {
+    "name": "t:settings.brand",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "favicon",
+        "label": "t:settings.favicon",
+        "info": "t:settings.favicon_info"
+      }
+    ]
+  },
+  {
+    "name": "t:settings.colors",
+    "settings": [
+      {
+        "type": "color",
+        "id": "color_background",
+        "label": "t:settings.background",
+        "default": "#ffffff"
+      },
+      {
+        "type": "color",
+        "id": "color_background_alt",
+        "label": "t:settings.background_alt",
+        "default": "#f6f6f8"
+      },
+      {
+        "type": "color",
+        "id": "color_text",
+        "label": "t:settings.text",
+        "default": "#1c1b22"
+      },
+      {
+        "type": "color",
+        "id": "color_accent",
+        "label": "t:settings.accent",
+        "default": "#4f46e5"
+      },
+      {
+        "type": "color",
+        "id": "color_accent_text",
+        "label": "t:settings.accent_text",
+        "default": "#ffffff"
+      },
+      {
+        "type": "color",
+        "id": "color_border",
+        "label": "t:settings.border",
+        "default": "#e5e5ea"
+      },
+      {
+        "type": "color",
+        "id": "color_sale",
+        "label": "t:settings.sale",
+        "default": "#e11d48"
+      }
+    ]
+  },
+  {
+    "name": "t:settings.typography",
+    "settings": [
+      {
+        "type": "font_picker",
+        "id": "heading_font",
+        "label": "t:settings.heading_font",
+        "default": "assistant_n6"
+      },
+      {
+        "type": "font_picker",
+        "id": "body_font",
+        "label": "t:settings.body_font",
+        "default": "assistant_n4"
+      },
+      {
+        "type": "range",
+        "id": "base_font_size",
+        "min": 14,
+        "max": 20,
+        "step": 1,
+        "unit": "px",
+        "label": "t:settings.base_font_size",
+        "default": 16
+      },
+      {
+        "type": "range",
+        "id": "heading_scale",
+        "min": 100,
+        "max": 150,
+        "step": 5,
+        "unit": "%",
+        "label": "t:settings.heading_scale",
+        "default": 120
+      }
+    ]
+  },
+  {
+    "name": "t:settings.layout",
+    "settings": [
+      {
+        "type": "range",
+        "id": "page_width",
+        "min": 1000,
+        "max": 1600,
+        "step": 20,
+        "unit": "px",
+        "label": "t:settings.page_width",
+        "default": 1280
+      },
+      {
+        "type": "range",
+        "id": "section_spacing",
+        "min": 20,
+        "max": 100,
+        "step": 4,
+        "unit": "px",
+        "label": "t:settings.section_spacing",
+        "default": 64
+      }
+    ]
+  },
+  {
+    "name": "t:settings.corners",
+    "settings": [
+      {
+        "type": "range",
+        "id": "button_radius",
+        "min": 0,
+        "max": 40,
+        "step": 2,
+        "unit": "px",
+        "label": "t:settings.button_radius",
+        "default": 10
+      },
+      {
+        "type": "range",
+        "id": "card_radius",
+        "min": 0,
+        "max": 40,
+        "step": 2,
+        "unit": "px",
+        "label": "t:settings.card_radius",
+        "default": 16
+      },
+      {
+        "type": "range",
+        "id": "input_radius",
+        "min": 0,
+        "max": 40,
+        "step": 2,
+        "unit": "px",
+        "label": "t:settings.input_radius",
+        "default": 10
+      }
+    ]
+  },
+  {
+    "name": "t:settings.product_cards",
+    "settings": [
+      {
+        "type": "select",
+        "id": "card_image_ratio",
+        "label": "t:settings.image_ratio",
+        "options": [
+          { "value": "adapt", "label": "t:settings.ratio_adapt" },
+          { "value": "square", "label": "t:settings.ratio_square" },
+          { "value": "portrait", "label": "t:settings.ratio_portrait" }
+        ],
+        "default": "square"
+      },
+      {
+        "type": "checkbox",
+        "id": "card_show_vendor",
+        "label": "t:settings.show_vendor",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "card_show_quick_add",
+        "label": "t:settings.show_quick_add",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "card_hover_image",
+        "label": "t:settings.hover_image",
+        "default": true
+      }
+    ]
+  },
+  {
+    "name": "t:settings.cart",
+    "settings": [
+      {
+        "type": "select",
+        "id": "cart_type",
+        "label": "t:settings.cart_type",
+        "options": [
+          { "value": "drawer", "label": "t:settings.cart_drawer" },
+          { "value": "page", "label": "t:settings.cart_page" }
+        ],
+        "default": "drawer"
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_show_note",
+        "label": "t:settings.cart_note",
+        "default": true
+      }
+    ]
+  },
+  {
+    "name": "t:settings.social",
+    "settings": [
+      { "type": "text", "id": "social_instagram", "label": "Instagram URL", "info": "https://instagram.com/..." },
+      { "type": "text", "id": "social_facebook", "label": "Facebook URL" },
+      { "type": "text", "id": "social_tiktok", "label": "TikTok URL" },
+      { "type": "text", "id": "social_twitter", "label": "X / Twitter URL" }
+    ]
+  },
+  {
+    "name": "t:settings.animations",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "animations_reveal",
+        "label": "t:settings.reveal_on_scroll",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "animations_hover_lift",
+        "label": "t:settings.hover_lift",
+        "default": true
+      }
+    ]
+  }
+]

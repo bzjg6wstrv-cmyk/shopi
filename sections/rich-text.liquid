@@ -1,0 +1,30 @@
+<section class="section">
+  <div class="page-width">
+    <div class="rich-text reveal">
+      <div class="rich-text__inner">
+        {%- if section.settings.subheading != blank -%}
+          <p style="text-transform:uppercase;letter-spacing:0.1em;font-size:0.85rem;color:var(--color-accent);font-weight:700;">{{ section.settings.subheading }}</p>
+        {%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2>{{ section.settings.heading }}</h2>{%- endif -%}
+        {%- if section.settings.text != blank -%}<div class="rte">{{ section.settings.text }}</div>{%- endif -%}
+        {%- if section.settings.button_label != blank -%}
+          <p style="margin-top:1.5rem;"><a href="{{ section.settings.button_link }}" class="button button--primary">{{ section.settings.button_label }}</a></p>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Rich text",
+  "settings": [
+    { "type": "text", "id": "subheading", "label": "Subheading", "default": "Our story" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Crafted with care" },
+    { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Use this space to share what makes your brand unique and why customers should choose you.</p>" },
+    { "type": "text", "id": "button_label", "label": "Button label" },
+    { "type": "url", "id": "button_link", "label": "Button link" }
+  ],
+  "presets": [{ "name": "Rich text" }]
+}
+{% endschema %}

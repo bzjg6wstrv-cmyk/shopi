@@ -1,0 +1,37 @@
+{
+  "sections": {
+    "banner": {
+      "type": "image-banner",
+      "settings": {
+        "subheading": "New collection",
+        "heading": "Designed for modern living",
+        "text": "Discover pieces made to last.",
+        "button_label": "Shop now",
+        "text_color": "light",
+        "height": 540
+      }
+    },
+    "featured": {
+      "type": "featured-collection",
+      "settings": {
+        "heading": "Featured products",
+        "subheading": "Our favourites, hand-picked for you",
+        "products_to_show": 8,
+        "columns": 4,
+        "show_view_all": true
+      }
+    },
+    "rich_text": {
+      "type": "rich-text",
+      "settings": {
+        "subheading": "Our story",
+        "heading": "Crafted with care"
+      }
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {}
+    }
+  },
+  "order": ["banner", "featured", "rich_text", "newsletter"]
+}

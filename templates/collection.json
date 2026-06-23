@@ -1,0 +1,14 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-collection",
+      "settings": {
+        "show_header": true,
+        "show_description": true,
+        "show_sort": true,
+        "products_per_page": 16
+      }
+    }
+  },
+  "order": ["main"]
+}

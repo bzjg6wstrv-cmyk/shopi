@@ -1,0 +1,39 @@
+{
+  "type": "footer",
+  "name": "Footer group",
+  "sections": {
+    "footer": {
+      "type": "footer",
+      "settings": {
+        "tagline": "Modern essentials, made to last.",
+        "show_social": true,
+        "show_payment": true
+      },
+      "blocks": {
+        "menu": {
+          "type": "menu",
+          "settings": {
+            "heading": "Shop",
+            "menu": "footer"
+          }
+        },
+        "about": {
+          "type": "text",
+          "settings": {
+            "heading": "About",
+            "content": "<p>Tell customers about your brand and what makes it special.</p>"
+          }
+        },
+        "newsletter": {
+          "type": "newsletter",
+          "settings": {
+            "heading": "Newsletter",
+            "text": "Subscribe for news and offers."
+          }
+        }
+      },
+      "block_order": ["menu", "about", "newsletter"]
+    }
+  },
+  "order": ["footer"]
+}

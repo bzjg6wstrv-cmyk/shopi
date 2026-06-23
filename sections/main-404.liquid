@@ -1,0 +1,14 @@
+<section class="section">
+  <div class="page-width">
+    <div class="empty-state reveal">
+      <h1 style="font-size:clamp(4rem,12vw,8rem);margin:0;">404</h1>
+      <h2>{{ '404.title' | t }}</h2>
+      <p>{{ '404.subtext' | t }}</p>
+      <a href="{{ routes.root_url }}" class="button button--primary">{{ '404.back_home' | t }}</a>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{ "name": "404", "settings": [] }
+{% endschema %}

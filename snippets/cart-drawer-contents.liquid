@@ -1,0 +1,73 @@
+{%- comment -%} Inner content of the cart drawer — re-rendered via the Section Rendering API {%- endcomment -%}
+{%- if cart == empty -%}
+  <div class="cart-drawer__empty">
+    {% render 'icon', name: 'bag', size: 64 %}
+    <p><strong>{{ 'cart.empty' | t }}</strong></p>
+    <p>{{ 'cart.empty_text' | t }}</p>
+    <a href="{{ routes.all_products_collection_url }}" class="button button--primary" data-cart-close>
+      {{ 'general.continue_shopping' | t }}
+    </a>
+  </div>
+{%- else -%}
+  <div class="cart-drawer__body">
+    <ul class="cart-items">
+      {%- for item in cart.items -%}
+        <li class="cart-item" data-key="{{ item.key }}">
+          <a href="{{ item.url }}" class="cart-item__media" tabindex="-1" aria-hidden="true">
+            {%- if item.image -%}
+              {%- assign item_alt = item.title | escape -%}
+              {{ item.image | image_url: width: 160 | image_tag: loading: 'lazy', alt: item_alt }}
+            {%- endif -%}
+          </a>
+          <div class="cart-item__details">
+            <a href="{{ item.url }}" class="cart-item__title">{{ item.product.title }}</a>
+            {%- unless item.product.has_only_default_variant -%}
+              <div class="cart-item__variant">{{ item.variant.title }}</div>
+            {%- endunless -%}
+            {%- for property in item.properties -%}
+              {%- if property.last != blank -%}
+                <div class="cart-item__variant">{{ property.first }}: {{ property.last }}</div>
+              {%- endif -%}
+            {%- endfor -%}
+            <div class="cart-item__bottom">
+              <quantity-input class="quantity">
+                <button type="button" data-action="decrease" aria-label="{{ 'products.product.decrease_quantity' | t }}">{% render 'icon', name: 'minus', size: 16 %}</button>
+                <input type="number" value="{{ item.quantity }}" min="0" data-key="{{ item.key }}" aria-label="{{ 'cart.quantity' | t }}">
+                <button type="button" data-action="increase" aria-label="{{ 'products.product.increase_quantity' | t }}">{% render 'icon', name: 'plus', size: 16 %}</button>
+              </quantity-input>
+              <button type="button" class="cart-item__remove" data-cart-remove data-key="{{ item.key }}">
+                {{ 'cart.remove' | t }}
+              </button>
+            </div>
+          </div>
+          <div class="cart-item__price">
+            {%- if item.original_line_price != item.final_line_price -%}
+              <s class="price__compare">{{ item.original_line_price | money }}</s><br>
+              <span class="price__sale">{{ item.final_line_price | money }}</span>
+            {%- else -%}
+              {{ item.final_line_price | money }}
+            {%- endif -%}
+          </div>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+
+  <div class="cart-drawer__footer">
+    {%- if settings.cart_show_note -%}
+      <details class="cart-drawer__note">
+        <summary>{{ 'cart.note' | t }}</summary>
+        <textarea name="note" placeholder="{{ 'cart.note_placeholder' | t }}">{{ cart.note }}</textarea>
+      </details>
+    {%- endif -%}
+    <div class="cart-drawer__subtotal">
+      <span>{{ 'cart.subtotal' | t }}</span>
+      <span>{{ cart.total_price | money }}</span>
+    </div>
+    <p class="cart-drawer__taxes">{{ 'cart.taxes_and_shipping' | t }}</p>
+    <form action="{{ routes.cart_url }}" method="post" id="cart-drawer-form" novalidate>
+      <a href="{{ routes.cart_url }}" class="button button--secondary button--full" style="margin-bottom:0.6rem;">{{ 'cart.view_cart' | t }}</a>
+      <button type="submit" name="checkout" class="button button--primary button--full">{{ 'cart.checkout' | t }}</button>
+    </form>
+  </div>
+{%- endif -%}
