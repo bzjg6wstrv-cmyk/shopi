@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="de" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>I&M CARGO — Precision in Motion | Europaweite Spedition</title>
+<meta name="description" content="I&M CARGO: Europaweiter Güterkraftverkehr, FTL/LTL-Komplettladungen, Thermo- und ADR-Transporte mit lückenlosem Echtzeit-Tracking. Angebot in 15 Minuten." />
+
+<!-- Tailwind CSS (CDN) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          navy: '#0B192C',
+          navydeep: '#071120',
+          card: '#1E293B',
+          accent: '#F59E0B',
+          accentdark: '#B45309',
+          muted: '#94A3B8',
+        },
+        fontFamily: {
+          display: ['"Syne"', 'sans-serif'],
+          sans: ['"Inter"', 'sans-serif'],
+        },
+        boxShadow: {
+          glow: '0 0 40px -10px rgba(245, 158, 11, 0.35)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+
+<!-- Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<style>
+  html, body { background-color: #0B192C; }
+  body { font-family: 'Inter', sans-serif; }
+  h1, h2, h3, .font-display { font-family: 'Syne', sans-serif; }
+
+  ::selection { background: #F59E0B; color: #0B192C; }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #0B192C; }
+  ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #F59E0B; }
+
+  .glass {
+    background: rgba(30, 41, 59, 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+  }
+
+  #webgl-bg { position: fixed; inset: 0; z-index: 0; opacity: 0.55; pointer-events: none; }
+
+  .header-blur {
+    background: rgba(11, 25, 44, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .route-underline {
+    stroke-dasharray: 140;
+    stroke-dashoffset: 140;
+    animation: draw 2.4s ease forwards 0.4s;
+  }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+
+  .fade-up { animation: fadeUp 0.9s cubic-bezier(.22,1,.36,1) both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+  .contact-label {
+    max-width: 0;
+    padding-left: 0; padding-right: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: max-width 0.45s cubic-bezier(.22,1,.36,1), padding 0.45s cubic-bezier(.22,1,.36,1);
+  }
+  .contact-item:hover .contact-label { max-width: 260px; padding-left: 1.1rem; padding-right: 1.4rem; }
+
+  .marquee-track { animation: marquee 28s linear infinite; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  .nav-link { position: relative; }
+  .nav-link::after {
+    content: ''; position: absolute; left: 0; bottom: -4px; width: 0; height: 2px;
+    background: #F59E0B; transition: width 0.3s ease;
+  }
+  .nav-link:hover::after { width: 100%; }
+
+  input::placeholder, select { color: #94A3B8; }
+  select option { background: #1E293B; color: #FFFFFF; }
+</style>
+</head>
+
+<body class="bg-navy text-white antialiased overflow-x-hidden selection:bg-accent">
+
+<!-- ============ 3D BACKGROUND CANVAS ============ -->
+<div id="webgl-bg"></div>
+
+<!-- ============ FLOATING STICKY CONTACT BAR ============ -->
+<div class="fixed right-4 sm:right-6 top-1/2 -translate-y-1/2 z-[60] flex flex-col gap-4">
+  <a href="tel:+4922198765430" class="contact-item group flex flex-row-reverse items-center">
+    <span class="relative z-10 flex-shrink-0 w-14 h-14 rounded-full bg-accent text-navy flex items-center justify-center shadow-glow border border-accent/50">
+      <i data-lucide="phone" class="w-5 h-5"></i>
+    </span>
+    <span class="contact-label glass rounded-full h-14 -mr-6 flex items-center text-sm font-semibold text-white">
+      +49 221 98 765 430
+    </span>
+  </a>
+  <a href="#anfrage" class="contact-item group flex flex-row-reverse items-center">
+    <span class="relative z-10 flex-shrink-0 w-14 h-14 rounded-full bg-card text-accent flex items-center justify-center border border-accent/30 backdrop-blur">
+      <i data-lucide="mail" class="w-5 h-5"></i>
+    </span>
+    <span class="contact-label glass rounded-full h-14 -mr-6 flex items-center text-sm font-semibold text-white">
+      Express-Anfrage senden
+    </span>
+  </a>
+</div>
+
+<!-- ============ HEADER / NAVIGATION ============ -->
+<header id="site-header" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-20">
+    <!-- Logo -->
+    <a href="#home" class="flex items-center gap-3 group">
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0">
+        <rect x="1" y="1" width="32" height="32" rx="8" stroke="#F59E0B" stroke-width="1.5" stroke-opacity="0.5"/>
+        <path class="route-underline" d="M6 22C10 22 10 12 14 12C17 12 15 20 20 20C24 20 24 10 28 10" stroke="#F59E0B" stroke-width="2.4" stroke-linecap="round"/>
+        <circle cx="28" cy="10" r="2.4" fill="#F59E0B"/>
+      </svg>
+      <span class="font-display font-800 text-xl tracking-tight text-white">I&amp;M <span class="text-white">CARGO</span></span>
+    </a>
+
+    <!-- Nav links -->
+    <nav class="hidden lg:flex items-center gap-9 text-sm font-medium text-white/90">
+      <a href="#leistungen" class="nav-link">Leistungen</a>
+      <a href="#fuhrpark" class="nav-link">Fuhrpark</a>
+      <a href="#tracking" class="nav-link">Echtzeit-Tracking</a>
+      <a href="#ueber-uns" class="nav-link">Über uns</a>
+    </nav>
+
+    <!-- CTA -->
+    <div class="flex items-center gap-3">
+      <a href="tel:+4922198765430" class="hidden sm:flex items-center gap-2 bg-accent hover:bg-white text-navy font-bold text-sm px-5 py-3 rounded-full transition-colors duration-300">
+        <i data-lucide="phone-call" class="w-4 h-4"></i>
+        <span>Dispo 24/7 · +49 221 98 765 430</span>
+      </a>
+      <button id="mobile-menu-btn" class="lg:hidden w-11 h-11 rounded-full glass flex items-center justify-center text-white">
+        <i data-lucide="menu" class="w-5 h-5"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mobile-menu" class="hidden lg:hidden glass mx-4 rounded-2xl mb-3 px-6 py-6 flex flex-col gap-5 text-white/90 font-medium">
+    <a href="#leistungen" class="mobile-link">Leistungen</a>
+    <a href="#fuhrpark" class="mobile-link">Fuhrpark</a>
+    <a href="#tracking" class="mobile-link">Echtzeit-Tracking</a>
+    <a href="#ueber-uns" class="mobile-link">Über uns</a>
+    <a href="tel:+4922198765430" class="flex items-center justify-center gap-2 bg-accent text-navy font-bold text-sm px-5 py-3 rounded-full mt-2">
+      <i data-lucide="phone-call" class="w-4 h-4"></i> Dispo 24/7 anrufen
+    </a>
+  </div>
+</header>
+
+<main class="relative z-10">
+
+  <!-- ============ HERO SECTION ============ -->
+  <section id="home" class="relative pt-40 pb-24 lg:pt-48 lg:pb-32 px-6 lg:px-10">
+    <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+
+      <!-- Left: Headline -->
+      <div class="fade-up">
+        <div class="inline-flex items-center gap-2 border border-accent/30 bg-accent/10 text-accent text-xs font-bold tracking-widest uppercase px-4 py-2 rounded-full mb-8">
+          <i data-lucide="truck" class="w-3.5 h-3.5"></i>
+          Europaweite Spedition
+        </div>
+        <h1 class="font-display font-800 text-5xl sm:text-6xl xl:text-7xl leading-[0.98] tracking-tight text-white">
+          I&amp;M CARGO.<br />
+          <span class="text-accent">PRECISION</span> IN<br />
+          MOTION.
+        </h1>
+        <p class="mt-8 text-lg text-muted max-w-xl leading-relaxed">
+          Europaweiter Güterkraftverkehr, FTL/LTL-Komplettladungen und Express-Spedition.
+          Höchste Pünktlichkeit mit lückenlosem Live-Tracking.
+        </p>
+
+        <div class="mt-10 flex flex-wrap items-center gap-4">
+          <a href="#anfrage" class="inline-flex items-center gap-2 bg-accent hover:bg-white text-navy font-bold px-7 py-4 rounded-full transition-colors duration-300 shadow-glow">
+            Angebot anfordern
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
+          <a href="#tracking" class="inline-flex items-center gap-2 border border-white/20 hover:border-accent/60 text-white font-semibold px-7 py-4 rounded-full transition-colors duration-300">
+            <i data-lucide="radar" class="w-4 h-4 text-accent"></i>
+            Live-Tracking ansehen
+          </a>
+        </div>
+
+        <div class="mt-14 flex items-center gap-8 text-muted text-sm">
+          <div class="flex items-center gap-2">
+            <i data-lucide="shield-check" class="w-4 h-4 text-accent"></i> Zertifiziert nach ISO 9001
+          </div>
+          <div class="flex items-center gap-2">
+            <i data-lucide="badge-euro" class="w-4 h-4 text-accent"></i> Transportversichert
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Quick Request Form -->
+      <div id="anfrage" class="fade-up glass rounded-3xl p-7 sm:p-9 shadow-2xl scroll-mt-32" style="animation-delay:0.15s">
+        <div class="flex items-center justify-between mb-1">
+          <h2 class="font-display font-700 text-2xl text-white">Express Transport-Anfrage</h2>
+          <span class="flex items-center gap-1.5 text-accent text-xs font-bold bg-accent/10 border border-accent/30 px-3 py-1.5 rounded-full">
+            <i data-lucide="zap" class="w-3.5 h-3.5"></i> 15 Min.
+          </span>
+        </div>
+        <p class="text-muted text-sm mb-6">Unverbindlich anfragen — unsere Disposition meldet sich umgehend.</p>
+
+        <form class="grid grid-cols-2 gap-4" onsubmit="event.preventDefault(); this.querySelector('button').innerHTML='Angefragt ✓ Wir melden uns.'; this.querySelector('button').classList.add('bg-white');">
+          <div class="col-span-1">
+            <label class="block text-xs font-semibold text-muted mb-1.5">Startort</label>
+            <div class="relative">
+              <i data-lucide="map-pin" class="w-4 h-4 text-accent absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+              <input required type="text" placeholder="z. B. Köln" class="w-full bg-navy/60 border border-white/10 focus:border-accent rounded-xl pl-10 pr-3 py-3 text-sm text-white outline-none transition-colors" />
+            </div>
+          </div>
+          <div class="col-span-1">
+            <label class="block text-xs font-semibold text-muted mb-1.5">Zielort</label>
+            <div class="relative">
+              <i data-lucide="flag" class="w-4 h-4 text-accent absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+              <input required type="text" placeholder="z. B. Warschau" class="w-full bg-navy/60 border border-white/10 focus:border-accent rounded-xl pl-10 pr-3 py-3 text-sm text-white outline-none transition-colors" />
+            </div>
+          </div>
+
+          <div class="col-span-1">
+            <label class="block text-xs font-semibold text-muted mb-1.5">Frachtart</label>
+            <select class="w-full bg-navy/60 border border-white/10 focus:border-accent rounded-xl px-3 py-3 text-sm text-white outline-none transition-colors">
+              <option>FTL – Komplettladung</option>
+              <option>LTL – Teilladung</option>
+              <option>Thermo / Kühltransport</option>
+              <option>ADR – Gefahrgut</option>
+            </select>
+          </div>
+          <div class="col-span-1">
+            <label class="block text-xs font-semibold text-muted mb-1.5">Tonnage</label>
+            <div class="relative">
+              <i data-lucide="scale" class="w-4 h-4 text-accent absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+              <input type="number" placeholder="in t" class="w-full bg-navy/60 border border-white/10 focus:border-accent rounded-xl pl-10 pr-3 py-3 text-sm text-white outline-none transition-colors" />
+            </div>
+          </div>
+
+          <div class="col-span-2">
+            <label class="block text-xs font-semibold text-muted mb-1.5">Firma / Ansprechpartner</label>
+            <input required type="text" placeholder="Ihr Name & Unternehmen" class="w-full bg-navy/60 border border-white/10 focus:border-accent rounded-xl px-3.5 py-3 text-sm text-white outline-none transition-colors" />
+          </div>
+
+          <div class="col-span-1">
+            <label class="block text-xs font-semibold text-muted mb-1.5">E-Mail</label>
+            <input required type="email" placeholder="name@firma.de" class="w-full bg-navy/60 border border-white/10 focus:border-accent rounded-xl px-3.5 py-3 text-sm text-white outline-none transition-colors" />
+          </div>
+          <div class="col-span-1">
+            <label class="block text-xs font-semibold text-muted mb-1.5">Telefon</label>
+            <input required type="tel" placeholder="+49 ..." class="w-full bg-navy/60 border border-white/10 focus:border-accent rounded-xl px-3.5 py-3 text-sm text-white outline-none transition-colors" />
+          </div>
+
+          <div class="col-span-2 mt-2">
+            <button type="submit" class="w-full flex items-center justify-center gap-2 bg-accent hover:bg-white text-navy font-bold text-sm py-4 rounded-xl transition-colors duration-300 shadow-glow">
+              Angebot in 15 Min. anfordern
+              <i data-lucide="send" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TRUST BAR ============ -->
+  <section class="relative px-6 lg:px-10 pb-24">
+    <div class="max-w-7xl mx-auto glass rounded-3xl grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/10">
+      <div class="p-8 sm:p-10 text-center">
+        <div class="font-display font-800 text-4xl sm:text-5xl text-accent">
+          <span class="counter" data-target="99.8" data-decimals="1">0</span>%
+        </div>
+        <p class="mt-2 text-sm text-muted font-medium">Pünktlichkeitsquote</p>
+      </div>
+      <div class="p-8 sm:p-10 text-center">
+        <div class="font-display font-800 text-4xl sm:text-5xl text-accent">
+          24/7
+        </div>
+        <p class="mt-2 text-sm text-muted font-medium">Live-Telematik &amp; Disposition</p>
+      </div>
+      <div class="p-8 sm:p-10 text-center">
+        <div class="font-display font-800 text-4xl sm:text-5xl text-accent">
+          <span class="counter" data-target="27" data-decimals="0">0</span>
+        </div>
+        <p class="mt-2 text-sm text-muted font-medium">EU-Weites Streckennetz (Länder)</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LEISTUNGEN ============ -->
+  <section id="leistungen" class="relative px-6 lg:px-10 py-24 scroll-mt-24">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-14">
+        <div>
+          <span class="text-accent text-xs font-bold tracking-widest uppercase">Leistungen</span>
+          <h2 class="font-display font-800 text-4xl sm:text-5xl mt-3 text-white max-w-2xl">Transportlösungen für jede Anforderung.</h2>
+        </div>
+        <p class="text-muted max-w-md">Von der Palette bis zur Komplettladung — abgestimmt auf Warenwert, Temperatur und Zeitfenster.</p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="glass rounded-2xl p-7 hover:border-accent/40 transition-colors">
+          <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-6"><i data-lucide="truck" class="w-6 h-6 text-accent"></i></div>
+          <h3 class="font-display font-700 text-xl text-white mb-2">FTL – Komplettladung</h3>
+          <p class="text-sm text-muted leading-relaxed">Exklusive Sattelzüge für zeitkritische Direktfahrten europaweit, ohne Umschlag.</p>
+        </div>
+        <div class="glass rounded-2xl p-7 hover:border-accent/40 transition-colors">
+          <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-6"><i data-lucide="package" class="w-6 h-6 text-accent"></i></div>
+          <h3 class="font-display font-700 text-xl text-white mb-2">LTL – Teilladung</h3>
+          <p class="text-sm text-muted leading-relaxed">Konsolidierte Sammelladungen mit festen Linienverkehren und planbaren Laufzeiten.</p>
+        </div>
+        <div class="glass rounded-2xl p-7 hover:border-accent/40 transition-colors">
+          <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-6"><i data-lucide="snowflake" class="w-6 h-6 text-accent"></i></div>
+          <h3 class="font-display font-700 text-xl text-white mb-2">Thermo &amp; Kühltransport</h3>
+          <p class="text-sm text-muted leading-relaxed">Lückenlose Kühlkette von -25°C bis +25°C mit kontinuierlicher Temperaturaufzeichnung.</p>
+        </div>
+        <div class="glass rounded-2xl p-7 hover:border-accent/40 transition-colors">
+          <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-6"><i data-lucide="shield-alert" class="w-6 h-6 text-accent"></i></div>
+          <h3 class="font-display font-700 text-xl text-white mb-2">ADR – Gefahrgut</h3>
+          <p class="text-sm text-muted leading-relaxed">Zertifizierte Gefahrgutfahrer und -fahrzeuge für alle relevanten ADR-Klassen.</p>
+        </div>
+        <div class="glass rounded-2xl p-7 hover:border-accent/40 transition-colors">
+          <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-6"><i data-lucide="zap" class="w-6 h-6 text-accent"></i></div>
+          <h3 class="font-display font-700 text-xl text-white mb-2">Express-Spedition</h3>
+          <p class="text-sm text-muted leading-relaxed">Same-Day- und Next-Day-Direktfahrten für hochpriorisierte Sendungen.</p>
+        </div>
+        <div class="glass rounded-2xl p-7 hover:border-accent/40 transition-colors">
+          <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-6"><i data-lucide="warehouse" class="w-6 h-6 text-accent"></i></div>
+          <h3 class="font-display font-700 text-xl text-white mb-2">Lager &amp; Cross-Docking</h3>
+          <p class="text-sm text-muted leading-relaxed">Kurzfristige Einlagerung und Umschlag an strategischen Knotenpunkten.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FUHRPARK ============ -->
+  <section id="fuhrpark" class="relative px-6 lg:px-10 py-24 bg-navydeep/60 scroll-mt-24">
+    <div class="max-w-7xl mx-auto">
+      <div class="mb-14">
+        <span class="text-accent text-xs font-bold tracking-widest uppercase">Fuhrpark</span>
+        <h2 class="font-display font-800 text-4xl sm:text-5xl mt-3 text-white max-w-2xl">Moderne Flotte, lückenlos vernetzt.</h2>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="rounded-2xl overflow-hidden border border-white/10 group">
+          <div class="h-40 bg-gradient-to-br from-card to-navydeep flex items-center justify-center relative">
+            <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(#F59E0B 1px, transparent 1px); background-size:16px 16px;"></div>
+            <i data-lucide="truck" class="w-14 h-14 text-accent relative"></i>
+          </div>
+          <div class="p-6 bg-card/60">
+            <h3 class="font-display font-700 text-lg text-white">Sattelzüge</h3>
+            <p class="text-sm text-muted mt-1">Euro 6 · GPS · 40t zGG</p>
+          </div>
+        </div>
+        <div class="rounded-2xl overflow-hidden border border-white/10 group">
+          <div class="h-40 bg-gradient-to-br from-card to-navydeep flex items-center justify-center relative">
+            <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(#F59E0B 1px, transparent 1px); background-size:16px 16px;"></div>
+            <i data-lucide="thermometer-snowflake" class="w-14 h-14 text-accent relative"></i>
+          </div>
+          <div class="p-6 bg-card/60">
+            <h3 class="font-display font-700 text-lg text-white">Kühlauflieger</h3>
+            <p class="text-sm text-muted mt-1">Multi-Temp · Datenlogger</p>
+          </div>
+        </div>
+        <div class="rounded-2xl overflow-hidden border border-white/10 group">
+          <div class="h-40 bg-gradient-to-br from-card to-navydeep flex items-center justify-center relative">
+            <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(#F59E0B 1px, transparent 1px); background-size:16px 16px;"></div>
+            <i data-lucide="container" class="w-14 h-14 text-accent relative"></i>
+          </div>
+          <div class="p-6 bg-card/60">
+            <h3 class="font-display font-700 text-lg text-white">Tautliner</h3>
+            <p class="text-sm text-muted mt-1">Seitenlader · Coilmulde</p>
+          </div>
+        </div>
+        <div class="rounded-2xl overflow-hidden border border-white/10 group">
+          <div class="h-40 bg-gradient-to-br from-card to-navydeep flex items-center justify-center relative">
+            <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(#F59E0B 1px, transparent 1px); background-size:16px 16px;"></div>
+            <i data-lucide="truck-electric" class="w-14 h-14 text-accent relative"></i>
+          </div>
+          <div class="p-6 bg-card/60">
+            <h3 class="font-display font-700 text-lg text-white">Klein-Transporter</h3>
+            <p class="text-sm text-muted mt-1">Same-Day · Innenstadtlogistik</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ECHTZEIT-TRACKING ============ -->
+  <section id="tracking" class="relative px-6 lg:px-10 py-24 scroll-mt-24">
+    <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+      <div>
+        <span class="text-accent text-xs font-bold tracking-widest uppercase">Echtzeit-Tracking</span>
+        <h2 class="font-display font-800 text-4xl sm:text-5xl mt-3 text-white">Jede Sendung. Jede Sekunde. Sichtbar.</h2>
+        <p class="mt-6 text-muted leading-relaxed max-w-lg">
+          Über unser Live-Telematiksystem verfolgen Sie Standort, ETA und Temperaturverlauf jeder Sendung in Echtzeit — ganz ohne Rückfrage bei der Disposition.
+        </p>
+        <ul class="mt-8 space-y-4">
+          <li class="flex items-center gap-3 text-white text-sm"><i data-lucide="map-pin" class="w-4 h-4 text-accent"></i> GPS-Ortung im 60-Sekunden-Takt</li>
+          <li class="flex items-center gap-3 text-white text-sm"><i data-lucide="clock" class="w-4 h-4 text-accent"></i> Automatische ETA-Berechnung</li>
+          <li class="flex items-center gap-3 text-white text-sm"><i data-lucide="thermometer" class="w-4 h-4 text-accent"></i> Digitale Temperatur-Protokolle</li>
+          <li class="flex items-center gap-3 text-white text-sm"><i data-lucide="bell-ring" class="w-4 h-4 text-accent"></i> Proaktive Statusbenachrichtigungen</li>
+        </ul>
+      </div>
+
+      <div class="glass rounded-3xl p-6 sm:p-8">
+        <div class="flex items-center justify-between mb-6">
+          <span class="flex items-center gap-2 text-xs font-bold text-accent bg-accent/10 border border-accent/30 px-3 py-1.5 rounded-full">
+            <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span> LIVE
+          </span>
+          <span class="text-xs text-muted">Sendung #IMC-88213</span>
+        </div>
+        <div class="flex items-center justify-between text-sm mb-3">
+          <span class="text-white font-semibold">Köln, DE</span>
+          <span class="text-white font-semibold">Warschau, PL</span>
+        </div>
+        <div class="w-full h-2 rounded-full bg-navy/70 overflow-hidden mb-2">
+          <div class="h-full bg-gradient-to-r from-accent to-yellow-300 rounded-full" style="width:64%"></div>
+        </div>
+        <div class="flex justify-between text-xs text-muted mb-8">
+          <span>Abfahrt 06:40</span>
+          <span>ETA 18:20 · pünktlich</span>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div class="bg-navy/50 rounded-xl p-4 text-center border border-white/5">
+            <i data-lucide="gauge" class="w-5 h-5 text-accent mx-auto mb-2"></i>
+            <p class="text-white text-sm font-bold">84 km/h</p>
+            <p class="text-[11px] text-muted">Geschwindigkeit</p>
+          </div>
+          <div class="bg-navy/50 rounded-xl p-4 text-center border border-white/5">
+            <i data-lucide="thermometer" class="w-5 h-5 text-accent mx-auto mb-2"></i>
+            <p class="text-white text-sm font-bold">4.1 °C</p>
+            <p class="text-[11px] text-muted">Laderaum</p>
+          </div>
+          <div class="bg-navy/50 rounded-xl p-4 text-center border border-white/5">
+            <i data-lucide="signal" class="w-5 h-5 text-accent mx-auto mb-2"></i>
+            <p class="text-white text-sm font-bold">Stabil</p>
+            <p class="text-[11px] text-muted">Verbindung</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ÜBER UNS ============ -->
+  <section id="ueber-uns" class="relative px-6 lg:px-10 py-24 bg-navydeep/60 scroll-mt-24">
+    <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+      <div>
+        <span class="text-accent text-xs font-bold tracking-widest uppercase">Über uns</span>
+        <h2 class="font-display font-800 text-4xl sm:text-5xl mt-3 text-white">Spedition mit technischer Präzision.</h2>
+        <p class="mt-6 text-muted leading-relaxed max-w-lg">
+          I&amp;M CARGO verbindet klassische Speditionskompetenz mit moderner Telematik-Infrastruktur.
+          Unser Dispositionsteam plant, überwacht und optimiert jede Route in Echtzeit — für maximale Zuverlässigkeit bei minimalem Koordinationsaufwand auf Kundenseite.
+        </p>
+        <div class="mt-8 grid grid-cols-2 gap-6">
+          <div>
+            <p class="font-display font-800 text-3xl text-accent">12+</p>
+            <p class="text-sm text-muted mt-1">Jahre Markterfahrung</p>
+          </div>
+          <div>
+            <p class="font-display font-800 text-3xl text-accent">400+</p>
+            <p class="text-sm text-muted mt-1">Aktive B2B-Partner</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-5">
+        <div class="glass rounded-2xl p-6">
+          <i data-lucide="target" class="w-6 h-6 text-accent mb-4"></i>
+          <h3 class="font-display font-700 text-lg text-white mb-1.5">Präzision</h3>
+          <p class="text-sm text-muted">Zeitfenster werden eingehalten, nicht angestrebt.</p>
+        </div>
+        <div class="glass rounded-2xl p-6">
+          <i data-lucide="link-2" class="w-6 h-6 text-accent mb-4"></i>
+          <h3 class="font-display font-700 text-lg text-white mb-1.5">Transparenz</h3>
+          <p class="text-sm text-muted">Volle Sichtbarkeit über jede Bewegung Ihrer Fracht.</p>
+        </div>
+        <div class="glass rounded-2xl p-6">
+          <i data-lucide="handshake" class="w-6 h-6 text-accent mb-4"></i>
+          <h3 class="font-display font-700 text-lg text-white mb-1.5">Verlässlichkeit</h3>
+          <p class="text-sm text-muted">Feste Kapazitäten statt Spotmarkt-Risiko.</p>
+        </div>
+        <div class="glass rounded-2xl p-6">
+          <i data-lucide="leaf" class="w-6 h-6 text-accent mb-4"></i>
+          <h3 class="font-display font-700 text-lg text-white mb-1.5">Effizienz</h3>
+          <p class="text-sm text-muted">Optimierte Routen senken Kosten und Emissionen.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CTA STRIP ============ -->
+  <section class="relative px-6 lg:px-10 py-20">
+    <div class="max-w-7xl mx-auto glass rounded-3xl p-10 sm:p-14 flex flex-col lg:flex-row items-center justify-between gap-8 text-center lg:text-left">
+      <div>
+        <h2 class="font-display font-800 text-3xl sm:text-4xl text-white">Bereit für Ihre nächste Sendung?</h2>
+        <p class="text-muted mt-2">Fordern Sie jetzt ein Angebot an — Antwort in 15 Minuten.</p>
+      </div>
+      <div class="flex flex-wrap items-center justify-center gap-4">
+        <a href="#anfrage" class="inline-flex items-center gap-2 bg-accent hover:bg-white text-navy font-bold px-7 py-4 rounded-full transition-colors duration-300 shadow-glow">
+          Jetzt anfragen <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+        <a href="tel:+4922198765430" class="inline-flex items-center gap-2 border border-white/20 hover:border-accent/60 text-white font-semibold px-7 py-4 rounded-full transition-colors duration-300">
+          <i data-lucide="phone" class="w-4 h-4 text-accent"></i> Dispo 24/7
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="relative z-10 border-t border-white/10 px-6 lg:px-10 py-14">
+  <div class="max-w-7xl mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+    <div>
+      <div class="flex items-center gap-3 mb-4">
+        <svg width="30" height="30" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="1" y="1" width="32" height="32" rx="8" stroke="#F59E0B" stroke-width="1.5" stroke-opacity="0.5"/>
+          <path d="M6 22C10 22 10 12 14 12C17 12 15 20 20 20C24 20 24 10 28 10" stroke="#F59E0B" stroke-width="2.4" stroke-linecap="round"/>
+          <circle cx="28" cy="10" r="2.4" fill="#F59E0B"/>
+        </svg>
+        <span class="font-display font-800 text-lg text-white">I&amp;M CARGO</span>
+      </div>
+      <p class="text-sm text-muted leading-relaxed">Europaweite Spedition mit technischer Präzision und lückenlosem Live-Tracking.</p>
+    </div>
+    <div>
+      <h4 class="text-white font-semibold text-sm mb-4">Navigation</h4>
+      <ul class="space-y-2.5 text-sm text-muted">
+        <li><a href="#leistungen" class="hover:text-accent transition-colors">Leistungen</a></li>
+        <li><a href="#fuhrpark" class="hover:text-accent transition-colors">Fuhrpark</a></li>
+        <li><a href="#tracking" class="hover:text-accent transition-colors">Echtzeit-Tracking</a></li>
+        <li><a href="#ueber-uns" class="hover:text-accent transition-colors">Über uns</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-white font-semibold text-sm mb-4">Kontakt</h4>
+      <ul class="space-y-2.5 text-sm text-muted">
+        <li class="flex items-center gap-2"><i data-lucide="phone" class="w-4 h-4 text-accent"></i> +49 221 98 765 430</li>
+        <li class="flex items-center gap-2"><i data-lucide="mail" class="w-4 h-4 text-accent"></i> info@im-cargo.de</li>
+        <li class="flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4 text-accent"></i> Köln, Deutschland</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-white font-semibold text-sm mb-4">Rechtliches</h4>
+      <ul class="space-y-2.5 text-sm text-muted">
+        <li><a href="#" class="hover:text-accent transition-colors">Impressum</a></li>
+        <li><a href="#" class="hover:text-accent transition-colors">Datenschutz</a></li>
+        <li><a href="#" class="hover:text-accent transition-colors">AGB</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto border-t border-white/10 mt-10 pt-6 text-center text-xs text-muted">
+    © 2026 I&amp;M CARGO. Alle Rechte vorbehalten.
+  </div>
+</footer>
+
+<script>
+  // ===== Lucide Icons =====
+  window.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });
+  window.addEventListener('load', () => { if (window.lucide) lucide.createIcons(); });
+
+  // ===== Header scroll state =====
+  const header = document.getElementById('site-header');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 40) header.classList.add('header-blur', 'shadow-lg', 'shadow-black/20');
+    else header.classList.remove('header-blur', 'shadow-lg', 'shadow-black/20');
+  });
+
+  // ===== Mobile menu toggle =====
+  const menuBtn = document.getElementById('mobile-menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+  menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+  document.querySelectorAll('.mobile-link').forEach(l => l.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+
+  // ===== Counter animation =====
+  const counters = document.querySelectorAll('.counter');
+  const animateCounter = (el) => {
+    const target = parseFloat(el.dataset.target);
+    const decimals = parseInt(el.dataset.decimals || '0');
+    const duration = 1600;
+    const start = performance.now();
+    const step = (now) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = (target * eased).toFixed(decimals);
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) { animateCounter(entry.target); counterObserver.unobserve(entry.target); }
+    });
+  }, { threshold: 0.6 });
+  counters.forEach(c => counterObserver.observe(c));
+
+  // ===== Three.js background: wireframe container box + particle field =====
+  (function initThree() {
+    const container = document.getElementById('webgl-bg');
+    if (!window.THREE || !container) return;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 26;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    // Wireframe container/box
+    const boxGeo = new THREE.BoxGeometry(10, 6, 6);
+    const boxEdges = new THREE.EdgesGeometry(boxGeo);
+    const boxMat = new THREE.LineBasicMaterial({ color: 0xF59E0B, transparent: true, opacity: 0.5 });
+    const wireBox = new THREE.LineSegments(boxEdges, boxMat);
+    scene.add(wireBox);
+
+    // Inner ribs for a "container" feel
+    const ribGeo = new THREE.BoxGeometry(9.4, 5.4, 5.4);
+    const ribEdges = new THREE.EdgesGeometry(ribGeo);
+    const ribMat = new THREE.LineBasicMaterial({ color: 0xF59E0B, transparent: true, opacity: 0.15 });
+    const ribBox = new THREE.LineSegments(ribEdges, ribMat);
+    wireBox.add(ribBox);
+
+    // Particle field
+    const particleCount = 260;
+    const positions = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 60;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 36;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 40;
+    }
+    const particleGeo = new THREE.BufferGeometry();
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const particleMat = new THREE.PointsMaterial({ color: 0xF59E0B, size: 0.16, transparent: true, opacity: 0.7 });
+    const particles = new THREE.Points(particleGeo, particleMat);
+    scene.add(particles);
+
+    let mouseX = 0, mouseY = 0;
+    let targetRotX = 0, targetRotY = 0;
+    window.addEventListener('mousemove', (e) => {
+      mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseY = (e.clientY / window.innerHeight) * 2 - 1;
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const elapsed = clock.getElapsedTime();
+
+      wireBox.rotation.y = elapsed * 0.18;
+      wireBox.rotation.x = elapsed * 0.09;
+
+      targetRotY += (mouseX * 0.4 - targetRotY) * 0.03;
+      targetRotX += (mouseY * 0.4 - targetRotX) * 0.03;
+      scene.rotation.y = targetRotY * 0.3;
+      scene.rotation.x = targetRotX * 0.15;
+
+      particles.rotation.y = elapsed * 0.015;
+      camera.position.x += (mouseX * 2 - camera.position.x) * 0.02;
+      camera.position.y += (-mouseY * 2 - camera.position.y) * 0.02;
+      camera.lookAt(scene.position);
+
+      renderer.render(scene, camera);
+    }
+    animate();
+  })();
+</script>
+
+</body>
+</html>
