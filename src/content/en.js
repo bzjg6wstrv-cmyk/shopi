@@ -34,9 +34,9 @@ export const en = {
   },
 
   hero: {
-    eyebrow: 'Road haulage & transport logistics · Bremen',
-    headline: ['Transport.', 'Direct.', 'Reliable.'],
-    lead: 'We arrange transports for commercial customers across Germany and Europe. You reach our dispatch team directly, around the clock.',
+    eyebrow: 'Road haulage · Bremen',
+    headline: ['Transport. Direct.', 'Reliable.'],
+    lead: 'Transport solutions for businesses – across Germany and throughout Europe. Our dispatch team is reachable around the clock.',
     ctaPrimary: 'Request a transport',
     ctaSecondary: 'Contact dispatch',
     facts: [
@@ -44,26 +44,26 @@ export const en = {
       { label: 'Dispatch', value: 'Available 24/7' },
     ],
     phoneLabel: 'Straight to dispatch',
-    imageAlt: 'Placeholder: articulated truck on a long-haul route – to be replaced with an I&M CARGO photograph.',
+    imageAlt: 'Articulated truck on the motorway',
   },
 
   services: {
     eyebrow: 'Services',
     headline: 'What we haul.',
-    lead: 'We take on transport orders from industry, trade, logistics providers, forwarders and commercial shippers – from a single shipment to recurring transport needs.',
+    lead: 'For industry, trade, forwarders and other commercial customers – from a single transport to a recurring need.',
     items: [
-      { n: '01', title: 'Container transport', text: 'Transport of common container types and sizes.' },
-      { n: '02', title: 'Curtainsider transport', text: 'Tarpaulin, curtainsider and tautliner solutions to suit the transport at hand.' },
-      { n: '03', title: 'Dangerous goods', text: 'Dangerous goods transports in line with the legal and technical requirements that apply in each case.' },
+      { n: '01', title: 'Container transport', text: 'Transports of common container types and sizes.' },
+      { n: '02', title: 'Curtainsider transport', text: 'Tarpaulin, curtainsider and tautliner – matched to the load.' },
+      { n: '03', title: 'Dangerous goods', text: 'In line with the legal and technical requirements that apply in each case.' },
       { n: '04', title: 'Full loads', text: 'FTL transports for commercial customers.' },
-      { n: '05', title: 'Part loads', text: 'LTL and part load solutions where they suit the transport at hand.' },
+      { n: '05', title: 'Part loads', text: 'LTL and part loads where they suit the transport at hand.' },
       { n: '06', title: 'Direct transport', text: 'Straight from the collection point to the consignee.' },
       { n: '07', title: 'Express & special runs', text: 'Time-critical transports and individually planned runs.' },
     ],
     moreTitle: 'Further transport solutions',
-    moreText: 'Depending on what a job requires, we arrange further suitable trucks, trailers and transport solutions. If you are not sure what fits your cargo, send us the details – we will sort it out on the phone.',
+    moreText: 'Depending on what a job requires, we arrange further suitable trucks and trailers. If you are not sure what fits your cargo, send us a short enquiry – we will sort it out on the phone.',
     moreCta: 'Talk through your transport',
-    imageAlt: 'Placeholder: container haulage at a terminal – to be replaced with an I&M CARGO photograph.',
+    imageAlt: 'Container terminal with freight traffic',
   },
 
   approach: {
@@ -86,7 +86,7 @@ export const en = {
       { label: 'Domestic', value: 'Transports within Germany' },
       { label: 'International', value: 'Transports across Europe' },
     ],
-    imageAlt: 'Placeholder: motorway traffic on a European route – to be replaced with an I&M CARGO photograph.',
+    imageAlt: 'Motorway traffic on a European freight route',
   },
 
   form: {
@@ -165,8 +165,8 @@ export const en = {
     },
 
     notConnected: {
-      title: 'Form delivery is not connected yet.',
-      text: 'Technical delivery of this form will be set up when the site goes live. Until then, please reach dispatch directly:',
+      title: 'Please contact dispatch directly.',
+      text: 'Your enquiry cannot be submitted here at the moment. Call us or send us an email – we are reachable around the clock:',
     },
   },
 
@@ -178,7 +178,7 @@ export const en = {
     ctaPrimary: 'Get in touch',
     ctaSecondary: 'Call us',
     mailSubject: 'Application – driving staff',
-    imageAlt: 'Placeholder: loading in the yard – to be replaced with an I&M CARGO photograph.',
+    imageAlt: 'Loading in a logistics yard',
   },
 
   contact: {
@@ -197,7 +197,7 @@ export const en = {
 
   panel: {
     title: '24/7 dispatch',
-    phoneLabel: 'Phone & WhatsApp',
+    phoneLabel: 'Phone',
     callCta: 'Call now',
     mailLabel: 'Email',
     mailCta: 'Send an email',

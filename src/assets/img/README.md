@@ -29,9 +29,12 @@ mittig liegen und an den Rändern Luft haben.
 
 ## Nach dem Austausch
 
-1. **Alt-Texte anpassen.** Sie stehen in `src/content/de.js` und `src/content/en.js`
+1. **Alt-Texte prüfen.** Sie stehen in `src/content/de.js` und `src/content/en.js`
    (`hero.imageAlt`, `services.imageAlt`, `europe.imageAlt`, `career.imageAlt`) und
-   beschreiben derzeit die Platzhalter.
+   beschreiben bereits das jeweils vorgesehene Motiv – etwa „Sattelzug im Fernverkehr
+   auf der Autobahn“. Weicht das echte Foto davon ab, den Text entsprechend anpassen.
+   Alt-Texte enthalten bewusst **keine** internen Hinweise auf den Platzhalterstatus:
+   sie werden von Screenreadern vorgelesen und gehören nicht zur Projektkommunikation.
 2. **Bildnachweise ergänzen**, falls lizenzierte Fotos verwendet werden – im Impressum
    ist dafür ein Abschnitt vorgesehen (`src/content/legal.de.js` / `legal.en.js`).
 3. `npm run build` ausführen.

@@ -23,7 +23,13 @@ export const home = (t) => `
   <div class="hero__inner shell">
     <div class="hero__text">
       <p class="eyebrow">${esc(t.hero.eyebrow)}</p>
-      <h1 class="hero__title" id="hero-title">${t.hero.headline.map((line) => `<span>${esc(line)}</span>`).join(' ')}</h1>
+      <h1 class="hero__title" id="hero-title">
+        ${t.hero.headline
+          .map((line, i, all) =>
+            `<span class="hero__title-line${i === all.length - 1 ? ' hero__title-line--rule' : ''}">${esc(line)}</span>`
+          )
+          .join('\n        ')}
+      </h1>
       <p class="hero__lead">${esc(t.hero.lead)}</p>
       <div class="hero__actions">
         <a class="btn btn--accent btn--large" href="#anfrage">${esc(t.hero.ctaPrimary)}${iconArrow}</a>
@@ -98,8 +104,8 @@ export const home = (t) => `
 </section>
 
 <section class="section approach" id="arbeitsweise" aria-labelledby="approach-title">
-  <div class="shell">
-    <div class="section-head section-head--inline">
+  <div class="shell approach__inner">
+    <div class="section-head approach__head">
       <p class="eyebrow">${esc(t.approach.eyebrow)}</p>
       <h2 class="section-title" id="approach-title">${esc(t.approach.headline)}</h2>
     </div>
@@ -109,8 +115,10 @@ export const home = (t) => `
         (item) => `
       <li class="approach__item">
         <span class="approach__n" aria-hidden="true">${esc(item.n)}</span>
-        <h3 class="approach__title">${esc(item.title)}</h3>
-        <p class="approach__text">${esc(item.text)}</p>
+        <div class="approach__body">
+          <h3 class="approach__title">${esc(item.title)}</h3>
+          <p class="approach__text">${esc(item.text)}</p>
+        </div>
       </li>`
       )}
     </ol>

@@ -34,9 +34,9 @@ export const de = {
   },
 
   hero: {
-    eyebrow: 'Spedition & Transportlogistik · Bremen',
-    headline: ['Transport.', 'Direkt.', 'Verlässlich.'],
-    lead: 'Wir disponieren Transporte für gewerbliche Auftraggeber – in Deutschland und europaweit. Sie erreichen die Disposition direkt, rund um die Uhr.',
+    eyebrow: 'Spedition · Bremen',
+    headline: ['Transport. Direkt.', 'Verlässlich.'],
+    lead: 'Transportlösungen für Unternehmen – deutschlandweit und in ganz Europa. Unsere Disposition ist rund um die Uhr erreichbar.',
     ctaPrimary: 'Transport anfragen',
     ctaSecondary: 'Disposition kontaktieren',
     facts: [
@@ -44,26 +44,26 @@ export const de = {
       { label: 'Disposition', value: '24/7 erreichbar' },
     ],
     phoneLabel: 'Direkt zur Disposition',
-    imageAlt: 'Platzhalter: Sattelzug im Fernverkehr – wird durch ein Foto von I&M CARGO ersetzt.',
+    imageAlt: 'Sattelzug im Fernverkehr auf der Autobahn',
   },
 
   services: {
     eyebrow: 'Leistungen',
     headline: 'Was wir fahren.',
-    lead: 'Wir übernehmen Transportaufträge von Industrie, Handel, Logistikunternehmen, Speditionen und gewerblichen Versendern – von der einzelnen Sendung bis zum laufenden Transportbedarf.',
+    lead: 'Für Industrie, Handel, Speditionen und weitere gewerbliche Auftraggeber – vom einzelnen Transport bis zum laufenden Bedarf.',
     items: [
-      { n: '01', title: 'Containertransporte', text: 'Transport gängiger Containerarten und Containergrößen.' },
-      { n: '02', title: 'Planentransporte', text: 'Planen-, Curtainsider- und Tautliner-Lösungen entsprechend der jeweiligen Transportanforderung.' },
-      { n: '03', title: 'Gefahrguttransporte', text: 'Gefahrguttransporte entsprechend den jeweils notwendigen gesetzlichen und technischen Voraussetzungen.' },
+      { n: '01', title: 'Containertransporte', text: 'Transporte gängiger Containerarten und -größen.' },
+      { n: '02', title: 'Planentransporte', text: 'Planen, Curtainsider und Tautliner – passend zur jeweiligen Ladung.' },
+      { n: '03', title: 'Gefahrguttransporte', text: 'Nach den dafür jeweils geltenden gesetzlichen und technischen Vorgaben.' },
       { n: '04', title: 'Komplettladungen', text: 'FTL-Transporte für gewerbliche Auftraggeber.' },
-      { n: '05', title: 'Teilladungen', text: 'LTL- und Teilladungslösungen, soweit sie zur Transportanforderung passen.' },
+      { n: '05', title: 'Teilladungen', text: 'LTL- und Teilladungen, soweit sie zur Transportanforderung passen.' },
       { n: '06', title: 'Direkttransporte', text: 'Direkt vom Abholort zum Empfänger.' },
       { n: '07', title: 'Express- & Sonderfahrten', text: 'Zeitkritische und individuell disponierte Transporte.' },
     ],
     moreTitle: 'Weitere Transportlösungen',
-    moreText: 'Je nach Transportanforderung disponieren wir weitere geeignete Lkw-, Auflieger- und Transportlösungen. Wenn Sie nicht sicher sind, was zu Ihrer Ladung passt: fragen Sie an, wir klären es am Telefon.',
+    moreText: 'Je nach Anforderung disponieren wir weitere geeignete Lkw- und Aufliegerlösungen. Wenn Sie nicht sicher sind, was zu Ihrer Ladung passt: kurz anfragen, wir klären es am Telefon.',
     moreCta: 'Transportanforderung besprechen',
-    imageAlt: 'Platzhalter: Containerverkehr am Terminal – wird durch ein Foto von I&M CARGO ersetzt.',
+    imageAlt: 'Containerterminal mit Güterverkehr',
   },
 
   approach: {
@@ -86,7 +86,7 @@ export const de = {
       { label: 'National', value: 'Transporte innerhalb Deutschlands' },
       { label: 'International', value: 'Transporte europaweit' },
     ],
-    imageAlt: 'Platzhalter: Autobahn im Europaverkehr – wird durch ein Foto von I&M CARGO ersetzt.',
+    imageAlt: 'Autobahn im europäischen Güterverkehr',
   },
 
   form: {
@@ -166,8 +166,8 @@ export const de = {
 
     /* Wird angezeigt, solange in src/content/company.js kein formEndpoint hinterlegt ist. */
     notConnected: {
-      title: 'Formularversand noch nicht angebunden.',
-      text: 'Der technische Versand dieses Formulars wird beim Livegang eingerichtet. Bis dahin erreichen Sie die Disposition direkt:',
+      title: 'Bitte melden Sie sich direkt bei der Disposition.',
+      text: 'Ihre Anfrage lässt sich hier gerade nicht absenden. Rufen Sie uns an oder schreiben Sie uns – wir sind rund um die Uhr erreichbar:',
     },
   },
 
@@ -179,7 +179,7 @@ export const de = {
     ctaPrimary: 'Jetzt Kontakt aufnehmen',
     ctaSecondary: 'Anrufen',
     mailSubject: 'Bewerbung Fahrpersonal',
-    imageAlt: 'Platzhalter: Verladung auf dem Logistikhof – wird durch ein Foto von I&M CARGO ersetzt.',
+    imageAlt: 'Verladung auf einem Logistikhof',
   },
 
   contact: {
@@ -198,7 +198,7 @@ export const de = {
 
   panel: {
     title: '24/7 Disposition',
-    phoneLabel: 'Telefon & WhatsApp',
+    phoneLabel: 'Telefon',
     callCta: 'Jetzt anrufen',
     mailLabel: 'E-Mail',
     mailCta: 'E-Mail schreiben',

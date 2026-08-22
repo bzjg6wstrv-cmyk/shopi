@@ -94,19 +94,25 @@ export const contact = (t, routeKey, onHome = routeKey === 'home') => `
       <span class="visually-hidden">${esc(t.panel.close)}</span>
     </button>
 
-    <p class="eyebrow eyebrow--accent" id="contact-panel-title">${esc(t.panel.title)}</p>
+    <div class="contact-panel__head">
+      <img class="contact-panel__wordmark" src="/assets/brand/im-cargo-wordmark-white.png" width="867" height="100" alt="I&amp;M CARGO" decoding="async">
+      <p class="contact-panel__title" id="contact-panel-title">${esc(t.panel.title)}</p>
+    </div>
 
     <div class="contact-panel__block">
       <p class="contact-panel__label">${esc(t.panel.phoneLabel)}</p>
       <a class="contact-panel__phone" href="${c.phoneHref}">${esc(c.phoneDisplay)}</a>
       <a class="btn btn--accent btn--block" href="${c.phoneHref}">${esc(t.panel.callCta)}${iconArrow}</a>
-      <a class="contact-panel__whatsapp" href="${c.whatsappHref}" target="_blank" rel="noopener">${iconWhatsapp}<span>${esc(t.panel.whatsappCta)}</span></a>
     </div>
 
     <div class="contact-panel__block">
       <p class="contact-panel__label">${esc(t.panel.mailLabel)}</p>
       <a class="contact-panel__mail" href="mailto:${c.email}">${esc(c.email)}</a>
       <a class="btn btn--outline-light btn--block" href="mailto:${c.email}">${esc(t.panel.mailCta)}${iconArrow}</a>
+    </div>
+
+    <div class="contact-panel__block contact-panel__block--minor">
+      <a class="contact-panel__whatsapp" href="${c.whatsappHref}" target="_blank" rel="noopener">${iconWhatsapp}<span>${esc(t.panel.whatsappCta)}</span></a>
     </div>
 
     <div class="contact-panel__block">

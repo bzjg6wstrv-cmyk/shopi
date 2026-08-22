@@ -30,7 +30,7 @@ als offener Punkt gekennzeichnet (Impressum, Datenschutz, Bilder, Formularversan
 | # | Offener Punkt | Wo |
 |---|---|---|
 | 1 | **Formularversand anbinden** — `formEndpoint` setzen und Handler bereitstellen | `src/content/company.js`, `server/transport-request.example.mjs` |
-| 2 | **Fotos ersetzen** — vier gekennzeichnete Platzhalter, danach Alt-Texte anpassen | `src/assets/img/README.md` |
+| 2 | **Fotos ersetzen** — vier Platzhalter, im Bild selbst gekennzeichnet; Alt-Texte sind bereits produktionsfertig | `src/assets/img/README.md` |
 | 3 | **Impressum vervollständigen** — u. a. Verantwortlicher nach § 18 MStV, Erlaubnis/Aufsichtsbehörde, Versicherung | `src/content/legal.de.js`, `legal.en.js` |
 | 4 | **Datenschutz vervollständigen** — Hosting, Versandweg, Speicherdauern, Empfänger | dieselben Dateien |
 | 5 | **Rechtstexte anwaltlich prüfen lassen** — die Entwürfe sind ungeprüft | — |
@@ -117,7 +117,9 @@ Datenschutz, optionaler Upload (PDF/JPG/PNG, max. 10 MB je Datei, max. 5 Dateien
 
 **Der Versand ist bewusst nicht angebunden.** Solange `formEndpoint` in
 `src/content/company.js` auf `null` steht, wird nichts abgeschickt und nichts
-vorgetäuscht: Das Formular weist auf Telefon und E-Mail hin. Die serverseitige Prüfung
+vorgetäuscht: Das Formular verweist die Besucher:innen auf Telefon und E-Mail —
+in normaler Sprache, ohne Entwicklerhinweis. Den technischen Hinweis bekommt nur,
+wer baut: `npm run build` gibt in dem Fall eine Warnung aus. Die serverseitige Prüfung
 gehört in `server/transport-request.example.mjs` — die Prüfung im Browser ist nur
 Komfort.
 

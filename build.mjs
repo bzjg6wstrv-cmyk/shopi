@@ -8,7 +8,7 @@ import { mkdir, rm, cp, writeFile, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { company as c, routes } from './src/content/company.js';
+import { company as c, routes, formEndpoint } from './src/content/company.js';
 import { de } from './src/content/de.js';
 import { en } from './src/content/en.js';
 import { legalDe } from './src/content/legal.de.js';
@@ -165,6 +165,17 @@ async function build() {
   console.log(`${pages.length} Seiten gebaut nach dist/`);
   for (const p of pages) console.log(`  ${p.route}`);
   console.log(`  CSS ${(css.length / 1024).toFixed(1)} kB · JS ${(js.length / 1024).toFixed(1)} kB`);
+
+  /* Trennung Entwicklungs-/Produktionsstand: der fehlende Formularendpunkt
+     wird hier gemeldet, nicht auf der Seite selbst. */
+  if (!formEndpoint) {
+    console.warn('');
+    console.warn('  ACHTUNG  formEndpoint ist nicht gesetzt (src/content/company.js).');
+    console.warn('           Das Anfrageformular sendet nichts und verweist auf Telefon');
+    console.warn('           und E-Mail. Vor dem Livegang den Endpunkt eintragen —');
+    console.warn('           siehe server/transport-request.example.mjs.');
+    console.warn('');
+  }
 }
 
 build().catch((err) => {
