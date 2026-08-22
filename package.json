@@ -4,10 +4,13 @@
   "private": true,
   "description": "Website I&M CARGO / I & M Dienstleistungen GmbH — statischer Generator ohne Laufzeit-Abhängigkeiten",
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "node build.mjs",
     "serve": "node tools/serve.mjs",
-    "dev": "node build.mjs && node tools/serve.mjs"
+    "dev": "node build.mjs && node tools/serve.mjs",
+    "portable": "node build.mjs && node tools/make-portable.mjs"
   }
 }

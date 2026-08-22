@@ -7,6 +7,7 @@ Bremen. Zweisprachig Deutsch / Englisch, statisch erzeugt, ohne Laufzeit-Abhäng
 npm run build     # erzeugt dist/
 npm run serve     # lokale Vorschau auf http://localhost:4173
 npm run dev       # bauen und Vorschau starten
+npm run portable  # erzeugt vorschau/ zum Weitergeben (ohne Server lauffähig)
 ```
 
 Es werden **keine npm-Pakete installiert.** Der Generator besteht aus einer Datei
@@ -61,6 +62,11 @@ dist/                        Erzeugte Website (wird beim Build neu geschrieben)
 
 `dist/` ist im Repository enthalten, damit die Website ohne Build-Schritt ausgeliefert
 werden kann. Nach jeder Änderung an `src/` muss `npm run build` laufen.
+
+`npm run portable` erzeugt zusätzlich `vorschau/` — dieselben Seiten als flache Dateien
+mit relativen Pfaden, die sich ohne Webserver per Doppelklick öffnen lassen. Nur zum
+Ansehen und Weitergeben gedacht; ausgeliefert wird `dist/`. Der Ordner wird nicht
+versioniert.
 
 ## 4. Seiten und Sprachen
 
