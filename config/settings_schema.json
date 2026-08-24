@@ -415,6 +415,68 @@
         "id": "scent_code_product",
         "label": "Produkt für nicht gelistete Codes",
         "info": "Das generische Bestellprodukt. Codes ohne eigene Produktseite führen dorthin."
+      },
+      {
+        "type": "header",
+        "content": "Gültige Codes"
+      },
+      {
+        "type": "paragraph",
+        "content": "Nur Codes aus dieser Liste sind bestellbar. Bleibt das Feld leer, gilt aus Kompatibilitätsgründen jede Nummer von 1 bis zur höchsten vergebenen Nummer – dann könnte ein Kunde auch einen Code bestellen, den es nicht gibt."
+      },
+      {
+        "type": "textarea",
+        "id": "valid_scent_codes",
+        "label": "Liste gültiger Codes",
+        "default": "",
+        "info": "Kommagetrennt. Erlaubt sind 047, VC-047 oder 47 – die Schreibweise wird vereinheitlicht."
+      }
+    ]
+  },
+  {
+    "name": "Ausführungen & Konzentration",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Das Theme liest Konzentration, Prozentwert und Füllmenge zuerst aus den Varianten-Metafeldern. Sind dort keine Werte hinterlegt – etwa nach einem CSV-Import, der Varianten-Metafelder nicht übertragen kann –, leitet es sie aus dem Variantennamen ab. Deshalb müssen die Variantennamen dem hier hinterlegten Muster folgen."
+      },
+      {
+        "type": "header",
+        "content": "Eau de Parfum"
+      },
+      {
+        "type": "text",
+        "id": "conc_edp_keyword",
+        "label": "Erkennungswort im Variantennamen",
+        "default": "eau de parfum"
+      },
+      {
+        "type": "text",
+        "id": "conc_edp_label",
+        "label": "Bezeichnung",
+        "default": "Eau de Parfum"
+      },
+      {
+        "type": "text",
+        "id": "conc_edp_percent",
+        "label": "Konzentration in Prozent",
+        "default": "20"
+      },
+      {
+        "type": "header",
+        "content": "Extrait (Standard für alle übrigen Ausführungen)"
+      },
+      {
+        "type": "text",
+        "id": "conc_extrait_label",
+        "label": "Bezeichnung",
+        "default": "Extrait"
+      },
+      {
+        "type": "text",
+        "id": "conc_extrait_percent",
+        "label": "Konzentration in Prozent",
+        "default": "30"
       }
     ]
   },
@@ -649,21 +711,6 @@
         "label": "Grundpreis anzeigen",
         "default": true,
         "info": "Nach PAngV verpflichtend. Voraussetzung: Die Felder für den Grundpreis sind je Variante im Shopify-Admin gepflegt."
-      }
-    ]
-  },
-  {
-    "name": "Discovery Set",
-    "settings": [
-      {
-        "type": "paragraph",
-        "content": "Das Erkennungswort bestimmt, welche Variante eines Dufts als 2-ml-Probe gilt. Es wird sowohl auf der Produktseite als auch beim Nachladen weiterer Auswahlseiten verwendet."
-      },
-      {
-        "type": "text",
-        "id": "sample_keyword",
-        "label": "Erkennungswort der Probenvariante",
-        "default": "sample"
       }
     ]
   },

@@ -1,91 +1,15 @@
-/* Discovery Set – Auswahl von fünf Düften.
-   Die Auswahl wird als Positionseigenschaft an Shopify übergeben.       */
+/* Discovery Set – fünf Scent Codes eingeben.
+   Bewusst dieselbe Eingabelogik wie überall sonst im Shop. */
 
 .discovery { display: grid; gap: var(--space-2xl); }
 @media (min-width: 990px) {
-  .discovery { grid-template-columns: 5fr 7fr; gap: clamp(2rem, 5vw, 5rem); align-items: start; }
+  .discovery { grid-template-columns: 5fr 6fr; gap: clamp(2rem, 5vw, 5rem); align-items: start; }
   .discovery__intro { position: sticky; top: 7rem; }
 }
 
 .discovery__media img { width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; }
 
-.slots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-xs); margin-top: var(--space-lg); }
-.slot {
-  display: grid;
-  place-items: center;
-  min-height: 4rem;
-  padding: var(--space-xs);
-  border: var(--border-width) dashed rgb(var(--color-line));
-  font-size: .6875rem;
-  text-align: center;
-  color: rgb(var(--color-muted));
-}
-.slot.is-filled {
-  border-style: solid;
-  border-color: rgb(var(--color-text));
-  color: rgb(var(--color-text));
-  font-family: var(--font-heading-family);
-  font-size: .8125rem;
-}
-
-.picker__toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-sm);
-  align-items: center;
-  padding-bottom: var(--space-md);
-  border-bottom: var(--border-width) solid rgb(var(--color-line));
-  margin-bottom: var(--space-lg);
-}
-.picker__search { flex: 1 1 14rem; min-height: 2.75rem; }
-.picker__families { display: flex; flex-wrap: wrap; gap: .35rem; }
-.picker__family {
-  min-height: 2.25rem;
-  padding: .3rem .6rem;
-  border: var(--border-width) solid rgb(var(--color-line));
-  font-size: .75rem;
-}
-.picker__family[aria-pressed='true'] { border-color: rgb(var(--color-text)); background-color: rgb(var(--color-line) / .35); }
-
-.picker__grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-sm);
-  max-height: 34rem;
-  overflow-y: auto;
-  padding-right: var(--space-xs);
-}
-@media (min-width: 600px) { .picker__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-
-.pick { position: relative; display: block; cursor: pointer; }
-.pick input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
-.pick__inner {
-  display: grid;
-  gap: .35rem;
-  min-height: 100%;
-  padding: var(--space-sm);
-  border: var(--border-width) solid rgb(var(--color-line));
-  border-radius: var(--card-radius);
-  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
-}
-.pick input:checked + .pick__inner {
-  border-color: rgb(var(--color-text));
-  background-color: rgb(var(--color-line) / .3);
-}
-.pick input:focus-visible + .pick__inner {
-  outline: var(--focus-width) solid rgb(var(--color-accent));
-  outline-offset: var(--focus-offset);
-}
-.pick input:disabled + .pick__inner { opacity: .4; }
-.pick img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; }
-.pick__title { font-family: var(--font-heading-family); font-size: .9375rem; }
-.pick__family { font-size: .75rem; color: rgb(var(--color-muted)); }
-.pick[hidden] { display: none; }
-
-.picker__status { margin-top: var(--space-md); font-size: .875rem; color: rgb(var(--color-muted)); }
-.picker__more { margin-top: var(--space-md); }
-
-/* Auswahlzähler 0 / 5 – die zentrale Rückmeldung beim Zusammenstellen. */
+/* Zähler 0 / 5 – die zentrale Rückmeldung beim Zusammenstellen. */
 .picker__counter {
   display: flex;
   align-items: baseline;
@@ -97,7 +21,6 @@
 .picker__counter-value {
   font-size: clamp(2.5rem, 2rem + 2.5vw, 4rem);
   font-variant-numeric: tabular-nums;
-  transition: color var(--dur) var(--ease);
 }
 .picker__counter-sep,
 .picker__counter-max {
@@ -105,3 +28,65 @@
   color: rgb(var(--color-muted));
   font-variant-numeric: tabular-nums;
 }
+
+.code-list { display: grid; gap: var(--space-sm); }
+.code-slot__label {
+  display: block;
+  margin-bottom: .3rem;
+  font-size: .6875rem;
+  text-transform: uppercase;
+  letter-spacing: var(--meta-tracking);
+  color: rgb(var(--color-muted));
+}
+
+.code-slot__row {
+  display: flex;
+  align-items: stretch;
+  border: var(--border-width) solid rgb(var(--color-line));
+  border-radius: var(--input-radius);
+  transition: border-color var(--dur) var(--ease);
+}
+.code-slot__row:focus-within { border-color: rgb(var(--color-text)); }
+.code-slot__row[data-state='valid'] { border-color: rgb(var(--color-accent)); }
+.code-slot__row[data-state='error'] { border-color: rgb(var(--color-text)); }
+
+.code-slot__prefix {
+  display: flex;
+  align-items: center;
+  padding-left: var(--space-md);
+  font-family: var(--font-heading-family);
+  font-size: 1.0625rem;
+  color: rgb(var(--color-muted));
+  user-select: none;
+}
+.code-slot__input {
+  flex: 1;
+  min-width: 0;
+  min-height: 3.25rem;
+  padding: 0 var(--space-sm);
+  border: 0;
+  background: none;
+  font-family: var(--font-heading-family);
+  font-size: 1.0625rem;
+  letter-spacing: .18em;
+  color: rgb(var(--color-text));
+}
+.code-slot__input:focus { outline: none; }
+.code-slot__mark {
+  display: flex;
+  align-items: center;
+  padding-right: var(--space-md);
+  color: rgb(var(--color-accent));
+}
+.code-slot__mark svg { width: 16px; height: 16px; }
+.code-slot__mark[hidden] { display: none; }
+
+.code-slot__hint {
+  margin-top: .25rem;
+  font-size: .75rem;
+  color: rgb(var(--color-muted));
+  min-height: 1em;
+}
+
+.discovery__status { margin-top: var(--space-md); font-size: .875rem; color: rgb(var(--color-muted)); }
+.discovery__note { margin-top: var(--space-lg); font-size: .8125rem; color: rgb(var(--color-muted)); }

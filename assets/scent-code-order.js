@@ -32,7 +32,11 @@
     if (hiddenProperty) hiddenProperty.value = valid ? code : '';
     if (badge) badge.hidden = !valid;
     if (badgeValue && valid) badgeValue.textContent = code;
-    if (submit) submit.disabled = !valid;
+    if (submit) {
+      var chosen = form.querySelector('[data-variant-input]:checked');
+      var variantAvailable = chosen ? chosen.getAttribute('data-available') === 'true' : true;
+      submit.disabled = !valid || !variantAvailable;
+    }
     if (errorTarget && valid) {
       errorTarget.hidden = true;
       errorTarget.textContent = '';
@@ -60,16 +64,77 @@
     }
   }
 
-  /* Variantenwechsel: Preis und Varianten-ID aktualisieren. */
+  /* Variantenwechsel: identisch zur normalen Produktseite.
+     Preis, Grundpreis, Konzentration, Größe, Artikelnummer, Verfügbarkeit und
+     Buttonzustand wechseln gemeinsam. Ein Eau de Parfum zeigt nie 30 %. */
+  var metaHost = form.querySelector('[data-variant-meta]');
+  var skuHost = form.querySelector('[data-variant-sku]');
+  var skuValue = form.querySelector('[data-variant-sku-value]');
+  var strings = window.VCStrings || {};
+
+  var variantData = {};
+  var dataNode = document.querySelector('[data-variant-data]');
+  if (dataNode) {
+    try {
+      variantData = JSON.parse(dataNode.textContent);
+    } catch (error) {
+      /* Ohne Daten greift der Rückfall auf die data-Attribute. */
+    }
+  }
+
+  function hasCode() {
+    return Boolean(visibleProperty && visibleProperty.value);
+  }
+
+  function applyVariant(id, fallbackPrice, fallbackAvailable) {
+    var entry = variantData[id];
+    var price = entry ? entry.price : fallbackPrice;
+    var available = entry ? entry.available : fallbackAvailable;
+
+    if (priceHost && price) {
+      var current = priceHost.querySelector('.price__current');
+      if (current) current.textContent = price;
+
+      var wrapper = priceHost.querySelector('.price');
+      var regular = priceHost.querySelector('.price__regular');
+      if (wrapper && entry) wrapper.classList.toggle('price--on-sale', Boolean(entry.onSale));
+      if (regular && entry) {
+        regular.textContent = entry.compare || '';
+        regular.hidden = !entry.onSale;
+      }
+
+      var unit = priceHost.querySelector('.card__unit-price');
+      if (unit && entry) {
+        unit.textContent = entry.unit || '';
+        unit.hidden = !entry.unit;
+      }
+    }
+
+    if (metaHost && entry) {
+      metaHost.textContent = entry.meta || '';
+      metaHost.hidden = !entry.meta;
+    }
+
+    if (entry) {
+      if (skuValue) skuValue.textContent = entry.sku || '';
+      if (skuHost) skuHost.hidden = !entry.sku;
+    }
+
+    if (submit) {
+      submit.disabled = !available || !hasCode();
+      submit.textContent = available ? strings.addToCart : strings.soldOut;
+    }
+  }
+
   form.addEventListener('change', function (event) {
     var choice = event.target.closest('[data-variant-input]');
     if (!choice) return;
     if (variantField) variantField.value = choice.value;
-    var price = choice.getAttribute('data-price');
-    if (priceHost && price) {
-      var current = priceHost.querySelector('.price__current');
-      if (current) current.textContent = price;
-    }
+    applyVariant(
+      choice.value,
+      choice.getAttribute('data-price'),
+      choice.getAttribute('data-available') === 'true'
+    );
   });
 
   form.addEventListener('submit', function (event) {

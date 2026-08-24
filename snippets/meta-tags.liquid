@@ -20,6 +20,15 @@
 <meta name="description" content="{{ seo_description | strip_html | escape }}">
 <link rel="canonical" href="{{ canonical_url }}">
 
+{%- comment -%}
+  Das generische Scent-Code-Produkt ist ein technischer Bestellweg ohne
+  konkretes Duftprofil. Es bleibt für Kunden erreichbar, gehört aber nicht in
+  den Suchindex – und bekommt bewusst auch kein Product-Markup.
+{%- endcomment -%}
+{%- if template.suffix == 'scent-code' -%}
+  <meta name="robots" content="noindex,follow">
+{%- endif -%}
+
 <meta property="og:site_name" content="{{ shop.name }}">
 <meta property="og:url" content="{{ canonical_url }}">
 <meta property="og:title" content="{{ seo_title | escape }}">

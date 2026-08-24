@@ -37,7 +37,10 @@
     params.append('resources[type]', 'product,collection,page,query');
     params.append('resources[limit]', '6');
     params.append('resources[options][unavailable_products]', 'last');
-    params.append('resources[options][fields]', 'title,product_type,variants.title,vendor,tag');
+    /* „body" nimmt die Produktbeschreibung mit auf. Duftnoten in Metafeldern
+       sind für die Shopify-Suche nicht erreichbar – sie müssen in der
+       Beschreibung stehen, damit sie gefunden werden. */
+    params.append('resources[options][fields]', 'title,product_type,variants.title,vendor,tag,body');
 
     setStatus(strings.loading || '');
 

@@ -1206,3 +1206,18 @@ body.is-typing .sticky-atc { transform: translateY(110%); }
   text-transform: uppercase;
 }
 .quiet-row__text { color: rgb(var(--color-muted)); font-size: .9375rem; }
+
+/* 25 Sehr schmale Geräte (320 px) ---------------------------------------- */
+@media (max-width: 359px) {
+  /* Beschriftung weicht, das Symbol bleibt – der Button behält 44 px Breite. */
+  .code-field--inline .code-field__submit-text { display: none; }
+  .code-field--inline .code-field__submit { padding-inline: var(--space-md); }
+  .code-field__prefix { padding-inline: var(--space-sm) 0; }
+  .code-field__input { letter-spacing: .12em; }
+
+  /* Ankündigungsleiste darf umbrechen statt zu überlaufen. */
+  .announcement__text { font-size: .625rem; letter-spacing: .08em; }
+
+  /* Zwei Spalten im mobilen Menü werden zu einer. */
+  .menu-drawer__secondary { grid-template-columns: 1fr; }
+}

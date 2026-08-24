@@ -26,7 +26,17 @@
   {%- assign wa_message = wa_base -%}
 {%- endif -%}
 {%- liquid
-  assign wa_url = 'https://wa.me/' | append: wa_digits | append: '?text=' | append: wa_message | url_encode
+  comment
+    Nur die Nachricht kodieren. Würde die fertige URL durch url_encode laufen,
+    wären auch Schema, Doppelpunkt und Schrägstriche kodiert – der Link wäre kaputt.
+  endcomment
+  comment
+    url_encode kodiert Leerzeichen als „+". WhatsApp interpretiert das je nach
+    Client unterschiedlich, deshalb wird daraus %20. Ein echtes Pluszeichen im
+    Text ist zu diesem Zeitpunkt bereits als %2B kodiert und bleibt unberührt.
+  endcomment
+  assign wa_encoded_message = wa_message | url_encode | replace: '+', '%20'
+  assign wa_url = 'https://wa.me/' | append: wa_digits | append: '?text=' | append: wa_encoded_message
   assign wa_label = label
   if wa_label == blank
     assign wa_label = 'sections.whatsapp.cta' | t

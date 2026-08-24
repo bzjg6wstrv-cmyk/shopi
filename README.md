@@ -1,4 +1,4 @@
-# VENT CELESTE — Shopify Online Store 2.0 Theme (V2)
+# VENT CELESTE — Shopify Online Store 2.0 Theme (V3)
 
 Beratungsgetriebener Duftshop: 20 Bestseller sind öffentlich gelistet, das
 übrige Sortiment läuft über persönliche WhatsApp-Beratung und einen Scent Code.
@@ -25,6 +25,8 @@ in V2 der zweite Weg für Stöberer, nicht mehr der Einstieg.
 
 ### Scent-Code-System
 - Eingaben `47`, `047`, `vc47`, `VC 047` und `VC-047` werden alle zu **VC-047** normalisiert
+- Nur Codes aus der hinterlegten Liste tatsächlich vergebener Nummern sind bestellbar
+  (Theme Setting *Scent Code → Liste gültiger Codes*); die Prüfung läuft im Browser **und** serverseitig
 - Dreistufige Auflösung: Tabelle der öffentlichen Codes (serverseitig gerendert, ohne Netzanfrage) → native Shopify-Sofortsuche → generischer Bestellweg
 - **Keine Sackgasse:** Jeder gültige Code führt auf eine Produktseite oder in den Bestellweg; ungültige Eingaben bekommen eine ruhige Fehlermeldung plus Beratungslink
 - Code-Felder im Hero, in einem eigenen Startseiten-Abschnitt, über der Suche und auf der Bestellseite
@@ -60,7 +62,8 @@ Kein Abschnitt wiederholt die Komposition des vorherigen; genau zwei laufen im d
 - Beim Variantenwechsel wechseln **Preis, Grundpreis, Konzentration, Größe, Artikelnummer, Verfügbarkeit und Bild**
 - Konzentration und Füllmenge liegen auf **Variantenebene** — ein Eau de Parfum zeigt nie die Prozentzahl des Extrait
 - Werte kommen fertig formatiert aus Liquid: keine nachgebaute Währungslogik, keine Netzanfrage, kein Flackern
-- Blockbasierter Inhaltsbereich: Duftprofil, Charakter, Jahreszeit/Anlass, Konzentration erklärt, Probe und Travel, Beschreibung, Inhaltsstoffe
+- Blockbasierter Inhaltsbereich: Duftprofil, Charakter, Jahreszeit/Anlass, **Unsere Konzentrationen**, Probe und Travel, Duftberatung, Beschreibung, Inhaltsstoffe
+- Der Konzentrationsblock erklärt Extrait (30 %) und Eau de Parfum (20 %) nebeneinander — er behauptet nicht mehr pauschal „30 %", während der Kunde die EDP-Variante ansieht
 - Sticky Add-to-Cart auf Mobile, native Empfehlungen, App-Blöcke für Review-Apps
 
 ### Produktkarten — nie „ab 1,00 €"
@@ -87,15 +90,21 @@ Der Preis gehört immer zu einer konkreten Ausführung. Auflösungsreihenfolge:
 - Suchpanel mit vorgeschaltetem Scent-Code-Feld
 
 ### Discovery Set
-- Fünf Scent Codes aus dem gesamten Sortiment, mit Volltextsuche und Duftfamilien-Schnellfiltern
-- Großer Auswahlzähler `0 / 5`; erst bei fünf Codes ist der Warenkorb-Button aktiv
-- Übergabe als Positionsangaben, in der Bestellung sichtbar
-- Lädt auch über 50 Produkte hinaus (Liquid gibt je Schleife nur 50 aus; weitere Seiten kommen über die Section Rendering API)
+- **Fünf Scent Codes eingeben** — dieselbe Normalisierung und Prüfung wie überall sonst im Shop
+- Doppelte Codes werden abgewiesen; Enter springt ins nächste Feld
+- Großer Auswahlzähler `0 / 5`; erst bei fünf gültigen, verschiedenen Codes ist der Warenkorb-Button aktiv
+- Übergabe als Positionsangaben `Scent Code 1 … 5` plus versteckte Fassung `_vc_codes`
+- Darunter ein Link zur Beratung, falls noch nicht fünf Codes vorliegen
+
+Bewusst keine visuelle Auswahl aus einer Produktliste: Öffentlich gelistet sind
+20 Produkte, das übrige Sortiment existiert in Shopify gar nicht als Produkt.
+Eine Auswahlliste könnte deshalb nie das ganze Sortiment abbilden — die
+Code-Eingabe passt zum Beratungsmodell und kommt ohne Nachladelogik aus.
 
 ### Warenkorb, Filter, Suche
 - Cart Drawer über die Section Rendering API, Scent Code hervorgehoben dargestellt
 - Filter mit acht Achsen, Desktop-Sidebar und mobiles Bottom-Sheet
-- Sofortsuche mit Gruppierung und Tastaturbedienung
+- Sofortsuche mit Gruppierung und Tastaturbedienung; durchsucht Titel, Produkttyp, Variantennamen, Vendor, Tags **und die Produktbeschreibung**
 
 ### Interaktionen
 Scroll Reveal (gestaffelt) · Hero-Drift (max. 24 px) · Code-Feld mit Fokus- und Fehlerrückmeldung · Mobile Swipe · Quick Add · Cart Drawer · Sticky-Beratung · Sticky Add-to-Cart · Menü-Übergänge
@@ -134,7 +143,7 @@ Alles 160–350 ms, nur `transform` und `opacity`, **keine externe Library**.
 | `sample_verfuegbar` / `travel_verfuegbar` / `bestseller` | Wahr/Falsch | – | true |
 | `inci` / `allergene` | Mehrzeiliger Text | – | Kosmetikangaben |
 
-### Variantenebene — Namespace `custom` (neu in V2, wichtig)
+### Variantenebene — optional, Namespace `custom`
 
 | Key | Typ | Extrait | Eau de Parfum |
 |---|---|---|---|
@@ -142,8 +151,29 @@ Alles 160–350 ms, nur `transform` und `opacity`, **keine externe Library**.
 | `konzentration_prozent` | Einzeiliger Text | 30 | 20 |
 | `fuellmenge` | Einzeiliger Text | 30 ml | 30 ml |
 
-Diese drei Felder **müssen** auf Variantenebene liegen. Auf Produktebene würde
-ein Eau de Parfum zwangsläufig die Prozentzahl des Extrait erben.
+**Diese Felder sind optional und müssen nicht gepflegt werden.**
+
+Shopify überträgt Varianten-Metafelder **nicht** über den normalen
+Produkt-CSV-Import. Sie ließen sich nur einzeln im Bulk Editor oder über die API
+setzen — bei 20 Produkten mit je vier Varianten wären das 240 Einträge von Hand.
+
+Deshalb leitet das Theme die drei Werte aus dem **Variantennamen** ab:
+
+| Ausführung | Konzentration | Prozent | Größe |
+|---|---|---|---|
+| Extrait 30 ml | Extrait | 30 % | 30 ml |
+| Eau de Parfum 30 ml | Eau de Parfum | 20 % | 30 ml |
+| Travel 10 ml | Extrait | 30 % | 10 ml |
+| Sample 2 ml | Extrait | 30 % | 2 ml |
+
+Reihenfolge: **Varianten-Metafeld, falls gepflegt → sonst Ableitung aus dem
+Variantennamen.** Der Shop stimmt damit direkt nach dem CSV-Import; wer einzelne
+Varianten abweichend beschriften will, überschreibt sie per Metafeld.
+
+Erkennungswort und Prozentwerte stehen in den Theme Settings unter
+*Ausführungen & Konzentration* und sind ohne Code änderbar. Voraussetzung ist,
+dass die Variantennamen dem Muster oben folgen — die Ausführung enthält also
+„Eau de Parfum" bzw. sonst nichts davon, und die Größe steht als Zahl vor `ml`.
 
 ### Collection-Ebene
 
@@ -200,8 +230,12 @@ Kein Bestandteil benötigt Shopify Plus.
 *Onlineshop → Themes → Theme hinzufügen → ZIP-Datei hochladen*, dann **Vorschau**.
 
 ### 4.2 Metafeld-Definitionen anlegen
-Alle Felder aus [Abschnitt 2](#2-verwendete-metafelder) — Produkt-, **Varianten-**
-und Collection-Ebene. Storefront-Zugriff bei allen `custom.*`-Feldern aktivieren.
+Die Felder auf **Produkt- und Collection-Ebene** aus [Abschnitt 2](#2-verwendete-metafelder)
+anlegen und den Storefront-Zugriff aktivieren.
+
+Die drei **Varianten-Metafelder sind optional** — das Theme leitet Konzentration,
+Prozentwert und Größe aus dem Variantennamen ab. Nur anlegen, wenn einzelne
+Varianten davon abweichen sollen.
 
 ### 4.3 Produkte anlegen
 
@@ -219,7 +253,13 @@ Import über *Produkte → Importieren* mit der mitgelieferten Vorlage
 `beispiel-produkte.csv` (20 Codes plus Scent-Code-Produkt, Discovery Set und
 ein Essentials-Beispiel; Duftnoten bewusst leer).
 
-Zwei Dinge, die die CSV nicht transportieren kann und die manuell zu setzen sind:
+**Was die CSV nicht transportieren kann.** Shopify unterstützt im
+Produkt-CSV-Import keine **Varianten-Metafelder**. Die mitgelieferte Datei
+enthält deshalb bewusst keine solchen Spalten — Konzentration, Prozentwert und
+Größe leitet das Theme aus dem Variantennamen ab. Nach dem Import stimmt der
+Shop ohne weitere Pflege.
+
+Zwei Dinge sind nach dem Import dennoch manuell zu setzen:
 
 - **Grundpreis** je Variante (*Preise → Grundpreis*, z. B. Inhalt 30, Einheit ml,
   Referenzmenge 100 ml). Ohne diese Angaben bleibt der PAngV-Grundpreis leer.
@@ -227,8 +267,8 @@ Zwei Dinge, die die CSV nicht transportieren kann und die manuell zu setzen sind
   sonst kann die Karte den Probenpreis zeigen.
 
 Die Variantennamen müssen die Erkennungswörter enthalten, nach denen das Theme
-sucht: `sample`, `travel`, `extrait`, `eau de parfum`. Die vorgeschlagenen
-Namen erfüllen das bereits.
+sucht: `eau de parfum`, `sample`, `travel` sowie die Größe als Zahl vor `ml`.
+Die vorgeschlagenen Namen erfüllen das bereits.
 
 ### 4.4 Collections anlegen
 
@@ -254,11 +294,28 @@ Für `bestseller` die Vorlage `collection.bestseller` zuweisen.
 | Gruppe | Zu prüfen |
 |---|---|
 | **WhatsApp-Beratung** | Rufnummer (`+49 172 8439661`), vorbereitete Nachricht, Antwortzeit, Beratungsleiste |
-| **Scent Code** | Präfix `VC`, höchste Nummer, Collection der öffentlichen Düfte, Produkt für nicht gelistete Codes |
+| **Scent Code** | Präfix `VC`, höchste Nummer, Collection der öffentlichen Düfte, Produkt für nicht gelistete Codes, **Liste gültiger Codes** |
+| **Ausführungen & Konzentration** | Erkennungswort und Prozentwerte für Extrait und Eau de Parfum |
 | **Logo & Marke** | Logo als Inline-SVG einfügen — schärfer als eine Bilddatei, skaliert beliebig und übernimmt automatisch die Farbe des Schemas. Alternativ eine Bilddatei. Ohne beides erscheint die Wortmarke als Text. |
 | Farben, Typografie, Layout | Editorial-Werte nachschärfen |
 | Warenkorb | Cross-Sell-Produkt, Versandfortschritt (**standardmäßig aus**) |
 | Rechtliche Hinweise | Steuerhinweis, Link zur Versandseite, Grundpreis |
+
+### 4.5a Liste gültiger Scent Codes pflegen
+
+*Theme Settings → Scent Code → Liste gültiger Codes.* Kommagetrennt, zum Beispiel:
+
+```
+022, 024, 026, 027, 029, 035, 040, 047, 049, 051,
+071, 078, 080, 081, 085, 091, 096, 102, 108, 121
+```
+
+`047`, `VC-047` und `47` sind gleichwertig — die Schreibweise wird vereinheitlicht.
+Sobald weitere Codes vergeben werden, hier ergänzen.
+
+**Bleibt das Feld leer**, akzeptiert das Theme aus Kompatibilitätsgründen jede
+Nummer von 1 bis zur eingestellten Höchstnummer. Ein Kunde könnte dann einen
+Code bestellen, den es gar nicht gibt. Für den Livegang die Liste füllen.
 
 ### 4.6 Navigation
 *Onlineshop → Menüs.* Fünf Menüs anlegen:
@@ -340,15 +397,18 @@ Discovery-Set-Auswahl in der Bestellung · Grundpreis · WhatsApp-Link auf dem H
    und damit eine eigene App. Praktisch gering, da ihr den Code vor dem Versand seht.
 2. **Kein Bestand je Code.** Der generische Artikel führt einen Sammelbestand.
    Solange auf Bestellung abgefüllt wird, ist das korrekt abgebildet.
-3. **Kein Probenbestand im Discovery Set.** Gebucht wird der Set-Bestand;
-   angeboten werden nur Düfte mit verfügbarer Probe, reserviert wird sie nicht.
+3. **Kein Probenbestand im Discovery Set.** Gebucht wird der Set-Bestand.
+   Ob eine einzelne Probe abfüllbar ist, weiß Shopify nicht — die fünf Codes sind
+   Positionsangaben, keine eigenen Bestandsartikel.
 4. **Discovery Set und Scent-Code-Bestellung benötigen JavaScript.** Das wird
    offen ausgewiesen, statt ein UI zu zeigen, das nichts überträgt. Alle anderen
    Bausteine — Code-Felder, Filter, Duftfinder, Suche, Produktseite — funktionieren
-   ohne JavaScript.
-5. **Der generische Artikel bekommt kein Product-Schema.** Ein Artikel mit
-   Preisspanne 1,00–29,90 € ohne konkreten Duft wäre für Suchmaschinen irreführend.
-   Er bleibt indexierbar, aber ohne `Product`-Markup.
+   ohne JavaScript; die Code-Erkennung in Sofortsuche und Suchergebnisseite läuft
+   ohnehin serverseitig.
+5. **Der generische Artikel ist von der Indexierung ausgenommen.** Er bekommt
+   `noindex,follow` und kein `Product`-Markup: Ein Artikel mit Preisspanne
+   1,00–29,90 € ohne konkreten Duft wäre für Suchmaschinen irreführend. Für Kunden
+   bleibt er normal erreichbar, öffentliche Bestsellerseiten bleiben indexierbar.
 6. **Der generische Artikel darf nicht in normalen Rastern erscheinen** — dort
    stünde „ab 1,00 €". Er ist deshalb aus Shop- und Bestseller-Collections
    herauszuhalten und hat eine eigene Landingpage.
@@ -357,9 +417,13 @@ Discovery-Set-Auswahl in der Bestellung · Grundpreis · WhatsApp-Link auf dem H
    standardmäßig deaktiviert.
 9. **Checkout-Gestaltung ist begrenzt.** Branding ja, eigene Schritte oder
    `checkout.liquid` wären Plus und werden nicht verwendet.
-10. **Liquid gibt je Schleife höchstens 50 Produkte aus.** Im Discovery Set
-    werden weitere Seiten nachgeladen; bei sehr großen Collections dauert der
-    vollständige Aufbau einen Moment.
+10. **Duftnoten sind für die Shopify-Suche nicht erreichbar.** Die Sofortsuche
+    durchsucht Titel, Produkttyp, Variantennamen, Vendor, Tags und die
+    Produktbeschreibung. Metafelder gehören nicht dazu. Damit Duftnoten gefunden
+    werden, müssen sie **zusätzlich in der Produktbeschreibung** stehen — dort
+    natürlich ebenfalls ohne Fremdmarken. Solange das nicht gepflegt ist, findet
+    die Suche keine Noten; der Hinweistext im Suchfeld ist im Theme-Editor
+    entsprechend anpassbar.
 11. **Hohe Variantenzahlen.** Shopify erlaubt inzwischen bis zu 2.048 Varianten
     je Produkt, Liquid gibt über `product.variants` aber weiterhin höchstens 250
     aus, und Produkte mit vielen Varianten brauchen eine eigene Theme-Technik.
@@ -399,6 +463,15 @@ Erfolgszustand zeigt, den es technisch nicht gibt.
 der Stufe *suggestion*: stilistische `{% liquid %}`-Empfehlungen sowie zwei
 Falschmeldungen zu `loading`-Attributen, die bewusst dynamisch gesetzt sind.
 
+Separat mitgeliefert wird `test-scent-code.js`. Das Skript lädt die
+ausgelieferte `assets/scent-code.js` in einen minimalen DOM-Stub und prüft die
+Normalisierung (`47`, `047`, `VC47`, `VC 047`, `VC-047`), die Positivliste und
+die Auflösung öffentlicher Codes. Aus dem Theme-Verzeichnis ausführen:
+
+```bash
+node test-scent-code.js
+```
+
 ---
 
 ## Struktur
@@ -427,6 +500,6 @@ zip -r vent-celeste-theme.zip assets config layout locales sections snippets tem
 | `scent-code.js` | Normalisierung und Auflösung | ~5 KB |
 | `product-form.js` | vollständiger Variantenwechsel | ~5 KB |
 | `facets.js`, `cart-drawer.js`, `predictive-search.js` | Filter, Warenkorb, Suche | ~10 KB |
-| `discovery-set.js`, `scent-code-order.js`, `product-card-swipe.js`, `scent-finder.js`, `recommendations.js` | nur auf den jeweiligen Seiten | ~13 KB |
+| `discovery-set.js`, `scent-code-order.js`, `product-card-swipe.js`, `scent-finder.js`, `recommendations.js` | nur auf den jeweiligen Seiten | ~12 KB |
 
 Alles unkomprimiert und mit `defer`; auf der Startseite laufen davon rund 24 KB.

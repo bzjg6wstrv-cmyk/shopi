@@ -15,7 +15,7 @@
   if (!forms.length) return;
 
   var configNode = document.querySelector('[data-scent-code-map]');
-  var config = { prefix: 'VC', max: 130, codes: {}, fallback: '', searchUrl: '/search/suggest' };
+  var config = { prefix: 'VC', max: 130, allowed: [], codes: {}, fallback: '', searchUrl: '/search/suggest' };
   if (configNode) {
     try {
       config = Object.assign(config, JSON.parse(configNode.textContent));
@@ -36,6 +36,12 @@
 
     var number = parseInt(digits, 10);
     if (!number || number < 1 || number > config.max) return null;
+
+    /* Ist eine Liste vergebener Nummern hinterlegt, muss der Code darin stehen.
+       Ohne Liste gilt der Bereich 1 … max – siehe README. */
+    if (Array.isArray(config.allowed) && config.allowed.length > 0) {
+      if (config.allowed.indexOf(number) === -1) return null;
+    }
 
     return config.prefix + '-' + String(number).padStart(3, '0');
   }

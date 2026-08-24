@@ -81,24 +81,6 @@
   assign families = product.metafields.custom.duftfamilie.value
   assign character = product.metafields.custom.charakter.value
 
-  comment
-    Konzentration und Größe stammen von der Variante – ein Eau de Parfum
-    darf niemals die Prozentzahl des Extrait zeigen.
-  endcomment
-  assign variant_conc = display_variant.metafields.custom.konzentration.value
-  assign variant_pct = display_variant.metafields.custom.konzentration_prozent.value
-  assign variant_size = display_variant.metafields.custom.fuellmenge.value
-
-  if variant_conc == blank
-    assign product_conc = product.metafields.custom.konzentration.value
-    if product_conc != blank and product.variants.size == 1
-      assign variant_conc = product_conc | join: ' · '
-    endif
-  endif
-  if variant_pct == blank and product.variants.size == 1
-    assign variant_pct = product.metafields.custom.konzentration_prozent.value
-  endif
-
   assign badge_label = ''
   if show_badges_final
     if product.metafields.custom.bestseller.value == true or product.tags contains 'bestseller'
@@ -187,32 +169,15 @@
     {%- endif -%}
 
     {%- if show_conc_final -%}
-      {%- liquid
-        assign meta_parts = ''
-        if variant_conc != blank
-          assign meta_parts = variant_conc
-        endif
-        if variant_size != blank
-          if meta_parts != blank
-            assign meta_parts = meta_parts | append: ' · ' | append: variant_size
-          else
-            assign meta_parts = variant_size
-          endif
-        endif
-        if variant_pct != blank
-          assign pct_text = variant_pct | append: ' %'
-          if meta_parts != blank
-            assign meta_parts = meta_parts | append: ' · ' | append: pct_text
-          else
-            assign meta_parts = pct_text
-          endif
-        endif
-        if meta_parts == blank and product.variants.size > 1
-          assign meta_parts = display_variant.title
-        endif
-      -%}
-      {%- if meta_parts != blank -%}
-        <p class="card__meta meta">{{ meta_parts }}</p>
+      {%- comment -%}
+        Konzentration und Größe kommen aus der Variante – aus dem Metafeld,
+        sonst aus dem standardisierten Variantennamen abgeleitet.
+        Ein Eau de Parfum zeigt dadurch nie die Prozentzahl des Extrait.
+      {%- endcomment -%}
+      {%- capture card_variant_line -%}{% render 'variant-facts', variant: display_variant, mode: 'line' %}{%- endcapture -%}
+      {%- assign card_variant_line = card_variant_line | strip -%}
+      {%- if card_variant_line != blank -%}
+        <p class="card__meta meta">{{ card_variant_line }}</p>
       {%- endif -%}
     {%- endif -%}
 

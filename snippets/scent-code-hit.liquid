@@ -20,6 +20,23 @@
     assign has_code = true
   endif
 
+  comment
+    Ist eine Liste vergebener Nummern hinterlegt, muss der Code darin stehen.
+    Ohne Liste gilt der Bereich 1 … Höchstnummer.
+  endcomment
+  assign allow_raw = settings.valid_scent_codes | strip
+  if has_code and allow_raw != blank
+    assign has_code = false
+    assign allow_entries = allow_raw | newline_to_br | replace: '<br />', ',' | split: ','
+    for entry in allow_entries
+      assign entry_digits = entry | downcase | remove: prefix_down | remove: '-' | remove: ' ' | remove: '#' | strip
+      assign entry_number = entry_digits | plus: 0
+      if entry_number == number
+        assign has_code = true
+      endif
+    endfor
+  endif
+
   if has_code
     if number < 10
       assign padded = '00' | append: number

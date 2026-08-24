@@ -15,8 +15,8 @@
         "concentration": {
           "type": "concentration_note",
           "settings": {
-            "heading": "Was bedeutet 30 % Extrait?",
-            "text": "<p>Der Anteil an Parfumöl bestimmt, wie dicht ein Duft auf der Haut liegt. 30 % ist ein hoher Wert: Es braucht weniger Sprühstöße, und die Komposition entwickelt sich langsamer über den Tag.</p>"
+            "heading": "Unsere Konzentrationen",
+            "text": "<p><strong>Extrait – 30 % Parfumöl.</strong> Die Hauptlinie. Ein hoher Anteil bedeutet, dass der Duft dichter auf der Haut liegt und sich langsamer entwickelt.</p><p><strong>Eau de Parfum – 20 % Parfumöl.</strong> Dasselbe Duftprofil, leichter aufgetragen und unauffälliger im Verlauf.</p><p>Travel und Probe entsprechen der Extrait-Rezeptur, nur in kleinerem Flakon.</p>"
           }
         },
         "addons": {
@@ -42,6 +42,14 @@
             "heading": "Hinweise",
             "text": "<p>Platzhalter: Aufbewahrung, Chargenhinweis und Pflichtangaben nach EU 1223/2009 hier ergänzen.</p>"
           }
+        },
+        "whatsapp": {
+          "type": "whatsapp",
+          "settings": {
+            "heading": "Unsicher, ob dieser Duft passt?",
+            "text": "Schreib uns deinen Lieblingsduft – der Code dieser Seite fährt automatisch mit.",
+            "button_label": "Beratung starten"
+          }
         }
       },
       "block_order": [
@@ -50,6 +58,7 @@
         "wear",
         "concentration",
         "addons",
+        "whatsapp",
         "description",
         "ingredients",
         "care"

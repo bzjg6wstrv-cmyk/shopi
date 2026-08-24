@@ -14,6 +14,28 @@
     {
       "prefix": {{ settings.scent_code_prefix | default: 'VC' | json }},
       "max": {{ settings.scent_code_max | default: 130 | json }},
+      {%- comment -%}
+        Liste der tatsächlich vergebenen Nummern. Ist sie leer, akzeptiert das
+        Theme aus Kompatibilitätsgründen jede Nummer bis „max" – dann kann ein
+        Kunde auch einen Code bestellen, den es nicht gibt.
+      {%- endcomment -%}
+      "allowed": [
+        {%- assign allow_raw = settings.valid_scent_codes | strip -%}
+        {%- if allow_raw != blank -%}
+          {%- assign prefix_down = settings.scent_code_prefix | default: 'VC' | downcase -%}
+          {%- assign allow_entries = allow_raw | newline_to_br | replace: '<br />', ',' | split: ',' -%}
+          {%- assign allow_first = true -%}
+          {%- for entry in allow_entries -%}
+            {%- assign entry_digits = entry | downcase | remove: prefix_down | remove: '-' | remove: ' ' | remove: '#' | strip -%}
+            {%- assign entry_number = entry_digits | plus: 0 -%}
+            {%- if entry_digits != blank and entry_number > 0 -%}
+              {%- unless allow_first %},{% endunless -%}
+              {{ entry_number }}
+              {%- assign allow_first = false -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+      ],
       "fallback": {{ fallback_handle | json }},
       "searchUrl": {{ routes.predictive_search_url | json }},
       "codes": {
