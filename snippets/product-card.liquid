@@ -1,13 +1,17 @@
 {%- comment -%}
-  Produktkarte – bewusst reduziert: Nummer, Duftfamilie, Konzentration, Preis.
-  Parameter:
-    product          – Produktobjekt (Pflicht)
-    lazy             – 'lazy' oder 'eager' (Standard: lazy)
-    sizes            – sizes-Attribut für responsive Bilder
-    show_family / show_concentration / show_badges – überschreiben die Theme Settings
+  Produktkarte V2.
 
-  Der angezeigte Preis folgt der Hauptvariante (Metafeld custom.hauptvariante),
-  ersatzweise der ersten 30-ml-Variante. „Ab“-Preise werden nicht ausgegeben.
+  Der Preis folgt IMMER einer konkreten Variante – niemals einem „ab"-Preis.
+  Auflösungsreihenfolge:
+    1. price_context   – explizite Vorgabe der Section ('sample', 'travel', 'edp', 'extrait')
+    2. Collection-Metafeld custom.karten_variante
+    3. Produkt-Metafeld custom.hauptvariante
+    4. erste verfügbare 30-ml-Variante
+    5. erste verfügbare Variante
+
+  Parameter:
+    product, lazy, sizes, price_context, quick_add,
+    show_family / show_concentration / show_badges (überschreiben die Theme Settings)
 {%- endcomment -%}
 {%- liquid
   assign card_lazy = lazy | default: 'lazy'
@@ -26,23 +30,74 @@
     assign show_badges_final = settings.card_show_badges
   endif
 
-  assign display_variant = product.metafields.custom.hauptvariante.value
-  if display_variant == blank
+  assign context_key = price_context
+  if context_key == blank
+    assign context_key = collection.metafields.custom.karten_variante.value
+  endif
+  assign context_key = context_key | downcase | strip
+
+  assign display_variant = blank
+
+  comment
+    1. Kontextvariante: sucht die Variante, deren Ausführung zum Kontext passt.
+  endcomment
+  if context_key != blank
+    assign context_needle = context_key
+    case context_key
+      when 'sample'
+        assign context_needle = 'sample'
+      when 'travel'
+        assign context_needle = 'travel'
+      when 'edp'
+        assign context_needle = 'eau de parfum'
+      when 'extrait'
+        assign context_needle = 'extrait'
+    endcase
     for candidate in product.variants
-      if candidate.title contains '30 ml' and candidate.available
+      assign candidate_title = candidate.title | downcase
+      if display_variant == blank and candidate_title contains context_needle
         assign display_variant = candidate
-        break
       endif
     endfor
   endif
+
+  if display_variant == blank
+    assign display_variant = product.metafields.custom.hauptvariante.value
+  endif
+
+  if display_variant == blank
+    for candidate in product.variants
+      assign candidate_title = candidate.title | downcase
+      if display_variant == blank and candidate_title contains '30 ml' and candidate.available
+        assign display_variant = candidate
+      endif
+    endfor
+  endif
+
   if display_variant == blank
     assign display_variant = product.selected_or_first_available_variant
   endif
 
   assign families = product.metafields.custom.duftfamilie.value
   assign character = product.metafields.custom.charakter.value
-  assign concentrations = product.metafields.custom.konzentration.value
-  assign percent = product.metafields.custom.konzentration_prozent.value
+
+  comment
+    Konzentration und Größe stammen von der Variante – ein Eau de Parfum
+    darf niemals die Prozentzahl des Extrait zeigen.
+  endcomment
+  assign variant_conc = display_variant.metafields.custom.konzentration.value
+  assign variant_pct = display_variant.metafields.custom.konzentration_prozent.value
+  assign variant_size = display_variant.metafields.custom.fuellmenge.value
+
+  if variant_conc == blank
+    assign product_conc = product.metafields.custom.konzentration.value
+    if product_conc != blank and product.variants.size == 1
+      assign variant_conc = product_conc | join: ' · '
+    endif
+  endif
+  if variant_pct == blank and product.variants.size == 1
+    assign variant_pct = product.metafields.custom.konzentration_prozent.value
+  endif
 
   assign badge_label = ''
   if show_badges_final
@@ -90,6 +145,20 @@
     {%- if badge_label != blank -%}
       <span class="card__badge">{{ badge_label }}</span>
     {%- endif -%}
+
+    {%- if quick_add and display_variant.available -%}
+      <form method="post" action="{{ routes.cart_add_url }}" class="card__quick-add">
+        <input type="hidden" name="id" value="{{ display_variant.id }}">
+        <input type="hidden" name="quantity" value="1">
+        <button
+          type="submit"
+          class="card__quick-add-button"
+          aria-label="{{ 'sections.quick_add.label' | t }} – {{ product.title | escape }} {{ display_variant.title | escape }}"
+        >
+          {% render 'icon', name: 'plus' %}
+        </button>
+      </form>
+    {%- endif -%}
   </div>
 
   <div class="card__content">
@@ -117,11 +186,34 @@
       {%- endif -%}
     {%- endif -%}
 
-    {%- if show_conc_final and concentrations != blank -%}
-      <p class="card__meta meta">
-        {{ concentrations | join: ' · ' }}
-        {%- if percent != blank %} · {{ percent }} %{% endif -%}
-      </p>
+    {%- if show_conc_final -%}
+      {%- liquid
+        assign meta_parts = ''
+        if variant_conc != blank
+          assign meta_parts = variant_conc
+        endif
+        if variant_size != blank
+          if meta_parts != blank
+            assign meta_parts = meta_parts | append: ' · ' | append: variant_size
+          else
+            assign meta_parts = variant_size
+          endif
+        endif
+        if variant_pct != blank
+          assign pct_text = variant_pct | append: ' %'
+          if meta_parts != blank
+            assign meta_parts = meta_parts | append: ' · ' | append: pct_text
+          else
+            assign meta_parts = pct_text
+          endif
+        endif
+        if meta_parts == blank and product.variants.size > 1
+          assign meta_parts = display_variant.title
+        endif
+      -%}
+      {%- if meta_parts != blank -%}
+        <p class="card__meta meta">{{ meta_parts }}</p>
+      {%- endif -%}
     {%- endif -%}
 
     {%- render 'product-price', variant: display_variant, product: product, class: 'card__price' -%}

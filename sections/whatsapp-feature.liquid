@@ -1,0 +1,125 @@
+{{ 'section-scent-code.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  „Dein Duft ist nicht dabei?" – der Übergang vom öffentlichen Sortiment
+  in die persönliche Beratung. Vollflächig und im dunklen Schema, damit
+  der Abschnitt den Rhythmus der Startseite bricht.
+{%- endcomment -%}
+<section class="wa-feature color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="wa-feature__media">
+    {%- if section.settings.image != blank -%}
+      <img
+        src="{{ section.settings.image | image_url: width: 2000 }}"
+        srcset="{{ section.settings.image | image_url: width: 750 }} 750w,
+                {{ section.settings.image | image_url: width: 1100 }} 1100w,
+                {{ section.settings.image | image_url: width: 1600 }} 1600w,
+                {{ section.settings.image | image_url: width: 2000 }} 2000w"
+        sizes="100vw"
+        alt="{{ section.settings.image.alt | escape }}"
+        width="{{ section.settings.image.width }}"
+        height="{{ section.settings.image.height }}"
+        loading="lazy"
+      >
+    {%- else -%}
+      {{ 'lifestyle-2' | placeholder_svg_tag: 'full-bleed-media' }}
+    {%- endif -%}
+    {%- if section.settings.scrim > 0 -%}
+      <div class="wa-feature__scrim" style="background-color: rgb(var(--color-background) / {{ section.settings.scrim | divided_by: 100.0 }});"></div>
+    {%- endif -%}
+  </div>
+
+  <div class="wa-feature__content page-width">
+    <div class="wa-feature__inner reveal">
+      {%- if section.settings.eyebrow != blank -%}
+        <span class="eyebrow">{{ section.settings.eyebrow | escape }}</span>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h2 class="wa-feature__title h1">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+      {%- if section.settings.text != blank -%}
+        <div class="wa-feature__text rte">{{ section.settings.text }}</div>
+      {%- endif -%}
+
+      <div class="wa-feature__actions">
+        {% render 'whatsapp-link', class: 'button button--whatsapp', icon: true, label: section.settings.button_label %}
+        {%- if section.settings.secondary_label != blank and section.settings.secondary_link != blank -%}
+          <a class="button button--secondary" href="{{ section.settings.secondary_link }}">
+            {{ section.settings.secondary_label | escape }}
+          </a>
+        {%- endif -%}
+      </div>
+
+      {%- if settings.whatsapp_response_time != blank -%}
+        <p class="wa-feature__note">{{ settings.whatsapp_response_time | escape }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Beratung (vollflächig)",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Farbschema",
+      "default": "scheme-ink"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Bild"
+    },
+    {
+      "type": "range",
+      "id": "scrim",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "label": "Abdunklung",
+      "default": 45
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Kleiner Vortext",
+      "default": "Über 120 Duftprofile"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Überschrift",
+      "default": "Dein Duft ist nicht dabei?"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Über 120 Duftprofile sind verfügbar – nicht alle davon sind im Shop gelistet. Schreib uns deinen Lieblingsduft, wir finden deinen Scent Code.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Beschriftung WhatsApp-Button",
+      "default": "Auf WhatsApp finden lassen"
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "Sekundärer Button"
+    },
+    {
+      "type": "url",
+      "id": "secondary_link",
+      "label": "Link sekundärer Button"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Beratung (vollflächig)"
+    }
+  ]
+}
+{% endschema %}

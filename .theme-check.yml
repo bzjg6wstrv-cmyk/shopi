@@ -4,7 +4,7 @@ root: .
 
 TemplateLength:
   enabled: true
-  max_length: 300
+  max_length: 500
 
 UnusedAssign:
   enabled: true

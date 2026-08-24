@@ -11,6 +11,7 @@
   var grid = form.querySelector('[data-picker-grid]');
   var searchInput = form.querySelector('[data-picker-search]');
   var counter = document.querySelector('[data-picker-counter]');
+  var counterValue = document.querySelector('[data-picker-count]');
   var slots = document.querySelectorAll('[data-slot]');
   var submit = form.querySelector('[data-discovery-submit]');
   var status = form.querySelector('[data-picker-status]');
@@ -105,6 +106,7 @@
       }
     });
 
+    if (counterValue) counterValue.textContent = chosen.length;
     if (counter) {
       counter.textContent = (strings.selected || '__COUNT__ / __MAX__')
         .replace('__COUNT__', chosen.length)

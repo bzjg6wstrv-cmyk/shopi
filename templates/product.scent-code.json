@@ -1,0 +1,15 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-product-scent-code",
+      "settings": {
+        "check_label": "Prüfen",
+        "whatsapp_label": "Beratung starten",
+        "note": "<p>Dein Scent Code wird mit der Bestellung übermittelt und erscheint auf der Bestellbestätigung sowie im Lieferschein.</p>"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

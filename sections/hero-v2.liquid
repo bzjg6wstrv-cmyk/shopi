@@ -1,0 +1,157 @@
+{{ 'section-hero-v2.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  Hero V2. Zwei Besuchertypen in einem Blick:
+  wer uns nicht kennt, bekommt die Beratung; wer schon einen Code hat,
+  bekommt das Eingabefeld – ohne einen weiteren Seitenaufruf.
+{%- endcomment -%}
+<section class="hero2 color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width hero2__inner">
+    <div>
+      {%- if section.settings.eyebrow != blank -%}
+        <span class="eyebrow hero2__eyebrow reveal">{{ section.settings.eyebrow | escape }}</span>
+      {%- endif -%}
+
+      {%- if section.settings.heading != blank -%}
+        {%- assign heading_lines = section.settings.heading | strip | newline_to_br | split: '<br />' -%}
+        <h1 class="hero2__title display display--lines">
+          {%- for line in heading_lines -%}
+            {%- assign line_text = line | strip -%}
+            {%- if line_text != blank -%}
+              <span class="display__line reveal" data-reveal-delay="{{ forloop.index0 }}">{{ line_text }}</span>
+            {%- endif -%}
+          {%- endfor -%}
+        </h1>
+      {%- endif -%}
+
+      {%- if section.settings.text != blank -%}
+        <p class="hero2__text reveal" data-reveal-delay="3">{{ section.settings.text | escape }}</p>
+      {%- endif -%}
+
+      <div class="hero2__actions reveal" data-reveal-delay="4">
+        {%- if section.settings.show_whatsapp -%}
+          {% render 'whatsapp-link', class: 'button button--whatsapp', icon: true %}
+        {%- endif -%}
+        {%- if section.settings.secondary_label != blank and section.settings.secondary_link != blank -%}
+          <a class="button button--secondary" href="{{ section.settings.secondary_link }}">
+            {{ section.settings.secondary_label | escape }}
+          </a>
+        {%- endif -%}
+      </div>
+
+      {%- if settings.whatsapp_enabled and settings.whatsapp_response_time != blank and section.settings.show_whatsapp -%}
+        <p class="hero2__response">{{ settings.whatsapp_response_time | escape }}</p>
+      {%- endif -%}
+
+      {%- if section.settings.show_code_field -%}
+        <div class="hero2__code reveal" data-reveal-delay="4">
+          {% render 'scent-code-field',
+            id: 'HeroScentCode',
+            size: 'inline',
+            label: section.settings.code_label
+          %}
+        </div>
+      {%- endif -%}
+    </div>
+
+    <div class="hero2__media">
+      <div class="hero2__media-inner" data-hero-drift>
+        {%- if section.settings.image != blank -%}
+          <img
+            src="{{ section.settings.image | image_url: width: 1200 }}"
+            srcset="{{ section.settings.image | image_url: width: 600 }} 600w,
+                    {{ section.settings.image | image_url: width: 900 }} 900w,
+                    {{ section.settings.image | image_url: width: 1200 }} 1200w"
+            sizes="(min-width: 750px) 40vw, 100vw"
+            alt="{{ section.settings.image.alt | escape }}"
+            width="{{ section.settings.image.width }}"
+            height="{{ section.settings.image.height }}"
+            loading="eager"
+            fetchpriority="high"
+          >
+        {%- else -%}
+          {{ 'product-1' | placeholder_svg_tag: 'full-bleed-media' }}
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Hero V2",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Farbschema",
+      "default": "scheme-ivory"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Kleiner Vortext",
+      "default": "Über 120 Duftprofile"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Schlagzeile",
+      "default": "FIND\nYOUR\nSCENT.",
+      "info": "Eine Zeile pro Umbruch. Die Zeilen blenden nacheinander ein."
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Unterzeile",
+      "default": "Dein Lieblingsduft. Dein VENT CELESTE Scent Code."
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Bild"
+    },
+    {
+      "type": "header",
+      "content": "Aktionen"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_whatsapp",
+      "label": "WhatsApp-Beratung anbieten",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "Sekundärer Button"
+    },
+    {
+      "type": "url",
+      "id": "secondary_link",
+      "label": "Link sekundärer Button"
+    },
+    {
+      "type": "header",
+      "content": "Scent Code"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_code_field",
+      "label": "Code-Eingabe im Hero anzeigen",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "code_label",
+      "label": "Beschriftung",
+      "default": "Schon beraten? Scent Code eingeben"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero V2"
+    }
+  ]
+}
+{% endschema %}

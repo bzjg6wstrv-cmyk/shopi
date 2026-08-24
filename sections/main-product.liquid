@@ -27,6 +27,7 @@
         {%- if product.media.size > 0 -%}
           {%- for media in product.media -%}
             <img
+              data-media-id="{{ media.id }}"
               src="{{ media | image_url: width: 1400 }}"
               srcset="{{ media | image_url: width: 600 }} 600w,
                       {{ media | image_url: width: 900 }} 900w,
@@ -54,17 +55,57 @@
           </p>
         {%- endif -%}
 
-        {%- if concentrations != blank -%}
-          <p class="meta meta--muted" style="margin-top: var(--space-xs);">
-            {{ concentrations | join: ' · ' }}{% if percent != blank %} · {{ percent }} %{% endif %}
-          </p>
-        {%- endif -%}
+        {%- liquid
+          assign v_conc = current_variant.metafields.custom.konzentration.value
+          assign v_pct = current_variant.metafields.custom.konzentration_prozent.value
+          assign v_size = current_variant.metafields.custom.fuellmenge.value
+
+          comment
+            Rückfall auf Produktebene nur, wenn es genau eine Variante gibt –
+            sonst würde ein Eau de Parfum die Prozentzahl des Extrait erben.
+          endcomment
+          if v_conc == blank and product.variants.size == 1 and concentrations != blank
+            assign v_conc = concentrations | join: ' · '
+          endif
+          if v_pct == blank and product.variants.size == 1
+            assign v_pct = percent
+          endif
+
+          assign conc_line = ''
+          if v_conc != blank
+            assign conc_line = v_conc
+          endif
+          if v_size != blank
+            if conc_line != blank
+              assign conc_line = conc_line | append: ' · ' | append: v_size
+            else
+              assign conc_line = v_size
+            endif
+          endif
+          if v_pct != blank
+            assign pct_text = v_pct | append: ' %'
+            if conc_line != blank
+              assign conc_line = conc_line | append: ' · ' | append: pct_text
+            else
+              assign conc_line = pct_text
+            endif
+          endif
+        -%}
+        <p class="meta meta--muted" style="margin-top: var(--space-xs);" data-variant-meta{% if conc_line == blank %} hidden{% endif %}>
+          {{ conc_line }}
+        </p>
 
         {% render 'product-reviews', product: product %}
 
         <div class="product__price" data-product-price>
           {% render 'product-price', variant: current_variant, product: product %}
         </div>
+
+        {%- if section.settings.show_sku -%}
+          <p class="product__note" data-variant-sku{% if current_variant.sku == blank %} hidden{% endif %}>
+            {{ 'products.product.sku' | t }}: <span data-variant-sku-value>{{ current_variant.sku }}</span>
+          </p>
+        {%- endif -%}
 
         <div class="product-form">
           {%- form 'product', product, id: 'ProductForm', novalidate: 'novalidate' -%}
@@ -334,6 +375,65 @@
   <button type="button" class="button" data-sticky-add>{{ 'products.product.add_to_cart' | t }}</button>
 </div>
 
+<script type="application/json" data-variant-data>
+  {
+    {%- for variant in product.variants -%}
+      {%- liquid
+        assign vd_conc = variant.metafields.custom.konzentration.value
+        assign vd_pct = variant.metafields.custom.konzentration_prozent.value
+        assign vd_size = variant.metafields.custom.fuellmenge.value
+
+        assign vd_line = ''
+        if vd_conc != blank
+          assign vd_line = vd_conc
+        endif
+        if vd_size != blank
+          if vd_line != blank
+            assign vd_line = vd_line | append: ' · ' | append: vd_size
+          else
+            assign vd_line = vd_size
+          endif
+        endif
+        if vd_pct != blank
+          assign vd_pct_text = vd_pct | append: ' %'
+          if vd_line != blank
+            assign vd_line = vd_line | append: ' · ' | append: vd_pct_text
+          else
+            assign vd_line = vd_pct_text
+          endif
+        endif
+
+        assign vd_on_sale = false
+        assign vd_compare = ''
+        if variant.compare_at_price > variant.price
+          assign vd_on_sale = true
+          assign vd_compare = variant.compare_at_price | money
+        endif
+
+        assign vd_unit = ''
+        if settings.show_unit_price and variant.unit_price_measurement
+          assign vd_unit_amount = variant.unit_price | money
+          assign vd_unit = vd_unit_amount | append: ' / '
+          if variant.unit_price_measurement.reference_value != 1
+            assign vd_unit = vd_unit | append: variant.unit_price_measurement.reference_value
+          endif
+          assign vd_unit = vd_unit | append: variant.unit_price_measurement.reference_unit
+        endif
+      -%}
+      {{ variant.id | json }}: {
+        "price": {{ variant.price | money | json }},
+        "compare": {{ vd_compare | json }},
+        "onSale": {{ vd_on_sale | json }},
+        "unit": {{ vd_unit | json }},
+        "sku": {{ variant.sku | json }},
+        "available": {{ variant.available | json }},
+        "meta": {{ vd_line | json }},
+        "media": {{ variant.featured_media.id | default: 0 | json }},
+        "title": {{ variant.title | json }}
+      }{% unless forloop.last %},{% endunless %}
+    {%- endfor -%}
+  }
+</script>
 <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
 
 <script type="application/ld+json">

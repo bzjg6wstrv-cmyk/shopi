@@ -2,6 +2,7 @@
   assign menu = section.settings.menu
   assign families_menu = section.settings.families_menu
   assign families_parent = section.settings.families_parent | downcase
+  assign wa_parent = section.settings.whatsapp_parent | downcase
 -%}
 <header class="header color-{{ section.settings.color_scheme }} color-scheme"{% unless section.settings.sticky %} style="position: relative;"{% endunless %}>
   <div class="page-width header__inner">
@@ -21,11 +22,21 @@
           {%- for link in menu.links -%}
             <li class="nav__item">
               {%- if link.links.size > 0 -%}
-                {%- assign link_title_down = link.title | downcase -%}
-                {%- assign is_families = false -%}
-                {%- if families_parent != blank and link_title_down == families_parent -%}
-                  {%- assign is_families = true -%}
-                {%- endif -%}
+                {%- liquid
+                  assign link_title_down = link.title | downcase
+                  assign is_families = false
+                  assign is_wa = false
+                  if families_parent != blank and link_title_down == families_parent
+                    assign is_families = true
+                  endif
+                  if wa_parent != blank and link_title_down == wa_parent
+                    assign is_wa = true
+                  endif
+                  assign is_wide = false
+                  if is_families or is_wa
+                    assign is_wide = true
+                  endif
+                -%}
                 <details data-nav-dropdown>
                   <summary>
                     <span class="nav__link">
@@ -33,7 +44,7 @@
                       {% render 'icon', name: 'chevron' %}
                     </span>
                   </summary>
-                  <div class="mega{% if is_families %} mega--wide{% endif %}">
+                  <div class="mega{% if is_wide %} mega--wide{% endif %}">
                     <div>
                       <p class="mega__title meta meta--muted">{{ link.title | escape }}</p>
                       <ul class="mega__list">
@@ -46,7 +57,7 @@
                     {%- if is_families and families_menu.links.size > 0 -%}
                       <div>
                         <p class="mega__title meta meta--muted">{{ section.settings.families_title | escape }}</p>
-                        <ul class="mega__list">
+                        <ul class="mega__list mega__list--split">
                           {%- for family in families_menu.links -%}
                             <li><a href="{{ family.url }}">{{ family.title | escape }}</a></li>
                           {%- endfor -%}
@@ -54,7 +65,16 @@
                       </div>
                     {%- endif -%}
 
-                    {%- if is_families and section.settings.feature_link != blank -%}
+                    {%- if is_wa and settings.whatsapp_enabled -%}
+                      <div class="mega__wa">
+                        <p class="mega__title meta meta--muted">{{ 'sections.whatsapp.title' | t }}</p>
+                        <p class="mega__wa-text">{{ section.settings.whatsapp_teaser | escape }}</p>
+                        {% render 'whatsapp-link', class: 'button button--whatsapp', icon: true %}
+                        {%- if settings.whatsapp_response_time != blank -%}
+                          <p class="mega__wa-note">{{ settings.whatsapp_response_time | escape }}</p>
+                        {%- endif -%}
+                      </div>
+                    {%- elsif is_wide and section.settings.feature_link != blank -%}
                       <a class="mega__feature" href="{{ section.settings.feature_link }}">
                         {%- if section.settings.feature_image -%}
                           <img
@@ -88,7 +108,11 @@
     <div class="header__brand">
       {%- if request.page_type == 'index' -%}<h1 style="margin:0;">{%- endif -%}
       <a href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
-        {%- if settings.logo != blank -%}
+        {%- if settings.logo_svg != blank -%}
+          <span class="header__logo-svg" style="width: {{ settings.logo_width_mobile }}px;">
+            {{ settings.logo_svg }}
+          </span>
+        {%- elsif settings.logo != blank -%}
           <img
             src="{{ settings.logo | image_url: width: 600 }}"
             srcset="{{ settings.logo | image_url: width: 300 }} 300w, {{ settings.logo | image_url: width: 600 }} 600w"
@@ -119,11 +143,7 @@
       </button>
 
       {%- if shop.customer_accounts_enabled and section.settings.show_account -%}
-        <a
-          class="header__icon"
-          href="{{ routes.account_url }}"
-          aria-label="{{ 'sections.header.account' | t }}"
-        >
+        <a class="header__icon header__icon--desktop" href="{{ routes.account_url }}" aria-label="{{ 'sections.header.account' | t }}">
           {% render 'icon', name: 'account' %}
         </a>
       {%- endif -%}
@@ -149,7 +169,10 @@
   </div>
 </header>
 
-{%- comment -%} Mobile-Navigation – eigenständig aufgebaut, keine verkleinerte Desktop-Leiste {%- endcomment -%}
+{%- comment -%}
+  Mobiles Menü – bewusst flacher als das Desktop-Menü.
+  Die vier wichtigsten Ziele stehen ohne Aufklappen da.
+{%- endcomment -%}
 <vc-drawer id="MenuDrawer" class="drawer drawer--left color-{{ section.settings.color_scheme }} color-scheme" aria-label="{{ 'general.accessibility.menu' | t }}">
   <div class="drawer__header">
     <span class="meta meta--muted">{{ 'general.accessibility.menu' | t }}</span>
@@ -158,8 +181,8 @@
     </button>
   </div>
 
-  <div class="menu-drawer__search">
-    <form action="{{ routes.search_url }}" method="get" role="search">
+  <div class="menu-drawer__top">
+    <form action="{{ routes.search_url }}" method="get" role="search" class="menu-drawer__search">
       <label class="visually-hidden" for="MenuDrawerSearch">{{ 'general.search.title' | t }}</label>
       <input
         id="MenuDrawerSearch"
@@ -172,61 +195,79 @@
       >
       <input type="hidden" name="options[prefix]" value="last">
     </form>
+
+    {%- if settings.whatsapp_enabled -%}
+      {% render 'whatsapp-link', class: 'button button--whatsapp menu-drawer__wa', icon: true %}
+    {%- endif -%}
   </div>
 
   <div class="drawer__body">
-    <ul class="menu-drawer__list">
-      {%- for link in menu.links -%}
-        <li>
-          {%- if link.links.size > 0 -%}
-            {%- assign link_title_m = link.title | downcase -%}
-            {%- assign is_families_m = false -%}
-            {%- if families_parent != blank and link_title_m == families_parent -%}
-              {%- assign is_families_m = true -%}
-            {%- endif -%}
-            <details class="menu-drawer__item" data-accordion {% if forloop.first %}open{% endif %}>
-              <summary class="menu-drawer__summary">
-                {{ link.title | escape }}
-                {% render 'icon', name: 'chevron' %}
-              </summary>
-              <ul class="menu-drawer__sublist">
-                {%- for child in link.links -%}
-                  <li><a href="{{ child.url }}">{{ child.title | escape }}</a></li>
-                {%- endfor -%}
-              </ul>
-              {%- if is_families_m and families_menu.links.size > 0 -%}
-                <p class="meta meta--muted" style="margin-bottom: .5rem;">{{ section.settings.families_title | escape }}</p>
-                <div class="menu-drawer__families">
-                  {%- for family in families_menu.links -%}
-                    <a href="{{ family.url }}">{{ family.title | escape }}</a>
-                  {%- endfor -%}
-                </div>
-              {%- endif -%}
-            </details>
-          {%- else -%}
-            <a class="menu-drawer__link" href="{{ link.url }}">{{ link.title | escape }}</a>
-          {%- endif -%}
-        </li>
-      {%- endfor -%}
-    </ul>
-  </div>
+    {%- if section.settings.mobile_primary_menu.links.size > 0 -%}
+      <ul class="menu-drawer__primary">
+        {%- for link in section.settings.mobile_primary_menu.links -%}
+          <li>
+            <a class="menu-drawer__link" href="{{ link.url }}">
+              {{ link.title | escape }}
+              {% render 'icon', name: 'arrow' %}
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
 
-  {%- if section.settings.drawer_link_1 != blank or section.settings.drawer_link_2 != blank -%}
-    <div class="drawer__footer menu-drawer__highlights">
-      {%- if section.settings.drawer_link_1 != blank -%}
-        <a class="button button--secondary" href="{{ section.settings.drawer_link_1 }}">{{ section.settings.drawer_label_1 | escape }}</a>
-      {%- endif -%}
-      {%- if section.settings.drawer_link_2 != blank -%}
-        <a class="button" href="{{ section.settings.drawer_link_2 }}">{{ section.settings.drawer_label_2 | escape }}</a>
-      {%- endif -%}
-    </div>
-  {%- endif -%}
+    {%- if section.settings.mobile_secondary_menu.links.size > 0 -%}
+      <div class="menu-drawer__secondary">
+        {%- for link in section.settings.mobile_secondary_menu.links -%}
+          <a href="{{ link.url }}">{{ link.title | escape }}</a>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if families_menu.links.size > 0 -%}
+      <details class="menu-drawer__item" data-accordion>
+        <summary class="menu-drawer__summary">
+          {{ section.settings.families_title | escape }}
+          {% render 'icon', name: 'chevron' %}
+        </summary>
+        <div class="menu-drawer__families">
+          {%- for family in families_menu.links -%}
+            <a href="{{ family.url }}">{{ family.title | escape }}</a>
+          {%- endfor -%}
+        </div>
+      </details>
+    {%- endif -%}
+
+    {%- if section.settings.mobile_footer_menu.links.size > 0 -%}
+      <div class="menu-drawer__tertiary">
+        {%- for link in section.settings.mobile_footer_menu.links -%}
+          <a href="{{ link.url }}">{{ link.title | escape }}</a>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if shop.customer_accounts_enabled and section.settings.show_account -%}
+      <a class="menu-drawer__link menu-drawer__account" href="{{ routes.account_url }}">
+        {{ 'sections.header.account' | t }}
+        {% render 'icon', name: 'arrow' %}
+      </a>
+    {%- endif -%}
+  </div>
 </vc-drawer>
 
-{%- comment -%} Suche {%- endcomment -%}
+{%- comment -%} Suche mit vorgeschalteter Scent-Code-Erkennung {%- endcomment -%}
 <vc-drawer id="SearchDrawer" class="drawer drawer--top color-{{ section.settings.color_scheme }} color-scheme" aria-label="{{ 'general.search.title' | t }}">
   <div class="drawer__body" style="padding-block: var(--space-2xl);">
     <div class="page-width">
+      {%- if section.settings.show_code_in_search -%}
+        <div class="search-panel__code">
+          {% render 'scent-code-field',
+            id: 'SearchScentCode',
+            size: 'compact',
+            label: section.settings.code_label
+          %}
+        </div>
+      {%- endif -%}
+
       <form
         action="{{ routes.search_url }}"
         method="get"
@@ -286,7 +327,7 @@
     {
       "type": "link_list",
       "id": "menu",
-      "label": "Hauptmenü",
+      "label": "Hauptmenü (Desktop)",
       "default": "main-menu"
     },
     {
@@ -298,8 +339,25 @@
     {
       "type": "checkbox",
       "id": "show_account",
-      "label": "Konto-Symbol anzeigen",
+      "label": "Konto anzeigen",
       "default": true
+    },
+    {
+      "type": "header",
+      "content": "Beratung im Menü"
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_parent",
+      "label": "Menüpunkt für die Beratungsfläche",
+      "default": "Duftberatung",
+      "info": "Muss exakt dem Titel des Menüpunkts entsprechen. Dort erscheint der WhatsApp-Block."
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_teaser",
+      "label": "Teasertext",
+      "default": "Nenn uns deinen Lieblingsduft – wir finden deinen Scent Code."
     },
     {
       "type": "header",
@@ -308,15 +366,15 @@
     {
       "type": "text",
       "id": "families_parent",
-      "label": "Menüpunkt, unter dem die Duftfamilien erscheinen",
-      "default": "Düfte",
-      "info": "Muss exakt dem Titel des Menüpunkts entsprechen."
+      "label": "Menüpunkt für die Duftfamilien",
+      "default": "Duftberatung",
+      "info": "Leer lassen, um die Duftfamilien nicht im Desktop-Menü zu zeigen."
     },
     {
       "type": "text",
       "id": "families_title",
-      "label": "Überschrift der Spalte",
-      "default": "Duftfamilien"
+      "label": "Überschrift",
+      "default": "Duftwelten"
     },
     {
       "type": "link_list",
@@ -351,39 +409,48 @@
     },
     {
       "type": "header",
-      "content": "Mobile Navigation"
+      "content": "Mobiles Menü"
     },
     {
-      "type": "text",
-      "id": "drawer_label_1",
-      "label": "Sekundärer Button",
-      "default": "Duftfinder"
+      "type": "paragraph",
+      "content": "Das mobile Menü ist bewusst flacher: Die wichtigsten Ziele stehen ohne Aufklappen da."
     },
     {
-      "type": "url",
-      "id": "drawer_link_1",
-      "label": "Link sekundärer Button"
+      "type": "link_list",
+      "id": "mobile_primary_menu",
+      "label": "Hauptziele (untereinander)"
     },
     {
-      "type": "text",
-      "id": "drawer_label_2",
-      "label": "Primärer Button",
-      "default": "Discovery Set"
+      "type": "link_list",
+      "id": "mobile_secondary_menu",
+      "label": "Nebenziele (zweispaltig)"
     },
     {
-      "type": "url",
-      "id": "drawer_link_2",
-      "label": "Link primärer Button"
+      "type": "link_list",
+      "id": "mobile_footer_menu",
+      "label": "Über uns, FAQ, Kontakt"
     },
     {
       "type": "header",
       "content": "Suche"
     },
     {
+      "type": "checkbox",
+      "id": "show_code_in_search",
+      "label": "Scent-Code-Feld über der Suche",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "code_label",
+      "label": "Beschriftung des Code-Feldes",
+      "default": "Scent Code"
+    },
+    {
       "type": "text",
       "id": "search_hint",
       "label": "Hinweis unter der Suche",
-      "default": "Suche nach Nummer, Duftfamilie oder einzelner Duftnote."
+      "default": "Suche nach Scent Code, Duftfamilie oder einzelner Duftnote."
     }
   ],
   "enabled_on": {

@@ -20,6 +20,12 @@
         "label": "Logo"
       },
       {
+        "type": "textarea",
+        "id": "logo_svg",
+        "label": "Logo als Inline-SVG",
+        "info": "Optional und gegenüber einer Bilddatei bevorzugt: gestochen scharf, beliebig skalierbar, und die Farbe folgt automatisch dem Farbschema. Den Inhalt der SVG-Datei hier einfügen. Wird verwendet, sobald etwas eingetragen ist."
+      },
+      {
         "type": "range",
         "id": "logo_width",
         "min": 80,
@@ -201,6 +207,30 @@
         "unit": "/100em",
         "label": "Laufweite Meta-Text",
         "default": 12
+      },
+      {
+        "type": "header",
+        "content": "Display-Typografie"
+      },
+      {
+        "type": "range",
+        "id": "display_tracking",
+        "min": -6,
+        "max": 2,
+        "step": 1,
+        "unit": "/100em",
+        "label": "Laufweite der großen Schlagzeilen",
+        "default": -3
+      },
+      {
+        "type": "range",
+        "id": "display_leading",
+        "min": 84,
+        "max": 110,
+        "step": 2,
+        "unit": "%",
+        "label": "Zeilenhöhe der großen Schlagzeilen",
+        "default": 92
       }
     ]
   },
@@ -285,6 +315,106 @@
         "unit": "px",
         "label": "Innenabstand Buttons",
         "default": 16
+      }
+    ]
+  },
+  {
+    "name": "WhatsApp-Beratung",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Die Rufnummer wird nur hier gepflegt. Das Theme baut daraus überall den korrekten internationalen wa.me-Link. Es wird kein WhatsApp-Widget und kein Meta-Skript eingebunden – erst der Klick des Kunden stellt eine Verbindung her."
+      },
+      {
+        "type": "checkbox",
+        "id": "whatsapp_enabled",
+        "label": "WhatsApp-Beratung aktivieren",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "whatsapp_number",
+        "label": "Rufnummer",
+        "default": "+49 172 8439661",
+        "info": "Internationale Schreibweise. Leerzeichen, Klammern und Bindestriche sind erlaubt und werden automatisch entfernt."
+      },
+      {
+        "type": "textarea",
+        "id": "whatsapp_message",
+        "label": "Vorbereitete Nachricht",
+        "default": "Hallo VENT CELESTE, ich suche einen passenden Duft zu meinem Lieblingsparfum: ",
+        "info": "Der Kunde ergänzt den Text selbst. Ein Leerzeichen am Ende ist Absicht."
+      },
+      {
+        "type": "text",
+        "id": "whatsapp_response_time",
+        "label": "Hinweis zur Antwortzeit",
+        "default": "Antwort meist innerhalb von 24 Stunden",
+        "info": "Leer lassen, wenn keine Zeit zugesagt werden soll."
+      },
+      {
+        "type": "header",
+        "content": "Mobile Beratungsleiste"
+      },
+      {
+        "type": "checkbox",
+        "id": "whatsapp_sticky_mobile",
+        "label": "Leiste am unteren Bildschirmrand anzeigen",
+        "default": true,
+        "info": "Erscheint erst nach etwas Scrollen und weicht auf Produktseiten dem Warenkorb-Button."
+      },
+      {
+        "type": "range",
+        "id": "whatsapp_sticky_threshold",
+        "min": 10,
+        "max": 80,
+        "step": 5,
+        "unit": "%",
+        "label": "Ab welcher Scrolltiefe",
+        "default": 40
+      },
+      {
+        "type": "text",
+        "id": "whatsapp_sticky_label",
+        "label": "Beschriftung",
+        "default": "Duftberatung"
+      }
+    ]
+  },
+  {
+    "name": "Scent Code",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Der Scent Code ist zugleich Produkttitel und interne Sortimentsnummer. Die Zuordnung zu Originaldüften wird bewusst nicht in Shopify gespeichert."
+      },
+      {
+        "type": "text",
+        "id": "scent_code_prefix",
+        "label": "Präfix",
+        "default": "VC"
+      },
+      {
+        "type": "range",
+        "id": "scent_code_max",
+        "min": 50,
+        "max": 500,
+        "step": 10,
+        "label": "Höchste vergebene Nummer",
+        "default": 130,
+        "info": "Eingaben darüber werden als ungültig behandelt."
+      },
+      {
+        "type": "collection",
+        "id": "scent_code_collection",
+        "label": "Collection der öffentlichen Düfte",
+        "info": "Aus dieser Collection entsteht die Zuordnungstabelle Code → Produktseite."
+      },
+      {
+        "type": "product",
+        "id": "scent_code_product",
+        "label": "Produkt für nicht gelistete Codes",
+        "info": "Das generische Bestellprodukt. Codes ohne eigene Produktseite führen dorthin."
       }
     ]
   },

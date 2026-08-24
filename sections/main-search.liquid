@@ -26,11 +26,19 @@
       </div>
 
       {%- if search.performed -%}
+        {% render 'scent-code-hit', terms: search.terms %}
+
         {%- if search.results.size == 0 -%}
-          <p class="note-placeholder">
-            {{ 'general.search.no_results' | t: terms: search.terms }}<br>
-            {{ 'general.search.no_results_help' | t }}
-          </p>
+          <div class="note-placeholder">
+            <p>{{ 'general.search.no_results' | t: terms: search.terms }}</p>
+            <p>{{ 'general.search.no_results_help' | t }}</p>
+            {%- if settings.whatsapp_enabled -%}
+              {%- assign wa_context = 'sections.whatsapp.context_search' | t | replace: '__CODE__', search.terms -%}
+              <p style="margin-top: var(--space-lg);">
+                {% render 'whatsapp-link', class: 'button button--whatsapp', icon: true, context: wa_context %}
+              </p>
+            {%- endif -%}
+          </div>
         {%- else -%}
           <p class="meta meta--muted" style="margin-bottom: var(--space-lg);">
             {{ 'general.search.results_count' | t: count: search.results_count }}

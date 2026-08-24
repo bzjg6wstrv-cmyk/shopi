@@ -1,0 +1,50 @@
+{%- comment -%}
+  Baut den WhatsApp-Link aus den Theme Settings.
+  Die Rufnummer wird ausschließlich in den Theme Settings gepflegt.
+
+  Parameter:
+    context – optionaler Zusatz, der an die vorbereitete Nachricht angehängt wird
+    class   – CSS-Klassen für den Link
+    label   – Beschriftung (Standard: aus den Locales)
+    icon    – true, um das Sprechblasen-Symbol voranzustellen
+    as      – 'link' (Standard) gibt <a> aus, 'url' nur die URL als Text
+
+  Es wird bewusst kein WhatsApp-Widget und kein Meta-Skript eingebunden:
+  Erst der Klick des Kunden stellt eine Verbindung zu Meta her.
+{%- endcomment -%}
+{%- liquid
+  assign wa_digits = settings.whatsapp_number | remove: '+' | remove: ' ' | remove: '-' | remove: '(' | remove: ')' | remove: '/' | remove: '.'
+  assign wa_base = settings.whatsapp_message
+-%}
+{%- if context != blank -%}
+  {%- capture wa_message -%}
+{{ wa_base }}
+
+({{ context }})
+  {%- endcapture -%}
+{%- else -%}
+  {%- assign wa_message = wa_base -%}
+{%- endif -%}
+{%- liquid
+  assign wa_url = 'https://wa.me/' | append: wa_digits | append: '?text=' | append: wa_message | url_encode
+  assign wa_label = label
+  if wa_label == blank
+    assign wa_label = 'sections.whatsapp.cta' | t
+  endif
+-%}
+{%- if settings.whatsapp_enabled and wa_digits != blank -%}
+  {%- if as == 'url' -%}
+    {{ wa_url }}
+  {%- else -%}
+    <a
+      class="{{ class | default: 'button' }}"
+      href="{{ wa_url }}"
+      target="_blank"
+      rel="noopener"
+      data-whatsapp
+    >
+      {%- if icon -%}{% render 'icon', name: 'whatsapp' %}{%- endif -%}
+      <span>{{ wa_label }}</span>
+    </a>
+  {%- endif -%}
+{%- endif -%}

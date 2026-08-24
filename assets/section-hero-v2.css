@@ -1,0 +1,71 @@
+/* Hero V2 – mobile first.
+   Reihenfolge auf Mobile: Text, Buttons, Code-Feld, danach das Bild.
+   Das Bild ist bewusst das Erste, was unterhalb des Folds abschneidet. */
+
+.hero2 { position: relative; overflow: hidden; }
+
+.hero2__inner {
+  display: grid;
+  gap: var(--space-xl);
+  padding-block: clamp(2rem, 7vw, 5rem) 0;
+}
+
+.hero2__eyebrow { color: rgb(var(--color-muted)); }
+
+.hero2__title { margin-bottom: var(--space-md); }
+
+.hero2__text {
+  max-width: 26ch;
+  font-size: clamp(1rem, .95rem + .4vw, 1.25rem);
+  line-height: 1.45;
+  color: rgb(var(--color-muted));
+}
+
+.hero2__actions { margin-top: var(--space-xl); }
+.hero2__actions .button { width: 100%; min-height: 3.25rem; }
+
+.hero2__response { margin-top: var(--space-xs); font-size: .75rem; color: rgb(var(--color-muted)); }
+
+.hero2__code { margin-top: var(--space-xl); }
+
+.hero2__media {
+  position: relative;
+  margin-top: var(--space-xl);
+  margin-inline: calc(var(--gutter) * -1);
+}
+.hero2__media img,
+.hero2__media svg {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+/* Ab Tablet: zweispaltig, Text links, Bild rechts. */
+@media (min-width: 750px) {
+  .hero2__inner {
+    grid-template-columns: 7fr 5fr;
+    align-items: center;
+    gap: clamp(2rem, 5vw, 4.5rem);
+    padding-block: clamp(3rem, 6vw, 6rem);
+  }
+  .hero2__actions { display: flex; gap: var(--space-md); }
+  .hero2__actions .button { width: auto; }
+  .hero2__media { margin: 0; }
+  .hero2__media img,
+  .hero2__media svg { aspect-ratio: 3 / 4; }
+  .hero2__code { max-width: 24rem; }
+}
+
+@media (min-width: 990px) {
+  .hero2__inner { min-height: 76vh; }
+}
+
+/* Sehr sanfte Drift des Flakons, per JS gesteuert. */
+.hero2__media-inner {
+  will-change: transform;
+  transform: translate3d(0, var(--hero-drift, 0px), 0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero2__media-inner { transform: none; }
+}

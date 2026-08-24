@@ -90,11 +90,14 @@
                 {%- endfor -%}
 
                 {%- if visible_properties -%}
+                  {%- assign code_label = 'sections.scent_code.code_in_order' | t -%}
                   <dl class="cart-item__properties">
                     {%- for property in item.properties -%}
                       {%- assign first_char = property.first | slice: 0 -%}
                       {%- if property.last != blank and first_char != '_' -%}
-                        <div>
+                        {%- assign is_code = false -%}
+                        {%- if property.first contains code_label -%}{%- assign is_code = true -%}{%- endif -%}
+                        <div{% if is_code %} class="cart-item__code"{% endif %}>
                           <dt>{{ property.first | escape }}:</dt>
                           <dd>{{ property.last | escape }}</dd>
                         </div>

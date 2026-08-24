@@ -124,7 +124,9 @@
       "note_pyramid": "Scent pyramid",
       "recommendations": "Similar scent profiles",
       "no_recommendations": "No matching recommendations available right now.",
-      "share": "Share"
+      "share": "Share",
+      "concentration_short": "__PERCENT__ %",
+      "size_short": "__SIZE__"
     },
     "facets": {
       "title": "Filters",
@@ -200,7 +202,7 @@
     },
     "discovery_set": {
       "title": "Discovery Set",
-      "select_prompt": "Choose five fragrances",
+      "select_prompt": "Choose five scent codes",
       "selected_count": "{{ chosen }} of {{ max }} selected",
       "choose": "Select",
       "chosen": "Selected",
@@ -208,7 +210,7 @@
       "search_placeholder": "Search fragrance",
       "incomplete": "Please choose exactly five fragrances.",
       "unavailable": "Currently unavailable",
-      "step_label": "Selection",
+      "step_label": "Scent code",
       "add_to_cart": "Add Discovery Set to cart",
       "your_selection": "Your selection",
       "empty_slot": "Still free",
@@ -216,6 +218,44 @@
       "no_matches": "No fragrances found.",
       "note": "Your selection is passed to the order as line item properties and is visible in the cart, at checkout and in the order confirmation.",
       "no_js": "Selecting the five fragrances requires JavaScript. Without it the set cannot be assembled."
+    },
+    "whatsapp": {
+      "cta": "Start scent consultation",
+      "cta_short": "Consultation",
+      "title": "Personal scent consultation",
+      "context_product": "I am currently looking at __CODE__.",
+      "context_search": "I am looking for __CODE__.",
+      "close": "Hide consultation bar"
+    },
+    "scent_code": {
+      "title": "Scent code",
+      "field_label": "Scent code",
+      "placeholder": "047",
+      "submit": "Continue",
+      "hero_label": "Already advised?",
+      "checking": "Checking code",
+      "found": "__CODE__ found",
+      "order": "__CODE__ – choose a format",
+      "invalid": "Please enter a number between 1 and 130.",
+      "search_hit": "Scent code",
+      "order_cta": "Select now",
+      "your_code": "Your scent code",
+      "code_in_order": "Scent code",
+      "code_required": "Please enter your scent code.",
+      "code_help": "You received the code from us via WhatsApp.",
+      "no_code_yet": "No code yet?"
+    },
+    "product_row": {
+      "previous": "Previous fragrances",
+      "next": "More fragrances",
+      "position": "Fragrance __CURRENT__ of __TOTAL__"
+    },
+    "how_it_works": {
+      "title": "How it works"
+    },
+    "quick_add": {
+      "label": "Quick add",
+      "added": "Added"
     }
   },
   "customer": {

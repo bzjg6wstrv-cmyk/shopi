@@ -31,6 +31,12 @@
         predictive_search_url: {{ routes.predictive_search_url | json }},
         search_url: {{ routes.search_url | json }}
       };
+      window.VCCodeStrings = {
+        checking: {{ 'sections.scent_code.checking' | t | json }},
+        found: {{ 'sections.scent_code.found' | t | json }},
+        order: {{ 'sections.scent_code.order' | t | json }},
+        invalid: {{ 'sections.scent_code.invalid' | t | json }}
+      };
       window.VCStrings = {
         error: {{ 'general.accessibility.error' | t | json }},
         loading: {{ 'general.accessibility.loading' | t | json }},
@@ -42,6 +48,7 @@
       };
     </script>
     <script src="{{ 'theme.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'scent-code.js' | asset_url }}" defer="defer"></script>
 
     {{ content_for_header }}
 
@@ -62,6 +69,9 @@
     {%- if settings.cart_type == 'drawer' -%}
       {% section 'cart-drawer' %}
     {%- endif -%}
+
+    {% render 'whatsapp-sticky' %}
+    {% render 'scent-code-map' %}
 
     <div class="overlay" data-overlay hidden></div>
 

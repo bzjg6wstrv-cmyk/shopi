@@ -1,18 +1,15 @@
 {
   "sections": {
     "hero": {
-      "type": "hero",
+      "type": "hero-v2",
       "settings": {
         "color_scheme": "scheme-ivory",
-        "height": "medium",
-        "alignment": "left",
-        "scrim": 25,
-        "heading": "VENT CELESTE",
-        "text": "Konzentrierte Duftkompositionen. Klar kalkuliert.",
-        "primary_label": "Düfte entdecken",
-        "secondary_label": "Discovery Set",
-        "primary_link": "/collections/alle-duefte",
-        "secondary_link": "/products/discovery-set"
+        "eyebrow": "Über 120 Duftprofile",
+        "heading": "FIND\nYOUR\nSCENT.",
+        "text": "Dein Lieblingsduft. Dein VENT CELESTE Scent Code.",
+        "show_whatsapp": true,
+        "show_code_field": true,
+        "code_label": "Schon beraten? Scent Code eingeben"
       }
     },
     "promise": {
@@ -21,22 +18,22 @@
         "one": {
           "type": "statement",
           "settings": {
-            "value": "30 %",
-            "label": "Parfumkonzentration im Extrait"
+            "value": "30 ml",
+            "label": "Flakongröße der Hauptlinie"
           }
         },
         "two": {
           "type": "statement",
           "settings": {
-            "value": "30 ml",
-            "label": "Flakongröße der Hauptlinie"
+            "value": "30 %",
+            "label": "Parfumkonzentration im Extrait"
           }
         },
         "three": {
           "type": "statement",
           "settings": {
             "value": "29,90 €",
-            "label": "Musterpreis Extrait – tatsächliche Preise kommen aus Shopify"
+            "label": "Musterpreis – verbindlich ist der Shop-Preis"
           }
         }
       },
@@ -48,82 +45,68 @@
       "settings": {
         "color_scheme": "scheme-ivory",
         "heading": "Das Prinzip",
-        "footnote": "Angaben beziehen sich auf die Extrait-Linie. Verbindlich ist der im Shop hinterlegte Preis."
+        "footnote": "Angaben beziehen sich auf die Extrait-Linie."
       }
     },
-    "bestseller": {
-      "type": "featured-products",
+    "most_wanted": {
+      "type": "product-row",
       "settings": {
         "color_scheme": "scheme-ivory",
-        "eyebrow": "Auswahl",
-        "heading": "Bestseller",
-        "product_limit": 4,
-        "link_label": "Alle Düfte",
-        "collection": "bestseller"
+        "eyebrow": "Die meistgewählten Codes",
+        "heading": "Most Wanted",
+        "collection": "bestseller",
+        "product_limit": 8,
+        "link_label": "Alle Bestseller",
+        "link": "/collections/bestseller",
+        "quick_add": true,
+        "price_context": "extrait"
       }
     },
-    "worlds": {
-      "type": "scent-worlds",
+    "profiles": {
+      "type": "whatsapp-feature",
+      "settings": {
+        "color_scheme": "scheme-ink",
+        "scrim": 45,
+        "eyebrow": "Über 120 Duftprofile",
+        "heading": "Dein Duft ist nicht dabei?",
+        "text": "<p>Über 120 Duftprofile sind verfügbar – nicht alle davon sind im Shop gelistet. Schreib uns deinen Lieblingsduft, wir finden deinen Scent Code.</p>",
+        "button_label": "Auf WhatsApp finden lassen"
+      }
+    },
+    "how": {
+      "type": "how-it-works",
       "blocks": {
-        "w1": {
-          "type": "world",
+        "s1": {
+          "type": "step",
           "settings": {
-            "title": "Frisch",
-            "collection": "frisch"
+            "title": "Lieblingsduft nennen",
+            "text": "Schreib uns per WhatsApp, welches Parfum du magst."
           }
         },
-        "w2": {
-          "type": "world",
+        "s2": {
+          "type": "step",
           "settings": {
-            "title": "Gourmand",
-            "collection": "gourmand"
+            "title": "Scent Code erhalten",
+            "text": "Wir nennen dir deinen passenden VENT CELESTE Code."
           }
         },
-        "w3": {
-          "type": "world",
+        "s3": {
+          "type": "step",
           "settings": {
-            "title": "Holzig",
-            "collection": "holzig"
-          }
-        },
-        "w4": {
-          "type": "world",
-          "settings": {
-            "title": "Amber",
-            "collection": "amber"
-          }
-        },
-        "w5": {
-          "type": "world",
-          "settings": {
-            "title": "Floral",
-            "collection": "floral"
-          }
-        },
-        "w6": {
-          "type": "world",
-          "settings": {
-            "title": "Oud",
-            "collection": "oud"
+            "title": "Bestellen",
+            "text": "Code eingeben, Ausführung wählen, fertig."
           }
         }
       },
       "block_order": [
-        "w1",
-        "w2",
-        "w3",
-        "w4",
-        "w5",
-        "w6"
+        "s1",
+        "s2",
+        "s3"
       ],
       "settings": {
         "color_scheme": "scheme-ivory",
-        "eyebrow": "Orientierung",
-        "heading": "Duftwelten",
-        "link_label": "Alle Düfte",
-        "asymmetric": true,
-        "show_count": true,
-        "link": "/collections/alle-duefte"
+        "heading": "So funktioniert's",
+        "show_whatsapp": true
       }
     },
     "discovery": {
@@ -140,14 +123,14 @@
           "type": "point",
           "settings": {
             "label": "Auswahl",
-            "text": "Fünf Düfte frei wählbar"
+            "text": "Fünf Scent Codes frei wählbar"
           }
         },
         "p3": {
           "type": "point",
           "settings": {
             "label": "Musterpreis",
-            "text": "14,90 €"
+            "text": "3,90 €"
           }
         }
       },
@@ -162,12 +145,20 @@
         "media_shape": "wide",
         "eyebrow": "Erst kennenlernen",
         "heading": "Discovery Set",
-        "text": "<p>Bei über 100 Duftprofilen muss man sich nicht blind entscheiden. Fünf auswählen, in Ruhe tragen, Favoriten finden.</p>",
+        "text": "<p>Fünf Codes auswählen, in Ruhe tragen, Favoriten finden. Der einfachste Weg, sich zu entscheiden.</p>",
         "show_price": false,
-        "primary_label": "Discovery Set zusammenstellen",
-        "secondary_label": "Duftfinder",
-        "primary_link": "/products/discovery-set",
-        "secondary_link": "/pages/duftfinder"
+        "primary_label": "Set zusammenstellen",
+        "primary_link": "/products/discovery-set"
+      }
+    },
+    "code": {
+      "type": "scent-code-entry",
+      "settings": {
+        "color_scheme": "scheme-ivory",
+        "eyebrow": "Bereits beraten",
+        "heading": "Code bereits bekannt?",
+        "text": "Gib deinen Scent Code ein und wähle deine Ausführung.",
+        "whatsapp_label": "Beratung starten"
       }
     },
     "extrait": {
@@ -205,9 +196,9 @@
         "media_position": "left",
         "media_shape": "tall",
         "eyebrow": "Die Hauptlinie",
-        "heading": "Extrait",
+        "heading": "30 % Extrait",
         "text": "<p>Ein hoher Anteil an Parfumöl bedeutet vor allem eines: Der Duft trägt sich dichter und muss seltener nachgelegt werden. Die Rohstoffe werden sorgfältig ausgewählt, die Komposition bleibt eigenständig.</p>",
-        "show_price": true,
+        "show_price": false,
         "primary_label": "Extrait ansehen",
         "primary_link": "/collections/extrait"
       }
@@ -239,94 +230,31 @@
         "media_position": "right",
         "media_shape": "wide",
         "eyebrow": "Für unterwegs",
-        "heading": "Travel Spray",
+        "heading": "Travel 10 ml",
         "text": "<p>Das kleine Format für Handtasche und Reise – und ein ruhiger Weg, einen Duft über mehrere Tage kennenzulernen.</p>",
         "show_price": false,
         "primary_label": "Travel Size ansehen",
         "primary_link": "/collections/travel-size"
       }
     },
-    "finder": {
-      "type": "scent-finder-teaser",
-      "blocks": {
-        "s1": {
-          "type": "step",
-          "settings": {
-            "question": "Welche Richtung suchst du?",
-            "answers": "Frisch · Süß · Holzig · Gourmand · Floral · Dunkel"
-          }
-        },
-        "s2": {
-          "type": "step",
-          "settings": {
-            "question": "Wann möchtest du den Duft tragen?",
-            "answers": "Alltag · Abend · Sommer · Winter · Besonderer Anlass"
-          }
-        },
-        "s3": {
-          "type": "step",
-          "settings": {
-            "question": "Wie intensiv?",
-            "answers": "Dezent · Mittel · Intensiv"
-          }
-        }
-      },
-      "block_order": [
-        "s1",
-        "s2",
-        "s3"
-      ],
-      "settings": {
-        "color_scheme": "scheme-ivory-deep",
-        "eyebrow": "Drei Fragen",
-        "heading": "Duftfinder",
-        "text": "<p>Richtung, Anlass, Intensität. Danach zeigen wir dir die Düfte, die dazu passen.</p>",
-        "button_label": "Duftfinder starten",
-        "link": "/pages/duftfinder"
-      }
-    },
     "essentials": {
-      "type": "editorial-feature",
-      "blocks": {
-        "es1": {
-          "type": "point",
-          "settings": {
-            "label": "Größe",
-            "text": "30 ml"
-          }
-        },
-        "es2": {
-          "type": "point",
-          "settings": {
-            "label": "Musterpreis",
-            "text": "9,90 €"
-          }
-        }
-      },
-      "block_order": [
-        "es1",
-        "es2"
-      ],
+      "type": "quiet-link",
       "settings": {
         "color_scheme": "scheme-ivory",
-        "media_position": "left",
-        "media_shape": "wide",
-        "eyebrow": "Einstiegslinie",
-        "heading": "Essentials",
-        "text": "<p>Eine eigene Rezepturlinie für den Alltag – unkompliziert, mit anderem Rohstoffaufbau als die Hauptlinie und bewusst eigenständig präsentiert.</p>",
-        "show_price": false,
-        "primary_label": "Essentials ansehen",
-        "primary_link": "/collections/essentials"
+        "heading": "Essentials · 30 ml · ab 9,90 €",
+        "text": "Eine eigene Einstiegslinie für den Alltag.",
+        "link_label": "Ansehen",
+        "link": "/collections/essentials"
       }
     },
-    "about": {
+    "brand": {
       "type": "editorial-feature",
       "settings": {
-        "color_scheme": "scheme-ivory",
+        "color_scheme": "scheme-ink",
         "media_position": "right",
         "media_shape": "wide",
         "eyebrow": "Über uns",
-        "heading": "Über VENT CELESTE",
+        "heading": "VENT CELESTE",
         "text": "<p>Mustertext. Hier steht später die Haltung der Marke: warum es diese Düfte gibt, wie ausgewählt wird und was der Anspruch an Konzentration und Rohstoffe ist. Bitte vor dem Livegang vollständig ersetzen – es wurde bewusst keine Gründungsgeschichte erfunden.</p>",
         "placeholder_note": true,
         "show_price": false,
@@ -347,14 +275,15 @@
   "order": [
     "hero",
     "promise",
-    "bestseller",
-    "worlds",
+    "most_wanted",
+    "profiles",
+    "how",
     "discovery",
+    "code",
     "extrait",
     "travel",
-    "finder",
     "essentials",
-    "about",
+    "brand",
     "newsletter"
   ]
 }

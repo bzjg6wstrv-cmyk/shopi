@@ -1,0 +1,71 @@
+{%- comment -%}
+  Erkennt einen Scent Code in einer Sucheingabe und rendert einen direkten
+  Treffer. Läuft serverseitig – funktioniert damit auch ohne JavaScript und
+  auf der normalen Suchergebnisseite.
+
+  Parameter: terms (die Sucheingabe)
+
+  „47", „047", „vc47", „VC 047" und „VC-047" führen alle zum selben Code.
+{%- endcomment -%}
+{%- liquid
+  assign prefix = settings.scent_code_prefix | default: 'VC'
+  assign prefix_down = prefix | downcase
+
+  assign digits = terms | downcase | remove: prefix_down | remove: '-' | remove: '–' | remove: ' ' | remove: '#' | strip
+  assign number = digits | plus: 0
+  assign max_code = settings.scent_code_max | default: 130
+
+  assign has_code = false
+  if number > 0 and number <= max_code and digits != blank
+    assign has_code = true
+  endif
+
+  if has_code
+    if number < 10
+      assign padded = '00' | append: number
+    elsif number < 100
+      assign padded = '0' | append: number
+    else
+      assign padded = number | append: ''
+    endif
+    assign code = prefix | append: '-' | append: padded
+
+    assign matched_product = blank
+    for candidate in settings.scent_code_collection.products limit: 60
+      assign candidate_code = candidate.metafields.custom.scent_code.value | default: candidate.title | strip | upcase
+      if matched_product == blank and candidate_code == code
+        assign matched_product = candidate
+      endif
+    endfor
+
+    assign target_url = ''
+    assign target_meta = ''
+    if matched_product != blank
+      assign target_url = matched_product.url
+      assign main_variant = matched_product.metafields.custom.hauptvariante.value
+      if main_variant == blank
+        assign main_variant = matched_product.selected_or_first_available_variant
+      endif
+      assign variant_price = main_variant.price | money
+      assign target_meta = main_variant.title | append: ' · ' | append: variant_price
+    else
+      assign generic = settings.scent_code_product
+      if generic != blank
+        assign target_url = generic.url | append: '?code=' | append: code
+      endif
+    endif
+  endif
+-%}
+{%- if has_code and target_url != blank -%}
+  <a class="predictive__code" href="{{ target_url }}" role="option">
+    <span>
+      <span class="predictive__code-title">{{ code }}</span>
+      {%- if target_meta != blank -%}
+        <span class="predictive__code-meta">{{ target_meta }}</span>
+      {%- else -%}
+        <span class="predictive__code-meta">{{ 'sections.scent_code.code_help' | t }}</span>
+      {%- endif -%}
+    </span>
+    <span class="predictive__code-cta">{{ 'sections.scent_code.order_cta' | t }}</span>
+  </a>
+{%- endif -%}

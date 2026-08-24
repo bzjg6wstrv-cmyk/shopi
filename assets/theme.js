@@ -363,3 +363,115 @@
 
   document.addEventListener('shopify:section:load', initReveal);
 })();
+
+/* ==========================================================================
+   V2-Ergänzungen: Beratungsleiste, Hero-Drift, Tastatur-Zustand, Quick Add
+   Alles rein additiv – die Bausteine aus V1 bleiben unverändert.
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  /* ------------------------------------------------- Mobile Beratungsleiste */
+  var bar = document.querySelector('[data-whatsapp-bar]');
+  if (bar) {
+    var dismissed = false;
+    try {
+      dismissed = window.sessionStorage.getItem('vc-wa-dismissed') === '1';
+    } catch (error) {
+      /* Privater Modus: Leiste erscheint dann in jeder Sitzung erneut. */
+    }
+
+    if (dismissed) {
+      bar.remove();
+    } else {
+      var threshold = parseInt(bar.getAttribute('data-threshold'), 10) || 40;
+      bar.hidden = false;
+
+      var ticking = false;
+      var onScroll = function () {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(function () {
+          var max = document.documentElement.scrollHeight - window.innerHeight;
+          var progress = max > 0 ? (window.scrollY / max) * 100 : 0;
+          bar.classList.toggle('is-visible', progress >= threshold);
+          ticking = false;
+        });
+      };
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+
+      var dismiss = bar.querySelector('[data-whatsapp-dismiss]');
+      if (dismiss) {
+        dismiss.addEventListener('click', function () {
+          bar.classList.remove('is-visible');
+          try {
+            window.sessionStorage.setItem('vc-wa-dismissed', '1');
+          } catch (error) {
+            /* nichts zu tun */
+          }
+          window.setTimeout(function () {
+            bar.remove();
+          }, 300);
+        });
+      }
+    }
+  }
+
+  /* Produktseiten mit Sticky-Warenkorb: Beratungsleiste tritt zurück. */
+  if (document.querySelector('[data-sticky-atc]')) {
+    document.body.classList.add('has-sticky-atc');
+  }
+
+  /* ------------------------------------------- Leisten weichen der Tastatur */
+  document.addEventListener('focusin', function (event) {
+    if (event.target.matches('input, textarea, select')) {
+      document.body.classList.add('is-typing');
+    }
+  });
+  document.addEventListener('focusout', function () {
+    window.setTimeout(function () {
+      var active = document.activeElement;
+      if (!active || !active.matches || !active.matches('input, textarea, select')) {
+        document.body.classList.remove('is-typing');
+      }
+    }, 60);
+  });
+
+  /* ------------------------------------------------------------ Hero-Drift */
+  var drift = document.querySelector('[data-hero-drift]');
+  if (drift && !reduceMotion.matches) {
+    var driftTicking = false;
+    var updateDrift = function () {
+      if (driftTicking) return;
+      driftTicking = true;
+      window.requestAnimationFrame(function () {
+        var rect = drift.getBoundingClientRect();
+        var viewport = window.innerHeight || 1;
+        /* -1 … 1 über den sichtbaren Bereich, gedeckelt auf 24 px */
+        var relative = (rect.top + rect.height / 2 - viewport / 2) / viewport;
+        var offset = Math.max(-1, Math.min(1, relative)) * -24;
+        drift.style.setProperty('--hero-drift', offset.toFixed(1) + 'px');
+        driftTicking = false;
+      });
+    };
+    window.addEventListener('scroll', updateDrift, { passive: true });
+    window.addEventListener('resize', updateDrift);
+    updateDrift();
+  }
+
+  /* -------------------------------------------------- Quick-Add-Rückmeldung */
+  document.addEventListener('submit', function (event) {
+    var form = event.target.closest('.card__quick-add');
+    if (!form) return;
+    var button = form.querySelector('button');
+    if (!button) return;
+    button.setAttribute('data-state', 'added');
+    window.setTimeout(function () {
+      button.removeAttribute('data-state');
+    }, 1400);
+  });
+})();

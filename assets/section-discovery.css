@@ -84,3 +84,24 @@
 
 .picker__status { margin-top: var(--space-md); font-size: .875rem; color: rgb(var(--color-muted)); }
 .picker__more { margin-top: var(--space-md); }
+
+/* Auswahlzähler 0 / 5 – die zentrale Rückmeldung beim Zusammenstellen. */
+.picker__counter {
+  display: flex;
+  align-items: baseline;
+  gap: .35rem;
+  margin-top: var(--space-lg);
+  font-family: var(--font-heading-family);
+  line-height: 1;
+}
+.picker__counter-value {
+  font-size: clamp(2.5rem, 2rem + 2.5vw, 4rem);
+  font-variant-numeric: tabular-nums;
+  transition: color var(--dur) var(--ease);
+}
+.picker__counter-sep,
+.picker__counter-max {
+  font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+  color: rgb(var(--color-muted));
+  font-variant-numeric: tabular-nums;
+}

@@ -86,7 +86,21 @@
     "contact_phone": "[TELEFON]",
     "contact_hours": "[ERREICHBARKEIT]",
     "sample_keyword": "sample",
-    "sections": {},
+    "whatsapp_enabled": true,
+    "whatsapp_number": "+49 172 8439661",
+    "whatsapp_message": "Hallo VENT CELESTE, ich suche einen passenden Duft zu meinem Lieblingsparfum: ",
+    "whatsapp_response_time": "Antwort meist innerhalb von 24 Stunden",
+    "whatsapp_sticky_mobile": true,
+    "whatsapp_sticky_threshold": 40,
+    "whatsapp_sticky_label": "Duftberatung",
+    "scent_code_prefix": "VC",
+    "scent_code_max": 130,
+    "scent_code_collection": "bestseller",
+    "scent_code_product": "scent-code",
+    "display_tracking": -3,
+    "display_leading": 92,
+    "sections": {
+    },
     "cart_cross_sell_product": "discovery-set"
   }
 }

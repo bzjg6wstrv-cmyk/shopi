@@ -1,0 +1,57 @@
+{%- comment -%}
+  Eingabefeld für den Scent Code.
+  Parameter:
+    id       – eindeutige ID (Pflicht, das Feld erscheint mehrfach je Seite)
+    size     – 'inline' (Hero), 'large' (eigener Abschnitt), 'compact' (Menü)
+    label    – sichtbare Beschriftung darüber
+    submit   – Beschriftung des Buttons
+
+  Ohne JavaScript ist das Feld ein normales Suchformular auf /search –
+  der Kunde landet dann bei der Trefferliste statt direkt auf der Produktseite.
+{%- endcomment -%}
+{%- liquid
+  assign field_id = id | default: 'ScentCode'
+  assign field_size = size | default: 'inline'
+  assign prefix = settings.scent_code_prefix | default: 'VC'
+  assign submit_label = submit
+  if submit_label == blank
+    assign submit_label = 'sections.scent_code.submit' | t
+  endif
+-%}
+<form
+  class="code-field code-field--{{ field_size }}"
+  action="{{ routes.search_url }}"
+  method="get"
+  role="search"
+  data-scent-code-form="{{ mode | default: 'navigate' }}"
+>
+  {%- if label != blank -%}
+    <label class="code-field__label meta meta--muted" for="{{ field_id }}">{{ label }}</label>
+  {%- else -%}
+    <label class="visually-hidden" for="{{ field_id }}">{{ 'sections.scent_code.field_label' | t }}</label>
+  {%- endif -%}
+
+  <div class="code-field__row">
+    <span class="code-field__prefix" aria-hidden="true">{{ prefix }}-</span>
+    <input
+      class="code-field__input"
+      id="{{ field_id }}"
+      type="text"
+      name="q"
+      inputmode="numeric"
+      autocomplete="off"
+      autocorrect="off"
+      spellcheck="false"
+      maxlength="8"
+      placeholder="{{ 'sections.scent_code.placeholder' | t }}"
+      aria-describedby="{{ field_id }}-status"
+      data-scent-code-input
+    >
+    <button type="submit" class="code-field__submit" data-scent-code-submit>
+      <span class="code-field__submit-text">{{ submit_label }}</span>
+      {% render 'icon', name: 'arrow' %}
+    </button>
+  </div>
+
+  <p class="code-field__status" id="{{ field_id }}-status" role="status" aria-live="polite" data-scent-code-status></p>
+</form>

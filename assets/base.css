@@ -489,7 +489,7 @@ p { text-wrap: pretty; }
 
 .card__title { font-family: var(--font-heading-family); font-size: 1.125rem; line-height: 1.2; }
 
-.card__title a::after { content: ''; position: absolute; inset: 0; }
+.card__title a::after { content: ''; position: absolute; inset: 0; z-index: 1; }
 .card { position: relative; }
 
 .card__family { color: rgb(var(--color-muted)); font-size: 0.875rem; }
@@ -893,3 +893,316 @@ body.is-locked { overflow: hidden; }
 .pagination { display: flex; justify-content: center; gap: var(--space-md); margin-top: var(--space-3xl); }
 .pagination a, .pagination span { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .pagination [aria-current] { border-bottom: var(--border-width) solid rgb(var(--color-text)); }
+
+/* ==========================================================================
+   V2 — Editorial-Schärfung, Scent Code, Sticky-Leisten
+   ========================================================================== */
+
+/* 15 Display-Typografie -------------------------------------------------- */
+.display {
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: clamp(3rem, 13vw, 8.5rem);
+  line-height: var(--display-leading, 0.92);
+  letter-spacing: var(--display-tracking, -0.03em);
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.display--lines { display: block; }
+.display__line { display: block; }
+
+@media (min-width: 990px) {
+  .display { font-size: clamp(4rem, 7.5vw, 8.5rem); }
+}
+
+/* 16 Scent-Code-Feld ----------------------------------------------------- */
+.code-field { display: block; }
+.code-field__label { display: block; margin-bottom: var(--space-xs); }
+
+.code-field__row {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  border: var(--border-width) solid rgb(var(--color-text));
+  border-radius: var(--input-radius);
+  background-color: rgb(var(--color-background));
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.code-field__row:focus-within { box-shadow: inset 0 0 0 1px rgb(var(--color-text)); }
+
+.code-field__prefix {
+  display: flex;
+  align-items: center;
+  padding-inline: var(--space-md) 0;
+  font-family: var(--font-heading-family);
+  font-size: 1.125rem;
+  letter-spacing: .04em;
+  color: rgb(var(--color-muted));
+  user-select: none;
+}
+
+.code-field__input {
+  flex: 1;
+  min-width: 0;
+  min-height: 3.25rem;
+  padding: 0 var(--space-sm);
+  border: 0;
+  background: none;
+  font-family: var(--font-heading-family);
+  font-size: 1.125rem;
+  letter-spacing: .18em;
+  color: rgb(var(--color-text));
+}
+.code-field__input:focus { outline: none; }
+.code-field__input::placeholder { color: rgb(var(--color-muted)); opacity: .6; letter-spacing: .18em; }
+
+.code-field__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  min-height: 3.25rem;
+  padding-inline: var(--space-lg);
+  background-color: rgb(var(--color-text));
+  color: rgb(var(--color-background));
+  font-size: .75rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  transition: opacity var(--dur) var(--ease);
+}
+.code-field__submit:hover { opacity: .85; }
+.code-field__submit svg { width: 16px; height: 16px; }
+
+.code-field--large .code-field__input { min-height: 4rem; font-size: 1.5rem; }
+.code-field--large .code-field__prefix { font-size: 1.5rem; padding-inline: var(--space-lg) 0; }
+.code-field--large .code-field__submit { min-height: 4rem; }
+
+.code-field--compact .code-field__submit-text { display: none; }
+.code-field--compact .code-field__submit { padding-inline: var(--space-md); }
+
+.code-field__status { margin-top: var(--space-xs); font-size: .8125rem; min-height: 1.2em; }
+.code-field__status[data-tone='error'] { color: rgb(var(--color-text)); }
+.code-field__status[data-tone='ok'] { color: rgb(var(--color-muted)); }
+
+.code-field__row.is-valid { border-color: rgb(var(--color-accent)); }
+
+@keyframes vc-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+.code-field__row.is-invalid { animation: vc-shake 240ms var(--ease); }
+@media (prefers-reduced-motion: reduce) {
+  .code-field__row.is-invalid { animation: none; }
+}
+
+/* 17 Sticky-Leisten ------------------------------------------------------ */
+.sticky-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: calc(var(--z-header) - 1);
+  padding: var(--space-sm) var(--gutter);
+  padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom, 0px));
+  transform: translateY(110%);
+  transition: transform var(--dur) var(--ease);
+}
+.sticky-bar.is-visible { transform: none; }
+
+.whatsapp-bar {
+  background-color: rgb(var(--color-text));
+  color: rgb(var(--color-background));
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.whatsapp-bar__link {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-height: 2.75rem;
+  font-size: .8125rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  color: inherit;
+}
+.whatsapp-bar__link svg { width: 18px; height: 18px; }
+.whatsapp-bar__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  color: inherit;
+  opacity: .7;
+}
+.whatsapp-bar__close svg { width: 14px; height: 14px; }
+
+/* Auf Produktseiten gewinnt der Warenkorb-Button. */
+.template-product .whatsapp-bar,
+body.has-sticky-atc .whatsapp-bar { display: none; }
+
+@media (min-width: 990px) { .whatsapp-bar { display: none; } }
+
+/* Bei Fokus in einem Eingabefeld weichen alle Leisten. */
+body.is-typing .sticky-bar,
+body.is-typing .sticky-atc { transform: translateY(110%); }
+
+/* 18 WhatsApp-Buttons ---------------------------------------------------- */
+.button svg { width: 18px; height: 18px; flex: none; }
+.button--whatsapp { gap: .55rem; }
+
+/* 19 Gestaffeltes Einblenden --------------------------------------------- */
+.animations-on .reveal[data-reveal-delay='1'] { transition-delay: 60ms; }
+.animations-on .reveal[data-reveal-delay='2'] { transition-delay: 120ms; }
+.animations-on .reveal[data-reveal-delay='3'] { transition-delay: 180ms; }
+.animations-on .reveal[data-reveal-delay='4'] { transition-delay: 240ms; }
+
+/* 20 Logo als Inline-SVG ------------------------------------------------- */
+.header__logo-svg { display: block; }
+.header__logo-svg svg { display: block; width: 100%; height: auto; }
+.header__logo-svg svg [fill]:not([fill='none']) { fill: currentColor; }
+.header__logo-svg svg [stroke]:not([stroke='none']) { stroke: currentColor; }
+
+/* 21 Quick Add auf der Produktkarte -------------------------------------- */
+.card__quick-add { position: absolute; right: var(--space-sm); bottom: var(--space-sm); z-index: 2; }
+.card__quick-add-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: var(--border-width) solid rgb(var(--color-text));
+  border-radius: var(--button-radius);
+  background-color: rgb(var(--color-background));
+  color: rgb(var(--color-text));
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease), opacity var(--dur) var(--ease);
+}
+.card__quick-add-button svg { width: 16px; height: 16px; }
+.card__quick-add-button:hover { background-color: rgb(var(--color-text)); color: rgb(var(--color-background)); }
+.card__quick-add-button[data-state='added'] { background-color: rgb(var(--color-text)); color: rgb(var(--color-background)); }
+
+/* Auf Zeigegeräten erst beim Überfahren, auf Touch dauerhaft sichtbar. */
+@media (hover: hover) and (min-width: 750px) {
+  .card__quick-add { opacity: 0; transition: opacity var(--dur) var(--ease); }
+  .card:hover .card__quick-add,
+  .card__quick-add:focus-within { opacity: 1; }
+}
+
+/* 22 Kopfbereich V2 ------------------------------------------------------ */
+.header__icon--desktop { display: none; }
+@media (min-width: 990px) { .header__icon--desktop { display: inline-flex; } }
+
+.mega__list--split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--space-lg);
+}
+.mega__list--split > li + li { margin-top: 0; }
+.mega__list--split a { display: block; padding-block: .3rem; }
+
+.mega__wa { display: grid; align-content: start; gap: var(--space-sm); }
+.mega__wa-text { font-size: .9375rem; color: rgb(var(--color-muted)); max-width: 26ch; }
+.mega__wa .button { justify-self: start; }
+.mega__wa-note { font-size: .75rem; color: rgb(var(--color-muted)); }
+
+/* Mobiles Menü */
+.menu-drawer__top {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  border-bottom: var(--border-width) solid rgb(var(--color-line));
+}
+.menu-drawer__wa { width: 100%; min-height: 3rem; }
+
+.menu-drawer__primary > li { border-bottom: var(--border-width) solid rgb(var(--color-line)); }
+.menu-drawer__primary .menu-drawer__link { font-size: 1.0625rem; letter-spacing: .04em; }
+.menu-drawer__link svg { width: 16px; height: 16px; opacity: .5; }
+
+.menu-drawer__secondary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--space-md);
+  padding-block: var(--space-md);
+  border-bottom: var(--border-width) solid rgb(var(--color-line));
+}
+.menu-drawer__secondary a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: .9375rem;
+  color: rgb(var(--color-muted));
+}
+
+.menu-drawer__tertiary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding-block: var(--space-lg);
+}
+.menu-drawer__tertiary a {
+  font-size: .8125rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.menu-drawer__account { border-top: var(--border-width) solid rgb(var(--color-line)); }
+
+/* Scent-Code-Feld über der Suche */
+.search-panel__code { max-width: 24rem; margin-bottom: var(--space-xl); }
+
+/* Scent-Code-Treffer in der Sofortsuche */
+.predictive__code {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  min-height: 3.5rem;
+  padding: var(--space-sm) var(--space-md);
+  border: var(--border-width) solid rgb(var(--color-text));
+  margin-bottom: var(--space-lg);
+}
+.predictive__code-title { font-family: var(--font-heading-family); font-size: 1.125rem; letter-spacing: .1em; }
+.predictive__code-meta { font-size: .8125rem; color: rgb(var(--color-muted)); }
+.predictive__code-cta { font-size: .75rem; letter-spacing: var(--meta-tracking); text-transform: uppercase; white-space: nowrap; }
+
+/* 23 Scent Code im Warenkorb --------------------------------------------- */
+.cart-item__code {
+  margin-top: var(--space-xs);
+  padding-left: var(--space-sm);
+  border-left: 2px solid rgb(var(--color-accent));
+  color: rgb(var(--color-text));
+}
+.cart-item__code dt,
+.cart-item__code dd {
+  font-size: .75rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+}
+.cart-item__code dd { font-family: var(--font-heading-family); letter-spacing: .1em; }
+
+/* 24 Ruhige Zeile -------------------------------------------------------- */
+.quiet-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding-block: var(--space-lg);
+  border-top: var(--border-width) solid rgb(var(--color-line));
+  border-bottom: var(--border-width) solid rgb(var(--color-line));
+}
+.quiet-row__main { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-md); }
+.quiet-row__title {
+  font-size: .8125rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+}
+.quiet-row__text { color: rgb(var(--color-muted)); font-size: .9375rem; }

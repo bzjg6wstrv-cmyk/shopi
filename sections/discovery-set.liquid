@@ -50,7 +50,12 @@
           <div class="rte measure" style="margin-top: var(--space-md);">{{ product.description }}</div>
         {%- endif -%}
 
-        <p class="meta meta--muted" style="margin-top: var(--space-lg);" data-picker-counter></p>
+        <div class="picker__counter" aria-hidden="true">
+          <span class="picker__counter-value" data-picker-count>0</span>
+          <span class="picker__counter-sep">/</span>
+          <span class="picker__counter-max">{{ max_picks }}</span>
+        </div>
+        <p class="visually-hidden" role="status" aria-live="polite" data-picker-counter></p>
 
         <div class="slots" data-slots>
           {%- for i in (1..max_picks) -%}

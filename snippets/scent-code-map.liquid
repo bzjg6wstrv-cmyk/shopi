@@ -1,0 +1,42 @@
+{%- comment -%}
+  Zuordnungstabelle Scent Code → Produkt-Handle für die öffentlich gelisteten
+  Düfte. Wird einmal je Seite gerendert und vom Scent-Code-Skript gelesen.
+
+  Enthält ausschließlich Code, Handle, Preis der Hauptvariante und deren
+  Variantennummer. Keine internen Daten – die Zuordnung zu Originaldüften
+  existiert in Shopify nicht.
+{%- endcomment -%}
+  {%- liquid
+    assign public_collection = settings.scent_code_collection
+    assign fallback_handle = settings.scent_code_product.handle
+  -%}
+  <script type="application/json" data-scent-code-map>
+    {
+      "prefix": {{ settings.scent_code_prefix | default: 'VC' | json }},
+      "max": {{ settings.scent_code_max | default: 130 | json }},
+      "fallback": {{ fallback_handle | json }},
+      "searchUrl": {{ routes.predictive_search_url | json }},
+      "codes": {
+        {%- assign first_entry = true -%}
+        {%- for item in public_collection.products limit: 60 -%}
+          {%- liquid
+            assign item_code = item.metafields.custom.scent_code.value | default: item.title | strip | upcase
+            assign main_variant = item.metafields.custom.hauptvariante.value
+            if main_variant == blank
+              assign main_variant = item.selected_or_first_available_variant
+            endif
+          -%}
+          {%- if item_code != blank -%}
+            {%- unless first_entry %},{% endunless -%}
+            {{ item_code | json }}: {
+              "handle": {{ item.handle | json }},
+              "price": {{ main_variant.price | money | json }},
+              "variant": {{ main_variant.title | json }},
+              "available": {{ item.available | json }}
+            }
+            {%- assign first_entry = false -%}
+          {%- endif -%}
+        {%- endfor -%}
+      }
+    }
+  </script>

@@ -1,0 +1,73 @@
+{{ 'section-scent-code.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  Scent-Code-Eingabe als eigener Abschnitt auf der Startseite.
+  Für Kunden, die bereits beraten wurden und nur noch bestellen wollen.
+{%- endcomment -%}
+<section class="section section--tight code-section color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width">
+    <div class="code-section__inner reveal">
+      {%- if section.settings.eyebrow != blank -%}
+        <span class="eyebrow">{{ section.settings.eyebrow | escape }}</span>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h2 class="code-section__title h3">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+      {%- if section.settings.text != blank -%}
+        <p class="code-section__text">{{ section.settings.text | escape }}</p>
+      {%- endif -%}
+
+      {% render 'scent-code-field', id: 'SectionScentCode', size: 'large' %}
+
+      {%- if settings.whatsapp_enabled -%}
+        <p class="code-section__alt">
+          {{ 'sections.scent_code.no_code_yet' | t }}
+          {% render 'whatsapp-link', class: 'link-underline', label: section.settings.whatsapp_label %}
+        </p>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Scent Code eingeben",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Farbschema",
+      "default": "scheme-ivory-deep"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Kleiner Vortext",
+      "default": "Bereits beraten"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Überschrift",
+      "default": "Code bereits bekannt?"
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Text",
+      "default": "Gib deinen Scent Code ein und wähle deine Ausführung."
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_label",
+      "label": "Textlink zur Beratung",
+      "default": "Beratung starten"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Scent Code eingeben"
+    }
+  ]
+}
+{% endschema %}

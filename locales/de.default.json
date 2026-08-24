@@ -124,7 +124,9 @@
       "note_pyramid": "Duftpyramide",
       "recommendations": "Ähnliche Duftprofile",
       "no_recommendations": "Derzeit keine passenden Empfehlungen verfügbar.",
-      "share": "Teilen"
+      "share": "Teilen",
+      "concentration_short": "__PERCENT__ %",
+      "size_short": "__SIZE__"
     },
     "facets": {
       "title": "Filter",
@@ -200,7 +202,7 @@
     },
     "discovery_set": {
       "title": "Discovery Set",
-      "select_prompt": "Wähle fünf Düfte",
+      "select_prompt": "Wähle fünf Scent Codes",
       "selected_count": "{{ chosen }} von {{ max }} gewählt",
       "choose": "Auswählen",
       "chosen": "Gewählt",
@@ -208,7 +210,7 @@
       "search_placeholder": "Duft suchen",
       "incomplete": "Bitte wähle genau fünf Düfte.",
       "unavailable": "Zurzeit nicht verfügbar",
-      "step_label": "Auswahl",
+      "step_label": "Scent Code",
       "add_to_cart": "Discovery Set in den Warenkorb",
       "your_selection": "Deine Auswahl",
       "empty_slot": "Noch frei",
@@ -216,6 +218,44 @@
       "no_matches": "Keine Düfte gefunden.",
       "note": "Die Auswahl wird als Positionsangabe an die Bestellung übergeben und ist im Warenkorb, im Checkout und in der Bestellbestätigung sichtbar.",
       "no_js": "Für die Auswahl der fünf Düfte wird JavaScript benötigt. Ohne JavaScript kann das Set nicht zusammengestellt werden."
+    },
+    "whatsapp": {
+      "cta": "Duftberatung starten",
+      "cta_short": "Duftberatung",
+      "title": "Persönliche Duftberatung",
+      "context_product": "Ich sehe mir gerade __CODE__ an.",
+      "context_search": "Ich suche __CODE__.",
+      "close": "Beratungsleiste ausblenden"
+    },
+    "scent_code": {
+      "title": "Scent Code",
+      "field_label": "Scent Code",
+      "placeholder": "047",
+      "submit": "Weiter",
+      "hero_label": "Schon beraten?",
+      "checking": "Code wird geprüft",
+      "found": "__CODE__ gefunden",
+      "order": "__CODE__ – Ausführung wählen",
+      "invalid": "Bitte eine Nummer zwischen 1 und 130 eingeben.",
+      "search_hit": "Scent Code",
+      "order_cta": "Jetzt auswählen",
+      "your_code": "Dein Scent Code",
+      "code_in_order": "Scent Code",
+      "code_required": "Bitte gib deinen Scent Code ein.",
+      "code_help": "Den Code hast du per WhatsApp von uns bekommen.",
+      "no_code_yet": "Noch keinen Code?"
+    },
+    "product_row": {
+      "previous": "Vorherige Düfte",
+      "next": "Weitere Düfte",
+      "position": "Duft __CURRENT__ von __TOTAL__"
+    },
+    "how_it_works": {
+      "title": "So funktioniert's"
+    },
+    "quick_add": {
+      "label": "Schnell hinzufügen",
+      "added": "Hinzugefügt"
     }
   },
   "customer": {

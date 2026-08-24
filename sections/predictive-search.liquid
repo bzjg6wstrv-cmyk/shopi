@@ -4,6 +4,8 @@
   Die Suche selbst ist eine native Shopify-Funktion – keine externe App.
 {%- endcomment -%}
 {%- if predictive_search.performed -%}
+  {% render 'scent-code-hit', terms: predictive_search.terms %}
+
   {%- if predictive_search.resources.products.size == 0
     and predictive_search.resources.collections.size == 0
     and predictive_search.resources.pages.size == 0
@@ -11,6 +13,12 @@
   -%}
     <p class="predictive__status">{{ 'general.search.no_results' | t: terms: predictive_search.terms }}</p>
     <p class="predictive__status">{{ 'general.search.no_results_help' | t }}</p>
+    {%- if settings.whatsapp_enabled -%}
+      {%- assign wa_context = 'sections.whatsapp.context_search' | t | replace: '__CODE__', predictive_search.terms -%}
+      <p class="predictive__group">
+        {% render 'whatsapp-link', class: 'link-underline', context: wa_context %}
+      </p>
+    {%- endif -%}
   {%- else -%}
     {%- if predictive_search.resources.queries.size > 0 -%}
       <div class="predictive__group">

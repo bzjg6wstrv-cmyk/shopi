@@ -8,7 +8,7 @@
         "announcement": {
           "type": "announcement",
           "settings": {
-            "text": "Versand innerhalb Deutschlands"
+            "text": "Über 120 Duftprofile · Persönliche Duftberatung per WhatsApp"
           }
         }
       },
@@ -26,17 +26,20 @@
         "menu": "main-menu",
         "sticky": true,
         "show_account": true,
-        "families_parent": "Düfte",
-        "families_title": "Duftfamilien",
+        "families_parent": "Duftberatung",
+        "families_title": "Duftwelten",
         "feature_title": "Discovery Set",
         "feature_text": "Fünf Düfte selbst auswählen.",
-        "drawer_label_1": "Duftfinder",
-        "drawer_label_2": "Discovery Set",
-        "search_hint": "Suche nach Nummer, Duftfamilie oder einzelner Duftnote.",
+        "search_hint": "Suche nach Scent Code, Duftfamilie oder einzelner Duftnote.",
         "families_menu": "duftfamilien",
         "feature_link": "/products/discovery-set",
-        "drawer_link_1": "/pages/duftfinder",
-        "drawer_link_2": "/products/discovery-set"
+        "whatsapp_parent": "Duftberatung",
+        "whatsapp_teaser": "Nenn uns deinen Lieblingsduft – wir finden deinen Scent Code.",
+        "mobile_primary_menu": "mobile-hauptziele",
+        "mobile_secondary_menu": "mobile-nebenziele",
+        "mobile_footer_menu": "mobile-service",
+        "show_code_in_search": true,
+        "code_label": "Scent Code"
       }
     }
   },

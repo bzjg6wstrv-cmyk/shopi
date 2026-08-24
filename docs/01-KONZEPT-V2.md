@@ -4,8 +4,12 @@ Status: **Entwurf zur Freigabe.** Es wurde noch kein V2-Code geschrieben.
 Grundlage: bestehendes Theme (Stand `47f39f7`), Konzept V1 in `00-KONZEPT.md`.
 
 Alle Preise, Codes und Firmendaten sind Musterdaten.
-Die 20 Zuordnungen zu Originalparfums sind **interne Daten** und erscheinen in
-diesem Konzept nur zur Identifikation — nirgends im auszuliefernden Code.
+
+**Korrigiert am 24.08.2026 nach Rückmeldung:** Die Zuordnung VC-Code ↔ Originalduft
+wird **nicht** in Shopify gespeichert. `access.storefront = none` schützt ein
+Metafeld nicht vor dem Zugriff aus Liquid heraus — die Beschränkung wirkt auf die
+Storefront-API, nicht auf das Theme. Shopify kennt deshalb ausschließlich VC-Codes.
+Der Namespace `internal` entfällt vollständig.
 
 ---
 
@@ -80,7 +84,7 @@ aus dem Einstieg in die zweite Ebene.
 
 ┌───────────────────────────────┬──────────────────────────────────────────┐
 │                               │  DISCOVERY SET                           │  06 DISCOVERY
-│   [ Bild 5 Proben ]           │  5 × 2 ml · 4,90 €                       │
+│   [ Bild 5 Proben ]           │  5 × 2 ml · 3,90 €                       │
 │                               │  Fünf Scent Codes selbst zusammenstellen.│
 │                               │  ▸ SET ZUSAMMENSTELLEN                   │
 └───────────────────────────────┴──────────────────────────────────────────┘
@@ -460,7 +464,7 @@ Datenspeicher, der auseinanderlaufen könnte.
 | Alternative | Warum nicht |
 |---|---|
 | 130 Produkte anlegen, 110 davon unveröffentlicht | Unveröffentlichte Produkte lassen sich über die Storefront nicht in den Warenkorb legen. Technisch unmöglich. |
-| 130 Varianten am generischen Produkt | 130 × 4 = 520 Varianten. Überschreitet das klassische Limit von 100, macht Bestandsführung und Variantenauswahl unbedienbar. |
+| 130 Varianten am generischen Produkt | 130 × 4 = 520 Varianten. Shopify erlaubt inzwischen bis zu 2.048 Varianten je Produkt, das Limit wäre also kein Hindernis. Liquid gibt über `product.variants` jedoch weiterhin höchstens 250 Varianten aus, und Produkte mit vielen Varianten brauchen eine eigene Theme-Technik (Variantenauswahl über die Storefront-API statt über die gerenderte Variantenliste). Für unseren Fall wäre das deutlich aufwendiger als ein generisches Produkt mit vier Varianten — ohne funktionalen Gewinn, denn der Code steht ohnehin als Positionsangabe an der Zeile. |
 | Bestellattribut auf Auftragsebene (`attributes[…]`) | Gilt für die ganze Bestellung. Zwei verschiedene Codes im selben Warenkorb wären nicht unterscheidbar. |
 | Codes nur im Bestellhinweis-Freitextfeld | Ein Feld für den ganzen Warenkorb, unstrukturiert, nicht exportierbar, fehleranfällig. |
 | Eigene App / Cart Transform Function | Würde saubere Bestandsführung je Code erlauben — kostet aber ein Entwicklungsprojekt. Für V2 nicht nötig. |
@@ -517,7 +521,6 @@ Jeder Bestseller ist ein normales Shopify-Produkt:
 | `custom.scent_code` | `VC-047` |
 | `custom.hauptvariante` | Extrait 30 ml |
 | Tags | `bestseller`, `oeffentlich`, `familie:…` |
-| `internal.referenz` | interne Zuordnung — **Storefront-Zugriff aus** |
 
 Der Titel **ist** der Code. Das ist die wichtigste Entscheidung hier: Shopify-Suche,
 URL, Breadcrumb, Bestellbestätigung und Lieferschein tragen dann automatisch den
@@ -815,7 +818,7 @@ Bestand, Rabatte und Bestellungen betrifft, vollständig bei Shopify.
 | `sections/main-search.liquid` | Code-Erkennung, kein Sackgassen-Zustand ohne Treffer |
 | `sections/main-product.liquid` | Vollständiger Variantenwechsel über Datenobjekt, Konzentration je Variante |
 | `assets/product-form.js` | Preis, Grundpreis, SKU, Konzentration, Größe, Verfügbarkeit, Bild |
-| `sections/discovery-set.liquid` | Preis 4,90 €, Zähler `0 / 5`, Auswahl über Scent Codes |
+| `sections/discovery-set.liquid` | Zähler `0 / 5`, Auswahl über Scent Codes (Preis kommt aus Shopify, Musterwert 3,90 €) |
 | `sections/cart-drawer.liquid` | Scent Code hervorgehoben darstellen |
 | `assets/base.css` | Editorial-Typo-Skala, dunkles Schema, Sticky-Leisten, Scroll-Snap-Grundlagen |
 | `assets/theme.js` | Gestaffeltes Reveal, Sticky-Steuerung, Kollisionsregel Sticky-Leisten |
@@ -832,7 +835,7 @@ stehen nur nicht mehr in `index.json`.
 
 | Ebene | Key | Typ | Zweck |
 |---|---|---|---|
-| Produkt | `custom.scent_code` | Text | `VC-047`, Grundlage der Code-Tabelle |
+| Produkt | `custom.scent_code` | Text | `VC-047` — zugleich die interne Sortimentsnummer |
 | **Variante** | `custom.konzentration` | Text | Extrait / Eau de Parfum |
 | **Variante** | `custom.konzentration_prozent` | Text | 30 / 20 |
 | **Variante** | `custom.fuellmenge` | Text | 30 ml / 10 ml / 2 ml |
@@ -842,14 +845,28 @@ stehen nur nicht mehr in `index.json`.
 
 ## 11. Schutz der internen Referenzdaten
 
-Die 20 Zuordnungen zu Originalparfums sind interne Betriebsdaten. Sie stehen
-ausschließlich im Metafeld `internal.referenz` mit **deaktiviertem
-Storefront-Zugriff** — dadurch sind sie für Liquid und die Storefront-API
-technisch nicht lesbar und können nicht versehentlich gerendert werden.
+**Die Zuordnung VC-Code ↔ Originalduft wird nicht in Shopify gespeichert.**
 
-**Die eigentliche Gefahr liegt nicht im Theme, sondern in den Produktdaten.**
-Diese Felder sind öffentlich abrufbar, unter anderem über
-`/products.json` und `/collections/<handle>/products.json`:
+Ein Metafeld mit `access.storefront = none` ist gegen die Storefront-API
+abgeschirmt, nicht gegen Liquid. Ein Theme — auch ein späteres, fremdes oder
+versehentlich angepasstes — kann den Wert weiterhin lesen und ausgeben. Eine
+Zugriffseinstellung ist deshalb kein Schutz für markenrechtlich heikle Daten.
+
+Konsequenz für V2:
+
+- Der Namespace `internal` entfällt vollständig. `internal.referenz` und
+  `internal.sortiments_id` werden **nicht** angelegt.
+- `custom.scent_code` (`VC-047`) ist zugleich die interne Sortimentsnummer.
+  Eine zweite ID braucht es nicht.
+- Die Zuordnungstabelle lebt außerhalb von Shopify in einer privaten Liste
+  (Tabellenkalkulation, internes Dokument, Warenwirtschaft). Shopify sieht sie nie.
+- Damit ist der Schutz nicht von einer Einstellung abhängig, die jemand umstellen
+  oder ein Theme umgehen könnte, sondern davon, dass die Daten gar nicht erst
+  im System sind.
+
+Zusätzlich bleibt die Produktpflege-Disziplin entscheidend. Diese Felder sind
+öffentlich abrufbar, unter anderem über `/products.json` und
+`/collections/<handle>/products.json`:
 
 | Feld | öffentlich? |
 |---|---|
@@ -859,51 +876,37 @@ Diese Felder sind öffentlich abrufbar, unter anderem über
 | Bild-Dateiname und Alt-Text | **ja** |
 | SEO-Titel und -Beschreibung, Handle | **ja** |
 | Metafeld mit Storefront-Zugriff | ja |
-| Metafeld ohne Storefront-Zugriff | nein |
+| Metafeld ohne Storefront-Zugriff | nicht über die Storefront-API — **aber über Liquid** |
 
-Daraus folgen fünf harte Regeln für die Produktpflege:
+Fünf harte Regeln für die Produktpflege:
 
 1. Keine Fremdmarke im Titel, in der Beschreibung, im Handle oder in den SEO-Feldern.
 2. **Keine Fremdmarke als Tag.** Tags wirken intern, sind es aber nicht.
-3. Keine Fremdmarke im SKU und keine im Bilddateinamen oder Alt-Text.
-4. Keine Fremdmarke in einem Metafeld mit Storefront-Zugriff.
+3. Keine Fremdmarke im SKU, im Bilddateinamen oder im Alt-Text.
+4. Keine Fremdmarke in irgendeinem Metafeld — unabhängig von der Zugriffseinstellung.
 5. Keine automatisch übernommenen Duftnoten aus den Originalprodukten.
 
-Auf Theme-Seite prüfe ich vor Auslieferung, dass in Produktkarten, Produktseiten,
-Meta-Tags, JSON-LD, HTML-Kommentaren und allen JS-Datenobjekten ausschließlich
-`custom.*`-Felder verwendet werden und `internal.*` nirgends referenziert wird.
-
-Zusatzhinweis ohne Beschönigung: Auch ein Metafeld ohne Storefront-Zugriff ist
-für jedes Mitarbeiterkonto und jede App mit Produkt-Leserecht sichtbar. Wenn die
-Zuordnung wirklich unter Verschluss bleiben soll, gehört sie nicht in Shopify,
-sondern in eine getrennte Liste — im Shop stünde dann nur `internal.sortiments_id`.
-
----
+Auf Theme-Seite prüfe ich vor Auslieferung, dass Produktkarten, Produktseiten,
+Meta-Tags, JSON-LD, HTML-Kommentare und alle JS-Datenobjekte ausschließlich
+`custom.*`-Felder verwenden und kein `internal.*` mehr existiert.
 
 ## 12. Drei Punkte, die aus dem neuen Modell kippen
 
 Diese Beobachtungen ändern nichts am Auftrag, sollten aber vor dem Launch
 entschieden werden.
 
-### 12.1 Das Discovery Set hat seinen Preisvorteil verloren
+### 12.1 Discovery-Set-Preis — entschieden
 
 | | alt | neu |
 |---|---|---|
 | Sample einzeln | 3,90 € | 1,00 € |
 | 5 Samples einzeln | 19,50 € | 5,00 € |
-| Discovery Set | 14,90 € | 4,90 € |
-| **Ersparnis** | **23 %** | **2 %** |
+| Discovery Set | 14,90 € | **3,90 €** |
+| **Ersparnis** | 23 % | **22 %** |
 
-Bei 2 % Ersparnis ist das Set kein Preisargument mehr, sondern nur noch
-Bequemlichkeit. Drei Wege:
-
-- **belassen** und als „fünf Proben, ein Paket" kommunizieren (ehrlich, aber schwach)
-- **auf 3,90 € senken** → wieder ein sichtbarer Vorteil von 22 %
-- **Set entfallen lassen** und stattdessen fünf Samples einzeln mit Mengenrabatt
-
-Meine Empfehlung: Set behalten, Preis auf 3,90 € — eine feste Zahl im Kopf
-(„fünf Düfte für 3,90 €") verkauft besser als ein Rabatt, den man ausrechnen muss.
-Technisch ist der Preis ohnehin ein Shopify-Wert, im Theme steht nichts fest.
+Mit 3,90 € behält das Set einen klar sichtbaren Vorteil, und „fünf Düfte für
+3,90 €" ist eine Zahl, die man sich merkt. Der Preis wird selbstverständlich in
+Shopify gepflegt, im Theme steht nichts fest.
 
 ### 12.2 Eine 1-€-Bestellung kostet euch Geld
 
