@@ -14,13 +14,15 @@
         "menu_service": {
           "type": "menu",
           "settings": {
-            "title": "Service"
+            "title": "Service",
+            "menu": "footer-service"
           }
         },
         "menu_legal": {
           "type": "menu",
           "settings": {
-            "title": "Rechtliches"
+            "title": "Rechtliches",
+            "menu": "footer-rechtliches"
           }
         },
         "newsletter": {

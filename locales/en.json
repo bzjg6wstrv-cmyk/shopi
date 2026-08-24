@@ -115,7 +115,16 @@
       "reviews": "Reviews",
       "badge_bestseller": "Bestseller",
       "badge_new": "New",
-      "badge_sample": "Sample available"
+      "badge_sample": "Sample available",
+      "concentration_help_title": "What does 30 % extrait mean?",
+      "sample_help": "Get to know it first – 2 ml for on the go.",
+      "travel_help": "10 ml for handbag and travel.",
+      "add_sample": "Add sample",
+      "add_travel": "Add travel size",
+      "note_pyramid": "Scent pyramid",
+      "recommendations": "Similar scent profiles",
+      "no_recommendations": "No matching recommendations available right now.",
+      "share": "Share"
     },
     "facets": {
       "title": "Filters",
@@ -182,18 +191,31 @@
       "show_results": "Show fragrances",
       "checking": "Looking for matching fragrances",
       "no_exact_match": "No exact match – here are the closest fragrances.",
-      "restart": "Start over"
+      "restart": "Start over",
+      "intro_title": "Scent finder",
+      "question": "Question",
+      "result_intro": "Here are the fragrances that match.",
+      "no_js": "The scent finder also works without JavaScript: every answer is a link to the filtered overview.",
+      "not_configured": "The scent finder is not configured yet. Please add questions and answers in the theme editor."
     },
     "discovery_set": {
       "title": "Discovery Set",
       "select_prompt": "Choose five fragrances",
-      "selected_count": "{{ count }} of {{ max }} selected",
+      "selected_count": "{{ chosen }} of {{ max }} selected",
       "choose": "Select",
       "chosen": "Selected",
       "remove": "Remove",
       "search_placeholder": "Search fragrance",
       "incomplete": "Please choose exactly five fragrances.",
-      "unavailable": "Currently unavailable"
+      "unavailable": "Currently unavailable",
+      "step_label": "Selection",
+      "add_to_cart": "Add Discovery Set to cart",
+      "your_selection": "Your selection",
+      "empty_slot": "Still free",
+      "filter_all": "All",
+      "no_matches": "No fragrances found.",
+      "note": "Your selection is passed to the order as line item properties and is visible in the cart, at checkout and in the order confirmation.",
+      "no_js": "Selecting the five fragrances requires JavaScript. Without it the set cannot be assembled."
     }
   },
   "customer": {
@@ -333,6 +355,9 @@
     },
     "search": {
       "title": "Search"
+    },
+    "faq": {
+      "title": "Frequently asked questions"
     }
   },
   "blogs": {

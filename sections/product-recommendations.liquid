@@ -1,0 +1,67 @@
+{%- comment -%}
+  Empfehlungen über die native Shopify Product Recommendations API.
+  Werden per fetch nachgeladen, damit sie die Produktseite nicht verlangsamen.
+  Keine Fremdmarken, keine erfundenen Zusammenhänge – die Zuordnung trifft
+  Shopify anhand von Kaufverhalten und Produktdaten.
+{%- endcomment -%}
+{%- if recommendations.performed and recommendations.products_count > 0 -%}
+  <section class="section product-recommendations">
+    <div class="page-width">
+      <div class="section-head">
+        <h2 class="section-head__title h3">{{ section.settings.heading | escape }}</h2>
+      </div>
+      <ul class="grid grid--products">
+        {%- for product in recommendations.products -%}
+          <li>{% render 'product-card', product: product, lazy: 'lazy' %}</li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  </section>
+{%- elsif recommendations.performed == false -%}
+  <div
+    class="product-recommendations"
+    data-recommendations
+    data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ section.settings.limit }}&intent={{ section.settings.intent }}"
+  ></div>
+  <script src="{{ 'recommendations.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Empfehlungen",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Überschrift",
+      "default": "Ähnliche Duftprofile"
+    },
+    {
+      "type": "select",
+      "id": "intent",
+      "label": "Art der Empfehlung",
+      "options": [
+        {
+          "value": "related",
+          "label": "Ähnliche Produkte"
+        },
+        {
+          "value": "complementary",
+          "label": "Passende Ergänzungen"
+        }
+      ],
+      "default": "related"
+    },
+    {
+      "type": "range",
+      "id": "limit",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "label": "Anzahl",
+      "default": 4
+    }
+  ]
+}
+{% endschema %}

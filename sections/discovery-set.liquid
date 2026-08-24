@@ -1,0 +1,197 @@
+{{ 'section-discovery.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  Discovery Set – fünf Düfte selbst auswählen.
+
+  Technisch: Die Auswahl wird über Positionseigenschaften (line item
+  properties) an das native Shopify-Produktformular übergeben. Damit ist sie
+  im Warenkorb, im Checkout, in der Bestellbestätigung, im Admin und auf dem
+  Lieferschein sichtbar. Es gibt keinen zweiten Datenspeicher und nichts,
+  was im Checkout verloren gehen könnte.
+
+  Bekannte Grenze: Der Bestand der einzelnen 2-ml-Proben wird nicht
+  automatisch gebucht – gebucht wird der Bestand des Set-Produkts.
+  Angeboten werden nur Düfte, deren Probenvariante beim Seitenaufbau
+  verfügbar ist. Siehe README.
+{%- endcomment -%}
+{%- liquid
+  assign source = section.settings.source_collection
+  assign max_picks = section.settings.max_picks
+  assign current_variant = product.selected_or_first_available_variant
+
+  assign family_filters = section.settings.families | strip | newline_to_br | split: '<br />'
+-%}
+<section class="section">
+  <div class="page-width">
+    <div class="discovery">
+      <div class="discovery__intro">
+        {%- if product.featured_media -%}
+          <div class="discovery__media">
+            <img
+              src="{{ product.featured_media | image_url: width: 1000 }}"
+              srcset="{{ product.featured_media | image_url: width: 500 }} 500w,
+                      {{ product.featured_media | image_url: width: 1000 }} 1000w"
+              sizes="(min-width: 990px) 40vw, 100vw"
+              alt="{{ product.featured_media.alt | default: product.title | escape }}"
+              width="{{ product.featured_media.width }}"
+              height="{{ product.featured_media.height }}"
+              loading="eager"
+              fetchpriority="high"
+            >
+          </div>
+        {%- endif -%}
+
+        <h1 class="h2" style="margin-top: var(--space-lg);">{{ product.title }}</h1>
+
+        <div class="product__price">
+          {% render 'product-price', variant: current_variant, product: product %}
+        </div>
+
+        {%- if product.description != blank -%}
+          <div class="rte measure" style="margin-top: var(--space-md);">{{ product.description }}</div>
+        {%- endif -%}
+
+        <p class="meta meta--muted" style="margin-top: var(--space-lg);" data-picker-counter></p>
+
+        <div class="slots" data-slots>
+          {%- for i in (1..max_picks) -%}
+            <span class="slot" data-slot="{{ i }}">{{ 'sections.discovery_set.empty_slot' | t }}</span>
+          {%- endfor -%}
+        </div>
+
+        <p class="product__note" style="margin-top: var(--space-md);">
+          {{ settings.tax_note }}
+          {%- if settings.shipping_page != blank -%}
+            , <a href="{{ settings.shipping_page }}" style="text-decoration: underline;">{{ 'sections.cart.taxes_note' | t }}</a>
+          {%- endif -%}
+        </p>
+
+        {%- if section.settings.voucher_note != blank -%}
+          <div class="concentration-note" style="margin-top: var(--space-lg);">
+            <div class="rte text-body-sm">{{ section.settings.voucher_note }}</div>
+          </div>
+        {%- endif -%}
+      </div>
+
+      <div>
+        {%- if source == blank -%}
+          <p class="note-placeholder">
+            Bitte im Theme-Editor unter „Discovery Set“ die Collection auswählen,
+            aus der die Düfte gewählt werden können.
+          </p>
+        {%- else -%}
+          <div class="js-hidden">
+            <p class="note-placeholder">{{ 'sections.discovery_set.no_js' | t }}</p>
+          </div>
+
+          <form
+            method="post"
+            action="{{ routes.cart_add_url }}"
+            id="DiscoveryForm"
+            class="js-only"
+            data-discovery-form
+            data-max="{{ max_picks }}"
+            data-source-url="{{ source.url }}"
+            data-source-count="{{ source.products_count }}"
+          >
+            <input type="hidden" name="id" value="{{ current_variant.id }}">
+            <input type="hidden" name="quantity" value="1">
+            <div data-discovery-properties hidden></div>
+
+            <div class="picker__toolbar">
+              <label class="visually-hidden" for="DiscoverySearch">{{ 'sections.discovery_set.search_placeholder' | t }}</label>
+              <input
+                class="field__input picker__search"
+                id="DiscoverySearch"
+                type="search"
+                placeholder="{{ 'sections.discovery_set.search_placeholder' | t }}"
+                autocomplete="off"
+                data-picker-search
+              >
+
+              {%- if family_filters.size > 0 -%}
+                <div class="picker__families" role="group" aria-label="{{ 'products.product.family' | t }}">
+                  <button type="button" class="picker__family" data-picker-family="" aria-pressed="true">
+                    {{ 'sections.discovery_set.filter_all' | t }}
+                  </button>
+                  {%- for family in family_filters -%}
+                    {%- assign family_name = family | strip -%}
+                    {%- if family_name != blank -%}
+                      <button type="button" class="picker__family" data-picker-family="{{ family_name | escape }}" aria-pressed="false">
+                        {{ family_name }}
+                      </button>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </div>
+              {%- endif -%}
+            </div>
+
+            <div class="picker__grid" data-picker-grid>
+              {%- for candidate in source.products limit: 50 -%}
+                {% render 'discovery-option', product: candidate, sample_keyword: settings.sample_keyword %}
+              {%- endfor -%}
+            </div>
+
+            <p class="picker__status" role="status" aria-live="polite" data-picker-status></p>
+
+            <div class="product-form__actions" style="margin-top: var(--space-lg);">
+              <button type="submit" class="button" data-discovery-submit disabled>
+                {{ 'sections.discovery_set.add_to_cart' | t }}
+              </button>
+              <p class="field__error" data-form-error hidden></p>
+            </div>
+
+            <p class="picker__status">{{ 'sections.discovery_set.note' | t }}</p>
+          </form>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  window.VCDiscoveryStrings = {
+    selected: {{ 'sections.discovery_set.selected_count' | t: chosen: '__COUNT__', max: '__MAX__' | json }},
+    incomplete: {{ 'sections.discovery_set.incomplete' | t | json }},
+    noMatches: {{ 'sections.discovery_set.no_matches' | t | json }},
+    slotEmpty: {{ 'sections.discovery_set.empty_slot' | t | json }},
+    label: {{ 'sections.discovery_set.step_label' | t | json }}
+  };
+</script>
+<script src="{{ 'discovery-set.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Discovery Set",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "source_collection",
+      "label": "Auswahl-Collection",
+      "info": "Aus dieser Collection darf der Kunde wählen. Empfohlen: Alle Düfte."
+    },
+    {
+      "type": "range",
+      "id": "max_picks",
+      "min": 3,
+      "max": 8,
+      "step": 1,
+      "label": "Anzahl wählbarer Düfte",
+      "default": 5
+    },
+    {
+      "type": "textarea",
+      "id": "families",
+      "label": "Schnellfilter Duftfamilien",
+      "default": "Frisch\nZitrisch\nFruchtig\nFloral\nSüß\nGourmand\nHolzig\nWürzig\nAmber\nMoschus\nLeder\nOud",
+      "info": "Eine Duftfamilie pro Zeile. Muss den Werten im Metafeld custom.duftfamilie entsprechen."
+    },
+    {
+      "type": "richtext",
+      "id": "voucher_note",
+      "label": "Hinweisbox (optional)",
+      "info": "Vorbereitet für einen späteren Gutschein-Hinweis. Der Rabatt selbst wird als regulärer Shopify-Rabattcode angelegt – im Theme ist dafür nichts zu tun."
+    }
+  ]
+}
+{% endschema %}

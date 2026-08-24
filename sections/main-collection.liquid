@@ -1,68 +1,156 @@
+{{ 'component-facets.css' | asset_url | stylesheet_tag }}
 {%- comment -%}
-  Collection – Basisausbau (Ausbaustufe 1): Raster, Sortierung, Paginierung.
-  Die vollständige Filterleiste mit Duftfamilie, Charakter, Intensität,
-  Jahreszeit, Anlass, Geschlecht und Preis folgt in Ausbaustufe 2
-  (Shopify Search & Discovery, siehe README).
+  Collection mit Storefront-Filtern.
+  Die Filter kommen aus Shopify Search & Discovery. Sind dort keine Filter
+  eingerichtet, zeigt die Leiste einen Hinweis statt einer leeren Fläche –
+  gefiltert werden kann dann weiterhin über Tag-URLs
+  (/collections/holzig/abend+intensiv).
 {%- endcomment -%}
 {%- paginate collection.products by section.settings.products_per_page -%}
-  <section class="section">
-    <div class="page-width">
-      <div class="collection-head">
-        <h1 class="h2">{{ collection.title }}</h1>
-        {%- if collection.description != blank -%}
-          <div class="rte text-muted measure">{{ collection.description }}</div>
-        {%- endif -%}
+  <div data-collection-section="{{ section.id }}">
+    <section class="section">
+      <div class="page-width">
+        <div class="collection-head">
+          <h1 class="h2">{{ collection.title }}</h1>
+          {%- if collection.description != blank -%}
+            <div class="rte text-muted measure">{{ collection.description }}</div>
+          {%- endif -%}
+        </div>
+
+        <div class="collection__layout">
+          <aside class="facets-aside" data-facets-desktop>
+            <div class="facets__header">
+              <span class="meta meta--muted">{{ 'products.facets.title' | t }}</span>
+              {%- if collection.filters.size > 0 -%}
+                <a class="link-underline" style="font-size:.6875rem;" href="{{ collection.url }}" data-facet-remove>
+                  {{ 'products.facets.clear' | t }}
+                </a>
+              {%- endif -%}
+            </div>
+            {% render 'facets', results: collection, context: 'desktop', section_id: section.id %}
+          </aside>
+
+          <div class="collection-results" data-collection-results aria-busy="false">
+            <div class="collection-toolbar">
+              <button
+                type="button"
+                class="facets-toggle button button--quiet"
+                data-drawer-open="FacetsDrawer"
+                aria-controls="FacetsDrawer"
+              >
+                {{ 'products.facets.open' | t }}
+              </button>
+
+              <p class="meta meta--muted" data-result-count>
+                {{ 'products.facets.product_count' | t: count: collection.products_count }}
+              </p>
+
+              <div>
+                <label class="visually-hidden" for="SortBy">{{ 'products.facets.sort_by' | t }}</label>
+                <select id="SortBy" name="sort_by" class="field__input" data-sort-select style="min-height:2.75rem;">
+                  {%- assign sort_value = collection.sort_by | default: collection.default_sort_by -%}
+                  {%- for option in collection.sort_options -%}
+                    <option value="{{ option.value }}" {% if option.value == sort_value %}selected{% endif %}>
+                      {{ option.name }}
+                    </option>
+                  {%- endfor -%}
+                </select>
+              </div>
+            </div>
+
+            <div data-active-filters>
+              {%- assign active_count = 0 -%}
+              {%- for filter in collection.filters -%}
+                {%- assign active_count = active_count | plus: filter.active_values.size -%}
+              {%- endfor -%}
+              {%- if active_count > 0 -%}
+                <div class="active-filters">
+                  {%- for filter in collection.filters -%}
+                    {%- for value in filter.active_values -%}
+                      <a class="active-filter" href="{{ value.url_to_remove }}" data-facet-remove>
+                        {{ value.label | escape }}
+                        {% render 'icon', name: 'close' %}
+                      </a>
+                    {%- endfor -%}
+                    {%- if filter.type == 'price_range' -%}
+                      {%- assign price_active = false -%}
+                      {%- if filter.min_value.value != blank -%}{%- assign price_active = true -%}{%- endif -%}
+                      {%- if filter.max_value.value != blank -%}{%- assign price_active = true -%}{%- endif -%}
+                      {%- if price_active -%}
+                        <a class="active-filter" href="{{ filter.url_to_remove }}" data-facet-remove>
+                          {{ 'products.facets.price_range' | t }}
+                          {% render 'icon', name: 'close' %}
+                        </a>
+                      {%- endif -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+                  <a class="active-filter" href="{{ collection.url }}" data-facet-remove>
+                    {{ 'products.facets.clear_all' | t }}
+                  </a>
+                </div>
+              {%- endif -%}
+            </div>
+
+            <div data-product-grid>
+              {%- if collection.products.size == 0 -%}
+                <p class="note-placeholder">
+                  {{ 'products.facets.no_results' | t }}<br>
+                  <span class="text-muted">{{ 'products.facets.no_results_help' | t }}</span>
+                </p>
+              {%- else -%}
+                <ul class="grid grid--products">
+                  {%- for product in collection.products -%}
+                    <li>
+                      {%- if forloop.index <= 4 -%}
+                        {% render 'product-card', product: product, lazy: 'eager' %}
+                      {%- else -%}
+                        {% render 'product-card', product: product, lazy: 'lazy' %}
+                      {%- endif -%}
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+            </div>
+
+            <div data-pagination>
+              {% render 'pagination', paginate: paginate %}
+            </div>
+          </div>
+        </div>
       </div>
+    </section>
 
-      <div class="collection-toolbar">
-        <p class="meta meta--muted">
-          {{ 'products.facets.product_count' | t: count: collection.products_count }}
-        </p>
-
-        <form method="get" data-sort-form>
-          <label class="visually-hidden" for="SortBy">{{ 'products.facets.sort_by' | t }}</label>
-          <select id="SortBy" name="sort_by" class="field__input" style="min-height:2.75rem;">
-            {%- for option in collection.sort_options -%}
-              <option value="{{ option.value }}" {% if option.value == collection.sort_by %}selected{% endif %}>
-                {{ option.name }}
-              </option>
-            {%- endfor -%}
-          </select>
-          <noscript><button type="submit" class="button button--quiet">{{ 'products.facets.apply' | t }}</button></noscript>
-        </form>
+    <vc-drawer id="FacetsDrawer" class="drawer drawer--bottom color-{{ section.settings.color_scheme }} color-scheme" aria-label="{{ 'products.facets.title' | t }}">
+      <div class="drawer__header">
+        <span class="meta meta--muted">{{ 'products.facets.title' | t }}</span>
+        <button type="button" class="drawer__close" data-drawer-close aria-label="{{ 'general.accessibility.close' | t }}">
+          {% render 'icon', name: 'close' %}
+        </button>
       </div>
-
-      {%- if collection.products.size == 0 -%}
-        <p class="note-placeholder">{{ 'products.facets.no_results' | t }}</p>
-      {%- else -%}
-        <ul class="grid grid--products">
-          {%- for product in collection.products -%}
-            <li>
-              {% render 'product-card', product: product, lazy: 'lazy' %}
-            </li>
-          {%- endfor -%}
-        </ul>
-      {%- endif -%}
-
-      {% render 'pagination', paginate: paginate %}
-    </div>
-  </section>
+      <div class="drawer__body" data-facets-mobile>
+        {% render 'facets', results: collection, context: 'mobile', section_id: section.id %}
+      </div>
+      <div class="drawer__footer facets-drawer__actions">
+        <a class="button button--secondary" href="{{ collection.url }}" data-facet-remove>{{ 'products.facets.clear_all' | t }}</a>
+        <button type="button" class="button" data-drawer-close data-drawer-initial-focus>{{ 'products.facets.apply' | t }}</button>
+      </div>
+    </vc-drawer>
+  </div>
 {%- endpaginate -%}
 
-<script>
-  document.querySelector('[data-sort-form] select')?.addEventListener('change', function (event) {
-    var url = new URL(window.location.href);
-    url.searchParams.set('sort_by', event.target.value);
-    url.searchParams.delete('page');
-    window.location.href = url.toString();
-  });
-</script>
+<script src="{{ 'facets.js' | asset_url }}" defer="defer"></script>
 
 {% schema %}
 {
   "name": "Collection",
   "tag": "section",
   "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Farbschema Filter-Drawer",
+      "default": "scheme-ivory"
+    },
     {
       "type": "range",
       "id": "products_per_page",

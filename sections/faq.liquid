@@ -1,0 +1,78 @@
+{{ 'section-editorial.css' | asset_url | stylesheet_tag }}
+<section class="section color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width page-width--narrow">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="h3" style="margin-bottom: var(--space-xl);">{{ section.settings.heading | escape }}</h2>
+    {%- endif -%}
+
+    <div class="product__accordion" data-accordion-group>
+      {%- for block in section.blocks -%}
+        <details data-accordion {{ block.shopify_attributes }}>
+          <summary>{{ block.settings.question | escape }} {% render 'icon', name: 'chevron' %}</summary>
+          <div class="rte">{{ block.settings.answer }}</div>
+        </details>
+      {%- endfor -%}
+    </div>
+
+    {%- if section.blocks.size == 0 -%}
+      <p class="note-placeholder">Bitte im Theme-Editor Fragen und Antworten hinzufügen.</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "FAQ",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Farbschema",
+      "default": "scheme-ivory"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Überschrift",
+      "default": "Häufige Fragen"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Frage",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Frage",
+          "default": "Wie lange hält ein Extrait?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Antwort",
+          "default": "<p>Das hängt von Hauttyp, Jahreszeit und Auftragsmenge ab. Ein höherer Anteil an Parfumöl liegt in der Regel dichter auf der Haut.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "FAQ",
+      "blocks": [
+        {
+          "type": "item"
+        },
+        {
+          "type": "item"
+        },
+        {
+          "type": "item"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

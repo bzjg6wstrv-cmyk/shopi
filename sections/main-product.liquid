@@ -1,8 +1,8 @@
+{{ 'section-product.css' | asset_url | stylesheet_tag }}
 {%- comment -%}
-  Produktseite – Basisausbau (Ausbaustufe 1).
-  Vollständig funktionsfähig: Galerie, Varianten, Menge, Warenkorb, Grundpreis.
-  In Ausbaustufe 2 folgen: Duftpyramide, Charakter, Jahreszeit/Anlass,
-  Sample- und Travel-Block, Empfehlungen, Bewertungen.
+  Produktseite. Der Inhaltsbereich rechts ist blockbasiert und im
+  Theme-Editor sortierbar. Alle Duftangaben stammen aus Metafeldern;
+  fehlt ein Metafeld, entfällt der Block ersatzlos.
 {%- endcomment -%}
 {%- liquid
   assign current_variant = product.selected_or_first_available_variant
@@ -10,6 +10,15 @@
   assign character = product.metafields.custom.charakter.value
   assign concentrations = product.metafields.custom.konzentration.value
   assign percent = product.metafields.custom.konzentration_prozent.value
+  assign seasons = product.metafields.custom.jahreszeit.value
+  assign occasions = product.metafields.custom.anlass.value
+  assign intensity = product.metafields.custom.intensitaet.value
+  assign gender = product.metafields.custom.geschlecht.value
+
+  assign option_name = product.options_with_values.first.name
+  if option_name == blank or option_name == 'Title'
+    assign option_name = 'products.product.variant_label' | t
+  endif
 -%}
 <section class="section">
   <div class="page-width">
@@ -26,8 +35,7 @@
               alt="{{ media.alt | default: product.title | escape }}"
               width="{{ media.width }}"
               height="{{ media.height }}"
-              loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
-              {% if forloop.first %}fetchpriority="high"{% endif %}
+              {% if forloop.first %}loading="eager" fetchpriority="high"{% else %}loading="lazy"{% endif %}
             >
           {%- endfor -%}
         {%- else -%}
@@ -52,6 +60,8 @@
           </p>
         {%- endif -%}
 
+        {% render 'product-reviews', product: product %}
+
         <div class="product__price" data-product-price>
           {% render 'product-price', variant: current_variant, product: product %}
         </div>
@@ -60,9 +70,9 @@
           {%- form 'product', product, id: 'ProductForm', novalidate: 'novalidate' -%}
             <input type="hidden" name="id" value="{{ current_variant.id }}" data-variant-id>
 
-            {%- if product.has_only_default_variant == false -%}
+            {%- unless product.has_only_default_variant -%}
               <fieldset class="variant-options" data-variant-options>
-                <legend class="field__label">{{ 'products.product.variant_label' | t }}</legend>
+                <legend class="field__label">{{ option_name }}</legend>
                 {%- for variant in product.variants -%}
                   <div class="variant-option">
                     <input
@@ -85,7 +95,7 @@
                   </div>
                 {%- endfor -%}
               </fieldset>
-            {%- endif -%}
+            {%- endunless -%}
 
             <div class="product-form__actions">
               <div class="quantity" data-quantity>
@@ -99,12 +109,7 @@
                 </button>
               </div>
 
-              <button
-                type="submit"
-                class="button"
-                data-add-button
-                {% unless current_variant.available %}disabled{% endunless %}
-              >
+              <button type="submit" class="button" data-add-button {% unless current_variant.available %}disabled{% endunless %}>
                 {%- if current_variant.available -%}
                   {{ 'products.product.add_to_cart' | t }}
                 {%- else -%}
@@ -124,20 +129,197 @@
           {%- endif -%}
         </p>
 
-        <div class="product__accordion" data-accordion-group>
-          {%- if product.description != blank -%}
-            <details data-accordion open>
-              <summary>{{ 'products.product.scent_profile' | t }} {% render 'icon', name: 'chevron' %}</summary>
-              <div class="rte">{{ product.description }}</div>
-            </details>
-          {%- endif -%}
+        <div style="margin-top: var(--space-2xl);">
+          {%- for block in section.blocks -%}
+            {%- case block.type -%}
 
-          {%- if product.metafields.custom.inci.value != blank -%}
-            <details data-accordion>
-              <summary>{{ 'products.product.ingredients' | t }} {% render 'icon', name: 'chevron' %}</summary>
-              <div class="rte text-body-sm">{{ product.metafields.custom.inci.value | newline_to_br }}</div>
-            </details>
-          {%- endif -%}
+              {%- when 'scent_pyramid' -%}
+                {%- liquid
+                  assign top_notes = product.metafields.custom.kopfnoten.value
+                  assign heart_notes = product.metafields.custom.herznoten.value
+                  assign base_notes = product.metafields.custom.basisnoten.value
+                -%}
+                {%- if top_notes != blank or heart_notes != blank or base_notes != blank -%}
+                  <div class="product-block" {{ block.shopify_attributes }}>
+                    <h2 class="h4">{{ 'products.product.scent_profile' | t }}</h2>
+                    <div class="pyramid">
+                      {%- if top_notes != blank -%}
+                        <div class="pyramid__row">
+                          <span class="pyramid__label meta">{{ 'products.product.top_notes' | t }}</span>
+                          <span>{{ top_notes | join: ', ' }}</span>
+                        </div>
+                      {%- endif -%}
+                      {%- if heart_notes != blank -%}
+                        <div class="pyramid__row">
+                          <span class="pyramid__label meta">{{ 'products.product.heart_notes' | t }}</span>
+                          <span>{{ heart_notes | join: ', ' }}</span>
+                        </div>
+                      {%- endif -%}
+                      {%- if base_notes != blank -%}
+                        <div class="pyramid__row">
+                          <span class="pyramid__label meta">{{ 'products.product.base_notes' | t }}</span>
+                          <span>{{ base_notes | join: ', ' }}</span>
+                        </div>
+                      {%- endif -%}
+                    </div>
+                  </div>
+                {%- endif -%}
+
+              {%- when 'character' -%}
+                {%- if character != blank or intensity != blank -%}
+                  <div class="product-block" {{ block.shopify_attributes }}>
+                    <h2 class="h4">{{ 'products.product.character' | t }}</h2>
+                    <div class="trait-list">
+                      {%- for trait in character -%}<span class="trait">{{ trait | escape }}</span>{%- endfor -%}
+                      {%- if intensity != blank -%}
+                        <span class="trait">{{ 'products.product.intensity' | t }}: {{ intensity | escape }}</span>
+                      {%- endif -%}
+                      {%- if gender != blank -%}
+                        <span class="trait">{{ gender | escape }}</span>
+                      {%- endif -%}
+                    </div>
+                  </div>
+                {%- endif -%}
+
+              {%- when 'when_to_wear' -%}
+                {%- if seasons != blank or occasions != blank -%}
+                  <div class="product-block" {{ block.shopify_attributes }}>
+                    <h2 class="h4">{{ 'products.product.when_to_wear' | t }}</h2>
+                    <div class="wear-grid">
+                      {%- if seasons != blank -%}
+                        <div class="wear-grid__item">
+                          <p class="meta meta--muted">{{ 'products.product.season' | t }}</p>
+                          <p>{{ seasons | join: ' · ' }}</p>
+                        </div>
+                      {%- endif -%}
+                      {%- if occasions != blank -%}
+                        <div class="wear-grid__item">
+                          <p class="meta meta--muted">{{ 'products.product.occasion' | t }}</p>
+                          <p>{{ occasions | join: ' · ' }}</p>
+                        </div>
+                      {%- endif -%}
+                    </div>
+                  </div>
+                {%- endif -%}
+
+              {%- when 'concentration_note' -%}
+                {%- if block.settings.text != blank -%}
+                  <div class="product-block" {{ block.shopify_attributes }}>
+                    <div class="concentration-note">
+                      <h2 class="h4">{{ block.settings.heading | escape }}</h2>
+                      <div class="rte text-body-sm" style="margin-top: var(--space-sm);">{{ block.settings.text }}</div>
+                    </div>
+                  </div>
+                {%- endif -%}
+
+              {%- when 'addons' -%}
+                {%- liquid
+                  assign sample_variant = null
+                  assign travel_variant = null
+                  assign sample_keyword = block.settings.sample_keyword | downcase
+                  assign travel_keyword = block.settings.travel_keyword | downcase
+                  for variant in product.variants
+                    assign variant_title_down = variant.title | downcase
+                    if sample_keyword != blank and variant_title_down contains sample_keyword
+                      assign sample_variant = variant
+                    endif
+                    if travel_keyword != blank and variant_title_down contains travel_keyword
+                      assign travel_variant = variant
+                    endif
+                  endfor
+
+                  assign show_sample = false
+                  if sample_variant and sample_variant.available and sample_variant.id != current_variant.id
+                    assign show_sample = true
+                  endif
+                  assign show_travel = false
+                  if travel_variant and travel_variant.available and travel_variant.id != current_variant.id
+                    assign show_travel = true
+                  endif
+                -%}
+                {%- if show_sample or show_travel -%}
+                  <div class="product-block" {{ block.shopify_attributes }}>
+                    {%- if show_sample -%}
+                      <form method="post" action="{{ routes.cart_add_url }}" class="addon">
+                        <input type="hidden" name="id" value="{{ sample_variant.id }}">
+                        <input type="hidden" name="quantity" value="1">
+                        {%- if product.featured_media -%}
+                          <img src="{{ product.featured_media | image_url: width: 160 }}" alt="" width="64" height="80" loading="lazy">
+                        {%- endif -%}
+                        <div>
+                          <p class="addon__title">{{ 'products.product.sample_title' | t }} · {{ sample_variant.title }}</p>
+                          <p class="addon__text">{{ 'products.product.sample_help' | t }} {{ sample_variant.price | money }}</p>
+                        </div>
+                        <button type="submit" class="button button--secondary addon__button">
+                          {{ 'products.product.add_sample' | t }}
+                        </button>
+                      </form>
+                    {%- endif -%}
+
+                    {%- if show_travel -%}
+                      <form method="post" action="{{ routes.cart_add_url }}" class="addon">
+                        <input type="hidden" name="id" value="{{ travel_variant.id }}">
+                        <input type="hidden" name="quantity" value="1">
+                        {%- if product.featured_media -%}
+                          <img src="{{ product.featured_media | image_url: width: 160 }}" alt="" width="64" height="80" loading="lazy">
+                        {%- endif -%}
+                        <div>
+                          <p class="addon__title">{{ 'products.product.travel_title' | t }} · {{ travel_variant.title }}</p>
+                          <p class="addon__text">{{ 'products.product.travel_help' | t }} {{ travel_variant.price | money }}</p>
+                        </div>
+                        <button type="submit" class="button button--secondary addon__button">
+                          {{ 'products.product.add_travel' | t }}
+                        </button>
+                      </form>
+                    {%- endif -%}
+                  </div>
+                {%- endif -%}
+
+              {%- when 'description' -%}
+                {%- assign scent_text = product.metafields.custom.duftbeschreibung.value -%}
+                {%- if scent_text != blank or product.description != blank -%}
+                  <div class="product-block product__accordion" data-accordion-group {{ block.shopify_attributes }}>
+                    <details data-accordion {% if block.settings.open %}open{% endif %}>
+                      <summary>{{ block.settings.heading | escape }} {% render 'icon', name: 'chevron' %}</summary>
+                      <div class="rte">
+                        {%- if scent_text != blank -%}{{ scent_text }}{%- else -%}{{ product.description }}{%- endif -%}
+                      </div>
+                    </details>
+                  </div>
+                {%- endif -%}
+
+              {%- when 'ingredients' -%}
+                {%- liquid
+                  assign inci = product.metafields.custom.inci.value
+                  assign allergens = product.metafields.custom.allergene.value
+                -%}
+                {%- if inci != blank or allergens != blank -%}
+                  <div class="product-block product__accordion" data-accordion-group {{ block.shopify_attributes }}>
+                    <details data-accordion>
+                      <summary>{{ 'products.product.ingredients' | t }} {% render 'icon', name: 'chevron' %}</summary>
+                      <div class="rte text-body-sm">
+                        {%- if inci != blank -%}<p>{{ inci | newline_to_br }}</p>{%- endif -%}
+                        {%- if allergens != blank -%}<p>{{ allergens | newline_to_br }}</p>{%- endif -%}
+                      </div>
+                    </details>
+                  </div>
+                {%- endif -%}
+
+              {%- when 'text' -%}
+                {%- if block.settings.text != blank -%}
+                  <div class="product-block product__accordion" data-accordion-group {{ block.shopify_attributes }}>
+                    <details data-accordion>
+                      <summary>{{ block.settings.heading | escape }} {% render 'icon', name: 'chevron' %}</summary>
+                      <div class="rte text-body-sm">{{ block.settings.text }}</div>
+                    </details>
+                  </div>
+                {%- endif -%}
+
+              {%- when '@app' -%}
+                <div class="product-block" {{ block.shopify_attributes }}>{% render block %}</div>
+
+            {%- endcase -%}
+          {%- endfor -%}
         </div>
       </div>
     </div>
@@ -187,6 +369,118 @@
   "tag": "section",
   "settings": [
 
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    },
+    {
+      "type": "scent_pyramid",
+      "name": "Duftprofil",
+      "limit": 1,
+      "settings": [
+
+      ]
+    },
+    {
+      "type": "character",
+      "name": "Charakter",
+      "limit": 1,
+      "settings": [
+
+      ]
+    },
+    {
+      "type": "when_to_wear",
+      "name": "Jahreszeit und Anlass",
+      "limit": 1,
+      "settings": [
+
+      ]
+    },
+    {
+      "type": "concentration_note",
+      "name": "Konzentration erklärt",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Überschrift",
+          "default": "Was bedeutet 30 % Extrait?"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Der Anteil an Parfumöl bestimmt, wie dicht ein Duft auf der Haut liegt. 30 % ist ein hoher Wert: Es braucht weniger Sprühstöße, und der Duft entwickelt sich langsamer.</p>"
+        }
+      ]
+    },
+    {
+      "type": "addons",
+      "name": "Probe und Travel Size",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "sample_keyword",
+          "label": "Erkennungswort für die Probe",
+          "default": "sample",
+          "info": "Das Theme sucht in den Variantennamen nach diesem Wort."
+        },
+        {
+          "type": "text",
+          "id": "travel_keyword",
+          "label": "Erkennungswort für Travel",
+          "default": "travel"
+        }
+      ]
+    },
+    {
+      "type": "description",
+      "name": "Duftbeschreibung",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Überschrift",
+          "default": "Duftbeschreibung"
+        },
+        {
+          "type": "checkbox",
+          "id": "open",
+          "label": "Standardmäßig geöffnet",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "ingredients",
+      "name": "Inhaltsstoffe",
+      "limit": 1,
+      "settings": [
+
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Freier Textblock",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Überschrift",
+          "default": "Hinweise"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text"
+        }
+      ]
+    }
   ]
 }
 {% endschema %}

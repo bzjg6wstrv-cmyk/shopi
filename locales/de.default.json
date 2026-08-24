@@ -115,7 +115,16 @@
       "reviews": "Bewertungen",
       "badge_bestseller": "Bestseller",
       "badge_new": "Neu",
-      "badge_sample": "Probe verfügbar"
+      "badge_sample": "Probe verfügbar",
+      "concentration_help_title": "Was bedeutet 30 % Extrait?",
+      "sample_help": "Erst in Ruhe kennenlernen – 2 ml für unterwegs.",
+      "travel_help": "10 ml für Handtasche und Reise.",
+      "add_sample": "Probe hinzufügen",
+      "add_travel": "Travel hinzufügen",
+      "note_pyramid": "Duftpyramide",
+      "recommendations": "Ähnliche Duftprofile",
+      "no_recommendations": "Derzeit keine passenden Empfehlungen verfügbar.",
+      "share": "Teilen"
     },
     "facets": {
       "title": "Filter",
@@ -182,18 +191,31 @@
       "show_results": "Düfte anzeigen",
       "checking": "Passende Düfte werden gesucht",
       "no_exact_match": "Keine exakte Übereinstimmung – wir zeigen dir die nächstliegenden Düfte.",
-      "restart": "Neu starten"
+      "restart": "Neu starten",
+      "intro_title": "Duftfinder",
+      "question": "Frage",
+      "result_intro": "Wir zeigen dir jetzt die passenden Düfte.",
+      "no_js": "Der Duftfinder funktioniert auch ohne JavaScript: Jede Antwort ist ein Link auf die gefilterte Übersicht.",
+      "not_configured": "Der Duftfinder ist noch nicht konfiguriert. Bitte im Theme-Editor Fragen und Antworten anlegen."
     },
     "discovery_set": {
       "title": "Discovery Set",
       "select_prompt": "Wähle fünf Düfte",
-      "selected_count": "{{ count }} von {{ max }} gewählt",
+      "selected_count": "{{ chosen }} von {{ max }} gewählt",
       "choose": "Auswählen",
       "chosen": "Gewählt",
       "remove": "Entfernen",
       "search_placeholder": "Duft suchen",
       "incomplete": "Bitte wähle genau fünf Düfte.",
-      "unavailable": "Zurzeit nicht verfügbar"
+      "unavailable": "Zurzeit nicht verfügbar",
+      "step_label": "Auswahl",
+      "add_to_cart": "Discovery Set in den Warenkorb",
+      "your_selection": "Deine Auswahl",
+      "empty_slot": "Noch frei",
+      "filter_all": "Alle",
+      "no_matches": "Keine Düfte gefunden.",
+      "note": "Die Auswahl wird als Positionsangabe an die Bestellung übergeben und ist im Warenkorb, im Checkout und in der Bestellbestätigung sichtbar.",
+      "no_js": "Für die Auswahl der fünf Düfte wird JavaScript benötigt. Ohne JavaScript kann das Set nicht zusammengestellt werden."
     }
   },
   "customer": {
@@ -333,6 +355,9 @@
     },
     "search": {
       "title": "Suche"
+    },
+    "faq": {
+      "title": "Häufige Fragen"
     }
   },
   "blogs": {

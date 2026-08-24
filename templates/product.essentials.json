@@ -1,0 +1,47 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "blocks": {
+        "pyramid": {
+          "type": "scent_pyramid"
+        },
+        "character": {
+          "type": "character"
+        },
+        "wear": {
+          "type": "when_to_wear"
+        },
+        "description": {
+          "type": "description",
+          "settings": {
+            "heading": "Duftbeschreibung",
+            "open": true
+          }
+        },
+        "ingredients": {
+          "type": "ingredients"
+        }
+      },
+      "block_order": [
+        "pyramid",
+        "character",
+        "wear",
+        "description",
+        "ingredients"
+      ]
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "heading": "Weitere Essentials",
+        "intent": "related",
+        "limit": 4
+      }
+    }
+  },
+  "order": [
+    "main",
+    "recommendations"
+  ]
+}

@@ -1,0 +1,23 @@
+{%- comment -%}
+  Nachladbare Seiten der Duftauswahl.
+  Wird ausschließlich über die Section Rendering API abgerufen:
+  /collections/<handle>?section_id=discovery-picker&page=2
+  Damit lassen sich auch 120–130 Düfte laden, obwohl eine Liquid-Schleife
+  pro Durchlauf höchstens 50 Produkte ausgibt.
+{%- endcomment -%}
+{%- paginate collection.products by 50 -%}
+  <div data-picker-page data-has-next="{% if paginate.next %}true{% else %}false{% endif %}">
+    {%- for product in collection.products -%}
+      {% render 'discovery-option', product: product, sample_keyword: settings.sample_keyword %}
+    {%- endfor -%}
+  </div>
+{%- endpaginate -%}
+
+{% schema %}
+{
+  "name": "Duftauswahl (Nachladen)",
+  "settings": [
+
+  ]
+}
+{% endschema %}

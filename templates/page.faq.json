@@ -1,0 +1,57 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "show_placeholder_note": false
+      }
+    },
+    "faq": {
+      "type": "faq",
+      "blocks": {
+        "f1": {
+          "type": "item",
+          "settings": {
+            "question": "Was bedeutet 30 % Parfumkonzentration?",
+            "answer": "<p>Der Anteil an Parfumöl in der Rezeptur. Ein höherer Anteil liegt in der Regel dichter auf der Haut und entwickelt sich langsamer.</p>"
+          }
+        },
+        "f2": {
+          "type": "item",
+          "settings": {
+            "question": "Wie unterscheiden sich Extrait und Eau de Parfum?",
+            "answer": "<p>Beide Ausführungen basieren auf demselben Duftprofil. Der Extrait ist höher konzentriert, das Eau de Parfum wirkt leichter.</p>"
+          }
+        },
+        "f3": {
+          "type": "item",
+          "settings": {
+            "question": "Kann ich einen Duft vorher testen?",
+            "answer": "<p>Ja. Zu vielen Düften gibt es eine 2-ml-Probe, und im Discovery Set lassen sich fünf Düfte selbst zusammenstellen.</p>"
+          }
+        },
+        "f4": {
+          "type": "item",
+          "settings": {
+            "question": "Wohin liefert ihr?",
+            "answer": "<p>Platzhalter: Versandgebiete, Laufzeiten und Kosten hier ergänzen.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "f1",
+        "f2",
+        "f3",
+        "f4"
+      ],
+      "settings": {
+        "color_scheme": "scheme-ivory",
+        "heading": "Häufige Fragen"
+      }
+    }
+  },
+  "order": [
+    "main",
+    "faq"
+  ]
+}

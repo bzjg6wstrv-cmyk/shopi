@@ -1,0 +1,56 @@
+/* Produktseite – Duftprofil, Charakter, Anlass, Sample und Travel. */
+
+.product-block + .product-block { margin-top: var(--space-xl); }
+
+.pyramid { margin-top: var(--space-md); }
+.pyramid__row {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: var(--space-md);
+  padding-block: var(--space-sm);
+  border-top: var(--border-width) solid rgb(var(--color-line));
+}
+.pyramid__row:last-child { border-bottom: var(--border-width) solid rgb(var(--color-line)); }
+.pyramid__label { color: rgb(var(--color-muted)); }
+
+.trait-list { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-top: var(--space-md); }
+.trait {
+  padding: .35rem .6rem;
+  border: var(--border-width) solid rgb(var(--color-line));
+  font-size: .8125rem;
+}
+
+.wear-grid { display: grid; gap: var(--space-md); margin-top: var(--space-md); }
+@media (min-width: 600px) { .wear-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.wear-grid__item { padding-top: var(--space-sm); border-top: var(--border-width) solid rgb(var(--color-line)); }
+
+.addon {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr) auto;
+  gap: var(--space-md);
+  align-items: center;
+  padding: var(--space-md);
+  border: var(--border-width) solid rgb(var(--color-line));
+  border-radius: var(--card-radius);
+}
+.addon + .addon { margin-top: var(--space-sm); }
+.addon img { width: 4rem; height: 5rem; object-fit: cover; }
+.addon__title { font-family: var(--font-heading-family); font-size: 1rem; }
+.addon__text { font-size: .8125rem; color: rgb(var(--color-muted)); }
+.addon__button { min-height: 2.75rem; padding-inline: var(--space-md); font-size: .6875rem; }
+@media (max-width: 599px) {
+  .addon { grid-template-columns: 3.5rem minmax(0, 1fr); }
+  .addon img { width: 3.5rem; height: 4.5rem; }
+  .addon__button { grid-column: 1 / -1; width: 100%; }
+}
+
+.concentration-note {
+  padding: var(--space-lg);
+  border-left: 2px solid rgb(var(--color-accent));
+  background-color: rgb(var(--color-line) / .25);
+}
+
+.reviews-summary { display: flex; align-items: center; gap: var(--space-sm); margin-top: var(--space-xs); }
+.reviews-summary__stars { letter-spacing: .1em; }
+
+.product-recommendations { margin-top: var(--space-4xl); }

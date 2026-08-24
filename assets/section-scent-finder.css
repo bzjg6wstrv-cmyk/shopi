@@ -1,0 +1,55 @@
+/* Duftfinder. Ohne JavaScript ein normales Formular mit allen Fragen
+   untereinander; mit JavaScript Schritt für Schritt.                    */
+
+.finder { max-width: 56rem; margin-inline: auto; }
+.finder__progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+.finder__progress-track { flex: 1; height: 2px; background-color: rgb(var(--color-line)); }
+.finder__progress-fill { height: 100%; background-color: rgb(var(--color-text)); transition: width var(--dur-slow) var(--ease); }
+
+.finder__step { border: 0; padding: 0; margin: 0; }
+.finder__step + .finder__step { margin-top: var(--space-3xl); }
+.js-on .finder__step + .finder__step { margin-top: 0; }
+.finder__legend { display: block; margin-bottom: var(--space-lg); }
+
+.finder__options { display: grid; gap: var(--space-sm); }
+@media (min-width: 600px) { .finder__options { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 900px) { .finder__options { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+.finder__option { position: relative; }
+.finder__option input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+.finder__option-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 4.5rem;
+  padding: var(--space-md);
+  border: var(--border-width) solid rgb(var(--color-line));
+  border-radius: var(--card-radius);
+  font-family: var(--font-heading-family);
+  font-size: 1.0625rem;
+  text-align: center;
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.finder__option input:checked + .finder__option-label {
+  border-color: rgb(var(--color-text));
+  background-color: rgb(var(--color-line) / .3);
+}
+.finder__option input:focus-visible + .finder__option-label {
+  outline: var(--focus-width) solid rgb(var(--color-accent));
+  outline-offset: var(--focus-offset);
+}
+
+.finder__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+  margin-top: var(--space-2xl);
+}
+.finder__status { font-size: .9375rem; color: rgb(var(--color-muted)); }
+.finder__note { margin-top: var(--space-lg); font-size: .8125rem; color: rgb(var(--color-muted)); }

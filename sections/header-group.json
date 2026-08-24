@@ -32,7 +32,11 @@
         "feature_text": "Fünf Düfte selbst auswählen.",
         "drawer_label_1": "Duftfinder",
         "drawer_label_2": "Discovery Set",
-        "search_hint": "Suche nach Nummer, Duftfamilie oder einzelner Duftnote."
+        "search_hint": "Suche nach Nummer, Duftfamilie oder einzelner Duftnote.",
+        "families_menu": "duftfamilien",
+        "feature_link": "/products/discovery-set",
+        "drawer_link_1": "/pages/duftfinder",
+        "drawer_link_2": "/products/discovery-set"
       }
     }
   },

@@ -1,0 +1,236 @@
+{{ 'section-scent-finder.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  Duftfinder.
+
+  Funktionsweise: Die Antworten werden in echte Shopify-Filterparameter
+  übersetzt. Das Ergebnis ist eine reguläre, gefilterte Collection-Seite –
+  teilbar, verlinkbar und mit den normalen Filtern weiter verfeinerbar.
+
+  Ohne JavaScript ist der Duftfinder ein gewöhnliches GET-Formular mit allen
+  Fragen untereinander und funktioniert vollständig.
+  Mit JavaScript wird Schritt für Schritt geführt und vor der Weiterleitung
+  geprüft, ob die Kombination überhaupt Treffer hat.
+
+  Voraussetzung im Modus „Metafeld-Filter“: Die Filter müssen in der
+  kostenlosen App Shopify Search & Discovery eingerichtet sein.
+{%- endcomment -%}
+{%- liquid
+  assign target = section.settings.collection
+  assign target_url = target.url | default: routes.all_products_collection_url
+  assign question_blocks = section.blocks | where: 'type', 'question'
+-%}
+<section class="section color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width">
+    <div class="finder">
+      <div style="margin-bottom: var(--space-2xl);">
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="eyebrow">{{ section.settings.eyebrow | escape }}</span>
+        {%- endif -%}
+        <h1 class="h2">{{ section.settings.heading | escape }}</h1>
+        {%- if section.settings.text != blank -%}
+          <div class="rte text-lead measure" style="margin-top: var(--space-md);">{{ section.settings.text }}</div>
+        {%- endif -%}
+      </div>
+
+      {%- if question_blocks.size == 0 -%}
+        <p class="note-placeholder">{{ 'sections.scent_finder.not_configured' | t }}</p>
+      {%- else -%}
+        <form
+          method="get"
+          action="{{ target_url }}"
+          data-scent-finder
+          data-mode="{{ section.settings.mode }}"
+          data-collection-url="{{ target_url }}"
+          data-total="{{ question_blocks.size }}"
+        >
+          <div class="finder__progress js-only" data-finder-progress hidden>
+            <span class="meta meta--muted" data-finder-step-label></span>
+            <span class="finder__progress-track"><span class="finder__progress-fill" data-finder-progress-fill style="width: 0%;"></span></span>
+          </div>
+
+          {%- for block in question_blocks -%}
+            {%- liquid
+              assign answer_lines = block.settings.answers | strip | newline_to_br | split: '<br />'
+              assign param = block.settings.filter_param | strip
+            -%}
+            <fieldset
+              class="finder__step"
+              data-finder-step="{{ forloop.index }}"
+              {{ block.shopify_attributes }}
+            >
+              <legend class="finder__legend h3">{{ block.settings.question | escape }}</legend>
+
+              <div class="finder__options">
+                {%- for line in answer_lines -%}
+                  {%- liquid
+                    assign clean = line | strip
+                    assign parts = clean | split: '|'
+                    assign answer_label = parts[0] | strip
+                    assign answer_value = parts[1] | strip
+                    if answer_value == blank
+                      assign answer_value = answer_label
+                    endif
+                  -%}
+                  {%- if answer_label != blank -%}
+                    <div class="finder__option">
+                      <input
+                        type="radio"
+                        name="{{ param }}"
+                        id="Finder-{{ forloop.parentloop.index }}-{{ forloop.index }}"
+                        value="{{ answer_value | escape }}"
+                        data-answer-label="{{ answer_label | escape }}"
+                      >
+                      <label class="finder__option-label" for="Finder-{{ forloop.parentloop.index }}-{{ forloop.index }}">
+                        {{ answer_label }}
+                      </label>
+                    </div>
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+
+              {%- if block.settings.optional -%}
+                <div class="finder__actions js-only">
+                  <button type="button" class="link-underline" data-finder-skip>
+                    {{ 'sections.scent_finder.skip' | t }}
+                  </button>
+                </div>
+              {%- endif -%}
+            </fieldset>
+          {%- endfor -%}
+
+          <div class="finder__actions">
+            <button type="button" class="button button--secondary js-only" data-finder-back hidden>
+              {{ 'sections.scent_finder.back' | t }}
+            </button>
+            <button type="submit" class="button" data-finder-submit>
+              {{ 'sections.scent_finder.show_results' | t }}
+            </button>
+            <button type="reset" class="link-underline js-only" data-finder-reset>
+              {{ 'sections.scent_finder.restart' | t }}
+            </button>
+            <p class="finder__status" role="status" aria-live="polite" data-finder-status></p>
+          </div>
+
+          <p class="finder__note">{{ 'sections.scent_finder.no_js' | t }}</p>
+        </form>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{%- assign finder_step_template = 'sections.scent_finder.step' | t: current: '__CURRENT__', total: '__TOTAL__' -%}
+<script>
+  window.VCFinderStrings = {
+    step: {{ finder_step_template | json }},
+    checking: {{ 'sections.scent_finder.checking' | t | json }},
+    noExactMatch: {{ 'sections.scent_finder.no_exact_match' | t | json }}
+  };
+</script>
+<script src="{{ 'scent-finder.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Duftfinder",
+  "tag": "section",
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Farbschema",
+      "default": "scheme-ivory"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Kleiner Vortext",
+      "default": "Drei Fragen"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Überschrift",
+      "default": "Duftfinder"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Einleitung",
+      "default": "<p>Richtung, Anlass, Intensität. Danach zeigen wir dir die Düfte, die dazu passen.</p>"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Ziel-Collection",
+      "info": "Empfohlen: Alle Düfte."
+    },
+    {
+      "type": "select",
+      "id": "mode",
+      "label": "Technischer Modus",
+      "options": [
+        {
+          "value": "metafield",
+          "label": "Metafeld-Filter (Search & Discovery nötig)"
+        },
+        {
+          "value": "tag",
+          "label": "Tag-URLs (funktioniert ohne App)"
+        }
+      ],
+      "default": "metafield",
+      "info": "Im Tag-Modus werden die Antwortwerte als Tags an die Collection-URL angehängt."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "question",
+      "name": "Frage",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Frage",
+          "default": "Welche Richtung suchst du?"
+        },
+        {
+          "type": "text",
+          "id": "filter_param",
+          "label": "Filterparameter",
+          "default": "filter.p.m.custom.duftfamilie",
+          "info": "Im Metafeld-Modus der Parametername aus Search & Discovery. Im Tag-Modus beliebig, er wird nicht verwendet."
+        },
+        {
+          "type": "textarea",
+          "id": "answers",
+          "label": "Antworten",
+          "default": "Frisch\nSüß\nHolzig\nGourmand\nFloral\nOud",
+          "info": "Eine Antwort pro Zeile. Optional „Anzeigetext | Filterwert“, wenn beides abweicht."
+        },
+        {
+          "type": "checkbox",
+          "id": "optional",
+          "label": "Überspringen erlauben",
+          "default": true
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Duftfinder",
+      "blocks": [
+        {
+          "type": "question"
+        },
+        {
+          "type": "question"
+        },
+        {
+          "type": "question"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

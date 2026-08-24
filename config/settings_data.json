@@ -85,7 +85,8 @@
     "contact_email": "[E-MAIL]",
     "contact_phone": "[TELEFON]",
     "contact_hours": "[ERREICHBARKEIT]",
-    "sections": {
-    }
+    "sample_keyword": "sample",
+    "sections": {},
+    "cart_cross_sell_product": "discovery-set"
   }
 }

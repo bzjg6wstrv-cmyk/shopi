@@ -1,0 +1,14 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-collection",
+      "settings": {
+        "products_per_page": 24,
+        "color_scheme": "scheme-ivory-deep"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

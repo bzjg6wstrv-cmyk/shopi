@@ -523,6 +523,21 @@
     ]
   },
   {
+    "name": "Discovery Set",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Das Erkennungswort bestimmt, welche Variante eines Dufts als 2-ml-Probe gilt. Es wird sowohl auf der Produktseite als auch beim Nachladen weiterer Auswahlseiten verwendet."
+      },
+      {
+        "type": "text",
+        "id": "sample_keyword",
+        "label": "Erkennungswort der Probenvariante",
+        "default": "sample"
+      }
+    ]
+  },
+  {
     "name": "Bewertungen",
     "settings": [
       {

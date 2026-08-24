@@ -10,7 +10,9 @@
         "heading": "VENT CELESTE",
         "text": "Konzentrierte Duftkompositionen. Klar kalkuliert.",
         "primary_label": "Düfte entdecken",
-        "secondary_label": "Discovery Set"
+        "secondary_label": "Discovery Set",
+        "primary_link": "/collections/alle-duefte",
+        "secondary_link": "/products/discovery-set"
       }
     },
     "promise": {
@@ -56,7 +58,8 @@
         "eyebrow": "Auswahl",
         "heading": "Bestseller",
         "product_limit": 4,
-        "link_label": "Alle Düfte"
+        "link_label": "Alle Düfte",
+        "collection": "bestseller"
       }
     },
     "worlds": {
@@ -65,37 +68,43 @@
         "w1": {
           "type": "world",
           "settings": {
-            "title": "Frisch"
+            "title": "Frisch",
+            "collection": "frisch"
           }
         },
         "w2": {
           "type": "world",
           "settings": {
-            "title": "Gourmand"
+            "title": "Gourmand",
+            "collection": "gourmand"
           }
         },
         "w3": {
           "type": "world",
           "settings": {
-            "title": "Holzig"
+            "title": "Holzig",
+            "collection": "holzig"
           }
         },
         "w4": {
           "type": "world",
           "settings": {
-            "title": "Amber"
+            "title": "Amber",
+            "collection": "amber"
           }
         },
         "w5": {
           "type": "world",
           "settings": {
-            "title": "Floral"
+            "title": "Floral",
+            "collection": "floral"
           }
         },
         "w6": {
           "type": "world",
           "settings": {
-            "title": "Oud"
+            "title": "Oud",
+            "collection": "oud"
           }
         }
       },
@@ -113,7 +122,8 @@
         "heading": "Duftwelten",
         "link_label": "Alle Düfte",
         "asymmetric": true,
-        "show_count": true
+        "show_count": true,
+        "link": "/collections/alle-duefte"
       }
     },
     "discovery": {
@@ -155,7 +165,9 @@
         "text": "<p>Bei über 100 Duftprofilen muss man sich nicht blind entscheiden. Fünf auswählen, in Ruhe tragen, Favoriten finden.</p>",
         "show_price": false,
         "primary_label": "Discovery Set zusammenstellen",
-        "secondary_label": "Duftfinder"
+        "secondary_label": "Duftfinder",
+        "primary_link": "/products/discovery-set",
+        "secondary_link": "/pages/duftfinder"
       }
     },
     "extrait": {
@@ -196,7 +208,8 @@
         "heading": "Extrait",
         "text": "<p>Ein hoher Anteil an Parfumöl bedeutet vor allem eines: Der Duft trägt sich dichter und muss seltener nachgelegt werden. Die Rohstoffe werden sorgfältig ausgewählt, die Komposition bleibt eigenständig.</p>",
         "show_price": true,
-        "primary_label": "Extrait ansehen"
+        "primary_label": "Extrait ansehen",
+        "primary_link": "/collections/extrait"
       }
     },
     "travel": {
@@ -229,7 +242,8 @@
         "heading": "Travel Spray",
         "text": "<p>Das kleine Format für Handtasche und Reise – und ein ruhiger Weg, einen Duft über mehrere Tage kennenzulernen.</p>",
         "show_price": false,
-        "primary_label": "Travel Size ansehen"
+        "primary_label": "Travel Size ansehen",
+        "primary_link": "/collections/travel-size"
       }
     },
     "finder": {
@@ -267,7 +281,8 @@
         "eyebrow": "Drei Fragen",
         "heading": "Duftfinder",
         "text": "<p>Richtung, Anlass, Intensität. Danach zeigen wir dir die Düfte, die dazu passen.</p>",
-        "button_label": "Duftfinder starten"
+        "button_label": "Duftfinder starten",
+        "link": "/pages/duftfinder"
       }
     },
     "essentials": {
@@ -300,7 +315,8 @@
         "heading": "Essentials",
         "text": "<p>Eine eigene Rezepturlinie für den Alltag – unkompliziert, mit anderem Rohstoffaufbau als die Hauptlinie und bewusst eigenständig präsentiert.</p>",
         "show_price": false,
-        "primary_label": "Essentials ansehen"
+        "primary_label": "Essentials ansehen",
+        "primary_link": "/collections/essentials"
       }
     },
     "about": {
@@ -314,7 +330,8 @@
         "text": "<p>Mustertext. Hier steht später die Haltung der Marke: warum es diese Düfte gibt, wie ausgewählt wird und was der Anspruch an Konzentration und Rohstoffe ist. Bitte vor dem Livegang vollständig ersetzen – es wurde bewusst keine Gründungsgeschichte erfunden.</p>",
         "placeholder_note": true,
         "show_price": false,
-        "primary_label": "Mehr über die Marke"
+        "primary_label": "Mehr über die Marke",
+        "primary_link": "/pages/ueber-uns"
       }
     },
     "newsletter": {

@@ -1,10 +1,71 @@
 {
   "sections": {
     "main": {
-      "type": "main-product"
+      "type": "main-product",
+      "blocks": {
+        "pyramid": {
+          "type": "scent_pyramid"
+        },
+        "character": {
+          "type": "character"
+        },
+        "wear": {
+          "type": "when_to_wear"
+        },
+        "concentration": {
+          "type": "concentration_note",
+          "settings": {
+            "heading": "Was bedeutet 30 % Extrait?",
+            "text": "<p>Der Anteil an Parfumöl bestimmt, wie dicht ein Duft auf der Haut liegt. 30 % ist ein hoher Wert: Es braucht weniger Sprühstöße, und die Komposition entwickelt sich langsamer über den Tag.</p>"
+          }
+        },
+        "addons": {
+          "type": "addons",
+          "settings": {
+            "sample_keyword": "sample",
+            "travel_keyword": "travel"
+          }
+        },
+        "description": {
+          "type": "description",
+          "settings": {
+            "heading": "Duftbeschreibung",
+            "open": true
+          }
+        },
+        "ingredients": {
+          "type": "ingredients"
+        },
+        "care": {
+          "type": "text",
+          "settings": {
+            "heading": "Hinweise",
+            "text": "<p>Platzhalter: Aufbewahrung, Chargenhinweis und Pflichtangaben nach EU 1223/2009 hier ergänzen.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "pyramid",
+        "character",
+        "wear",
+        "concentration",
+        "addons",
+        "description",
+        "ingredients",
+        "care"
+      ]
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "heading": "Ähnliche Duftprofile",
+        "intent": "related",
+        "limit": 4
+      }
     }
   },
   "order": [
-    "main"
+    "main",
+    "recommendations"
   ]
 }
