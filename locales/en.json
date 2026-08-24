@@ -1,0 +1,352 @@
+{
+  "general": {
+    "accessibility": {
+      "skip_to_content": "Skip to content",
+      "close": "Close",
+      "open_menu": "Open menu",
+      "close_menu": "Close menu",
+      "open_search": "Open search",
+      "close_search": "Close search",
+      "open_cart": "Open cart",
+      "menu": "Navigation",
+      "next_slide": "Next",
+      "previous_slide": "Previous",
+      "loading": "Loading",
+      "error": "Something went wrong.",
+      "unit_price_separator": "per",
+      "refresh_page": "Choosing a selection refreshes the page."
+    },
+    "meta": {
+      "tags": "Tags: {{ tags }}",
+      "page": "Page {{ page }}"
+    },
+    "pagination": {
+      "label": "Pagination",
+      "previous": "Previous page",
+      "next": "Next page",
+      "page": "Page {{ number }}"
+    },
+    "search": {
+      "title": "Search fragrances",
+      "placeholder": "Number, scent family or note",
+      "submit": "Search",
+      "reset": "Clear search",
+      "results_for": "Results for “{{ terms }}”",
+      "no_results": "No results for “{{ terms }}”.",
+      "no_results_help": "Check the spelling or search for a scent family such as “Woody” or “Gourmand”.",
+      "results_count": {
+        "one": "{{ count }} result",
+        "other": "{{ count }} results"
+      },
+      "suggestions": "Suggestions",
+      "products": "Fragrances",
+      "collections": "Scent worlds",
+      "pages": "Pages",
+      "articles": "Articles",
+      "queries": "Searches",
+      "view_all": "View all results",
+      "popular": "Frequently searched"
+    },
+    "newsletter": {
+      "label": "Email address",
+      "placeholder": "you@example.com",
+      "submit": "Sign up",
+      "success": "Thank you. A confirmation is on its way.",
+      "privacy_note": "You can unsubscribe at any time. See our privacy policy."
+    },
+    "social": {
+      "follow_us": "Follow",
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "facebook": "Facebook",
+      "pinterest": "Pinterest",
+      "youtube": "YouTube"
+    },
+    "share": {
+      "label": "Share",
+      "copy": "Copy link",
+      "copied": "Link copied"
+    },
+    "continue_shopping": "Continue browsing",
+    "demo_notice": "DEMO CONTENT – replace before launch"
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "Add to cart",
+      "adding": "Adding",
+      "added": "Added",
+      "sold_out": "Sold out",
+      "unavailable": "Unavailable",
+      "quantity": "Quantity",
+      "increase_quantity": "Increase quantity",
+      "decrease_quantity": "Decrease quantity",
+      "variant_label": "Format",
+      "price": "Price",
+      "regular_price": "Regular price",
+      "sale_price": "Sale price",
+      "unit_price": "Unit price",
+      "from_price": "Price",
+      "view_details": "View fragrance",
+      "vendor": "Brand",
+      "sku": "SKU",
+      "inventory_low": "Only a few left",
+      "media_gallery": "Product images",
+      "image_alt_fallback": "{{ title }} – product image",
+      "scent_profile": "Scent profile",
+      "top_notes": "Top notes",
+      "heart_notes": "Heart notes",
+      "base_notes": "Base notes",
+      "character": "Character",
+      "when_to_wear": "When to wear it",
+      "season": "Season",
+      "occasion": "Occasion",
+      "intensity": "Intensity",
+      "family": "Scent family",
+      "concentration": "Concentration",
+      "gender": "Suitability",
+      "concentration_explained": "Concentration explained",
+      "sample_title": "Try it first",
+      "sample_add": "Add 2 ml sample",
+      "travel_title": "For travel",
+      "travel_add": "Add 10 ml travel size",
+      "related": "Similar scent profiles",
+      "ingredients": "Ingredients",
+      "care": "Notices",
+      "reviews": "Reviews",
+      "badge_bestseller": "Bestseller",
+      "badge_new": "New",
+      "badge_sample": "Sample available"
+    },
+    "facets": {
+      "title": "Filters",
+      "open": "Filter and sort",
+      "apply": "Show results",
+      "clear": "Reset",
+      "clear_all": "Clear all filters",
+      "sort_by": "Sort",
+      "filter_by": "Filter by",
+      "active_filters": "Active filters",
+      "from": "from",
+      "to": "to",
+      "price_range": "Price",
+      "product_count": {
+        "one": "{{ count }} fragrance",
+        "other": "{{ count }} fragrances"
+      },
+      "no_results": "No fragrances match this selection.",
+      "no_results_help": "Remove a filter to see more fragrances.",
+      "unavailable_note": "Filters are not configured. See the README, section “Search & Discovery”."
+    }
+  },
+  "sections": {
+    "header": {
+      "announcement": "Announcement",
+      "account": "Account",
+      "cart_count": {
+        "one": "{{ count }} item in cart",
+        "other": "{{ count }} items in cart"
+      }
+    },
+    "cart": {
+      "title": "Cart",
+      "empty": "Your cart is empty.",
+      "empty_help": "With more than 100 scent profiles, the Discovery Set is a good place to start.",
+      "subtotal": "Subtotal",
+      "checkout": "Checkout",
+      "view_cart": "View cart",
+      "remove": "Remove",
+      "product": "Product",
+      "quantity": "Quantity",
+      "total": "Total",
+      "note": "Order note",
+      "taxes_note": "Shipping and discounts are calculated at checkout.",
+      "free_shipping_progress": "{{ amount }} away from free shipping",
+      "free_shipping_reached": "Free shipping",
+      "free_shipping_disclaimer": "Sample value – not final.",
+      "cross_sell_title": "Still undecided?",
+      "update": "Update cart",
+      "discovery_choices": "Your selection"
+    },
+    "footer": {
+      "newsletter_title": "Newsletter",
+      "payment_methods": "Payment methods",
+      "copyright": "All rights reserved.",
+      "legal_note": "All company details are placeholders and must be replaced before launch."
+    },
+    "scent_finder": {
+      "title": "Scent finder",
+      "start": "Start the scent finder",
+      "step": "Step {{ current }} of {{ total }}",
+      "back": "Back",
+      "skip": "Skip",
+      "show_results": "Show fragrances",
+      "checking": "Looking for matching fragrances",
+      "no_exact_match": "No exact match – here are the closest fragrances.",
+      "restart": "Start over"
+    },
+    "discovery_set": {
+      "title": "Discovery Set",
+      "select_prompt": "Choose five fragrances",
+      "selected_count": "{{ count }} of {{ max }} selected",
+      "choose": "Select",
+      "chosen": "Selected",
+      "remove": "Remove",
+      "search_placeholder": "Search fragrance",
+      "incomplete": "Please choose exactly five fragrances.",
+      "unavailable": "Currently unavailable"
+    }
+  },
+  "customer": {
+    "account": {
+      "title": "Account",
+      "details": "Account details",
+      "view_addresses": "View addresses",
+      "return": "Back to account"
+    },
+    "activate_account": {
+      "title": "Activate account",
+      "subtext": "Set a password to activate your account.",
+      "password": "Password",
+      "password_confirm": "Confirm password",
+      "submit": "Activate account",
+      "cancel": "Decline invitation"
+    },
+    "addresses": {
+      "title": "Addresses",
+      "default": "Default address",
+      "add_new": "New address",
+      "edit_address": "Edit address",
+      "first_name": "First name",
+      "last_name": "Last name",
+      "company": "Company",
+      "address1": "Address",
+      "address2": "Address line 2",
+      "city": "City",
+      "country": "Country",
+      "province": "Region",
+      "zip": "Postal code",
+      "phone": "Phone",
+      "set_default": "Set as default address",
+      "add": "Save address",
+      "update": "Update address",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete",
+      "delete_confirm": "Delete this address?"
+    },
+    "login_page": {
+      "title": "Sign in",
+      "email": "Email",
+      "password": "Password",
+      "forgot_password": "Forgot your password?",
+      "sign_in": "Sign in",
+      "create_account": "Create account",
+      "guest_title": "Continue as guest",
+      "guest_continue": "Continue"
+    },
+    "recover_password": {
+      "title": "Reset password",
+      "subtext": "We will send you a reset email.",
+      "submit": "Send",
+      "cancel": "Cancel",
+      "success": "We have sent you an email."
+    },
+    "reset_password": {
+      "title": "New password",
+      "subtext": "Please set a new password.",
+      "password": "Password",
+      "password_confirm": "Confirm password",
+      "submit": "Save password"
+    },
+    "register": {
+      "title": "Create account",
+      "first_name": "First name",
+      "last_name": "Last name",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Create account"
+    },
+    "orders": {
+      "title": "Orders",
+      "order_number": "Order",
+      "date": "Date",
+      "payment_status": "Payment",
+      "fulfillment_status": "Fulfillment",
+      "total": "Total",
+      "none": "You have not placed any orders yet."
+    },
+    "order": {
+      "title": "Order {{ name }}",
+      "date_html": "Placed on {{ date }}",
+      "cancelled_html": "Cancelled on {{ date }}",
+      "cancelled_reason": "Reason: {{ reason }}",
+      "billing_address": "Billing address",
+      "shipping_address": "Shipping address",
+      "payment_status": "Payment status",
+      "fulfillment_status": "Fulfillment status",
+      "product": "Product",
+      "sku": "SKU",
+      "price": "Price",
+      "quantity": "Quantity",
+      "total": "Total",
+      "subtotal": "Subtotal",
+      "shipping": "Shipping",
+      "tax": "Tax",
+      "discount": "Discount",
+      "track_shipment": "Track shipment"
+    }
+  },
+  "gift_cards": {
+    "issued": {
+      "title": "Gift card for {{ value }}",
+      "subtext": "Your gift card",
+      "expires": "Valid until {{ expiry }}",
+      "copy_code": "Copy code",
+      "copy_code_success": "Code copied",
+      "shop_link": "Redeem now",
+      "print": "Print",
+      "add_to_apple_wallet": "Add to Apple Wallet",
+      "qr_image_alt": "QR code to redeem"
+    }
+  },
+  "templates": {
+    "404": {
+      "title": "Page not found",
+      "subtext": "This page does not exist or has been moved.",
+      "link": "Back to the homepage"
+    },
+    "contact": {
+      "form": {
+        "title": "Contact",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "subject": "Subject",
+        "message": "Message",
+        "send": "Send message",
+        "success": "Thank you for your message. We will be in touch.",
+        "error": "Please check your entries."
+      }
+    },
+    "cart": {
+      "title": "Cart"
+    },
+    "search": {
+      "title": "Search"
+    }
+  },
+  "blogs": {
+    "article": {
+      "read_more": "Read more",
+      "back_to_blog": "Back to overview",
+      "comments": {
+        "one": "{{ count }} comment",
+        "other": "{{ count }} comments"
+      }
+    }
+  },
+  "onboarding": {
+    "product_title": "Sample product",
+    "collection_title": "Sample scent world"
+  }
+}

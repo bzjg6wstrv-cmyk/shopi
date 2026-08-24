@@ -1,0 +1,231 @@
+{{ 'section-editorial.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  Wiederverwendbarer Editorial-Abschnitt: Bild plus Text.
+  Wird auf der Startseite für Discovery Set, Extrait, Travel Size,
+  Essentials und „Über VENT CELESTE“ eingesetzt.
+  Preise stammen bei Bedarf aus einem echten Shopify-Produkt.
+{%- endcomment -%}
+{%- liquid
+  assign linked_product = section.settings.product
+  assign feature_variant = linked_product.metafields.custom.hauptvariante.value
+  if feature_variant == blank
+    assign feature_variant = linked_product.selected_or_first_available_variant
+  endif
+-%}
+<section class="section color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width">
+    <div class="feature{% if section.settings.media_position == 'right' %} feature--reverse{% endif %}{% if section.settings.media_shape == 'tall' %} feature--narrow-media{% endif %} reveal">
+      <div class="feature__media feature__media--{{ section.settings.media_shape }}">
+        {%- if section.settings.image != blank -%}
+          <img
+            src="{{ section.settings.image | image_url: width: 1400 }}"
+            srcset="{{ section.settings.image | image_url: width: 600 }} 600w,
+                    {{ section.settings.image | image_url: width: 900 }} 900w,
+                    {{ section.settings.image | image_url: width: 1400 }} 1400w"
+            sizes="(min-width: 990px) 50vw, 100vw"
+            alt="{{ section.settings.image.alt | escape }}"
+            width="{{ section.settings.image.width }}"
+            height="{{ section.settings.image.height }}"
+            loading="lazy"
+          >
+        {%- else -%}
+          {{ 'lifestyle-1' | placeholder_svg_tag: 'full-bleed-media' }}
+        {%- endif -%}
+      </div>
+
+      <div class="feature__body">
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="eyebrow">{{ section.settings.eyebrow | escape }}</span>
+        {%- endif -%}
+
+        {%- if section.settings.heading != blank -%}
+          <h2 class="h2">{{ section.settings.heading | escape }}</h2>
+        {%- endif -%}
+
+        {%- if section.settings.text != blank -%}
+          <div class="rte text-lead measure">{{ section.settings.text }}</div>
+        {%- endif -%}
+
+        {%- if section.blocks.size > 0 -%}
+          <ul class="feature__points">
+            {%- for block in section.blocks -%}
+              <li {{ block.shopify_attributes }}>
+                <span class="meta">{{ block.settings.label | escape }}</span>
+                <span>{{ block.settings.text | escape }}</span>
+              </li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+
+        {%- if linked_product != blank and section.settings.show_price -%}
+          <div style="margin-top: var(--space-lg);">
+            {% render 'product-price', variant: feature_variant, product: linked_product %}
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.placeholder_note -%}
+          <p class="demo-flag" style="margin-top: var(--space-lg);">{{ 'general.demo_notice' | t }}</p>
+        {%- endif -%}
+
+        {%- if section.settings.primary_label != blank or section.settings.secondary_label != blank -%}
+          <div class="feature__actions">
+            {%- if section.settings.primary_label != blank -%}
+              <a class="button" href="{{ section.settings.primary_link | default: linked_product.url }}">
+                {{ section.settings.primary_label | escape }}
+              </a>
+            {%- endif -%}
+            {%- if section.settings.secondary_label != blank -%}
+              <a class="button button--secondary" href="{{ section.settings.secondary_link }}">
+                {{ section.settings.secondary_label | escape }}
+              </a>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Editorial-Abschnitt",
+  "tag": "section",
+  "max_blocks": 5,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Farbschema",
+      "default": "scheme-ivory"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Bild"
+    },
+    {
+      "type": "select",
+      "id": "media_position",
+      "label": "Bildposition",
+      "options": [
+        {
+          "value": "left",
+          "label": "Links"
+        },
+        {
+          "value": "right",
+          "label": "Rechts"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "media_shape",
+      "label": "Bildformat",
+      "options": [
+        {
+          "value": "wide",
+          "label": "Breit 4:3"
+        },
+        {
+          "value": "tall",
+          "label": "Hoch 4:5"
+        }
+      ],
+      "default": "wide"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Kleiner Vortext"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Überschrift"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text"
+    },
+    {
+      "type": "header",
+      "content": "Produktbezug"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Verknüpftes Produkt",
+      "info": "Optional. Der Preis wird direkt aus Shopify gelesen, nicht im Theme hinterlegt."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_price",
+      "label": "Preis anzeigen",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Buttons"
+    },
+    {
+      "type": "text",
+      "id": "primary_label",
+      "label": "Primärer Button"
+    },
+    {
+      "type": "url",
+      "id": "primary_link",
+      "label": "Link primärer Button"
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "Sekundärer Button"
+    },
+    {
+      "type": "url",
+      "id": "secondary_link",
+      "label": "Link sekundärer Button"
+    },
+    {
+      "type": "header",
+      "content": "Hinweis"
+    },
+    {
+      "type": "checkbox",
+      "id": "placeholder_note",
+      "label": "Als Platzhaltertext kennzeichnen",
+      "default": false,
+      "info": "Für Abschnitte mit Mustertext, etwa „Über VENT CELESTE“."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "point",
+      "name": "Detailzeile",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Bezeichnung",
+          "default": "Konzentration"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Wert",
+          "default": "30 % Extrait"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Editorial-Abschnitt"
+    }
+  ]
+}
+{% endschema %}

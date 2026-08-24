@@ -1,0 +1,192 @@
+{%- comment -%}
+  Produktseite – Basisausbau (Ausbaustufe 1).
+  Vollständig funktionsfähig: Galerie, Varianten, Menge, Warenkorb, Grundpreis.
+  In Ausbaustufe 2 folgen: Duftpyramide, Charakter, Jahreszeit/Anlass,
+  Sample- und Travel-Block, Empfehlungen, Bewertungen.
+{%- endcomment -%}
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign families = product.metafields.custom.duftfamilie.value
+  assign character = product.metafields.custom.charakter.value
+  assign concentrations = product.metafields.custom.konzentration.value
+  assign percent = product.metafields.custom.konzentration_prozent.value
+-%}
+<section class="section">
+  <div class="page-width">
+    <div class="product">
+      <div class="product__media">
+        {%- if product.media.size > 0 -%}
+          {%- for media in product.media -%}
+            <img
+              src="{{ media | image_url: width: 1400 }}"
+              srcset="{{ media | image_url: width: 600 }} 600w,
+                      {{ media | image_url: width: 900 }} 900w,
+                      {{ media | image_url: width: 1400 }} 1400w"
+              sizes="(min-width: 990px) 55vw, 100vw"
+              alt="{{ media.alt | default: product.title | escape }}"
+              width="{{ media.width }}"
+              height="{{ media.height }}"
+              loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+              {% if forloop.first %}fetchpriority="high"{% endif %}
+            >
+          {%- endfor -%}
+        {%- else -%}
+          {{ 'product-1' | placeholder_svg_tag: 'full-bleed-media' }}
+        {%- endif -%}
+      </div>
+
+      <div class="product__info">
+        <h1 class="product__title h2">{{ product.title }}</h1>
+
+        {%- if families != blank or character != blank -%}
+          <p class="product__meta">
+            {%- if families != blank %}{{ families | join: ' · ' }}{% endif -%}
+            {%- if families != blank and character != blank %} · {% endif -%}
+            {%- if character != blank %}{{ character | join: ' · ' }}{% endif -%}
+          </p>
+        {%- endif -%}
+
+        {%- if concentrations != blank -%}
+          <p class="meta meta--muted" style="margin-top: var(--space-xs);">
+            {{ concentrations | join: ' · ' }}{% if percent != blank %} · {{ percent }} %{% endif %}
+          </p>
+        {%- endif -%}
+
+        <div class="product__price" data-product-price>
+          {% render 'product-price', variant: current_variant, product: product %}
+        </div>
+
+        <div class="product-form">
+          {%- form 'product', product, id: 'ProductForm', novalidate: 'novalidate' -%}
+            <input type="hidden" name="id" value="{{ current_variant.id }}" data-variant-id>
+
+            {%- if product.has_only_default_variant == false -%}
+              <fieldset class="variant-options" data-variant-options>
+                <legend class="field__label">{{ 'products.product.variant_label' | t }}</legend>
+                {%- for variant in product.variants -%}
+                  <div class="variant-option">
+                    <input
+                      type="radio"
+                      name="variant-choice"
+                      id="Variant-{{ section.id }}-{{ variant.id }}"
+                      value="{{ variant.id }}"
+                      data-variant-input
+                      data-price="{{ variant.price | money }}"
+                      data-available="{{ variant.available }}"
+                      {% if variant.id == current_variant.id %}checked{% endif %}
+                      {% unless variant.available %}disabled{% endunless %}
+                    >
+                    <label class="variant-option__label" for="Variant-{{ section.id }}-{{ variant.id }}">
+                      <span>{{ variant.title }}</span>
+                      <span class="variant-option__price">
+                        {%- if variant.available -%}{{ variant.price | money }}{%- else -%}{{ 'products.product.sold_out' | t }}{%- endif -%}
+                      </span>
+                    </label>
+                  </div>
+                {%- endfor -%}
+              </fieldset>
+            {%- endif -%}
+
+            <div class="product-form__actions">
+              <div class="quantity" data-quantity>
+                <button type="button" data-quantity-step="-1" aria-label="{{ 'products.product.decrease_quantity' | t }}">
+                  {% render 'icon', name: 'minus' %}
+                </button>
+                <label class="visually-hidden" for="Quantity-{{ section.id }}">{{ 'products.product.quantity' | t }}</label>
+                <input id="Quantity-{{ section.id }}" type="number" name="quantity" value="1" min="1" step="1" inputmode="numeric">
+                <button type="button" data-quantity-step="1" aria-label="{{ 'products.product.increase_quantity' | t }}">
+                  {% render 'icon', name: 'plus' %}
+                </button>
+              </div>
+
+              <button
+                type="submit"
+                class="button"
+                data-add-button
+                {% unless current_variant.available %}disabled{% endunless %}
+              >
+                {%- if current_variant.available -%}
+                  {{ 'products.product.add_to_cart' | t }}
+                {%- else -%}
+                  {{ 'products.product.sold_out' | t }}
+                {%- endif -%}
+              </button>
+
+              <p class="field__error" data-form-error hidden></p>
+            </div>
+          {%- endform -%}
+        </div>
+
+        <p class="product__note" style="margin-top: var(--space-md);">
+          {{ settings.tax_note }}
+          {%- if settings.shipping_page != blank -%}
+            , <a href="{{ settings.shipping_page }}" style="text-decoration: underline;">{{ 'sections.cart.taxes_note' | t }}</a>
+          {%- endif -%}
+        </p>
+
+        <div class="product__accordion" data-accordion-group>
+          {%- if product.description != blank -%}
+            <details data-accordion open>
+              <summary>{{ 'products.product.scent_profile' | t }} {% render 'icon', name: 'chevron' %}</summary>
+              <div class="rte">{{ product.description }}</div>
+            </details>
+          {%- endif -%}
+
+          {%- if product.metafields.custom.inci.value != blank -%}
+            <details data-accordion>
+              <summary>{{ 'products.product.ingredients' | t }} {% render 'icon', name: 'chevron' %}</summary>
+              <div class="rte text-body-sm">{{ product.metafields.custom.inci.value | newline_to_br }}</div>
+            </details>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="sticky-atc" data-sticky-atc aria-hidden="true">
+  <div class="sticky-atc__info">
+    <p class="sticky-atc__title">{{ product.title }}</p>
+    <p class="sticky-atc__price" data-sticky-price>{{ current_variant.price | money }}</p>
+  </div>
+  <button type="button" class="button" data-sticky-add>{{ 'products.product.add_to_cart' | t }}</button>
+</div>
+
+<script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": {{ product.title | json }},
+  "url": {{ shop.url | append: product.url | json }},
+  {% if product.featured_media -%}
+  "image": [{{ product.featured_media | image_url: width: 1200 | prepend: 'https:' | json }}],
+  {%- endif %}
+  "description": {{ product.description | strip_html | truncate: 500 | json }},
+  "brand": { "@type": "Brand", "name": {{ product.vendor | default: shop.name | json }} },
+  "offers": [
+    {%- for variant in product.variants -%}
+    {
+      "@type": "Offer",
+      "sku": {{ variant.sku | json }},
+      "name": {{ variant.title | json }},
+      "url": {{ shop.url | append: variant.url | json }},
+      "price": {{ variant.price | divided_by: 100.0 | json }},
+      "priceCurrency": {{ cart.currency.iso_code | json }},
+      "availability": "https://schema.org/{% if variant.available %}InStock{% else %}OutOfStock{% endif %}"
+    }{% unless forloop.last %},{% endunless %}
+    {%- endfor -%}
+  ]
+}
+</script>
+
+{% schema %}
+{
+  "name": "Produkt",
+  "tag": "section",
+  "settings": [
+
+  ]
+}
+{% endschema %}

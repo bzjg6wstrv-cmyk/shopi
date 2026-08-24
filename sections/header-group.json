@@ -1,0 +1,43 @@
+{
+  "type": "header",
+  "name": "Kopfbereich",
+  "sections": {
+    "announcement-bar": {
+      "type": "announcement-bar",
+      "blocks": {
+        "announcement": {
+          "type": "announcement",
+          "settings": {
+            "text": "Versand innerhalb Deutschlands"
+          }
+        }
+      },
+      "block_order": [
+        "announcement"
+      ],
+      "settings": {
+        "color_scheme": "scheme-ink"
+      }
+    },
+    "header": {
+      "type": "header",
+      "settings": {
+        "color_scheme": "scheme-ivory",
+        "menu": "main-menu",
+        "sticky": true,
+        "show_account": true,
+        "families_parent": "Düfte",
+        "families_title": "Duftfamilien",
+        "feature_title": "Discovery Set",
+        "feature_text": "Fünf Düfte selbst auswählen.",
+        "drawer_label_1": "Duftfinder",
+        "drawer_label_2": "Discovery Set",
+        "search_hint": "Suche nach Nummer, Duftfamilie oder einzelner Duftnote."
+      }
+    }
+  },
+  "order": [
+    "announcement-bar",
+    "header"
+  ]
+}

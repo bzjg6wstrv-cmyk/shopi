@@ -1,0 +1,540 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "VENT CELESTE",
+    "theme_version": "1.0.0",
+    "theme_author": "VENT CELESTE",
+    "theme_documentation_url": "https://shopify.dev",
+    "theme_support_url": "https://shopify.dev"
+  },
+  {
+    "name": "Logo & Marke",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Solange kein finales Logo hinterlegt ist, zeigt das Theme die Wortmarke als Text. Sobald hier eine Datei liegt, wird sie automatisch verwendet."
+      },
+      {
+        "type": "image_picker",
+        "id": "logo",
+        "label": "Logo"
+      },
+      {
+        "type": "range",
+        "id": "logo_width",
+        "min": 80,
+        "max": 320,
+        "step": 10,
+        "unit": "px",
+        "label": "Logobreite Desktop",
+        "default": 180
+      },
+      {
+        "type": "range",
+        "id": "logo_width_mobile",
+        "min": 60,
+        "max": 220,
+        "step": 10,
+        "unit": "px",
+        "label": "Logobreite Mobile",
+        "default": 130
+      },
+      {
+        "type": "text",
+        "id": "wordmark",
+        "label": "Wortmarke (Textlogo)",
+        "default": "VENT CELESTE",
+        "info": "Wird angezeigt, wenn kein Logo hochgeladen ist."
+      },
+      {
+        "type": "range",
+        "id": "wordmark_tracking",
+        "min": 0,
+        "max": 40,
+        "step": 1,
+        "unit": "/100em",
+        "label": "Laufweite Wortmarke",
+        "default": 22
+      },
+      {
+        "type": "image_picker",
+        "id": "favicon",
+        "label": "Favicon"
+      }
+    ]
+  },
+  {
+    "name": "Farben",
+    "settings": [
+      {
+        "type": "color_scheme_group",
+        "id": "color_schemes",
+        "definition": [
+          {
+            "type": "color",
+            "id": "background",
+            "label": "Hintergrund",
+            "default": "#F5F2ED"
+          },
+          {
+            "type": "color",
+            "id": "text",
+            "label": "Text",
+            "default": "#141210"
+          },
+          {
+            "type": "color",
+            "id": "muted",
+            "label": "Sekundärtext",
+            "default": "#8C8375"
+          },
+          {
+            "type": "color",
+            "id": "line",
+            "label": "Haarlinie",
+            "default": "#DCD5CA"
+          },
+          {
+            "type": "color",
+            "id": "accent",
+            "label": "Akzent",
+            "default": "#C3AC82"
+          },
+          {
+            "type": "color",
+            "id": "button",
+            "label": "Button-Fläche",
+            "default": "#141210"
+          },
+          {
+            "type": "color",
+            "id": "button_label",
+            "label": "Button-Schrift",
+            "default": "#F5F2ED"
+          }
+        ],
+        "role": {
+          "background": {
+            "solid": "background"
+          },
+          "text": "text",
+          "shadow": "line",
+          "primary_button": "button",
+          "on_primary_button": "button_label",
+          "primary_button_border": "button",
+          "secondary_button": "background",
+          "on_secondary_button": "text",
+          "secondary_button_border": "text",
+          "links": "text",
+          "icons": "text"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Typografie",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Überschriften"
+      },
+      {
+        "type": "font_picker",
+        "id": "font_heading",
+        "label": "Schrift Überschriften",
+        "default": "playfair_display_n4"
+      },
+      {
+        "type": "range",
+        "id": "heading_scale",
+        "min": 90,
+        "max": 130,
+        "step": 5,
+        "unit": "%",
+        "label": "Größe Überschriften",
+        "default": 100
+      },
+      {
+        "type": "range",
+        "id": "heading_tracking",
+        "min": -4,
+        "max": 4,
+        "step": 1,
+        "unit": "/100em",
+        "label": "Laufweite Überschriften",
+        "default": -1
+      },
+      {
+        "type": "header",
+        "content": "Fließtext"
+      },
+      {
+        "type": "font_picker",
+        "id": "font_body",
+        "label": "Schrift Fließtext",
+        "default": "assistant_n4"
+      },
+      {
+        "type": "range",
+        "id": "body_scale",
+        "min": 90,
+        "max": 120,
+        "step": 5,
+        "unit": "%",
+        "label": "Größe Fließtext",
+        "default": 100
+      },
+      {
+        "type": "header",
+        "content": "Detailtypografie"
+      },
+      {
+        "type": "paragraph",
+        "content": "Meta-Angaben wie „EXTRAIT · 30 % · 30 ML“ werden in Versalien gesetzt."
+      },
+      {
+        "type": "range",
+        "id": "meta_tracking",
+        "min": 0,
+        "max": 24,
+        "step": 1,
+        "unit": "/100em",
+        "label": "Laufweite Meta-Text",
+        "default": 12
+      }
+    ]
+  },
+  {
+    "name": "Layout & Form",
+    "settings": [
+      {
+        "type": "range",
+        "id": "page_width",
+        "min": 1200,
+        "max": 1800,
+        "step": 20,
+        "unit": "px",
+        "label": "Maximale Seitenbreite",
+        "default": 1440
+      },
+      {
+        "type": "range",
+        "id": "corner_radius",
+        "min": 0,
+        "max": 16,
+        "step": 1,
+        "unit": "px",
+        "label": "Eckenradius",
+        "default": 0,
+        "info": "0 px entspricht der empfohlenen Editorial-Anmutung. Höhere Werte erzeugen eine Karten-Optik."
+      },
+      {
+        "type": "range",
+        "id": "border_width",
+        "min": 1,
+        "max": 2,
+        "step": 1,
+        "unit": "px",
+        "label": "Stärke der Haarlinien",
+        "default": 1
+      },
+      {
+        "type": "checkbox",
+        "id": "animations_enabled",
+        "label": "Dezente Einblendungen aktivieren",
+        "default": true,
+        "info": "Wird bei „Bewegung reduzieren“ im Betriebssystem automatisch abgeschaltet."
+      }
+    ]
+  },
+  {
+    "name": "Buttons",
+    "settings": [
+      {
+        "type": "select",
+        "id": "button_style",
+        "label": "Buttonform",
+        "options": [
+          {
+            "value": "square",
+            "label": "Rechteckig"
+          },
+          {
+            "value": "soft",
+            "label": "Leicht gerundet"
+          },
+          {
+            "value": "pill",
+            "label": "Pille"
+          }
+        ],
+        "default": "square"
+      },
+      {
+        "type": "checkbox",
+        "id": "button_uppercase",
+        "label": "Buttonbeschriftung in Versalien",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "button_padding",
+        "min": 12,
+        "max": 24,
+        "step": 2,
+        "unit": "px",
+        "label": "Innenabstand Buttons",
+        "default": 16
+      }
+    ]
+  },
+  {
+    "name": "Produktkarten",
+    "settings": [
+      {
+        "type": "select",
+        "id": "card_image_ratio",
+        "label": "Bildformat",
+        "options": [
+          {
+            "value": "portrait",
+            "label": "Hochformat 3:4"
+          },
+          {
+            "value": "square",
+            "label": "Quadratisch"
+          },
+          {
+            "value": "tall",
+            "label": "Hoch 2:3"
+          }
+        ],
+        "default": "portrait"
+      },
+      {
+        "type": "checkbox",
+        "id": "card_show_family",
+        "label": "Duftfamilie anzeigen",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "card_show_concentration",
+        "label": "Konzentration anzeigen",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "card_show_badges",
+        "label": "Badges anzeigen (Bestseller / Neu)",
+        "default": true,
+        "info": "Badges erscheinen ausschließlich, wenn das Produkt tatsächlich entsprechend getaggt oder per Metafeld markiert ist."
+      },
+      {
+        "type": "checkbox",
+        "id": "card_show_secondary_image",
+        "label": "Zweites Bild beim Überfahren zeigen",
+        "default": false
+      },
+      {
+        "type": "paragraph",
+        "content": "Der Kartenpreis folgt der im Metafeld custom.hauptvariante hinterlegten Ausführung. Ist keine hinterlegt, wird die erste verfügbare 30-ml-Variante verwendet. „Ab“-Preise werden bewusst nicht ausgegeben."
+      }
+    ]
+  },
+  {
+    "name": "Warenkorb",
+    "settings": [
+      {
+        "type": "select",
+        "id": "cart_type",
+        "label": "Verhalten",
+        "options": [
+          {
+            "value": "drawer",
+            "label": "Cart Drawer"
+          },
+          {
+            "value": "page",
+            "label": "Warenkorbseite"
+          }
+        ],
+        "default": "drawer"
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_show_note",
+        "label": "Bestellhinweis-Feld anzeigen",
+        "default": false
+      },
+      {
+        "type": "header",
+        "content": "Versandfortschritt"
+      },
+      {
+        "type": "paragraph",
+        "content": "Achtung: Diese Anzeige kennt die echten Versandregeln nicht. Der Wert muss manuell mit den Versandeinstellungen des Shops übereinstimmen. Erst aktivieren, wenn die Freigrenze final festgelegt ist."
+      },
+      {
+        "type": "checkbox",
+        "id": "free_shipping_enabled",
+        "label": "Versandfortschritt anzeigen",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "free_shipping_threshold",
+        "label": "Freigrenze (Musterwert)",
+        "default": "49",
+        "info": "Betrag in der Shopwährung, ohne Währungszeichen. Musterwert – bitte ersetzen."
+      },
+      {
+        "type": "header",
+        "content": "Empfehlung im Warenkorb"
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_cross_sell_enabled",
+        "label": "Eine dezente Empfehlung anzeigen",
+        "default": true
+      },
+      {
+        "type": "product",
+        "id": "cart_cross_sell_product",
+        "label": "Empfohlenes Produkt",
+        "info": "Empfohlen: Discovery Set."
+      }
+    ]
+  },
+  {
+    "name": "Suche",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "predictive_search_enabled",
+        "label": "Sofortvorschläge aktivieren",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "search_placeholder",
+        "label": "Platzhaltertext",
+        "default": "Nummer, Duftfamilie oder Note"
+      }
+    ]
+  },
+  {
+    "name": "Social Media",
+    "settings": [
+      {
+        "type": "url",
+        "id": "social_instagram",
+        "label": "Instagram"
+      },
+      {
+        "type": "url",
+        "id": "social_tiktok",
+        "label": "TikTok"
+      },
+      {
+        "type": "url",
+        "id": "social_facebook",
+        "label": "Facebook"
+      },
+      {
+        "type": "url",
+        "id": "social_pinterest",
+        "label": "Pinterest"
+      },
+      {
+        "type": "url",
+        "id": "social_youtube",
+        "label": "YouTube"
+      }
+    ]
+  },
+  {
+    "name": "Kontakt & Firmendaten",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Alle Werte sind als Platzhalter angelegt. Bitte vor dem Livegang vollständig durch echte Daten ersetzen – siehe README, Abschnitt „Rechtliches“."
+      },
+      {
+        "type": "text",
+        "id": "company_name",
+        "label": "Firmenname",
+        "default": "[FIRMENNAME]"
+      },
+      {
+        "type": "text",
+        "id": "company_address",
+        "label": "Anschrift",
+        "default": "[ANSCHRIFT]"
+      },
+      {
+        "type": "text",
+        "id": "company_vat",
+        "label": "USt-IdNr.",
+        "default": "[UST-ID]"
+      },
+      {
+        "type": "text",
+        "id": "contact_email",
+        "label": "E-Mail",
+        "default": "[E-MAIL]"
+      },
+      {
+        "type": "text",
+        "id": "contact_phone",
+        "label": "Telefon",
+        "default": "[TELEFON]"
+      },
+      {
+        "type": "text",
+        "id": "contact_hours",
+        "label": "Erreichbarkeit",
+        "default": "[ERREICHBARKEIT]"
+      }
+    ]
+  },
+  {
+    "name": "Rechtliche Hinweise",
+    "settings": [
+      {
+        "type": "text",
+        "id": "tax_note",
+        "label": "Steuer-/Versandhinweis",
+        "default": "inkl. MwSt."
+      },
+      {
+        "type": "url",
+        "id": "shipping_page",
+        "label": "Link zur Versandseite",
+        "info": "Wird hinter dem Steuerhinweis verlinkt (Pflichtangabe im deutschen Handel)."
+      },
+      {
+        "type": "checkbox",
+        "id": "show_unit_price",
+        "label": "Grundpreis anzeigen",
+        "default": true,
+        "info": "Nach PAngV verpflichtend. Voraussetzung: Die Felder für den Grundpreis sind je Variante im Shopify-Admin gepflegt."
+      }
+    ]
+  },
+  {
+    "name": "Bewertungen",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Das Theme liest Bewertungen aus dem Standard-Metafeld reviews.rating (u. a. von Judge.me und vergleichbaren Apps). Liegen keine echten Bewertungen vor, bleibt der Bereich vollständig ausgeblendet. Es werden keine Beispielbewertungen erzeugt."
+      },
+      {
+        "type": "checkbox",
+        "id": "reviews_enabled",
+        "label": "Bewertungen anzeigen, sobald Daten vorhanden sind",
+        "default": true
+      }
+    ]
+  }
+]

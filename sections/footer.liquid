@@ -1,0 +1,189 @@
+<footer class="footer color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width">
+    <div class="footer__top">
+      {%- for block in section.blocks -%}
+        <div {{ block.shopify_attributes }}>
+          {%- case block.type -%}
+            {%- when 'brand' -%}
+              <p class="wordmark" style="font-size: 1.125rem;">{{ settings.wordmark | escape }}</p>
+              {%- if block.settings.text != blank -%}
+                <div class="rte text-body-sm text-muted measure-narrow" style="margin-top: var(--space-md);">
+                  {{ block.settings.text }}
+                </div>
+              {%- endif -%}
+              {%- assign has_social = false -%}
+              {%- if settings.social_instagram != blank or settings.social_tiktok != blank or settings.social_facebook != blank or settings.social_pinterest != blank or settings.social_youtube != blank -%}
+                {%- assign has_social = true -%}
+              {%- endif -%}
+              {%- if has_social -%}
+                <nav class="social-list" aria-label="{{ 'general.social.follow_us' | t }}" style="margin-top: var(--space-lg);">
+                  {%- if settings.social_instagram != blank -%}<a href="{{ settings.social_instagram }}" rel="noopener" target="_blank">{{ 'general.social.instagram' | t }}</a>{%- endif -%}
+                  {%- if settings.social_tiktok != blank -%}<a href="{{ settings.social_tiktok }}" rel="noopener" target="_blank">{{ 'general.social.tiktok' | t }}</a>{%- endif -%}
+                  {%- if settings.social_facebook != blank -%}<a href="{{ settings.social_facebook }}" rel="noopener" target="_blank">{{ 'general.social.facebook' | t }}</a>{%- endif -%}
+                  {%- if settings.social_pinterest != blank -%}<a href="{{ settings.social_pinterest }}" rel="noopener" target="_blank">{{ 'general.social.pinterest' | t }}</a>{%- endif -%}
+                  {%- if settings.social_youtube != blank -%}<a href="{{ settings.social_youtube }}" rel="noopener" target="_blank">{{ 'general.social.youtube' | t }}</a>{%- endif -%}
+                </nav>
+              {%- endif -%}
+
+            {%- when 'menu' -%}
+              <p class="footer__heading meta meta--muted">{{ block.settings.title | escape }}</p>
+              {%- if block.settings.menu != blank -%}
+                <ul class="footer__list">
+                  {%- for link in block.settings.menu.links -%}
+                    <li><a href="{{ link.url }}">{{ link.title | escape }}</a></li>
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+
+            {%- when 'contact' -%}
+              <p class="footer__heading meta meta--muted">{{ block.settings.title | escape }}</p>
+              <ul class="footer__list text-muted">
+                <li>{{ settings.company_name }}</li>
+                <li>{{ settings.company_address }}</li>
+                <li>USt-IdNr.: {{ settings.company_vat }}</li>
+                <li>{{ settings.contact_email }}</li>
+                <li>{{ settings.contact_phone }}</li>
+                <li>{{ settings.contact_hours }}</li>
+              </ul>
+              <p class="demo-flag" style="margin-top: var(--space-md);">{{ 'general.demo_notice' | t }}</p>
+
+            {%- when 'newsletter' -%}
+              <p class="footer__heading meta meta--muted">{{ 'sections.footer.newsletter_title' | t }}</p>
+              {%- if block.settings.text != blank -%}
+                <p class="text-body-sm text-muted measure-narrow">{{ block.settings.text | escape }}</p>
+              {%- endif -%}
+              {%- form 'customer', class: 'stack', id: 'FooterNewsletter' -%}
+                <input type="hidden" name="contact[tags]" value="newsletter">
+                <div class="field">
+                  <label class="visually-hidden" for="FooterNewsletterEmail">{{ 'general.newsletter.label' | t }}</label>
+                  <input
+                    class="field__input"
+                    id="FooterNewsletterEmail"
+                    type="email"
+                    name="contact[email]"
+                    placeholder="{{ 'general.newsletter.placeholder' | t }}"
+                    autocomplete="email"
+                    required
+                  >
+                </div>
+                <button type="submit" class="button button--secondary">{{ 'general.newsletter.submit' | t }}</button>
+                {%- if form.errors -%}
+                  <p class="field__error">{{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}</p>
+                {%- elsif form.posted_successfully? -%}
+                  <p class="form-status">{{ 'general.newsletter.success' | t }}</p>
+                {%- endif -%}
+                <p class="text-muted" style="font-size: .75rem;">{{ 'general.newsletter.privacy_note' | t }}</p>
+              {%- endform -%}
+          {%- endcase -%}
+        </div>
+      {%- endfor -%}
+    </div>
+
+    <div class="footer__bottom">
+      <p class="text-muted" style="font-size: .75rem;">
+        &copy; {{ 'now' | date: '%Y' }} {{ settings.wordmark | escape }}. {{ 'sections.footer.copyright' | t }}
+        {%- if section.settings.show_legal_note %} {{ 'sections.footer.legal_note' | t }}{% endif -%}
+      </p>
+
+      {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+        <div class="payment-icons">
+          <span class="visually-hidden">{{ 'sections.footer.payment_methods' | t }}</span>
+          {%- for type in shop.enabled_payment_types -%}
+            {{ type | payment_type_svg_tag: class: 'payment-icon' }}
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Fußbereich",
+  "class": "footer-section",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Farbschema",
+      "default": "scheme-ivory-deep"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_payment_icons",
+      "label": "Zahlungsarten anzeigen",
+      "default": true,
+      "info": "Zeigt ausschließlich die im Shopify-Admin tatsächlich aktivierten Zahlungsarten."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_legal_note",
+      "label": "Hinweis auf Platzhalterdaten anzeigen",
+      "default": true,
+      "info": "Vor dem Livegang deaktivieren."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "brand",
+      "name": "Marke",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text"
+        }
+      ]
+    },
+    {
+      "type": "menu",
+      "name": "Menüspalte",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Überschrift",
+          "default": "Service"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menü"
+        }
+      ]
+    },
+    {
+      "type": "contact",
+      "name": "Kontaktdaten",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Überschrift",
+          "default": "Kontakt"
+        }
+      ]
+    },
+    {
+      "type": "newsletter",
+      "name": "Newsletter",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Neue Duftprofile und Hinweise – selten und ohne Rabattgeschrei."
+        }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "groups": [
+      "footer"
+    ]
+  }
+}
+{% endschema %}

@@ -1,0 +1,82 @@
+{{ 'section-editorial.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  Newsletter – bewusst als ruhiger Abschnitt im Seitenfluss.
+  Kein Pop-up, keine Verzögerung, keine Rabattversprechen.
+{%- endcomment -%}
+<section class="section section--tight color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width page-width--narrow">
+    <div class="measure">
+      {%- if section.settings.eyebrow != blank -%}
+        <span class="eyebrow">{{ section.settings.eyebrow | escape }}</span>
+      {%- endif -%}
+      <h2 class="h3">{{ section.settings.heading | escape }}</h2>
+      {%- if section.settings.text != blank -%}
+        <p class="text-muted" style="margin-top: var(--space-sm);">{{ section.settings.text | escape }}</p>
+      {%- endif -%}
+
+      {%- form 'customer', class: 'newsletter__form', id: 'NewsletterSection' -%}
+        <input type="hidden" name="contact[tags]" value="newsletter">
+        <div class="field">
+          <label class="visually-hidden" for="NewsletterSectionEmail">{{ 'general.newsletter.label' | t }}</label>
+          <input
+            class="field__input"
+            id="NewsletterSectionEmail"
+            type="email"
+            name="contact[email]"
+            placeholder="{{ 'general.newsletter.placeholder' | t }}"
+            autocomplete="email"
+            required
+          >
+        </div>
+        <button type="submit" class="button">{{ 'general.newsletter.submit' | t }}</button>
+        {%- if form.errors -%}
+          <p class="field__error">{{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}</p>
+        {%- elsif form.posted_successfully? -%}
+          <p class="form-status">{{ 'general.newsletter.success' | t }}</p>
+        {%- endif -%}
+      {%- endform -%}
+
+      <p class="text-muted" style="font-size: .75rem; margin-top: var(--space-sm);">
+        {{ 'general.newsletter.privacy_note' | t }}
+      </p>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Newsletter",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Farbschema",
+      "default": "scheme-ivory"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Kleiner Vortext",
+      "default": "Auf dem Laufenden bleiben"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Überschrift",
+      "default": "Neue Duftprofile"
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Text",
+      "default": "Wir schreiben selten und nur, wenn es etwas zu berichten gibt."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Newsletter"
+    }
+  ]
+}
+{% endschema %}

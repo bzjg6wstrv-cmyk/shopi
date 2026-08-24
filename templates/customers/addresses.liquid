@@ -1,0 +1,56 @@
+<section class="section">
+  <div class="page-width">
+    <h1 class="h3">{{ 'customer.addresses.title' | t }}</h1>
+
+    <div style="margin-top: var(--space-2xl); max-width: 34rem;">
+      <h2 class="h4">{{ 'customer.addresses.add_new' | t }}</h2>
+      {%- form 'customer_address', customer.new_address, class: 'stack-lg', style: 'margin-top: var(--space-lg);' -%}
+        <div class="field">
+          <label class="field__label" for="AddressFirst">{{ 'customer.addresses.first_name' | t }}</label>
+          <input class="field__input" id="AddressFirst" type="text" name="address[first_name]" autocomplete="given-name">
+        </div>
+        <div class="field">
+          <label class="field__label" for="AddressLast">{{ 'customer.addresses.last_name' | t }}</label>
+          <input class="field__input" id="AddressLast" type="text" name="address[last_name]" autocomplete="family-name">
+        </div>
+        <div class="field">
+          <label class="field__label" for="AddressStreet">{{ 'customer.addresses.address1' | t }}</label>
+          <input class="field__input" id="AddressStreet" type="text" name="address[address1]" autocomplete="address-line1">
+        </div>
+        <div class="field">
+          <label class="field__label" for="AddressZip">{{ 'customer.addresses.zip' | t }}</label>
+          <input class="field__input" id="AddressZip" type="text" name="address[zip]" autocomplete="postal-code">
+        </div>
+        <div class="field">
+          <label class="field__label" for="AddressCity">{{ 'customer.addresses.city' | t }}</label>
+          <input class="field__input" id="AddressCity" type="text" name="address[city]" autocomplete="address-level2">
+        </div>
+        <div class="field">
+          <label class="field__label" for="AddressCountry">{{ 'customer.addresses.country' | t }}</label>
+          <select class="field__input" id="AddressCountry" name="address[country]" data-default="{{ form.country }}">
+            {{ country_option_tags }}
+          </select>
+        </div>
+        <button type="submit" class="button">{{ 'customer.addresses.add' | t }}</button>
+      {%- endform -%}
+    </div>
+
+    {%- paginate customer.addresses by 10 -%}
+      <div style="margin-top: var(--space-3xl);">
+        {%- for address in customer.addresses -%}
+          <div style="padding-block: var(--space-lg); border-top: var(--border-width) solid rgb(var(--color-line));">
+            {%- if address == customer.default_address -%}
+              <p class="meta meta--muted">{{ 'customer.addresses.default' | t }}</p>
+            {%- endif -%}
+            <div class="text-muted">{{ address | format_address }}</div>
+          </div>
+        {%- endfor -%}
+      </div>
+      {% render 'pagination', paginate: paginate %}
+    {%- endpaginate -%}
+
+    <p style="margin-top: var(--space-2xl);">
+      <a class="link-underline" href="{{ routes.account_url }}">{{ 'customer.account.return' | t }}</a>
+    </p>
+  </div>
+</section>

@@ -1,0 +1,129 @@
+{%- comment -%}
+  Produktkarte – bewusst reduziert: Nummer, Duftfamilie, Konzentration, Preis.
+  Parameter:
+    product          – Produktobjekt (Pflicht)
+    lazy             – 'lazy' oder 'eager' (Standard: lazy)
+    sizes            – sizes-Attribut für responsive Bilder
+    show_family / show_concentration / show_badges – überschreiben die Theme Settings
+
+  Der angezeigte Preis folgt der Hauptvariante (Metafeld custom.hauptvariante),
+  ersatzweise der ersten 30-ml-Variante. „Ab“-Preise werden nicht ausgegeben.
+{%- endcomment -%}
+{%- liquid
+  assign card_lazy = lazy | default: 'lazy'
+  assign card_sizes = sizes | default: '(min-width: 1200px) 22vw, (min-width: 750px) 30vw, 45vw'
+
+  assign show_family_final = show_family
+  if show_family == nil
+    assign show_family_final = settings.card_show_family
+  endif
+  assign show_conc_final = show_concentration
+  if show_concentration == nil
+    assign show_conc_final = settings.card_show_concentration
+  endif
+  assign show_badges_final = show_badges
+  if show_badges == nil
+    assign show_badges_final = settings.card_show_badges
+  endif
+
+  assign display_variant = product.metafields.custom.hauptvariante.value
+  if display_variant == blank
+    for candidate in product.variants
+      if candidate.title contains '30 ml' and candidate.available
+        assign display_variant = candidate
+        break
+      endif
+    endfor
+  endif
+  if display_variant == blank
+    assign display_variant = product.selected_or_first_available_variant
+  endif
+
+  assign families = product.metafields.custom.duftfamilie.value
+  assign character = product.metafields.custom.charakter.value
+  assign concentrations = product.metafields.custom.konzentration.value
+  assign percent = product.metafields.custom.konzentration_prozent.value
+
+  assign badge_label = ''
+  if show_badges_final
+    if product.metafields.custom.bestseller.value == true or product.tags contains 'bestseller'
+      assign badge_label = 'products.product.badge_bestseller' | t
+    elsif product.tags contains 'neu' or product.tags contains 'new'
+      assign badge_label = 'products.product.badge_new' | t
+    endif
+  endif
+-%}
+<article class="card">
+  <div class="card__media card__media--{{ settings.card_image_ratio }}">
+    {%- if product.featured_media -%}
+      <img
+        src="{{ product.featured_media | image_url: width: 800 }}"
+        srcset="{{ product.featured_media | image_url: width: 400 }} 400w,
+                {{ product.featured_media | image_url: width: 600 }} 600w,
+                {{ product.featured_media | image_url: width: 800 }} 800w,
+                {{ product.featured_media | image_url: width: 1200 }} 1200w"
+        sizes="{{ card_sizes }}"
+        alt="{{ product.featured_media.alt | default: product.title | escape }}"
+        width="{{ product.featured_media.width }}"
+        height="{{ product.featured_media.height }}"
+        loading="{{ card_lazy }}"
+        class="card__image--primary"
+      >
+      {%- if settings.card_show_secondary_image and product.media[1] -%}
+        <img
+          src="{{ product.media[1] | image_url: width: 800 }}"
+          srcset="{{ product.media[1] | image_url: width: 400 }} 400w,
+                  {{ product.media[1] | image_url: width: 800 }} 800w"
+          sizes="{{ card_sizes }}"
+          alt=""
+          width="{{ product.media[1].width }}"
+          height="{{ product.media[1].height }}"
+          loading="lazy"
+          class="card__image--secondary"
+          aria-hidden="true"
+        >
+      {%- endif -%}
+    {%- else -%}
+      {{ 'product-1' | placeholder_svg_tag: 'card__placeholder' }}
+    {%- endif -%}
+
+    {%- if badge_label != blank -%}
+      <span class="card__badge">{{ badge_label }}</span>
+    {%- endif -%}
+  </div>
+
+  <div class="card__content">
+    <h3 class="card__title">
+      <a href="{{ product.url }}">{{ product.title }}</a>
+    </h3>
+
+    {%- if show_family_final -%}
+      {%- liquid
+        assign card_traits = ''
+        if families != blank
+          assign card_traits = families | join: ' · '
+        endif
+        if character != blank
+          assign character_text = character | join: ' · '
+          if card_traits != blank
+            assign card_traits = card_traits | append: ' · ' | append: character_text
+          else
+            assign card_traits = character_text
+          endif
+        endif
+      -%}
+      {%- if card_traits != blank -%}
+        <p class="card__family">{{ card_traits }}</p>
+      {%- endif -%}
+    {%- endif -%}
+
+    {%- if show_conc_final and concentrations != blank -%}
+      <p class="card__meta meta">
+        {{ concentrations | join: ' · ' }}
+        {%- if percent != blank %} · {{ percent }} %{% endif -%}
+      </p>
+    {%- endif -%}
+
+    {%- render 'product-price', variant: display_variant, product: product, class: 'card__price' -%}
+  </div>
+</article>

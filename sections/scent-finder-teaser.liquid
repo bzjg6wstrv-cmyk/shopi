@@ -1,0 +1,120 @@
+{{ 'section-editorial.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  Einstieg in den Duftfinder. Zeigt die Fragen als Vorschau –
+  beantwortet werden sie auf der Duftfinder-Seite, die zu einer
+  echten gefilterten Collection führt.
+{%- endcomment -%}
+<section class="section color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width">
+    <div class="finder-teaser reveal">
+      <div>
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="eyebrow">{{ section.settings.eyebrow | escape }}</span>
+        {%- endif -%}
+        <h2 class="h2">{{ section.settings.heading | escape }}</h2>
+        {%- if section.settings.text != blank -%}
+          <div class="rte text-lead measure" style="margin-top: var(--space-md);">{{ section.settings.text }}</div>
+        {%- endif -%}
+        {%- if section.settings.link != blank -%}
+          <div class="feature__actions">
+            <a class="button" href="{{ section.settings.link }}">{{ section.settings.button_label | escape }}</a>
+          </div>
+        {%- endif -%}
+      </div>
+
+      <ol class="finder-steps">
+        {%- for block in section.blocks -%}
+          <li {{ block.shopify_attributes }}>
+            <div>
+              <p class="h4">{{ block.settings.question | escape }}</p>
+              {%- if block.settings.answers != blank -%}
+                <p class="finder-steps__answers">{{ block.settings.answers | escape }}</p>
+              {%- endif -%}
+            </div>
+          </li>
+        {%- endfor -%}
+      </ol>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Duftfinder-Teaser",
+  "tag": "section",
+  "max_blocks": 4,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Farbschema",
+      "default": "scheme-ivory-deep"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Kleiner Vortext",
+      "default": "Drei Fragen"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Überschrift",
+      "default": "Duftfinder"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Richtung, Anlass, Intensität. Danach zeigen wir dir die Düfte, die dazu passen.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button",
+      "default": "Duftfinder starten"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Link zur Duftfinder-Seite"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "step",
+      "name": "Frage",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Frage",
+          "default": "Welche Richtung suchst du?"
+        },
+        {
+          "type": "text",
+          "id": "answers",
+          "label": "Antwortoptionen",
+          "default": "Frisch · Süß · Holzig · Gourmand · Floral · Dunkel"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Duftfinder-Teaser",
+      "blocks": [
+        {
+          "type": "step"
+        },
+        {
+          "type": "step"
+        },
+        {
+          "type": "step"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

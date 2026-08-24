@@ -1,0 +1,85 @@
+{{ 'section-editorial.css' | asset_url | stylesheet_tag }}
+<section class="section section--tight color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width">
+    {%- if section.settings.heading != blank -%}
+      <p class="eyebrow">{{ section.settings.heading | escape }}</p>
+    {%- endif -%}
+
+    <div class="promise reveal">
+      {%- for block in section.blocks -%}
+        <div class="promise__item" {{ block.shopify_attributes }}>
+          <p class="promise__value">{{ block.settings.value | escape }}</p>
+          <p class="promise__label">{{ block.settings.label | escape }}</p>
+        </div>
+      {%- endfor -%}
+    </div>
+
+    {%- if section.settings.footnote != blank -%}
+      <p class="text-muted text-body-sm" style="margin-top: var(--space-md);">{{ section.settings.footnote | escape }}</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Markenversprechen",
+  "tag": "section",
+  "max_blocks": 3,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Farbschema",
+      "default": "scheme-ivory"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Kleiner Vortext",
+      "default": "Das Prinzip"
+    },
+    {
+      "type": "text",
+      "id": "footnote",
+      "label": "Fußnote",
+      "default": "Preise und Konzentration beziehen sich auf die Extrait-Linie."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "statement",
+      "name": "Aussage",
+      "settings": [
+        {
+          "type": "text",
+          "id": "value",
+          "label": "Wert",
+          "default": "30 %"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Erläuterung",
+          "default": "Parfumkonzentration im Extrait"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Markenversprechen",
+      "blocks": [
+        {
+          "type": "statement"
+        },
+        {
+          "type": "statement"
+        },
+        {
+          "type": "statement"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

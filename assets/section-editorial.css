@@ -1,0 +1,87 @@
+/* Gemeinsame Editorial-Bausteine: Markenversprechen, Feature-Abschnitte,
+   Duftfinder-Teaser. Bewusst ohne Karten, Schatten und Verläufe.          */
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-2xl);
+}
+.section-head__title { max-width: 24ch; }
+
+/* Markenversprechen – eine Zeile aus drei Aussagen, durch Haarlinien getrennt */
+.promise {
+  display: grid;
+  border-top: var(--border-width) solid rgb(var(--color-line));
+  border-bottom: var(--border-width) solid rgb(var(--color-line));
+}
+@media (min-width: 750px) {
+  .promise { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .promise__item + .promise__item { border-left: var(--border-width) solid rgb(var(--color-line)); }
+}
+.promise__item { padding: var(--space-xl) var(--space-lg); }
+@media (max-width: 749px) {
+  .promise__item + .promise__item { border-top: var(--border-width) solid rgb(var(--color-line)); }
+}
+.promise__value {
+  font-family: var(--font-heading-family);
+  font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.5rem);
+  line-height: 1.1;
+}
+.promise__label { margin-top: var(--space-xs); color: rgb(var(--color-muted)); font-size: .9375rem; }
+
+/* Feature-Abschnitt: Bild und Text, bewusst asymmetrisch */
+.feature { display: grid; gap: var(--space-xl); align-items: center; }
+@media (min-width: 990px) {
+  .feature { gap: clamp(2rem, 6vw, 6rem); grid-template-columns: 7fr 5fr; }
+  .feature--reverse { grid-template-columns: 5fr 7fr; }
+  .feature--reverse .feature__media { order: 2; }
+  .feature--narrow-media { grid-template-columns: 5fr 6fr; }
+}
+.feature__media img { width: 100%; height: auto; }
+.feature__media--tall img { aspect-ratio: 4 / 5; object-fit: cover; }
+.feature__media--wide img { aspect-ratio: 4 / 3; object-fit: cover; }
+.feature__body > * + * { margin-top: var(--space-md); }
+.feature__actions { display: flex; flex-wrap: wrap; gap: var(--space-md); margin-top: var(--space-xl); }
+
+.feature__points { margin-top: var(--space-lg); }
+.feature__points li {
+  padding-block: var(--space-sm);
+  border-top: var(--border-width) solid rgb(var(--color-line));
+  display: flex;
+  gap: var(--space-md);
+  align-items: baseline;
+}
+.feature__points li:last-child { border-bottom: var(--border-width) solid rgb(var(--color-line)); }
+.feature__points .meta { flex: none; min-width: 6rem; color: rgb(var(--color-muted)); }
+
+/* Duftfinder-Teaser: die drei Fragen als Vorschau, nicht als Formular */
+.finder-teaser { display: grid; gap: var(--space-xl); }
+@media (min-width: 990px) { .finder-teaser { grid-template-columns: 5fr 7fr; gap: clamp(2rem, 6vw, 6rem); } }
+.finder-steps { counter-reset: step; }
+.finder-steps li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  gap: var(--space-md);
+  padding-block: var(--space-lg);
+  border-top: var(--border-width) solid rgb(var(--color-line));
+}
+.finder-steps li:last-child { border-bottom: var(--border-width) solid rgb(var(--color-line)); }
+.finder-steps li::before {
+  content: counter(step, decimal-leading-zero);
+  font-family: var(--font-heading-family);
+  color: rgb(var(--color-muted));
+}
+.finder-steps__answers { margin-top: var(--space-xs); color: rgb(var(--color-muted)); font-size: .9375rem; }
+
+/* Newsletter – zurückhaltend, kein Pop-up */
+.newsletter__form { display: flex; flex-wrap: wrap; gap: var(--space-md); margin-top: var(--space-lg); }
+.newsletter__form .field { flex: 1 1 16rem; }
+
+.note-placeholder {
+  padding: var(--space-lg);
+  border: var(--border-width) dashed rgb(var(--color-muted));
+}

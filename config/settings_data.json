@@ -1,0 +1,91 @@
+{
+  "current": {
+    "logo": null,
+    "logo_width": 180,
+    "logo_width_mobile": 130,
+    "wordmark": "VENT CELESTE",
+    "wordmark_tracking": 22,
+    "color_schemes": {
+      "scheme-ivory": {
+        "settings": {
+          "background": "#F5F2ED",
+          "text": "#141210",
+          "muted": "#8C8375",
+          "line": "#DCD5CA",
+          "accent": "#C3AC82",
+          "button": "#141210",
+          "button_label": "#F5F2ED"
+        }
+      },
+      "scheme-ivory-deep": {
+        "settings": {
+          "background": "#EBE6DE",
+          "text": "#141210",
+          "muted": "#7E7568",
+          "line": "#D2CABD",
+          "accent": "#B79C6C",
+          "button": "#141210",
+          "button_label": "#EBE6DE"
+        }
+      },
+      "scheme-ink": {
+        "settings": {
+          "background": "#141210",
+          "text": "#F1EDE6",
+          "muted": "#A29889",
+          "line": "#332E28",
+          "accent": "#C3AC82",
+          "button": "#F1EDE6",
+          "button_label": "#141210"
+        }
+      },
+      "scheme-stone": {
+        "settings": {
+          "background": "#8C8375",
+          "text": "#FBF9F5",
+          "muted": "#E3DCD1",
+          "line": "#9E9587",
+          "accent": "#F0E3CC",
+          "button": "#FBF9F5",
+          "button_label": "#3A342C"
+        }
+      }
+    },
+    "font_heading": "playfair_display_n4",
+    "heading_scale": 100,
+    "heading_tracking": -1,
+    "font_body": "assistant_n4",
+    "body_scale": 100,
+    "meta_tracking": 12,
+    "page_width": 1440,
+    "corner_radius": 0,
+    "border_width": 1,
+    "animations_enabled": true,
+    "button_style": "square",
+    "button_uppercase": true,
+    "button_padding": 16,
+    "card_image_ratio": "portrait",
+    "card_show_family": true,
+    "card_show_concentration": true,
+    "card_show_badges": true,
+    "card_show_secondary_image": false,
+    "cart_type": "drawer",
+    "cart_show_note": false,
+    "free_shipping_enabled": false,
+    "free_shipping_threshold": "49",
+    "cart_cross_sell_enabled": true,
+    "predictive_search_enabled": true,
+    "search_placeholder": "Nummer, Duftfamilie oder Note",
+    "tax_note": "inkl. MwSt.",
+    "show_unit_price": true,
+    "reviews_enabled": true,
+    "company_name": "[FIRMENNAME]",
+    "company_address": "[ANSCHRIFT]",
+    "company_vat": "[UST-ID]",
+    "contact_email": "[E-MAIL]",
+    "contact_phone": "[TELEFON]",
+    "contact_hours": "[ERREICHBARKEIT]",
+    "sections": {
+    }
+  }
+}

@@ -1,0 +1,395 @@
+{%- liquid
+  assign menu = section.settings.menu
+  assign families_menu = section.settings.families_menu
+  assign families_parent = section.settings.families_parent | downcase
+-%}
+<header class="header color-{{ section.settings.color_scheme }} color-scheme"{% unless section.settings.sticky %} style="position: relative;"{% endunless %}>
+  <div class="page-width header__inner">
+    <div class="header__lead">
+      <button
+        type="button"
+        class="header__icon header__menu-toggle"
+        data-drawer-open="MenuDrawer"
+        aria-controls="MenuDrawer"
+        aria-label="{{ 'general.accessibility.open_menu' | t }}"
+      >
+        {% render 'icon', name: 'menu' %}
+      </button>
+
+      <nav class="header__nav" aria-label="{{ 'general.accessibility.menu' | t }}">
+        <ul>
+          {%- for link in menu.links -%}
+            <li class="nav__item">
+              {%- if link.links.size > 0 -%}
+                {%- assign link_title_down = link.title | downcase -%}
+                {%- assign is_families = false -%}
+                {%- if families_parent != blank and link_title_down == families_parent -%}
+                  {%- assign is_families = true -%}
+                {%- endif -%}
+                <details data-nav-dropdown>
+                  <summary>
+                    <span class="nav__link">
+                      {{ link.title | escape }}
+                      {% render 'icon', name: 'chevron' %}
+                    </span>
+                  </summary>
+                  <div class="mega{% if is_families %} mega--wide{% endif %}">
+                    <div>
+                      <p class="mega__title meta meta--muted">{{ link.title | escape }}</p>
+                      <ul class="mega__list">
+                        {%- for child in link.links -%}
+                          <li><a href="{{ child.url }}">{{ child.title | escape }}</a></li>
+                        {%- endfor -%}
+                      </ul>
+                    </div>
+
+                    {%- if is_families and families_menu.links.size > 0 -%}
+                      <div>
+                        <p class="mega__title meta meta--muted">{{ section.settings.families_title | escape }}</p>
+                        <ul class="mega__list">
+                          {%- for family in families_menu.links -%}
+                            <li><a href="{{ family.url }}">{{ family.title | escape }}</a></li>
+                          {%- endfor -%}
+                        </ul>
+                      </div>
+                    {%- endif -%}
+
+                    {%- if is_families and section.settings.feature_link != blank -%}
+                      <a class="mega__feature" href="{{ section.settings.feature_link }}">
+                        {%- if section.settings.feature_image -%}
+                          <img
+                            src="{{ section.settings.feature_image | image_url: width: 600 }}"
+                            srcset="{{ section.settings.feature_image | image_url: width: 400 }} 400w,
+                                    {{ section.settings.feature_image | image_url: width: 800 }} 800w"
+                            sizes="20vw"
+                            alt="{{ section.settings.feature_image.alt | escape }}"
+                            width="{{ section.settings.feature_image.width }}"
+                            height="{{ section.settings.feature_image.height }}"
+                            loading="lazy"
+                          >
+                        {%- endif -%}
+                        <p class="mega__title meta" style="margin-top: 1rem; border: 0; padding: 0;">
+                          {{ section.settings.feature_title | escape }}
+                        </p>
+                        <p class="text-muted text-body-sm">{{ section.settings.feature_text | escape }}</p>
+                      </a>
+                    {%- endif -%}
+                  </div>
+                </details>
+              {%- else -%}
+                <a class="nav__link" href="{{ link.url }}">{{ link.title | escape }}</a>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+    </div>
+
+    <div class="header__brand">
+      {%- if request.page_type == 'index' -%}<h1 style="margin:0;">{%- endif -%}
+      <a href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
+        {%- if settings.logo != blank -%}
+          <img
+            src="{{ settings.logo | image_url: width: 600 }}"
+            srcset="{{ settings.logo | image_url: width: 300 }} 300w, {{ settings.logo | image_url: width: 600 }} 600w"
+            sizes="(min-width: 990px) {{ settings.logo_width }}px, {{ settings.logo_width_mobile }}px"
+            alt="{{ shop.name | escape }}"
+            width="{{ settings.logo.width }}"
+            height="{{ settings.logo.height }}"
+            style="width: {{ settings.logo_width_mobile }}px; height: auto;"
+            class="header__logo"
+            loading="eager"
+          >
+        {%- else -%}
+          <span class="wordmark">{{ settings.wordmark | escape }}</span>
+        {%- endif -%}
+      </a>
+      {%- if request.page_type == 'index' -%}</h1>{%- endif -%}
+    </div>
+
+    <div class="header__actions">
+      <button
+        type="button"
+        class="header__icon"
+        data-drawer-open="SearchDrawer"
+        aria-controls="SearchDrawer"
+        aria-label="{{ 'general.accessibility.open_search' | t }}"
+      >
+        {% render 'icon', name: 'search' %}
+      </button>
+
+      {%- if shop.customer_accounts_enabled and section.settings.show_account -%}
+        <a
+          class="header__icon"
+          href="{{ routes.account_url }}"
+          aria-label="{{ 'sections.header.account' | t }}"
+        >
+          {% render 'icon', name: 'account' %}
+        </a>
+      {%- endif -%}
+
+      {%- if settings.cart_type == 'drawer' -%}
+        <button
+          type="button"
+          class="header__icon"
+          data-drawer-open="CartDrawer"
+          aria-controls="CartDrawer"
+          aria-label="{{ 'general.accessibility.open_cart' | t }}"
+        >
+          {% render 'icon', name: 'cart' %}
+          <span class="cart-count" data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span>
+        </button>
+      {%- else -%}
+        <a class="header__icon" href="{{ routes.cart_url }}" aria-label="{{ 'general.accessibility.open_cart' | t }}">
+          {% render 'icon', name: 'cart' %}
+          <span class="cart-count" data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span>
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+</header>
+
+{%- comment -%} Mobile-Navigation – eigenständig aufgebaut, keine verkleinerte Desktop-Leiste {%- endcomment -%}
+<vc-drawer id="MenuDrawer" class="drawer drawer--left color-{{ section.settings.color_scheme }} color-scheme" aria-label="{{ 'general.accessibility.menu' | t }}">
+  <div class="drawer__header">
+    <span class="meta meta--muted">{{ 'general.accessibility.menu' | t }}</span>
+    <button type="button" class="drawer__close" data-drawer-close aria-label="{{ 'general.accessibility.close_menu' | t }}">
+      {% render 'icon', name: 'close' %}
+    </button>
+  </div>
+
+  <div class="menu-drawer__search">
+    <form action="{{ routes.search_url }}" method="get" role="search">
+      <label class="visually-hidden" for="MenuDrawerSearch">{{ 'general.search.title' | t }}</label>
+      <input
+        id="MenuDrawerSearch"
+        class="field__input"
+        type="search"
+        name="q"
+        data-drawer-initial-focus
+        placeholder="{{ settings.search_placeholder | escape }}"
+        autocomplete="off"
+      >
+      <input type="hidden" name="options[prefix]" value="last">
+    </form>
+  </div>
+
+  <div class="drawer__body">
+    <ul class="menu-drawer__list">
+      {%- for link in menu.links -%}
+        <li>
+          {%- if link.links.size > 0 -%}
+            {%- assign link_title_m = link.title | downcase -%}
+            {%- assign is_families_m = false -%}
+            {%- if families_parent != blank and link_title_m == families_parent -%}
+              {%- assign is_families_m = true -%}
+            {%- endif -%}
+            <details class="menu-drawer__item" data-accordion {% if forloop.first %}open{% endif %}>
+              <summary class="menu-drawer__summary">
+                {{ link.title | escape }}
+                {% render 'icon', name: 'chevron' %}
+              </summary>
+              <ul class="menu-drawer__sublist">
+                {%- for child in link.links -%}
+                  <li><a href="{{ child.url }}">{{ child.title | escape }}</a></li>
+                {%- endfor -%}
+              </ul>
+              {%- if is_families_m and families_menu.links.size > 0 -%}
+                <p class="meta meta--muted" style="margin-bottom: .5rem;">{{ section.settings.families_title | escape }}</p>
+                <div class="menu-drawer__families">
+                  {%- for family in families_menu.links -%}
+                    <a href="{{ family.url }}">{{ family.title | escape }}</a>
+                  {%- endfor -%}
+                </div>
+              {%- endif -%}
+            </details>
+          {%- else -%}
+            <a class="menu-drawer__link" href="{{ link.url }}">{{ link.title | escape }}</a>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+
+  {%- if section.settings.drawer_link_1 != blank or section.settings.drawer_link_2 != blank -%}
+    <div class="drawer__footer menu-drawer__highlights">
+      {%- if section.settings.drawer_link_1 != blank -%}
+        <a class="button button--secondary" href="{{ section.settings.drawer_link_1 }}">{{ section.settings.drawer_label_1 | escape }}</a>
+      {%- endif -%}
+      {%- if section.settings.drawer_link_2 != blank -%}
+        <a class="button" href="{{ section.settings.drawer_link_2 }}">{{ section.settings.drawer_label_2 | escape }}</a>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</vc-drawer>
+
+{%- comment -%} Suche {%- endcomment -%}
+<vc-drawer id="SearchDrawer" class="drawer drawer--top color-{{ section.settings.color_scheme }} color-scheme" aria-label="{{ 'general.search.title' | t }}">
+  <div class="drawer__body" style="padding-block: var(--space-2xl);">
+    <div class="page-width">
+      <form
+        action="{{ routes.search_url }}"
+        method="get"
+        role="search"
+        class="search-panel__form"
+        data-predictive-search{% unless settings.predictive_search_enabled %}-off{% endunless %}
+      >
+        <label class="visually-hidden" for="SearchPanelInput">{{ 'general.search.title' | t }}</label>
+        <input
+          id="SearchPanelInput"
+          class="search-panel__input"
+          type="search"
+          name="q"
+          data-drawer-initial-focus
+          placeholder="{{ settings.search_placeholder | escape }}"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          aria-expanded="false"
+          aria-owns="PredictiveResults"
+          role="combobox"
+          aria-controls="PredictiveResults"
+          aria-autocomplete="list"
+        >
+        <input type="hidden" name="options[prefix]" value="last">
+        <button type="submit" class="button button--quiet">{{ 'general.search.submit' | t }}</button>
+        <button type="button" class="drawer__close" data-drawer-close aria-label="{{ 'general.accessibility.close_search' | t }}">
+          {% render 'icon', name: 'close' %}
+        </button>
+      </form>
+
+      <div id="PredictiveResults" data-predictive-results role="listbox" style="margin-top: var(--space-2xl);"></div>
+      <p class="visually-hidden" role="status" aria-live="polite" data-predictive-status></p>
+
+      {%- if section.settings.search_hint != blank -%}
+        <p class="text-muted text-body-sm" style="margin-top: var(--space-lg);">{{ section.settings.search_hint | escape }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+</vc-drawer>
+
+{%- if settings.predictive_search_enabled -%}
+  <script src="{{ 'predictive-search.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Kopfbereich",
+  "class": "header-section",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Farbschema",
+      "default": "scheme-ivory"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Hauptmenü",
+      "default": "main-menu"
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky",
+      "label": "Kopfbereich beim Scrollen fixieren",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_account",
+      "label": "Konto-Symbol anzeigen",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Duftfamilien im Menü"
+    },
+    {
+      "type": "text",
+      "id": "families_parent",
+      "label": "Menüpunkt, unter dem die Duftfamilien erscheinen",
+      "default": "Düfte",
+      "info": "Muss exakt dem Titel des Menüpunkts entsprechen."
+    },
+    {
+      "type": "text",
+      "id": "families_title",
+      "label": "Überschrift der Spalte",
+      "default": "Duftfamilien"
+    },
+    {
+      "type": "link_list",
+      "id": "families_menu",
+      "label": "Menü mit den Duftfamilien"
+    },
+    {
+      "type": "header",
+      "content": "Redaktionelle Fläche im Menü"
+    },
+    {
+      "type": "image_picker",
+      "id": "feature_image",
+      "label": "Bild"
+    },
+    {
+      "type": "text",
+      "id": "feature_title",
+      "label": "Titel",
+      "default": "Discovery Set"
+    },
+    {
+      "type": "text",
+      "id": "feature_text",
+      "label": "Text",
+      "default": "Fünf Düfte selbst auswählen."
+    },
+    {
+      "type": "url",
+      "id": "feature_link",
+      "label": "Link"
+    },
+    {
+      "type": "header",
+      "content": "Mobile Navigation"
+    },
+    {
+      "type": "text",
+      "id": "drawer_label_1",
+      "label": "Sekundärer Button",
+      "default": "Duftfinder"
+    },
+    {
+      "type": "url",
+      "id": "drawer_link_1",
+      "label": "Link sekundärer Button"
+    },
+    {
+      "type": "text",
+      "id": "drawer_label_2",
+      "label": "Primärer Button",
+      "default": "Discovery Set"
+    },
+    {
+      "type": "url",
+      "id": "drawer_link_2",
+      "label": "Link primärer Button"
+    },
+    {
+      "type": "header",
+      "content": "Suche"
+    },
+    {
+      "type": "text",
+      "id": "search_hint",
+      "label": "Hinweis unter der Suche",
+      "default": "Suche nach Nummer, Duftfamilie oder einzelner Duftnote."
+    }
+  ],
+  "enabled_on": {
+    "groups": [
+      "header"
+    ]
+  }
+}
+{% endschema %}

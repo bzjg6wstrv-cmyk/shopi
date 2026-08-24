@@ -1,0 +1,42 @@
+{{ 'section-scent-worlds.css' | asset_url | stylesheet_tag }}
+<section class="section">
+  <div class="page-width">
+    <h1 class="h2" style="margin-bottom: var(--space-2xl);">{{ page_title }}</h1>
+    <div class="worlds worlds--asymmetric">
+      {%- for list_collection in collections -%}
+        <div class="worlds__item">
+          <a class="worlds__link" href="{{ list_collection.url }}">
+            <div class="worlds__media">
+              {%- if list_collection.image -%}
+                <img
+                  src="{{ list_collection.image | image_url: width: 1200 }}"
+                  sizes="(min-width: 750px) 45vw, 100vw"
+                  alt="{{ list_collection.image.alt | default: list_collection.title | escape }}"
+                  width="{{ list_collection.image.width }}"
+                  height="{{ list_collection.image.height }}"
+                  loading="lazy"
+                >
+              {%- else -%}
+                {{ 'collection-1' | placeholder_svg_tag: 'full-bleed-media' }}
+              {%- endif -%}
+            </div>
+            <div class="worlds__caption">
+              <span class="worlds__title">{{ list_collection.title }}</span>
+              <span class="worlds__count">{{ 'products.facets.product_count' | t: count: list_collection.products_count }}</span>
+            </div>
+          </a>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Alle Collections",
+  "tag": "section",
+  "settings": [
+
+  ]
+}
+{% endschema %}

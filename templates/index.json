@@ -1,0 +1,343 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "settings": {
+        "color_scheme": "scheme-ivory",
+        "height": "medium",
+        "alignment": "left",
+        "scrim": 25,
+        "heading": "VENT CELESTE",
+        "text": "Konzentrierte Duftkompositionen. Klar kalkuliert.",
+        "primary_label": "Düfte entdecken",
+        "secondary_label": "Discovery Set"
+      }
+    },
+    "promise": {
+      "type": "brand-promise",
+      "blocks": {
+        "one": {
+          "type": "statement",
+          "settings": {
+            "value": "30 %",
+            "label": "Parfumkonzentration im Extrait"
+          }
+        },
+        "two": {
+          "type": "statement",
+          "settings": {
+            "value": "30 ml",
+            "label": "Flakongröße der Hauptlinie"
+          }
+        },
+        "three": {
+          "type": "statement",
+          "settings": {
+            "value": "29,90 €",
+            "label": "Musterpreis Extrait – tatsächliche Preise kommen aus Shopify"
+          }
+        }
+      },
+      "block_order": [
+        "one",
+        "two",
+        "three"
+      ],
+      "settings": {
+        "color_scheme": "scheme-ivory",
+        "heading": "Das Prinzip",
+        "footnote": "Angaben beziehen sich auf die Extrait-Linie. Verbindlich ist der im Shop hinterlegte Preis."
+      }
+    },
+    "bestseller": {
+      "type": "featured-products",
+      "settings": {
+        "color_scheme": "scheme-ivory",
+        "eyebrow": "Auswahl",
+        "heading": "Bestseller",
+        "product_limit": 4,
+        "link_label": "Alle Düfte"
+      }
+    },
+    "worlds": {
+      "type": "scent-worlds",
+      "blocks": {
+        "w1": {
+          "type": "world",
+          "settings": {
+            "title": "Frisch"
+          }
+        },
+        "w2": {
+          "type": "world",
+          "settings": {
+            "title": "Gourmand"
+          }
+        },
+        "w3": {
+          "type": "world",
+          "settings": {
+            "title": "Holzig"
+          }
+        },
+        "w4": {
+          "type": "world",
+          "settings": {
+            "title": "Amber"
+          }
+        },
+        "w5": {
+          "type": "world",
+          "settings": {
+            "title": "Floral"
+          }
+        },
+        "w6": {
+          "type": "world",
+          "settings": {
+            "title": "Oud"
+          }
+        }
+      },
+      "block_order": [
+        "w1",
+        "w2",
+        "w3",
+        "w4",
+        "w5",
+        "w6"
+      ],
+      "settings": {
+        "color_scheme": "scheme-ivory",
+        "eyebrow": "Orientierung",
+        "heading": "Duftwelten",
+        "link_label": "Alle Düfte",
+        "asymmetric": true,
+        "show_count": true
+      }
+    },
+    "discovery": {
+      "type": "editorial-feature",
+      "blocks": {
+        "p1": {
+          "type": "point",
+          "settings": {
+            "label": "Inhalt",
+            "text": "5 × 2 ml"
+          }
+        },
+        "p2": {
+          "type": "point",
+          "settings": {
+            "label": "Auswahl",
+            "text": "Fünf Düfte frei wählbar"
+          }
+        },
+        "p3": {
+          "type": "point",
+          "settings": {
+            "label": "Musterpreis",
+            "text": "14,90 €"
+          }
+        }
+      },
+      "block_order": [
+        "p1",
+        "p2",
+        "p3"
+      ],
+      "settings": {
+        "color_scheme": "scheme-ivory-deep",
+        "media_position": "right",
+        "media_shape": "wide",
+        "eyebrow": "Erst kennenlernen",
+        "heading": "Discovery Set",
+        "text": "<p>Bei über 100 Duftprofilen muss man sich nicht blind entscheiden. Fünf auswählen, in Ruhe tragen, Favoriten finden.</p>",
+        "show_price": false,
+        "primary_label": "Discovery Set zusammenstellen",
+        "secondary_label": "Duftfinder"
+      }
+    },
+    "extrait": {
+      "type": "editorial-feature",
+      "blocks": {
+        "e1": {
+          "type": "point",
+          "settings": {
+            "label": "Konzentration",
+            "text": "30 % Parfumöl"
+          }
+        },
+        "e2": {
+          "type": "point",
+          "settings": {
+            "label": "Größe",
+            "text": "30 ml"
+          }
+        },
+        "e3": {
+          "type": "point",
+          "settings": {
+            "label": "Charakter",
+            "text": "Konzentriert, ruhig aufgebaut"
+          }
+        }
+      },
+      "block_order": [
+        "e1",
+        "e2",
+        "e3"
+      ],
+      "settings": {
+        "color_scheme": "scheme-ivory",
+        "media_position": "left",
+        "media_shape": "tall",
+        "eyebrow": "Die Hauptlinie",
+        "heading": "Extrait",
+        "text": "<p>Ein hoher Anteil an Parfumöl bedeutet vor allem eines: Der Duft trägt sich dichter und muss seltener nachgelegt werden. Die Rohstoffe werden sorgfältig ausgewählt, die Komposition bleibt eigenständig.</p>",
+        "show_price": true,
+        "primary_label": "Extrait ansehen"
+      }
+    },
+    "travel": {
+      "type": "editorial-feature",
+      "blocks": {
+        "t1": {
+          "type": "point",
+          "settings": {
+            "label": "Größe",
+            "text": "10 ml"
+          }
+        },
+        "t2": {
+          "type": "point",
+          "settings": {
+            "label": "Musterpreis",
+            "text": "12,90 €"
+          }
+        }
+      },
+      "block_order": [
+        "t1",
+        "t2"
+      ],
+      "settings": {
+        "color_scheme": "scheme-ivory",
+        "media_position": "right",
+        "media_shape": "wide",
+        "eyebrow": "Für unterwegs",
+        "heading": "Travel Spray",
+        "text": "<p>Das kleine Format für Handtasche und Reise – und ein ruhiger Weg, einen Duft über mehrere Tage kennenzulernen.</p>",
+        "show_price": false,
+        "primary_label": "Travel Size ansehen"
+      }
+    },
+    "finder": {
+      "type": "scent-finder-teaser",
+      "blocks": {
+        "s1": {
+          "type": "step",
+          "settings": {
+            "question": "Welche Richtung suchst du?",
+            "answers": "Frisch · Süß · Holzig · Gourmand · Floral · Dunkel"
+          }
+        },
+        "s2": {
+          "type": "step",
+          "settings": {
+            "question": "Wann möchtest du den Duft tragen?",
+            "answers": "Alltag · Abend · Sommer · Winter · Besonderer Anlass"
+          }
+        },
+        "s3": {
+          "type": "step",
+          "settings": {
+            "question": "Wie intensiv?",
+            "answers": "Dezent · Mittel · Intensiv"
+          }
+        }
+      },
+      "block_order": [
+        "s1",
+        "s2",
+        "s3"
+      ],
+      "settings": {
+        "color_scheme": "scheme-ivory-deep",
+        "eyebrow": "Drei Fragen",
+        "heading": "Duftfinder",
+        "text": "<p>Richtung, Anlass, Intensität. Danach zeigen wir dir die Düfte, die dazu passen.</p>",
+        "button_label": "Duftfinder starten"
+      }
+    },
+    "essentials": {
+      "type": "editorial-feature",
+      "blocks": {
+        "es1": {
+          "type": "point",
+          "settings": {
+            "label": "Größe",
+            "text": "30 ml"
+          }
+        },
+        "es2": {
+          "type": "point",
+          "settings": {
+            "label": "Musterpreis",
+            "text": "9,90 €"
+          }
+        }
+      },
+      "block_order": [
+        "es1",
+        "es2"
+      ],
+      "settings": {
+        "color_scheme": "scheme-ivory",
+        "media_position": "left",
+        "media_shape": "wide",
+        "eyebrow": "Einstiegslinie",
+        "heading": "Essentials",
+        "text": "<p>Eine eigene Rezepturlinie für den Alltag – unkompliziert, mit anderem Rohstoffaufbau als die Hauptlinie und bewusst eigenständig präsentiert.</p>",
+        "show_price": false,
+        "primary_label": "Essentials ansehen"
+      }
+    },
+    "about": {
+      "type": "editorial-feature",
+      "settings": {
+        "color_scheme": "scheme-ivory",
+        "media_position": "right",
+        "media_shape": "wide",
+        "eyebrow": "Über uns",
+        "heading": "Über VENT CELESTE",
+        "text": "<p>Mustertext. Hier steht später die Haltung der Marke: warum es diese Düfte gibt, wie ausgewählt wird und was der Anspruch an Konzentration und Rohstoffe ist. Bitte vor dem Livegang vollständig ersetzen – es wurde bewusst keine Gründungsgeschichte erfunden.</p>",
+        "placeholder_note": true,
+        "show_price": false,
+        "primary_label": "Mehr über die Marke"
+      }
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "color_scheme": "scheme-ivory",
+        "eyebrow": "Auf dem Laufenden bleiben",
+        "heading": "Neue Duftprofile",
+        "text": "Wir schreiben selten und nur, wenn es etwas zu berichten gibt."
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "promise",
+    "bestseller",
+    "worlds",
+    "discovery",
+    "extrait",
+    "travel",
+    "finder",
+    "essentials",
+    "about",
+    "newsletter"
+  ]
+}
