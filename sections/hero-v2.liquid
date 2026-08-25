@@ -4,7 +4,7 @@
   wer uns nicht kennt, bekommt die Beratung; wer schon einen Code hat,
   bekommt das Eingabefeld – ohne einen weiteren Seitenaufruf.
 {%- endcomment -%}
-<section class="hero2 color-{{ section.settings.color_scheme }} color-scheme">
+<section class="hero2{% if section.settings.image == blank %} hero2--no-image{% endif %} color-{{ section.settings.color_scheme }} color-scheme">
   <div class="page-width hero2__inner">
     <div>
       {%- if section.settings.eyebrow != blank -%}

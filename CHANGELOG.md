@@ -1,5 +1,103 @@
 # VENT CELESTE — Änderungsprotokoll
 
+## V4.1 fixed — zwei Mobile-Korrekturen
+
+Der technische Stand wurde nicht verändert: Farbschema-Fix, `css-variables.liquid`,
+`config/`, Header, Ankündigungsleiste, `FIND YOUR SCENT` und das
+Scent-Code-Design sind unangetastet. Geändert wurden **drei Dateien mit
+zusammen 25 Zeilen**.
+
+---
+
+### 1 · WhatsApp-CTA erschien als Textlink — Ursache gefunden
+
+**Untersuchung.** Zuerst wurde das Snippet mit der Liquid-Engine tatsächlich
+gerendert, statt die Klassen zu vermuten. Ergebnis:
+
+```html
+<a class="button button--whatsapp hero2__cta" href="https://wa.me/491728439661?text=…"
+   target="_blank" rel="noopener" data-whatsapp>
+```
+
+Die Klassen stehen also im HTML. Anschließend wurde die CSS-Kaskade für genau
+dieses Element durchgerechnet: `.hero2__cta` aus `section-hero-v2.css` gewinnt
+gegen `.button` aus `base.css` — die Regel greift.
+
+**Die eigentliche Ursache liegt eine Ebene tiefer.** Alle Farbangaben im Theme
+hatten die Form `rgb(var(--color-…))` ohne Fallback — 197 Stellen. Ist eine
+dieser Variablen nicht definiert, ist die gesamte Deklaration **ungültig**, und
+`background-color` fällt auf `transparent` zurück. Genau das ergibt das
+beobachtete Bild: keine Fläche, kein Rahmen, dunkle Schrift auf hellem Grund —
+ein Textlink. Typografie und Layout bleiben dabei intakt, weil sie keine
+Farbvariablen verwenden.
+
+**Korrektur** an den beiden betroffenen Regeln selbst, nicht per neuem Selektor:
+
+| Datei | Regel | vorher | jetzt |
+|---|---|---|---|
+| `assets/base.css` | `.button` | `rgb(var(--color-button))` | `rgb(var(--color-button, 20 18 16))` |
+| `assets/base.css` | `.button` | `rgb(var(--color-button-label))` | `rgb(var(--color-button-label, 245 242 237))` |
+| `assets/section-hero-v2.css` | `.hero2__cta` | `rgb(var(--color-text))` | `rgb(var(--color-text, 20 18 16))` |
+| `assets/section-hero-v2.css` | `.hero2__cta` | `rgb(var(--color-background))` | `rgb(var(--color-background, 245 242 237))` |
+
+Zusätzlich haben `border` und `border-radius` des CTA jetzt ebenfalls Fallbacks,
+und `.hero2__cta svg` erbt die Schriftfarbe — das Symbol ist damit hell.
+
+Ergebnis: schwarze Fläche, helle Schrift und helles Symbol, volle Breite
+innerhalb des Inhaltsbereichs, 56 px Höhe, eckig (`--button-radius` steht auf 0).
+Das gilt jetzt unabhängig davon, ob die Farbvariablen ausgeliefert werden.
+
+Link, Rufnummer und vorbereitete Nachricht sind unverändert.
+
+### 2 · Große weiße Fläche nach der Scent-Code-Zeile — Ursache gefunden
+
+Es lag weder an `min-height` noch an `padding` oder der Hero-Höhe.
+
+Im Hero ist **kein Bild hinterlegt** (`hero.settings.image` ist leer). In diesem
+Fall rendert `sections/hero-v2.liquid` den Shopify-Platzhalter:
+
+```liquid
+{{ 'product-1' | placeholder_svg_tag: 'full-bleed-media' }}
+```
+
+Dieser Platzhalter ist nahezu weiß und wird über
+`.hero2__media svg { aspect-ratio: 4 / 3 }` bei voller Breite dargestellt — auf
+einem 390 px breiten Display sind das rund **292 px leere Fläche** unmittelbar
+nach der Scent-Code-Zeile.
+
+**Korrektur.** Die Section erhält einen Modifier, wenn kein Bild gesetzt ist:
+
+```liquid
+<section class="hero2{% if section.settings.image == blank %} hero2--no-image{% endif %} …">
+```
+
+```css
+@media (max-width: 749px) {
+  .hero2--no-image .hero2__media { display: none; }
+  .hero2--no-image .hero2__inner { padding-block: 1.125rem 2rem; }
+}
+```
+
+Der Platzhalter entfällt auf Mobile, solange kein echtes Bild hinterlegt ist;
+32 px Innenabstand unten plus der Abstand des Folgeabschnitts ergeben einen
+ruhigen, hochwertigen Übergang. **Sobald ein Hero-Bild gesetzt wird, greift der
+Modifier nicht mehr und das Bild erscheint wie zuvor.** Desktop bleibt in beiden
+Fällen unverändert.
+
+### Geprüft
+
+- Liquid-Render des Snippets und des Hero-Modifiers mit der Liquid-Engine
+  ausgeführt: Klassen und Bedingung erzeugen das erwartete Markup
+- CSS-Kaskade für das CTA-Element programmatisch nachgerechnet
+- Farbschema: null Treffer für `"type": "color_scheme"`, `color_scheme_group`
+  und `settings.color_schemes`; `css-variables.liquid` und `config/` unverändert
+- `.display`, Header und Ankündigungsleiste unverändert
+- Layoutfix „So funktioniert's" (`.steps__text { grid-column: 2 }`) unverändert
+- Theme Check: 0 Fehler, 0 Warnungen; alle JSON-Dateien und Section-Schemas
+  gültig; CSS-Klammerbilanz ausgeglichen
+
+---
+
 ## V4 fixed — Mobile-Design aus V4 auf der V3.7-Basis
 
 **Technische Basis: V3.7. Designreferenz: V4.** Bei Konflikten hatte V3.7 Vorrang.

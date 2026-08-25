@@ -209,10 +209,13 @@ p { text-wrap: pretty; }
   gap: var(--space-xs);
   min-height: 3rem;
   padding: var(--button-padding) calc(var(--button-padding) * 1.75);
-  border: var(--border-width) solid rgb(var(--color-button));
-  border-radius: var(--button-radius);
-  background-color: rgb(var(--color-button));
-  color: rgb(var(--color-button-label));
+  /* Fallback-Werte in var(): Fehlt eine Farbvariable, wäre rgb(var(--x))
+     ungültig und die Fläche transparent – der Button sähe aus wie ein
+     Textlink. Die Werte entsprechen dem Standard-Farbstil. */
+  border: var(--border-width) solid rgb(var(--color-button, 20 18 16));
+  border-radius: var(--button-radius, 0px);
+  background-color: rgb(var(--color-button, 20 18 16));
+  color: rgb(var(--color-button-label, 245 242 237));
   font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: var(--meta-tracking);

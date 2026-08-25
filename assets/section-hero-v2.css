@@ -38,13 +38,18 @@
   width: 100%;
   min-height: 3.5rem;
   gap: 0.6rem;
-  background-color: rgb(var(--color-text));
-  border-color: rgb(var(--color-text));
-  color: rgb(var(--color-background));
+  /* Fallback-Werte, damit die Fläche auch dann schwarz bleibt, wenn die
+     Farbvariablen einmal nicht ausgeliefert werden. */
+  background-color: rgb(var(--color-text, 20 18 16));
+  border: var(--border-width, 1px) solid rgb(var(--color-text, 20 18 16));
+  border-radius: var(--button-radius, 0px);
+  color: rgb(var(--color-background, 245 242 237));
   font-size: 0.8125rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
+/* Das Symbol erbt die Schriftfarbe und ist damit ebenfalls hell. */
+.hero2__cta svg { color: inherit; }
 .hero2__cta:hover { opacity: 0.88; }
 .hero2__cta svg { width: 18px; height: 18px; flex: none; }
 
@@ -125,6 +130,15 @@
   height: auto;
   aspect-ratio: 4 / 3;
   object-fit: cover;
+}
+
+/* Ohne hinterlegtes Bild rendert Shopify einen nahezu weißen Platzhalter im
+   Verhältnis 4:3 – auf Mobile rund 290 px Leerfläche direkt nach der
+   Scent-Code-Zeile. Sie entfällt, bis ein echtes Bild hinterlegt ist.
+   Der Abstand zum nächsten Abschnitt kommt dann aus dem Innenabstand unten. */
+@media (max-width: 749px) {
+  .hero2--no-image .hero2__media { display: none; }
+  .hero2--no-image .hero2__inner { padding-block: 1.125rem 2rem; }
 }
 
 /* Sehr schmale Geräte: der CTA muss über der Falz bleiben. */
