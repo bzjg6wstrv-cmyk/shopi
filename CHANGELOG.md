@@ -1,5 +1,140 @@
 # VENT CELESTE — Änderungsprotokoll
 
+## V4.1 Step 3 — Launch-Angebot gestrafft
+
+Der Launch startet ausschließlich mit **30 ml Extrait, 30 % Konzentration,
+29,90 €**, dazu Kennenlernvorteil, Zufriedenheitsgarantie, WhatsApp-Beratung
+und Scent-Code-System. Die Startseite bildet ab jetzt nur noch dieses Angebot
+ab.
+
+### Von der Startseite genommen
+
+Alle vier Abschnitte bleiben vollständig im Theme und in `templates/index.json`
+erhalten und sind lediglich mit `"disabled": true` ausgeblendet. Im
+Theme-Editor genügt „Abschnitt einblenden“, um sie zurückzuholen — Texte,
+Bilder und Einstellungen sind unverändert gespeichert.
+
+| Abschnitt | Kennung | Grund |
+| --- | --- | --- |
+| Discovery Set (5 × 2 ml) | `discovery` | nicht im Launch-Angebot |
+| Travel 10 ml | `travel` | nicht im Launch-Angebot |
+| Essentials | `essentials` | nicht im Launch-Angebot |
+| „Code bereits bekannt?“ | `code` | zweites Scent-Code-Eingabefeld auf derselben Seite; der Hero enthält bereits eines. Punkt 9 des Auftrags schließt mehrfache Code-Eingaben aus. |
+
+Die Ausblendung von `code` ist die einzige Entscheidung, die über die
+ausdrücklich genannten vier Angebotsbereiche hinausgeht. Sie lässt sich mit
+einem Klick zurücknehmen.
+
+### Neu: „Vorteil & Garantie“
+
+Ein neuer Abschnitt fasst Kennenlernvorteil und Zufriedenheitsgarantie
+zusammen, statt die Startseite um zwei Abschnitte zu verlängern. Auf
+Mobilgeräten stehen beide untereinander, ab 990 px nebeneinander, getrennt
+durch dieselben Haarlinien wie im übrigen Theme. Keine Karte, kein Rahmen,
+kein Schatten, kein Siegel, kein Symbol, keine neue Farbe.
+
+```
+WILLKOMMEN BEI VENT CELESTE        OHNE RISIKO
+20 % KENNENLERNVORTEIL             100 % ZUFRIEDENHEITSGARANTIE
+Auf deine erste Bestellung.        Du sollst deinen Duft lieben.
+                                   Wenn du mit einem Duft aus deiner ersten
+Gültig für bis zu 3 Düfte.         Bestellung nicht zufrieden bist, kümmern
+                                   wir uns darum.
+                                   Gültig für deine erste Bestellung und
+                                   maximal 3 Flakons.
+
+               [ MEINEN DUFT FINDEN ]
+```
+
+Der Button öffnet die bestehende WhatsApp-Beratung über `whatsapp-link` —
+dieselbe Rufnummer und dieselbe vorbereitete Nachricht wie überall sonst.
+Beide Texte sind vollständig über Blöcke im Theme-Editor pflegbar.
+
+**Der Abschnitt rechnet nichts aus.** Er enthält keine Preislogik und keinen
+Rabattbetrag, sondern nur die hier gepflegten Texte. Der reguläre Preis steht
+weiterhin ausschließlich in „Das Prinzip“ (29,90 € als Musterpreis, verbindlich
+ist der Shop-Preis) und an den echten Produkten.
+
+### Neue Reihenfolge
+
+1. `hero` — FIND YOUR SCENT (mit Scent-Code-Eingabe)
+2. `profiles` — WhatsApp-Duftberatung, „Dein Duft ist nicht dabei?“
+3. `how` — So funktioniert's
+4. `most_wanted` — Most Wanted
+5. `offer` — 20 % Kennenlernvorteil · 100 % Zufriedenheitsgarantie *(neu)*
+6. `extrait` — Die Hauptlinie, 30 % Extrait
+7. `promise` — Das Prinzip: 30 ml · 30 % · 29,90 €
+8. `brand` — Über VENT CELESTE
+9. `newsletter` — Newsletter, danach Footer
+
+`promise` stand bisher direkt hinter dem Hero und wiederholte dort die
+Aussage des Heros. An Position 7 trägt es die Preisangabe der Journey und
+seine Fußnote „Angaben beziehen sich auf die Extrait-Linie“ steht direkt unter
+dem Extrait-Abschnitt.
+
+### Geänderte Dateien
+
+| Datei | Art |
+| --- | --- |
+| `templates/index.json` | Reihenfolge, vier Abschnitte deaktiviert, neuer Abschnitt `offer` |
+| `sections/launch-offer.liquid` | neu |
+| `assets/section-launch-offer.css` | neu |
+
+Sonst wurde **keine** Datei angefasst.
+
+### Unverändert — per Prüfsumme belegt
+
+`assets/theme.js`, `assets/base.css`, `layout/theme.liquid`,
+`snippets/whatsapp-sticky.liquid`, `snippets/whatsapp-link.liquid`,
+`snippets/css-variables.liquid`, `config/settings_schema.json`,
+`config/settings_data.json`, `sections/hero-v2.liquid`,
+`assets/section-hero-v2.css`, `sections/how-it-works.liquid`,
+`assets/section-scent-code.css`, `sections/header.liquid`,
+`sections/announcement-bar.liquid`, `sections/product-row.liquid`,
+`sections/whatsapp-feature.liquid`, `sections/editorial-feature.liquid`,
+`sections/newsletter.liquid`, `sections/footer.liquid` — alle byte-identisch
+mit Step 2.
+
+Damit sind Hero, Farbschema-Fix und die Floating-Bar samt JavaScript
+nachweislich unverändert. Im gerenderten Vergleich beider Stände hat jeder
+weiterhin sichtbare Abschnitt bei 390 px und 1280 px exakt dieselbe Höhe wie
+zuvor; der einzige Unterschied sind die vier entfallenen und der eine neue
+Abschnitt.
+
+**Seitenhöhe mobil:** 7166 px → 5517 px bei 390 px (−23 %), 7220 px → 5512 px
+bei 430 px. Kein horizontaler Überlauf, keine Textüberlappung, ein einziges
+Scent-Code-Feld im Seitenfluss.
+
+### Produktlogik
+
+An Produkten, Varianten und CSV-Strukturen wurde **nichts** geändert. Der
+Kaufweg wird allein über die Startseite auf 30 ml Extrait fokussiert.
+
+### Noch im Shopify-Adminbereich zu erledigen
+
+Der 20-%-Vorteil ist im Theme bewusst nur eine Aussage. Damit er wirkt:
+
+1. **Rabatt anlegen** — Rabatte → Rabatt erstellen → *Betrag auf Produkte*,
+   20 % auf die Extrait-Kollektion. Automatischer Rabatt oder Rabattcode.
+2. **Auf Erstbestellung begrenzen** — bei *Berechtigung* „Kundensegment“
+   wählen und ein Segment mit `number_of_orders = 0` verwenden. Shopify
+   erzwingt das nicht rückwirkend; bei Rabattcodes zusätzlich
+   „Eine Verwendung pro Kunde“ aktivieren.
+3. **Auf 3 Flakons begrenzen** — Shopify kann die Menge nicht nativ
+   deckeln. Ohne App gilt die Grenze nur als kommunizierte Bedingung; für
+   eine harte Grenze ist eine Rabatt-App oder eine Shopify Function nötig.
+4. **Garantiebedingungen** — die vollständigen Bedingungen als eigene Seite
+   anlegen und im Footer verlinken. Der Abschnitt zeigt bewusst nur die
+   kurze Zusammenfassung.
+5. **Varianten** — falls Produkte Varianten für EDP, Travel oder Sample
+   tragen, diese im Adminbereich auf „nicht verfügbar“ setzen oder aus den
+   Verkaufskanälen nehmen. Nicht löschen, solange sie später wieder
+   gebraucht werden.
+6. **Kollektionen** — `travel-size`, `essentials` und das Discovery-Set-Produkt
+   aus der Navigation nehmen, sonst bleiben sie über die Menüs erreichbar.
+
+---
+
 ## V4.1 fixed — zwei Mobile-Korrekturen
 
 Der technische Stand wurde nicht verändert: Farbschema-Fix, `css-variables.liquid`,

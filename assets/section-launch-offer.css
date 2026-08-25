@@ -1,0 +1,52 @@
+/* Vorteil und Garantie zum Start.
+   Zwei Textblöcke, getrennt durch Haarlinien – keine Karte, kein Rahmen,
+   kein Schatten, kein Siegel. Auf Mobilgeräten untereinander, ab 990 px
+   nebeneinander mit senkrechter Trennlinie. */
+.offer {
+  display: grid;
+  border-block: var(--border-width) solid rgb(var(--color-line));
+}
+
+.offer__item { padding-block: var(--space-md); }
+.offer__item + .offer__item {
+  border-top: var(--border-width) solid rgb(var(--color-line));
+}
+
+.offer .eyebrow { margin-bottom: var(--space-xs); }
+
+.offer__heading {
+  /* Die Überschriften stehen in Versalien – etwas Sperrung hält sie lesbar. */
+  letter-spacing: .015em;
+  margin-bottom: var(--space-sm);
+}
+
+.offer__text {
+  color: rgb(var(--color-text));
+  max-width: 46ch;
+  font-size: clamp(.9375rem, .9rem + .2vw, 1.0625rem);
+  line-height: 1.5;
+}
+
+.offer__detail {
+  margin-top: var(--space-sm);
+  font-size: .8125rem;
+  line-height: 1.5;
+  color: rgb(var(--color-muted));
+  max-width: 46ch;
+}
+
+.offer__cta { margin-top: var(--space-lg); }
+
+@media (min-width: 990px) {
+  .offer { grid-template-columns: 1fr 1fr; }
+  .offer__item {
+    padding-block: var(--space-2xl);
+    padding-inline-end: clamp(2rem, 4vw, 4rem);
+  }
+  .offer__item + .offer__item {
+    border-top: 0;
+    border-left: var(--border-width) solid rgb(var(--color-line));
+    padding-inline: clamp(2rem, 4vw, 4rem) 0;
+  }
+  .offer__cta { margin-top: var(--space-xl); }
+}

@@ -149,7 +149,8 @@
         "show_price": false,
         "primary_label": "Set zusammenstellen",
         "primary_link": "/products/discovery-set"
-      }
+      },
+      "disabled": true
     },
     "code": {
       "type": "scent-code-entry",
@@ -159,7 +160,8 @@
         "heading": "Code bereits bekannt?",
         "text": "Gib deinen Scent Code ein und wähle deine Ausführung.",
         "whatsapp_label": "Beratung starten"
-      }
+      },
+      "disabled": true
     },
     "extrait": {
       "type": "editorial-feature",
@@ -235,7 +237,8 @@
         "show_price": false,
         "primary_label": "Travel Size ansehen",
         "primary_link": "/collections/travel-size"
-      }
+      },
+      "disabled": true
     },
     "essentials": {
       "type": "quiet-link",
@@ -245,7 +248,8 @@
         "text": "Eine eigene Einstiegslinie für den Alltag.",
         "link_label": "Ansehen",
         "link": "/collections/essentials"
-      }
+      },
+      "disabled": true
     },
     "brand": {
       "type": "editorial-feature",
@@ -270,20 +274,53 @@
         "heading": "Neue Duftprofile",
         "text": "Wir schreiben selten und nur, wenn es etwas zu berichten gibt."
       }
+    },
+    "offer": {
+      "type": "launch-offer",
+      "blocks": {
+        "o1": {
+          "type": "claim",
+          "settings": {
+            "eyebrow": "Willkommen bei VENT CELESTE",
+            "heading": "20 % KENNENLERNVORTEIL",
+            "text": "Auf deine erste Bestellung.",
+            "detail": "Gültig für bis zu 3 Düfte."
+          }
+        },
+        "o2": {
+          "type": "claim",
+          "settings": {
+            "eyebrow": "Ohne Risiko",
+            "heading": "100 % ZUFRIEDENHEITSGARANTIE",
+            "text": "Du sollst deinen Duft lieben.\nWenn du mit einem Duft aus deiner ersten Bestellung nicht zufrieden bist, kümmern wir uns darum.",
+            "detail": "Gültig für deine erste Bestellung und maximal 3 Flakons."
+          }
+        }
+      },
+      "block_order": [
+        "o1",
+        "o2"
+      ],
+      "settings": {
+        "color_scheme": "scheme-2",
+        "show_whatsapp": true,
+        "whatsapp_label": "Meinen Duft finden"
+      }
     }
   },
   "order": [
     "hero",
-    "promise",
-    "most_wanted",
     "profiles",
     "how",
+    "most_wanted",
+    "offer",
+    "extrait",
+    "promise",
+    "brand",
+    "newsletter",
     "discovery",
     "code",
-    "extrait",
     "travel",
-    "essentials",
-    "brand",
-    "newsletter"
+    "essentials"
   ]
 }
