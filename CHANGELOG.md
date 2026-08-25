@@ -1,5 +1,68 @@
 # Änderungsprotokoll
 
+## V3.4 — Farbschemata für den Theme-Editor
+
+Behebt die Editor-Meldung „Um eine Vorschau deiner Änderungen anzuzeigen,
+müssen Farbschemata in den Dateien settings_data und settings_schema definiert
+sein." Keine Designänderung: Alle Farbwerte und Schema-Zuweisungen bleiben
+unverändert.
+
+### Farbgruppe rollenvollständig — `config/settings_schema.json`
+
+Die `color_scheme_group` wich in drei Punkten von der Struktur aktueller
+Shopify-Themes (Dawn/Horizon) ab. Der Editor prüft die Rollenzuordnung
+vollständig; fehlende Rollen lassen die Gruppe als undefiniert gelten.
+
+| | vorher | jetzt |
+|---|---|---|
+| Rolle `background` | nur `solid` | `solid` **und** `gradient` |
+| Verlaufs-Farbeinstellung | fehlte | `background_gradient` vom Typ `color_background` |
+| Rollen `button` / `on_button` | fehlten | ergänzt |
+| Rolle `shadow` | zeigte auf `line` | eigene Farbe `shadow` |
+| Rollen für sekundäre Buttons | zeigten auf `text` | eigene Farbe `secondary_button_label` |
+
+Vollständiger Rollensatz jetzt: `background` (solid + gradient), `text`,
+`shadow`, `button`, `on_button`, `icons`, `primary_button`, `on_primary_button`,
+`primary_button_border`, `secondary_button`, `on_secondary_button`,
+`secondary_button_border`, `links`.
+
+Die markeneigenen Zusatzfarben `muted`, `line` und `accent` bleiben als
+zusätzliche Einträge in der Definition erhalten — das Designsystem baut darauf auf.
+
+### `config/settings_data.json`
+
+- Jedes der vier Schemata enthält jetzt **alle** Definition-Keys.
+- Übernommene Werte, damit die Optik identisch bleibt:
+  `secondary_button_label` = bisherige Textfarbe, `shadow` = bisherige Haarlinienfarbe,
+  `background_gradient` = leer.
+- `current` bleibt ein Objekt (nicht als Preset-Referenz) — so wie in Dawn.
+- **Neu:** `presets`-Block „VENT CELESTE", der die aktuellen Einstellungen
+  spiegelt. Er fehlte bisher vollständig.
+
+### Geprüft
+
+- Alle vier Schema-IDs (`scheme-ivory`, `scheme-ivory-deep`, `scheme-ink`,
+  `scheme-stone`) sind definiert.
+- Sämtliche `color_scheme`-Werte in Section-Schemas, Presets, JSON-Templates
+  und Section-Groups verweisen auf existierende IDs — keine toten Referenzen.
+- `theme_info` steht als erste Gruppe in `settings_schema.json`.
+- Theme Check: 0 Fehler, 0 Warnungen.
+
+### Mobile-Korrektur „So funktioniert's" mitgeführt
+
+Die Korrektur lag nicht im Repository vor (sie wurde offenbar direkt im
+Shopify-Code-Editor vorgenommen). Damit dieses ZIP sie nicht überschreibt,
+wurde die Ursache im Repository behoben:
+
+`.steps__item` hat auf Mobile zwei Rasterspalten, der Schritt aber drei
+Elemente — die Beschreibung landete durch Auto-Placement unter der Nummer in
+der schmalen Spalte. Ergänzt: `.steps__text { grid-column: 2 }`, im
+990-px-Breakpoint auf `auto` zurückgesetzt. Zwei Zeilen CSS, sonst nichts.
+
+Weicht die eigene Korrektur davon ab, hat sie Vorrang.
+
+---
+
 ## V3 — technische Korrekturen vor dem Upload
 
 Korrekturen an V2 auf Grundlage der technischen Prüfung. Architektur,

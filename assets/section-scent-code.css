@@ -49,11 +49,19 @@
 }
 .steps__number::before { content: '0' counter(vc-step); }
 .steps__title { font-family: var(--font-heading-family); font-size: clamp(1.125rem, 1rem + .7vw, 1.5rem); }
-.steps__text { margin-top: .3rem; color: rgb(var(--color-muted)); max-width: 44ch; }
+/* Auf Mobile hat das Raster zwei Spalten, der Schritt aber drei Elemente.
+   Ohne diese Zuweisung landet die Beschreibung unter der Nummer in der
+   schmalen Spalte statt unter dem Titel. */
+.steps__text {
+  grid-column: 2;
+  margin-top: .3rem;
+  color: rgb(var(--color-muted));
+  max-width: 44ch;
+}
 
 @media (min-width: 990px) {
   .steps__item { grid-template-columns: 4rem 18rem minmax(0, 1fr); align-items: baseline; }
-  .steps__text { margin-top: 0; }
+  .steps__text { grid-column: auto; margin-top: 0; }
 }
 
 /* Code-Abschnitt auf der Startseite */

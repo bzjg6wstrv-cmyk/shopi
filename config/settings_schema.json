@@ -83,10 +83,40 @@
             "default": "#F5F2ED"
           },
           {
+            "type": "color_background",
+            "id": "background_gradient",
+            "label": "Hintergrundverlauf",
+            "info": "Ersetzt die Hintergrundfarbe, sobald ein Verlauf gesetzt ist. Für die Editorial-Anmutung von VENT CELESTE bewusst leer gelassen."
+          },
+          {
             "type": "color",
             "id": "text",
             "label": "Text",
             "default": "#141210"
+          },
+          {
+            "type": "color",
+            "id": "button",
+            "label": "Button-Fläche",
+            "default": "#141210"
+          },
+          {
+            "type": "color",
+            "id": "button_label",
+            "label": "Button-Schrift",
+            "default": "#F5F2ED"
+          },
+          {
+            "type": "color",
+            "id": "secondary_button_label",
+            "label": "Sekundärer Button – Schrift und Rahmen",
+            "default": "#141210"
+          },
+          {
+            "type": "color",
+            "id": "shadow",
+            "label": "Schatten",
+            "default": "#DCD5CA"
           },
           {
             "type": "color",
@@ -105,34 +135,25 @@
             "id": "accent",
             "label": "Akzent",
             "default": "#C3AC82"
-          },
-          {
-            "type": "color",
-            "id": "button",
-            "label": "Button-Fläche",
-            "default": "#141210"
-          },
-          {
-            "type": "color",
-            "id": "button_label",
-            "label": "Button-Schrift",
-            "default": "#F5F2ED"
           }
         ],
         "role": {
           "background": {
-            "solid": "background"
+            "solid": "background",
+            "gradient": "background_gradient"
           },
           "text": "text",
-          "shadow": "line",
+          "shadow": "shadow",
+          "button": "button",
+          "on_button": "button_label",
+          "icons": "text",
           "primary_button": "button",
           "on_primary_button": "button_label",
           "primary_button_border": "button",
           "secondary_button": "background",
-          "on_secondary_button": "text",
-          "secondary_button_border": "text",
-          "links": "text",
-          "icons": "text"
+          "on_secondary_button": "secondary_button_label",
+          "secondary_button_border": "secondary_button_label",
+          "links": "text"
         }
       }
     ]
