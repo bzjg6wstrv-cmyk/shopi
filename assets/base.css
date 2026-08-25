@@ -1024,20 +1024,38 @@ body.is-locked { overflow: hidden; }
 /* 17 Sticky-Leisten ------------------------------------------------------ */
 /* Eine Quelle für die Leistenhöhe: Sie steuert die Leiste selbst und den
    Platz, den der Fußbereich dafür freihält. */
-:root { --whatsapp-bar-height: 3.5rem; }
+:root {
+  --whatsapp-bar-height: 3.5rem;
+  /* Über dem Header (40), unter Overlay (60) und Drawer (70): Die Leiste wird
+     von keinem Abschnitt verdeckt, verdeckt aber ihrerseits keinen Dialog. */
+  --z-sticky-bar: 50;
+}
 
+/* Bewusst ohne `transform` auf dem fixierten Element: iOS Safari verschiebt
+   ein `position: fixed`-Element mit eigenem transform in eine separate
+   Compositing-Ebene und zeichnet es beim Scrollen nicht zuverlässig neu – die
+   Leiste blieb dadurch auf dem iPhone unsichtbar, obwohl sie im DOM lag und
+   `is-visible` gesetzt war. Ein- und Ausblenden läuft deshalb über `bottom`;
+   optisch ist das derselbe Übergang von unten. */
 .sticky-bar {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 0;
-  z-index: calc(var(--z-header, 40) - 1);
+  bottom: calc(-1 * (var(--whatsapp-bar-height) + env(safe-area-inset-bottom, 0px)));
+  z-index: var(--z-sticky-bar, 50);
   padding: 0.375rem var(--gutter);
   padding-bottom: calc(0.375rem + env(safe-area-inset-bottom, 0px));
-  transform: translateY(110%);
-  transition: transform var(--dur) var(--ease);
+  visibility: hidden;
+  pointer-events: none;
+  transition: bottom var(--dur, 240ms) var(--ease, ease),
+              visibility 0s linear var(--dur, 240ms);
 }
-.sticky-bar.is-visible { transform: none; }
+.sticky-bar.is-visible {
+  bottom: 0;
+  visibility: visible;
+  pointer-events: auto;
+  transition: bottom var(--dur, 240ms) var(--ease, ease), visibility 0s;
+}
 
 /* Drei Spalten: leerer Platzhalter, Beratung, Schließen. Der Platzhalter ist
    so breit wie der Schließen-Button – dadurch steht die Beschriftung in der

@@ -437,14 +437,11 @@
     bar.classList.toggle('is-visible', heroVerlassen() && !schreibtGerade());
   }
 
-  var ticking = false;
+  /* Bewusst ohne requestAnimationFrame: iOS Safari drosselt Animation Frames
+     waehrend des Schwung-Scrollens, die Auswertung waere dort verzoegert
+     ausgefuehrt worden. Gemessen wird nur ein einzelnes Rechteck. */
   function pruefen() {
-    if (ticking) return;
-    ticking = true;
-    window.requestAnimationFrame(function () {
-      ticking = false;
-      anwenden();
-    });
+    anwenden();
   }
 
   window.addEventListener('scroll', pruefen, { passive: true });
