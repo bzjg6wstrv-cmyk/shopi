@@ -373,6 +373,11 @@
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+  /* Produktseiten mit Sticky-Warenkorb: Die Beratungsleiste tritt zurück.
+     Zuerst ermittelt, damit die Leiste dort gar nicht erst aufgebaut wird. */
+  var hasStickyAtc = Boolean(document.querySelector('[data-sticky-atc]'));
+  if (hasStickyAtc) document.body.classList.add('has-sticky-atc');
+
   /* ------------------------------------------------- Mobile Beratungsleiste */
   var bar = document.querySelector('[data-whatsapp-bar]');
   if (bar) {
@@ -383,47 +388,70 @@
       /* Privater Modus: Leiste erscheint dann in jeder Sitzung erneut. */
     }
 
-    if (dismissed) {
+    if (dismissed || hasStickyAtc) {
       bar.remove();
     } else {
-      var threshold = parseInt(bar.getAttribute('data-threshold'), 10) || 40;
       bar.hidden = false;
 
-      var ticking = false;
-      var onScroll = function () {
-        if (ticking) return;
-        ticking = true;
-        window.requestAnimationFrame(function () {
-          var max = document.documentElement.scrollHeight - window.innerHeight;
-          var progress = max > 0 ? (window.scrollY / max) * 100 : 0;
-          bar.classList.toggle('is-visible', progress >= threshold);
-          ticking = false;
-        });
+      /* Solange die Leiste erscheinen kann, hält der Fußbereich Platz frei.
+         Die Klasse wird sofort gesetzt – der reservierte Raum liegt unterhalb
+         des Fußbereichs und erzeugt daher keinen sichtbaren Sprung. */
+      document.body.classList.add('has-whatsapp-bar');
+
+      var zeigen = function (an) {
+        bar.classList.toggle('is-visible', an);
       };
 
-      window.addEventListener('scroll', onScroll, { passive: true });
-      onScroll();
+      var hero = document.querySelector('.hero2');
+
+      if (hero && 'IntersectionObserver' in window) {
+        /* Bevorzugt: Die Leiste erscheint, sobald der Hero den sichtbaren
+           Bereich vollständig verlassen hat. Das ist unabhängig davon, wie
+           lang die Seite insgesamt ist. */
+        var beobachter = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              zeigen(!entry.isIntersecting);
+            });
+          },
+          { threshold: 0 }
+        );
+        beobachter.observe(hero);
+      } else {
+        /* Seiten ohne Hero: Anteil der Seitenlänge wie bisher. */
+        var schwelle = parseInt(bar.getAttribute('data-threshold'), 10) || 40;
+        var ticking = false;
+        var onScroll = function () {
+          if (ticking) return;
+          ticking = true;
+          window.requestAnimationFrame(function () {
+            var max = document.documentElement.scrollHeight - window.innerHeight;
+            zeigen(max > 0 && (window.scrollY / max) * 100 >= schwelle);
+            ticking = false;
+          });
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+      }
 
       var dismiss = bar.querySelector('[data-whatsapp-dismiss]');
       if (dismiss) {
         dismiss.addEventListener('click', function () {
-          bar.classList.remove('is-visible');
+          zeigen(false);
           try {
             window.sessionStorage.setItem('vc-wa-dismissed', '1');
           } catch (error) {
             /* nichts zu tun */
           }
+          /* Element und reservierter Platz verschwinden erst nach der
+             Ausblendung und gemeinsam – dadurch kein Layoutsprung. */
           window.setTimeout(function () {
             bar.remove();
+            document.body.classList.remove('has-whatsapp-bar');
           }, 300);
         });
       }
     }
-  }
-
-  /* Produktseiten mit Sticky-Warenkorb: Beratungsleiste tritt zurück. */
-  if (document.querySelector('[data-sticky-atc]')) {
-    document.body.classList.add('has-sticky-atc');
   }
 
   /* ------------------------------------------- Leisten weichen der Tastatur */
