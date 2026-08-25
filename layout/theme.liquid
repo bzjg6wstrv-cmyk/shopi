@@ -46,6 +46,12 @@
         unavailable: {{ 'products.product.unavailable' | t | json }}
       };
     </script>
+    {%- comment -%}
+      TEMPORÄR: Diagnose der mobilen Beratungsleiste. Läuft bewusst vor
+      theme.js, damit Fehler von dort mitgeschnitten werden. Vor dem
+      Livegang diese Zeile und assets/vc-diagnose.js entfernen.
+    {%- endcomment -%}
+    <script src="{{ 'vc-diagnose.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'theme.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'scent-code.js' | asset_url }}" defer="defer"></script>
 
