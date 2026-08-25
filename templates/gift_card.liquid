@@ -1,6 +1,5 @@
 {% layout none %}
 <!doctype html>
-{%- assign default_scheme = settings.color_schemes | first -%}
 <html lang="{{ request.locale.iso_code }}">
   <head>
     <meta charset="utf-8">
@@ -11,7 +10,7 @@
     {{ 'base.css' | asset_url | stylesheet_tag }}
     {{ content_for_header }}
   </head>
-  <body class="color-{{ default_scheme.id }} color-scheme">
+  <body class="color-scheme-1 color-scheme">
     <main class="section" role="main">
       <div class="page-width page-width--narrow text-center" style="max-width: 32rem;">
         <p class="wordmark" style="font-size: 1.25rem;">{{ settings.wordmark | escape }}</p>

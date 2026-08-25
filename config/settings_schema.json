@@ -73,85 +73,10 @@
     "name": "Farben",
     "settings": [
       {
-        "type": "color_scheme_group",
-        "id": "color_schemes",
-        "definition": [
-          {
-            "type": "color",
-            "id": "background",
-            "label": "Hintergrund",
-            "default": "#F5F2ED"
-          },
-          {
-            "type": "color_background",
-            "id": "background_gradient",
-            "label": "Hintergrundverlauf",
-            "info": "Ersetzt die Hintergrundfarbe, sobald ein Verlauf gesetzt ist. Für die Editorial-Anmutung von VENT CELESTE bewusst leer gelassen."
-          },
-          {
-            "type": "color",
-            "id": "text",
-            "label": "Text",
-            "default": "#141210"
-          },
-          {
-            "type": "color",
-            "id": "button",
-            "label": "Button-Fläche",
-            "default": "#141210"
-          },
-          {
-            "type": "color",
-            "id": "button_label",
-            "label": "Button-Schrift",
-            "default": "#F5F2ED"
-          },
-          {
-            "type": "color",
-            "id": "secondary_button_label",
-            "label": "Sekundärer Button – Schrift und Rahmen",
-            "default": "#141210"
-          },
-          {
-            "type": "color",
-            "id": "shadow",
-            "label": "Schatten",
-            "default": "#DCD5CA"
-          },
-          {
-            "type": "color",
-            "id": "muted",
-            "label": "Sekundärtext",
-            "default": "#8C8375"
-          },
-          {
-            "type": "color",
-            "id": "line",
-            "label": "Haarlinie",
-            "default": "#DCD5CA"
-          },
-          {
-            "type": "color",
-            "id": "accent",
-            "label": "Akzent",
-            "default": "#C3AC82"
-          }
-        ],
-        "role": {
-          "text": "text",
-          "background": {
-            "solid": "background",
-            "gradient": "background_gradient"
-          },
-          "links": "text",
-          "icons": "text",
-          "primary_button": "button",
-          "on_primary_button": "button_label",
-          "primary_button_border": "button",
-          "secondary_button": "background",
-          "on_secondary_button": "secondary_button_label",
-          "secondary_button_border": "secondary_button_label"
-        }
+        "type": "color",
+        "id": "brand_accent",
+        "label": "Akzent",
+        "default": "#C3AC82"
       }
     ]
   },

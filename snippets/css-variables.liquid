@@ -28,18 +28,50 @@
 {{ body_font_italic | font_face: font_display: 'swap' }}
 {{ heading_font | font_face: font_display: 'swap' }}
 
-{%- for scheme in settings.color_schemes -%}
-  {%- assign s = scheme.settings -%}
-  {% if forloop.first %}:root,{% endif %}.color-{{ scheme.id }} {
-    --color-background: {{ s.background.red }} {{ s.background.green }} {{ s.background.blue }};
-    --color-text: {{ s.text.red }} {{ s.text.green }} {{ s.text.blue }};
-    --color-muted: {{ s.muted.red }} {{ s.muted.green }} {{ s.muted.blue }};
-    --color-line: {{ s.line.red }} {{ s.line.green }} {{ s.line.blue }};
-    --color-accent: {{ s.accent.red }} {{ s.accent.green }} {{ s.accent.blue }};
-    --color-button: {{ s.button.red }} {{ s.button.green }} {{ s.button.blue }};
-    --color-button-label: {{ s.button_label.red }} {{ s.button_label.green }} {{ s.button_label.blue }};
-  }
-{%- endfor -%}
+
+:root,
+.color-scheme,
+.color-scheme-1,
+.color-scheme-ivory {
+  --color-background: 245 242 237;
+  --color-text: 20 18 16;
+  --color-muted: 140 131 117;
+  --color-line: 220 213 202;
+  --color-accent: 195 172 130;
+  --color-button: 20 18 16;
+  --color-button-label: 245 242 237;
+}
+.color-scheme-2,
+.color-scheme-ivory-deep {
+  --color-background: 235 230 222;
+  --color-text: 20 18 16;
+  --color-muted: 126 117 104;
+  --color-line: 210 202 189;
+  --color-accent: 183 156 108;
+  --color-button: 20 18 16;
+  --color-button-label: 235 230 222;
+}
+.color-scheme-3,
+.color-scheme-ink {
+  --color-background: 20 18 16;
+  --color-text: 241 237 230;
+  --color-muted: 162 152 137;
+  --color-line: 51 46 40;
+  --color-accent: 195 172 130;
+  --color-button: 241 237 230;
+  --color-button-label: 20 18 16;
+}
+.color-scheme-4,
+.color-scheme-stone {
+  --color-background: 140 131 117;
+  --color-text: 251 249 245;
+  --color-muted: 227 220 209;
+  --color-line: 158 149 135;
+  --color-accent: 240 227 204;
+  --color-button: 251 249 245;
+  --color-button-label: 58 52 44;
+}
+
 
 .color-scheme { background-color: rgb(var(--color-background)); color: rgb(var(--color-text)); }
 

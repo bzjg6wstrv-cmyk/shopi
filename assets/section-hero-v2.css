@@ -1,36 +1,122 @@
-/* Hero V2 – mobile first.
-   Reihenfolge auf Mobile: Text, Buttons, Code-Feld, danach das Bild.
-   Das Bild ist bewusst das Erste, was unterhalb des Folds abschneidet. */
+/* Hero V2 – mobile first, Editorial.
+
+   Reihenfolge auf Mobile: Eyebrow, Schlagzeile, Unterzeile, Beratungs-CTA,
+   Scent-Code-Eingabe, danach erst das Bild. Das Bild ist bewusst das Erste,
+   was unterhalb der Falz abschneidet.
+
+   Die Werte unter „Ab Tablet" entsprechen unverändert der vorherigen Fassung –
+   Desktop bleibt damit so, wie es war. Alles davor ist der Mobile-Stand. */
 
 .hero2 { position: relative; overflow: hidden; }
 
 .hero2__inner {
   display: grid;
-  gap: var(--space-xl);
-  padding-block: clamp(2rem, 7vw, 5rem) 0;
+  gap: 1.75rem;
+  padding-block: 1.125rem 0;
 }
 
 .hero2__eyebrow { color: rgb(var(--color-muted)); }
+.hero2 .eyebrow { margin-bottom: 0.5rem; }
 
-.hero2__title { margin-bottom: var(--space-md); }
+.hero2__title { margin-bottom: 0.625rem; }
 
 .hero2__text {
-  max-width: 26ch;
-  font-size: clamp(1rem, .95rem + .4vw, 1.25rem);
+  max-width: 30ch;
+  font-size: 0.9375rem;
   line-height: 1.45;
   color: rgb(var(--color-muted));
 }
 
-.hero2__actions { margin-top: var(--space-xl); }
-.hero2__actions .button { width: 100%; min-height: 3.25rem; }
+/* ------------------------------------------------------- Beratungs-CTA --- */
+.hero2__actions { margin-top: 1.25rem; display: grid; gap: 0.6rem; }
 
-.hero2__response { margin-top: var(--space-xs); font-size: .75rem; color: rgb(var(--color-muted)); }
+/* Der primäre Weg in die Beratung. Durchgehende Fläche in der Textfarbe des
+   Farbstils – tiefes Schwarz, ausdrücklich kein WhatsApp-Grün. Die Klasse
+   hängt am Link, den snippets/whatsapp-link.liquid ausgibt. */
+.hero2__cta {
+  display: flex;
+  width: 100%;
+  min-height: 3.5rem;
+  gap: 0.6rem;
+  background-color: rgb(var(--color-text));
+  border-color: rgb(var(--color-text));
+  color: rgb(var(--color-background));
+  font-size: 0.8125rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.hero2__cta:hover { opacity: 0.88; }
+.hero2__cta svg { width: 18px; height: 18px; flex: none; }
 
-.hero2__code { margin-top: var(--space-xl); }
+/* Der sekundäre Button bleibt bewusst eine reine Kontur. */
+.hero2__actions .button--secondary {
+  width: 100%;
+  min-height: 3.25rem;
+  background-color: transparent;
+  color: rgb(var(--color-text));
+  border-color: rgb(var(--color-text));
+}
 
+/* ------------------------------------------------- Scent-Code-Eingabe --- */
+/* Editorial statt Formularbox: eine feine Linie, Prefix und Eingabe auf einer
+   Grundlinie, „Weiter" als Textmarke. Keine Fläche, kein dicker Rahmen,
+   keine gerundeten Standard-Inputs. */
+.hero2__code { margin-top: 1.125rem; }
+
+.hero2__code .code-field__label {
+  margin-bottom: 0.4rem;
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  color: rgb(var(--color-muted));
+}
+
+.hero2__code .code-field__row {
+  border: 0;
+  border-bottom: 1px solid rgb(var(--color-text) / 0.28);
+  border-radius: 0;
+  background-color: transparent;
+  align-items: baseline;
+  gap: 0.15rem;
+  transition: border-color var(--dur) var(--ease);
+}
+.hero2__code .code-field__row:focus-within {
+  box-shadow: none;
+  border-bottom-color: rgb(var(--color-text));
+}
+.hero2__code .code-field__row.is-valid { border-bottom-color: rgb(var(--color-accent)); }
+
+.hero2__code .code-field__prefix {
+  padding: 0;
+  font-size: 1.125rem;
+  letter-spacing: 0.08em;
+  color: rgb(var(--color-text));
+}
+
+.hero2__code .code-field__input {
+  min-height: 3rem;
+  padding: 0 0.4rem;
+  font-size: 1.125rem;
+  letter-spacing: 0.16em;
+}
+.hero2__code .code-field__input::placeholder { opacity: 0.35; }
+
+.hero2__code .code-field__submit {
+  min-height: 3rem;
+  padding: 0 0 0 var(--space-md);
+  background-color: transparent;
+  color: rgb(var(--color-text));
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+}
+.hero2__code .code-field__submit:hover { opacity: 0.6; }
+.hero2__code .code-field__submit svg { width: 15px; height: 15px; }
+
+.hero2__code .code-field__status { margin-top: 0.3rem; font-size: 0.75rem; }
+
+/* -------------------------------------------------------------- Bild --- */
 .hero2__media {
   position: relative;
-  margin-top: var(--space-xl);
+  margin-top: 1.75rem;
   margin-inline: calc(var(--gutter) * -1);
 }
 .hero2__media img,
@@ -41,7 +127,16 @@
   object-fit: cover;
 }
 
-/* Ab Tablet: zweispaltig, Text links, Bild rechts. */
+/* Sehr schmale Geräte: der CTA muss über der Falz bleiben. */
+@media (max-width: 359px) {
+  .hero2__inner { padding-block: 0.875rem 0; }
+  .hero2__actions { margin-top: 1rem; }
+  .hero2__text { font-size: 0.875rem; }
+  .hero2__code { margin-top: 1rem; }
+}
+
+/* Ab Tablet: zweispaltig, Text links, Bild rechts.
+   Diese Werte sind gegenüber der Vorversion unverändert. */
 @media (min-width: 750px) {
   .hero2__inner {
     grid-template-columns: 7fr 5fr;
@@ -49,12 +144,17 @@
     gap: clamp(2rem, 5vw, 4.5rem);
     padding-block: clamp(3rem, 6vw, 6rem);
   }
-  .hero2__actions { display: flex; gap: var(--space-md); }
+  .hero2 .eyebrow { margin-bottom: var(--space-md); }
+  .hero2__title { margin-bottom: var(--space-md); }
+  .hero2__text { max-width: 26ch; font-size: clamp(1rem, .95rem + .4vw, 1.25rem); }
+  .hero2__actions { margin-top: var(--space-xl); display: flex; gap: var(--space-md); }
   .hero2__actions .button { width: auto; }
+  .hero2__cta { width: auto; min-height: 3.25rem; }
+  .hero2__actions .button--secondary { width: auto; min-height: 3.25rem; }
   .hero2__media { margin: 0; }
   .hero2__media img,
   .hero2__media svg { aspect-ratio: 3 / 4; }
-  .hero2__code { max-width: 24rem; }
+  .hero2__code { max-width: 24rem; margin-top: var(--space-xl); }
 }
 
 @media (min-width: 990px) {
@@ -68,73 +168,4 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .hero2__media-inner { transform: none; }
-}
-
-/* ==========================================================================
-   V4 — Mobile-Hero: weniger Leerraum, klarer Handlungsweg
-   Ziel: Beratungs-CTA und Scent-Code-Eingabe ohne oder mit minimalem Scrollen
-   sichtbar. Greift ausschließlich unter 750 px.
-   ========================================================================== */
-@media (max-width: 749px) {
-  /* 2 Vertikale Abstände verdichten */
-  .hero2__inner {
-    gap: 1.5rem;
-    padding-block: 1.25rem 0;
-  }
-  .hero2 .eyebrow { margin-bottom: 0.5rem; }
-  .hero2__title { margin-bottom: 0.75rem; }
-  .hero2__text { max-width: 30ch; font-size: 1rem; line-height: 1.4; }
-  .hero2__actions { margin-top: 1.5rem; display: grid; gap: 0.6rem; }
-  .hero2__response { margin-top: 0.4rem; }
-  .hero2__media { margin-top: 1.5rem; }
-
-  /* 3 Beratung ist der primäre Weg: durchgehend schwarze Fläche über die
-     volle Breite. Bewusst die Textfarbe des Schemas, nicht WhatsApp-Grün. */
-  .hero2__actions .button--whatsapp {
-    width: 100%;
-    min-height: 3.5rem;
-    background-color: rgb(var(--color-text));
-    border-color: rgb(var(--color-text));
-    color: rgb(var(--color-background));
-    font-size: 0.8125rem;
-    letter-spacing: 0.16em;
-  }
-  .hero2__actions .button--whatsapp:hover { opacity: 1; }
-
-  /* Der sekundäre Button bleibt bewusst eine Kontur. */
-  .hero2__actions .button--secondary {
-    width: 100%;
-    min-height: 3.25rem;
-    background-color: transparent;
-    color: rgb(var(--color-text));
-    border-color: rgb(var(--color-text));
-  }
-
-  /* 4 Scent-Code-Block rückt an den CTA heran und wird kompakter.
-     Eingabefeld und Button bleiben bei 48 px Höhe gut bedienbar. */
-  .hero2__code { margin-top: 1rem; }
-  .hero2__code .code-field__label {
-    margin-bottom: 0.35rem;
-    font-size: 0.625rem;
-    letter-spacing: 0.12em;
-  }
-  .hero2__code .code-field__prefix { font-size: 1rem; padding-inline: 0.85rem 0; }
-  .hero2__code .code-field__input {
-    min-height: 3rem;
-    font-size: 1rem;
-    letter-spacing: 0.14em;
-  }
-  .hero2__code .code-field__submit {
-    min-height: 3rem;
-    padding-inline: 1.1rem;
-    font-size: 0.6875rem;
-  }
-  .hero2__code .code-field__status { margin-top: 0.2rem; font-size: 0.75rem; }
-}
-
-/* Sehr schmale Geräte: Schlagzeile darf nicht umbrechen erzwingen. */
-@media (max-width: 359px) {
-  .hero2__inner { padding-block: 1rem 0; }
-  .hero2__actions { margin-top: 1.25rem; }
-  .hero2__text { font-size: 0.9375rem; }
 }

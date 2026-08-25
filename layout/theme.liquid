@@ -1,11 +1,10 @@
 <!doctype html>
-{%- assign default_scheme = settings.color_schemes | first -%}
 <html lang="{{ request.locale.iso_code }}" class="no-js">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="{{ default_scheme.settings.background }}">
+    <meta name="theme-color" content="#F5F2ED">
 
     <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
     {%- if settings.favicon != blank -%}
@@ -55,7 +54,7 @@
     {%- render 'structured-data' -%}
   </head>
 
-  <body class="template-{{ request.page_type | handle }} color-{{ default_scheme.id }} color-scheme{% if settings.animations_enabled %} animations-on{% endif %}">
+  <body class="template-{{ request.page_type | handle }} color-scheme-1 color-scheme{% if settings.animations_enabled %} animations-on{% endif %}">
     <a class="skip-link" href="#MainContent">{{ 'general.accessibility.skip_to_content' | t }}</a>
 
     {% sections 'header-group' %}
