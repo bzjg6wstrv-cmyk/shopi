@@ -1,5 +1,72 @@
 # Änderungsprotokoll
 
+## V3.5 — Farbschema-Fehler im Theme-Editor behoben
+
+V3.4 hat den Fehler nicht behoben. Der Grund war eine falsche Annahme: Ich habe
+den Rollensatz *erweitert*, statt ihn mit dem abzugleichen, den Shopify
+tatsächlich kennt. Diesmal wurden `config/settings_schema.json` und
+`config/settings_data.json` von Dawn (Shopify/dawn, main) heruntergeladen und
+Feld für Feld verglichen.
+
+### Ursache 1 — ungültige Rollen in der `color_scheme_group`
+
+Shopify kennt genau zehn Rollen. Eine unbekannte Rolle macht die gesamte Gruppe
+ungültig — und damit erscheint die Meldung, Farbschemata seien nicht definiert.
+
+| Rolle | Status |
+|---|---|
+| `shadow` | **ungültig** — steckte seit V1 im Rollensatz. Das war der ursprüngliche Fehler. |
+| `button`, `on_button` | **ungültig** — in V3.4 von mir ergänzt, hat es verschlimmert. |
+
+Der Rollensatz entspricht jetzt exakt dem von Dawn: `text`, `background`
+(solid + gradient), `links`, `icons`, `primary_button`, `on_primary_button`,
+`primary_button_border`, `secondary_button`, `on_secondary_button`,
+`secondary_button_border`.
+
+`shadow` bleibt als **Farbe in der Definition** erhalten — Dawn führt sie dort
+ebenfalls, ohne sie einer Rolle zuzuweisen. Damit ist auch belegt, dass die
+markeneigenen Zusatzfarben `muted`, `line` und `accent` zulässig sind.
+
+### Ursache 2 — `settings_data.json` hatte die falsche Grundform
+
+Dawn liefert `current` als **Preset-Referenz**, nicht als Objekt:
+
+```json
+{ "current": "Dawn", "presets": { "Dawn": { … } } }
+```
+
+Umgestellt auf dieselbe Form mit dem Preset „VENT CELESTE". Das Preset enthält
+alle Einstellungen inklusive `sections`; einen `blocks`-Key führt Dawn nicht,
+er wurde entfernt.
+
+### Ursache 3 — Schema-IDs angeglichen
+
+Dawn nummeriert die Schemata. Umbenannt, um die letzte Strukturabweichung zu
+beseitigen:
+
+| vorher | jetzt | Hintergrund |
+|---|---|---|
+| `scheme-ivory` | `scheme-1` | `#F5F2ED` |
+| `scheme-ivory-deep` | `scheme-2` | `#EBE6DE` |
+| `scheme-ink` | `scheme-3` | `#141210` |
+| `scheme-stone` | `scheme-4` | `#8C8375` |
+
+Angepasst in 31 Dateien (Section-Schemas, Section-Groups, JSON-Templates,
+`settings_data.json`). **Keine Farbe und keine Zuordnung hat sich geändert** —
+geprüft: Hintergrundwerte identisch, alle Referenzen lösen auf, keine Reste der
+alten IDs.
+
+### Geprüft
+
+- Rollensatz strukturgleich zu Dawn (Schlüssel und Wertetypen)
+- `settings_data`: `current` ist ein String und zeigt auf ein existierendes Preset
+- jedes Schema enthält alle Definition-Keys
+- alle `color_scheme`-Werte in Section-Schemas, Section-Groups, JSON-Templates
+  und `settings_data` verweisen auf existierende IDs
+- Theme Check: 0 Fehler, 0 Warnungen
+
+---
+
 ## V3.4 — Farbschemata für den Theme-Editor
 
 Behebt die Editor-Meldung „Um eine Vorschau deiner Änderungen anzuzeigen,

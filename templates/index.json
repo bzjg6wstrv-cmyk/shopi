@@ -3,7 +3,7 @@
     "hero": {
       "type": "hero-v2",
       "settings": {
-        "color_scheme": "scheme-ivory",
+        "color_scheme": "scheme-1",
         "eyebrow": "Über 120 Duftprofile",
         "heading": "FIND\nYOUR\nSCENT.",
         "text": "Dein Lieblingsduft. Dein VENT CELESTE Scent Code.",
@@ -43,7 +43,7 @@
         "three"
       ],
       "settings": {
-        "color_scheme": "scheme-ivory",
+        "color_scheme": "scheme-1",
         "heading": "Das Prinzip",
         "footnote": "Angaben beziehen sich auf die Extrait-Linie."
       }
@@ -51,7 +51,7 @@
     "most_wanted": {
       "type": "product-row",
       "settings": {
-        "color_scheme": "scheme-ivory",
+        "color_scheme": "scheme-1",
         "eyebrow": "Die meistgewählten Codes",
         "heading": "Most Wanted",
         "collection": "bestseller",
@@ -65,7 +65,7 @@
     "profiles": {
       "type": "whatsapp-feature",
       "settings": {
-        "color_scheme": "scheme-ink",
+        "color_scheme": "scheme-3",
         "scrim": 45,
         "eyebrow": "Über 120 Duftprofile",
         "heading": "Dein Duft ist nicht dabei?",
@@ -104,7 +104,7 @@
         "s3"
       ],
       "settings": {
-        "color_scheme": "scheme-ivory",
+        "color_scheme": "scheme-1",
         "heading": "So funktioniert's",
         "show_whatsapp": true
       }
@@ -140,7 +140,7 @@
         "p3"
       ],
       "settings": {
-        "color_scheme": "scheme-ivory-deep",
+        "color_scheme": "scheme-2",
         "media_position": "right",
         "media_shape": "wide",
         "eyebrow": "Erst kennenlernen",
@@ -154,7 +154,7 @@
     "code": {
       "type": "scent-code-entry",
       "settings": {
-        "color_scheme": "scheme-ivory",
+        "color_scheme": "scheme-1",
         "eyebrow": "Bereits beraten",
         "heading": "Code bereits bekannt?",
         "text": "Gib deinen Scent Code ein und wähle deine Ausführung.",
@@ -192,7 +192,7 @@
         "e3"
       ],
       "settings": {
-        "color_scheme": "scheme-ivory",
+        "color_scheme": "scheme-1",
         "media_position": "left",
         "media_shape": "tall",
         "eyebrow": "Die Hauptlinie",
@@ -226,7 +226,7 @@
         "t2"
       ],
       "settings": {
-        "color_scheme": "scheme-ivory",
+        "color_scheme": "scheme-1",
         "media_position": "right",
         "media_shape": "wide",
         "eyebrow": "Für unterwegs",
@@ -240,7 +240,7 @@
     "essentials": {
       "type": "quiet-link",
       "settings": {
-        "color_scheme": "scheme-ivory",
+        "color_scheme": "scheme-1",
         "heading": "Essentials · 30 ml · ab 9,90 €",
         "text": "Eine eigene Einstiegslinie für den Alltag.",
         "link_label": "Ansehen",
@@ -250,7 +250,7 @@
     "brand": {
       "type": "editorial-feature",
       "settings": {
-        "color_scheme": "scheme-ink",
+        "color_scheme": "scheme-3",
         "media_position": "right",
         "media_shape": "wide",
         "eyebrow": "Über uns",
@@ -265,7 +265,7 @@
     "newsletter": {
       "type": "newsletter",
       "settings": {
-        "color_scheme": "scheme-ivory",
+        "color_scheme": "scheme-1",
         "eyebrow": "Auf dem Laufenden bleiben",
         "heading": "Neue Duftprofile",
         "text": "Wir schreiben selten und nur, wenn es etwas zu berichten gibt."

@@ -1,124 +1,5 @@
 {
-  "current": {
-    "logo": null,
-    "logo_width": 180,
-    "logo_width_mobile": 130,
-    "wordmark": "VENT CELESTE",
-    "wordmark_tracking": 22,
-    "color_schemes": {
-      "scheme-ivory": {
-        "settings": {
-          "background": "#F5F2ED",
-          "background_gradient": "",
-          "text": "#141210",
-          "button": "#141210",
-          "button_label": "#F5F2ED",
-          "secondary_button_label": "#141210",
-          "shadow": "#DCD5CA",
-          "muted": "#8C8375",
-          "line": "#DCD5CA",
-          "accent": "#C3AC82"
-        }
-      },
-      "scheme-ivory-deep": {
-        "settings": {
-          "background": "#EBE6DE",
-          "background_gradient": "",
-          "text": "#141210",
-          "button": "#141210",
-          "button_label": "#EBE6DE",
-          "secondary_button_label": "#141210",
-          "shadow": "#D2CABD",
-          "muted": "#7E7568",
-          "line": "#D2CABD",
-          "accent": "#B79C6C"
-        }
-      },
-      "scheme-ink": {
-        "settings": {
-          "background": "#141210",
-          "background_gradient": "",
-          "text": "#F1EDE6",
-          "button": "#F1EDE6",
-          "button_label": "#141210",
-          "secondary_button_label": "#F1EDE6",
-          "shadow": "#332E28",
-          "muted": "#A29889",
-          "line": "#332E28",
-          "accent": "#C3AC82"
-        }
-      },
-      "scheme-stone": {
-        "settings": {
-          "background": "#8C8375",
-          "background_gradient": "",
-          "text": "#FBF9F5",
-          "button": "#FBF9F5",
-          "button_label": "#3A342C",
-          "secondary_button_label": "#FBF9F5",
-          "shadow": "#9E9587",
-          "muted": "#E3DCD1",
-          "line": "#9E9587",
-          "accent": "#F0E3CC"
-        }
-      }
-    },
-    "font_heading": "playfair_display_n4",
-    "heading_scale": 100,
-    "heading_tracking": -1,
-    "font_body": "assistant_n4",
-    "body_scale": 100,
-    "meta_tracking": 12,
-    "page_width": 1440,
-    "corner_radius": 0,
-    "border_width": 1,
-    "animations_enabled": true,
-    "button_style": "square",
-    "button_uppercase": true,
-    "button_padding": 16,
-    "card_image_ratio": "portrait",
-    "card_show_family": true,
-    "card_show_concentration": true,
-    "card_show_badges": true,
-    "card_show_secondary_image": false,
-    "cart_type": "drawer",
-    "cart_show_note": false,
-    "free_shipping_enabled": false,
-    "free_shipping_threshold": "49",
-    "cart_cross_sell_enabled": true,
-    "predictive_search_enabled": true,
-    "search_placeholder": "Nummer, Duftfamilie oder Note",
-    "tax_note": "inkl. MwSt.",
-    "show_unit_price": true,
-    "reviews_enabled": true,
-    "company_name": "[FIRMENNAME]",
-    "company_address": "[ANSCHRIFT]",
-    "company_vat": "[UST-ID]",
-    "contact_email": "[E-MAIL]",
-    "contact_phone": "[TELEFON]",
-    "contact_hours": "[ERREICHBARKEIT]",
-    "whatsapp_enabled": true,
-    "whatsapp_number": "+49 172 8439661",
-    "whatsapp_message": "Hallo VENT CELESTE, ich suche einen passenden Duft zu meinem Lieblingsparfum: ",
-    "whatsapp_response_time": "Antwort meist innerhalb von 24 Stunden",
-    "whatsapp_sticky_mobile": true,
-    "whatsapp_sticky_threshold": 40,
-    "whatsapp_sticky_label": "Duftberatung",
-    "scent_code_prefix": "VC",
-    "scent_code_max": 130,
-    "scent_code_collection": "bestseller",
-    "scent_code_product": "scent-code",
-    "display_tracking": -3,
-    "display_leading": 92,
-    "valid_scent_codes": "",
-    "conc_edp_keyword": "eau de parfum",
-    "conc_edp_label": "Eau de Parfum",
-    "conc_edp_percent": "20",
-    "conc_extrait_label": "Extrait",
-    "conc_extrait_percent": "30",
-    "sections": {},
-    "cart_cross_sell_product": "discovery-set"
-  },
+  "current": "VENT CELESTE",
   "presets": {
     "VENT CELESTE": {
       "logo": null,
@@ -127,7 +8,7 @@
       "wordmark": "VENT CELESTE",
       "wordmark_tracking": 22,
       "color_schemes": {
-        "scheme-ivory": {
+        "scheme-1": {
           "settings": {
             "background": "#F5F2ED",
             "background_gradient": "",
@@ -141,7 +22,7 @@
             "accent": "#C3AC82"
           }
         },
-        "scheme-ivory-deep": {
+        "scheme-2": {
           "settings": {
             "background": "#EBE6DE",
             "background_gradient": "",
@@ -155,7 +36,7 @@
             "accent": "#B79C6C"
           }
         },
-        "scheme-ink": {
+        "scheme-3": {
           "settings": {
             "background": "#141210",
             "background_gradient": "",
@@ -169,7 +50,7 @@
             "accent": "#C3AC82"
           }
         },
-        "scheme-stone": {
+        "scheme-4": {
           "settings": {
             "background": "#8C8375",
             "background_gradient": "",
@@ -237,6 +118,7 @@
       "conc_edp_percent": "20",
       "conc_extrait_label": "Extrait",
       "conc_extrait_percent": "30",
+      "sections": {},
       "cart_cross_sell_product": "discovery-set"
     }
   }

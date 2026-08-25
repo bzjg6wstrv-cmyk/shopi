@@ -138,22 +138,19 @@
           }
         ],
         "role": {
+          "text": "text",
           "background": {
             "solid": "background",
             "gradient": "background_gradient"
           },
-          "text": "text",
-          "shadow": "shadow",
-          "button": "button",
-          "on_button": "button_label",
+          "links": "text",
           "icons": "text",
           "primary_button": "button",
           "on_primary_button": "button_label",
           "primary_button_border": "button",
           "secondary_button": "background",
           "on_secondary_button": "secondary_button_label",
-          "secondary_button_border": "secondary_button_label",
-          "links": "text"
+          "secondary_button_border": "secondary_button_label"
         }
       }
     ]
