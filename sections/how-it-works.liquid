@@ -1,26 +1,29 @@
 {{ 'section-scent-code.css' | asset_url | stylesheet_tag }}
 {%- comment -%}
-  Ablauf in drei Schritten. Bewusst als nummerierte Zeilenliste –
-  keine drei gleichförmigen Karten nebeneinander.
+  Ablauf in drei Schritten. Bewusst als nummerierte Zeilenliste mit feinen
+  Trennlinien – keine Karten, keine Rahmen, keine Symbole je Schritt.
+  Ziffer links, Titel und Beschreibung rechts.
 {%- endcomment -%}
 <section class="section color-{{ section.settings.color_scheme }} color-scheme">
   <div class="page-width">
     {%- if section.settings.heading != blank -%}
-      <h2 class="h2" style="margin-bottom: var(--space-2xl);">{{ section.settings.heading | escape }}</h2>
+      <h2 class="h2 steps__heading">{{ section.settings.heading | escape }}</h2>
     {%- endif -%}
 
-    <ol class="steps">
+    <ol class="steps reveal">
       {%- for block in section.blocks -%}
-        <li class="steps__item reveal" data-reveal-delay="{{ forloop.index0 }}" {{ block.shopify_attributes }}>
+        <li class="steps__item" {{ block.shopify_attributes }}>
           <span class="steps__number" aria-hidden="true"></span>
-          <span class="steps__title">{{ block.settings.title | escape }}</span>
-          <span class="steps__text">{{ block.settings.text | escape }}</span>
+          <div class="steps__body">
+            <h3 class="steps__title">{{ block.settings.title | escape }}</h3>
+            <p class="steps__text">{{ block.settings.text | escape }}</p>
+          </div>
         </li>
       {%- endfor -%}
     </ol>
 
     {%- if section.settings.show_whatsapp -%}
-      <div style="margin-top: var(--space-2xl);">
+      <div class="steps__cta">
         {% render 'whatsapp-link', class: 'button button--whatsapp', icon: true %}
       </div>
     {%- endif -%}
@@ -73,7 +76,7 @@
           "type": "text",
           "id": "text",
           "label": "Text",
-          "default": "Schreib uns per WhatsApp, welches Parfum du magst."
+          "default": "Schreib uns deinen Lieblingsduft per WhatsApp."
         }
       ]
     }

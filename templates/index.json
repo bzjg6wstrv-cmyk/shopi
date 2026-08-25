@@ -80,14 +80,14 @@
           "type": "step",
           "settings": {
             "title": "Lieblingsduft nennen",
-            "text": "Schreib uns per WhatsApp, welches Parfum du magst."
+            "text": "Schreib uns deinen Lieblingsduft per WhatsApp."
           }
         },
         "s2": {
           "type": "step",
           "settings": {
             "title": "Scent Code erhalten",
-            "text": "Wir nennen dir deinen passenden VENT CELESTE Code."
+            "text": "Wir nennen dir deinen passenden VENT CELESTE Code."
           }
         },
         "s3": {

@@ -29,39 +29,73 @@
 @media (max-width: 599px) { .wa-feature__actions .button { width: 100%; } }
 .wa-feature__note { margin-top: var(--space-sm); font-size: .75rem; opacity: .75; }
 
-/* Ablauf: nummerierte Zeilen statt Karten */
+/* Ablauf: nummerierte Zeilen statt Karten.
+   Zwei Spalten je Schritt – Ziffer links, Titel und Beschreibung rechts in
+   einem gemeinsamen Textblock. Getrennt wird nur durch eine Haarlinie:
+   keine Karten, keine Rahmen, keine Schatten, keine Symbole. */
 .steps { counter-reset: vc-step; }
+
+.steps__heading { margin-bottom: var(--space-lg); }
+
 .steps__item {
   counter-increment: vc-step;
   display: grid;
-  grid-template-columns: 3.5rem minmax(0, 1fr);
-  gap: var(--space-md);
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  gap: var(--space-sm);
   align-items: start;
-  padding-block: var(--space-lg);
+  padding-block: var(--space-md);
   border-top: var(--border-width) solid rgb(var(--color-line));
 }
 .steps__item:last-child { border-bottom: var(--border-width) solid rgb(var(--color-line)); }
+
+/* Kleine, ruhige Ziffer. Die Zeilenhöhe entspricht der des Titels, dadurch
+   stehen Ziffer und Titel ohne zusätzlichen Versatz auf einer Linie. */
 .steps__number {
   font-family: var(--font-heading-family);
-  font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
-  line-height: 1;
+  font-size: .75rem;
+  line-height: 1.85;
+  letter-spacing: .12em;
+  font-variant-numeric: tabular-nums;
   color: rgb(var(--color-muted));
 }
 .steps__number::before { content: '0' counter(vc-step); }
-.steps__title { font-family: var(--font-heading-family); font-size: clamp(1.125rem, 1rem + .7vw, 1.5rem); }
-/* Auf Mobile hat das Raster zwei Spalten, der Schritt aber drei Elemente.
-   Ohne diese Zuweisung landet die Beschreibung unter der Nummer in der
-   schmalen Spalte statt unter dem Titel. */
+
+.steps__title {
+  font-size: 1.0625rem;
+  line-height: 1.3;
+}
 .steps__text {
-  grid-column: 2;
-  margin-top: .3rem;
+  margin-top: .15rem;
+  font-size: .875rem;
+  line-height: 1.5;
   color: rgb(var(--color-muted));
-  max-width: 44ch;
+  max-width: 42ch;
+  /* Verhindert einzelne Wörter am Zeilenende, etwa bei „VENT CELESTE Code". */
+  text-wrap: pretty;
 }
 
+.steps__cta { margin-top: var(--space-lg); }
+
 @media (min-width: 990px) {
-  .steps__item { grid-template-columns: 4rem 18rem minmax(0, 1fr); align-items: baseline; }
-  .steps__text { grid-column: auto; margin-top: 0; }
+  .steps__item {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    gap: var(--space-md);
+    padding-block: var(--space-lg);
+  }
+  /* Auf breiten Schirmen stehen Titel und Beschreibung nebeneinander –
+     dieselbe Editorial-Aufteilung wie bisher. */
+  .steps__body {
+    display: grid;
+    grid-template-columns: 17rem minmax(0, 1fr);
+    gap: var(--space-lg);
+    align-items: baseline;
+  }
+  .steps__number { font-size: .8125rem; line-height: 2; }
+  .steps__title { font-size: 1.25rem; }
+  /* Auf breiten Schirmen passt jede Beschreibung in eine Zeile. */
+  .steps__text { margin-top: 0; font-size: .9375rem; max-width: 52ch; }
+  .steps__heading { margin-bottom: var(--space-xl); }
+  .steps__cta { margin-top: var(--space-xl); }
 }
 
 /* Code-Abschnitt auf der Startseite */
