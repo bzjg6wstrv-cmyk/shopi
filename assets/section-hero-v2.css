@@ -69,3 +69,72 @@
 @media (prefers-reduced-motion: reduce) {
   .hero2__media-inner { transform: none; }
 }
+
+/* ==========================================================================
+   V4 — Mobile-Hero: weniger Leerraum, klarer Handlungsweg
+   Ziel: Beratungs-CTA und Scent-Code-Eingabe ohne oder mit minimalem Scrollen
+   sichtbar. Greift ausschließlich unter 750 px.
+   ========================================================================== */
+@media (max-width: 749px) {
+  /* 2 Vertikale Abstände verdichten */
+  .hero2__inner {
+    gap: 1.5rem;
+    padding-block: 1.25rem 0;
+  }
+  .hero2 .eyebrow { margin-bottom: 0.5rem; }
+  .hero2__title { margin-bottom: 0.75rem; }
+  .hero2__text { max-width: 30ch; font-size: 1rem; line-height: 1.4; }
+  .hero2__actions { margin-top: 1.5rem; display: grid; gap: 0.6rem; }
+  .hero2__response { margin-top: 0.4rem; }
+  .hero2__media { margin-top: 1.5rem; }
+
+  /* 3 Beratung ist der primäre Weg: durchgehend schwarze Fläche über die
+     volle Breite. Bewusst die Textfarbe des Schemas, nicht WhatsApp-Grün. */
+  .hero2__actions .button--whatsapp {
+    width: 100%;
+    min-height: 3.5rem;
+    background-color: rgb(var(--color-text));
+    border-color: rgb(var(--color-text));
+    color: rgb(var(--color-background));
+    font-size: 0.8125rem;
+    letter-spacing: 0.16em;
+  }
+  .hero2__actions .button--whatsapp:hover { opacity: 1; }
+
+  /* Der sekundäre Button bleibt bewusst eine Kontur. */
+  .hero2__actions .button--secondary {
+    width: 100%;
+    min-height: 3.25rem;
+    background-color: transparent;
+    color: rgb(var(--color-text));
+    border-color: rgb(var(--color-text));
+  }
+
+  /* 4 Scent-Code-Block rückt an den CTA heran und wird kompakter.
+     Eingabefeld und Button bleiben bei 48 px Höhe gut bedienbar. */
+  .hero2__code { margin-top: 1rem; }
+  .hero2__code .code-field__label {
+    margin-bottom: 0.35rem;
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+  }
+  .hero2__code .code-field__prefix { font-size: 1rem; padding-inline: 0.85rem 0; }
+  .hero2__code .code-field__input {
+    min-height: 3rem;
+    font-size: 1rem;
+    letter-spacing: 0.14em;
+  }
+  .hero2__code .code-field__submit {
+    min-height: 3rem;
+    padding-inline: 1.1rem;
+    font-size: 0.6875rem;
+  }
+  .hero2__code .code-field__status { margin-top: 0.2rem; font-size: 0.75rem; }
+}
+
+/* Sehr schmale Geräte: Schlagzeile darf nicht umbrechen erzwingen. */
+@media (max-width: 359px) {
+  .hero2__inner { padding-block: 1rem 0; }
+  .hero2__actions { margin-top: 1.25rem; }
+  .hero2__text { font-size: 0.9375rem; }
+}

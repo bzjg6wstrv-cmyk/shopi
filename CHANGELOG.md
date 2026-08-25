@@ -1,5 +1,47 @@
 # Änderungsprotokoll
 
+## V4 — Mobile-Startseite verdichtet
+
+Rein visuelle Optimierung der mobilen Startseite. **Nur CSS, nur additiv,
+ausschließlich unter 750 px.** Der Shopify-Farbschema-Fix, die Theme-Struktur,
+alle Funktionen und das Desktop-Layout ab 750 px bleiben unangetastet.
+
+Geändert: `assets/base.css` und `assets/section-hero-v2.css` — je ein
+angehängter, kommentierter Block. Keine Liquid-, JSON- oder Konfigurationsdatei.
+
+| # | Punkt | Umsetzung |
+|---|---|---|
+| 1 | Hero zu groß | `.display` von `clamp(3rem, 13vw, 8.5rem)` auf `clamp(2.5rem, 10.8vw, 3.25rem)` — rund 17 % kleiner. Zeilenhöhe von 0.92 auf 0.86, Tracking 0.005em enger. Versalien, Serife und negatives Tracking bleiben. |
+| 2 | Zu viel Leerraum | Hero-Innenabstand 32 → 20 px, Raster-Abstand 32 → 24 px, Eyebrow 16 → 8 px, Schlagzeile 16 → 12 px, CTA-Abstand 32 → 24 px, Bild 32 → 24 px. |
+| 3 | WhatsApp-CTA schwach | Volle Breite, 56 px hoch, durchgehende Fläche in der Textfarbe des Schemas (tiefes Schwarz, ausdrücklich kein WhatsApp-Grün), Laufweite 0.16em. Der sekundäre Button bleibt bewusst eine Kontur. |
+| 4 | Scent-Code zu weit weg | Abstand zum CTA 32 → 16 px, Label kleiner, Feld und Button von 52 auf 48 px — weiterhin über der 44-px-Grenze. |
+| 5 | Ankündigungsleiste | Innenabstand 0.6 → 0.4 rem, Schrift 11 → 10 px, Zeilenhöhe 1.35. |
+| 6 | Kopfbereich | Mindesthöhe 64 → 56 px. Logo und Symbole unverändert, Touch-Targets bleiben 44 px. |
+
+Zusätzlich ein Block für Geräte bis 359 px, damit der Beratungs-CTA auch auf
+einem iPhone SE über der Falz bleibt.
+
+### Rechnerisch geprüfte Sichtbarkeit
+
+| Gerät | bis CTA | bis Scent-Code-Feld |
+|---|---|---|
+| 320 × 568 | 385 px — sichtbar | kurzes Scrollen |
+| 375 × 667 | 376 px — sichtbar | kurzes Scrollen |
+| 390 × 844 | 380 px — sichtbar | 478 px — sichtbar |
+| 430 × 932 | 378 px — sichtbar | 476 px — sichtbar |
+
+Geschätzt aus den gesetzten Werten, nicht im Browser gemessen.
+
+### Geprüft
+
+- Alle neuen Regeln liegen innerhalb von `max-width`-Media-Queries,
+  Klammerbilanz ausgeglichen — kein Durchgriff auf Desktop.
+- Farbschema-Konfiguration unverändert: `current` weiterhin Preset-Referenz,
+  Schemata `scheme-1` bis `scheme-4`, Rollensatz identisch zu Dawn.
+- Theme Check: 0 Fehler, 0 Warnungen.
+
+---
+
 ## V3.5 — Farbschema-Fehler im Theme-Editor behoben
 
 V3.4 hat den Fehler nicht behoben. Der Grund war eine falsche Annahme: Ich habe

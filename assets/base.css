@@ -1221,3 +1221,30 @@ body.is-typing .sticky-atc { transform: translateY(110%); }
   /* Zwei Spalten im mobilen Menü werden zu einer. */
   .menu-drawer__secondary { grid-template-columns: 1fr; }
 }
+
+/* ==========================================================================
+   V4 — Mobile-Startseite: Verdichtung
+   Additiv und ausschließlich unter 750 px. Desktop und Tablet ab 750 px
+   bleiben unverändert, ebenso Farbschemata, Struktur und Funktionen.
+   ========================================================================== */
+@media (max-width: 749px) {
+  /* 1 Schlagzeile rund 17 % kleiner und enger gesetzt.
+     Die Editorial-Wirkung bleibt: Versalien, Serife, negatives Tracking. */
+  .display {
+    font-size: clamp(2.5rem, 10.8vw, 3.25rem);
+    line-height: calc(var(--display-leading, 0.92) - 0.06);
+    letter-spacing: calc(var(--display-tracking, -0.03em) - 0.005em);
+  }
+
+  /* 5 Ankündigungsleiste flacher und feiner */
+  .announcement__inner { padding-block: 0.4rem; }
+  .announcement__text {
+    font-size: 0.625rem;
+    line-height: 1.35;
+    letter-spacing: 0.1em;
+  }
+
+  /* 6 Kopfbereich kompakter – Logo und Symbole unverändert,
+     die 44-px-Touch-Targets bleiben vollständig erhalten. */
+  .header__inner { min-height: 3.5rem; }
+}
