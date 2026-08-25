@@ -365,94 +365,127 @@
 })();
 
 /* ==========================================================================
-   V2-Ergänzungen: Beratungsleiste, Hero-Drift, Tastatur-Zustand, Quick Add
+   Mobile Beratungsleiste
+   Bewusst eine eigene, in sich geschlossene Einheit: Sie laeuft unabhaengig
+   von den uebrigen Bausteinen und kann daher von keinem anderen Fehler
+   angehalten werden.
+   Sichtbarkeit hat genau eine Quelle – die Klasse `is-visible`. Ihr Wert
+   ergibt sich aus zwei Bedingungen, die bei jedem Bildlauf neu gemessen
+   werden: Der Hero ist vollstaendig verlassen und gerade wird nichts
+   eingegeben. Weil beides gemessen und nicht gemerkt wird, findet die
+   Leiste auch dann in den richtigen Zustand zurueck, wenn ein Ereignis
+   ausbleibt – etwa ein `focusout`, das iOS beim Wischen nicht sendet.
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  var bar = document.querySelector('[data-whatsapp-bar]');
+  if (!bar) return;
+
+  /* Auf Produktseiten gewinnt der Warenkorb-Button. */
+  var hasStickyAtc = Boolean(document.querySelector('[data-sticky-atc]'));
+  if (hasStickyAtc) document.body.classList.add('has-sticky-atc');
+
+  var dismissed = false;
+  try {
+    dismissed = window.sessionStorage.getItem('vc-wa-dismissed') === '1';
+  } catch (error) {
+    /* Privater Modus: Leiste erscheint dann in jeder Sitzung erneut. */
+  }
+
+  if (dismissed || hasStickyAtc) {
+    bar.remove();
+    return;
+  }
+
+  bar.hidden = false;
+
+  /* Solange die Leiste erscheinen kann, haelt der Fussbereich Platz frei.
+     Die Klasse wird sofort gesetzt – der reservierte Raum liegt unterhalb
+     des Fussbereichs und erzeugt daher keinen sichtbaren Sprung. */
+  document.body.classList.add('has-whatsapp-bar');
+
+  var schwelle = parseInt(bar.getAttribute('data-threshold'), 10) || 40;
+
+  /* Wird gerade in ein Feld geschrieben? Bei Fokus tritt die Leiste zurueck,
+     damit sie die Tastatur nicht ueberlagert. Der Zustand wird gemessen und
+     nicht in einer Body-Klasse gespeichert – eine solche Klasse wuerde die
+     Leiste ueberstimmen und nach einer verpassten Abmeldung dauerhaft
+     blockieren. */
+  function schreibtGerade() {
+    var active = document.activeElement;
+    if (!active || typeof active.matches !== 'function') return false;
+    return active.matches('input:not([type="hidden"]), textarea, select');
+  }
+
+  /* Der Hero wird bei jedem Durchlauf neu gesucht: Im Theme-Editor wird ein
+     Abschnitt beim Bearbeiten ersetzt, eine einmal gemerkte Referenz zeigte
+     danach auf ein entferntes Element. */
+  function heroVerlassen() {
+    var hero = document.querySelector('.hero2');
+    if (hero) return hero.getBoundingClientRect().bottom <= 0;
+
+    /* Seiten ohne Hero: Anteil der Seitenlaenge. */
+    var viewport = window.innerHeight || document.documentElement.clientHeight || 0;
+    var max = document.documentElement.scrollHeight - viewport;
+    if (max <= 0) return false;
+    var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+    return (y / max) * 100 >= schwelle;
+  }
+
+  function anwenden() {
+    bar.classList.toggle('is-visible', heroVerlassen() && !schreibtGerade());
+  }
+
+  var ticking = false;
+  function pruefen() {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(function () {
+      ticking = false;
+      anwenden();
+    });
+  }
+
+  window.addEventListener('scroll', pruefen, { passive: true });
+  window.addEventListener('resize', pruefen);
+  window.addEventListener('orientationchange', pruefen);
+  window.addEventListener('load', pruefen);
+  window.addEventListener('pageshow', pruefen);
+  document.addEventListener('focusin', pruefen);
+  document.addEventListener('focusout', function () {
+    /* iOS gibt den Fokus erst nach dem Ereignis frei. */
+    window.setTimeout(pruefen, 60);
+  });
+  anwenden();
+
+  var dismiss = bar.querySelector('[data-whatsapp-dismiss]');
+  if (dismiss) {
+    dismiss.addEventListener('click', function () {
+      bar.classList.remove('is-visible');
+      try {
+        window.sessionStorage.setItem('vc-wa-dismissed', '1');
+      } catch (error) {
+        /* nichts zu tun */
+      }
+      /* Element und reservierter Platz verschwinden erst nach der
+         Ausblendung und gemeinsam – dadurch kein Layoutsprung. */
+      window.setTimeout(function () {
+        bar.remove();
+        document.body.classList.remove('has-whatsapp-bar');
+      }, 300);
+    });
+  }
+})();
+
+/* ==========================================================================
+   V2-Ergänzungen: Hero-Drift, Tastatur-Zustand, Quick Add
    Alles rein additiv – die Bausteine aus V1 bleiben unverändert.
    ========================================================================== */
 (function () {
   'use strict';
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-  /* Produktseiten mit Sticky-Warenkorb: Die Beratungsleiste tritt zurück.
-     Zuerst ermittelt, damit die Leiste dort gar nicht erst aufgebaut wird. */
-  var hasStickyAtc = Boolean(document.querySelector('[data-sticky-atc]'));
-  if (hasStickyAtc) document.body.classList.add('has-sticky-atc');
-
-  /* ------------------------------------------------- Mobile Beratungsleiste */
-  var bar = document.querySelector('[data-whatsapp-bar]');
-  if (bar) {
-    var dismissed = false;
-    try {
-      dismissed = window.sessionStorage.getItem('vc-wa-dismissed') === '1';
-    } catch (error) {
-      /* Privater Modus: Leiste erscheint dann in jeder Sitzung erneut. */
-    }
-
-    if (dismissed || hasStickyAtc) {
-      bar.remove();
-    } else {
-      bar.hidden = false;
-
-      /* Solange die Leiste erscheinen kann, hält der Fußbereich Platz frei.
-         Die Klasse wird sofort gesetzt – der reservierte Raum liegt unterhalb
-         des Fußbereichs und erzeugt daher keinen sichtbaren Sprung. */
-      document.body.classList.add('has-whatsapp-bar');
-
-      var zeigen = function (an) {
-        bar.classList.toggle('is-visible', an);
-      };
-
-      var hero = document.querySelector('.hero2');
-
-      if (hero && 'IntersectionObserver' in window) {
-        /* Bevorzugt: Die Leiste erscheint, sobald der Hero den sichtbaren
-           Bereich vollständig verlassen hat. Das ist unabhängig davon, wie
-           lang die Seite insgesamt ist. */
-        var beobachter = new IntersectionObserver(
-          function (entries) {
-            entries.forEach(function (entry) {
-              zeigen(!entry.isIntersecting);
-            });
-          },
-          { threshold: 0 }
-        );
-        beobachter.observe(hero);
-      } else {
-        /* Seiten ohne Hero: Anteil der Seitenlänge wie bisher. */
-        var schwelle = parseInt(bar.getAttribute('data-threshold'), 10) || 40;
-        var ticking = false;
-        var onScroll = function () {
-          if (ticking) return;
-          ticking = true;
-          window.requestAnimationFrame(function () {
-            var max = document.documentElement.scrollHeight - window.innerHeight;
-            zeigen(max > 0 && (window.scrollY / max) * 100 >= schwelle);
-            ticking = false;
-          });
-        };
-        window.addEventListener('scroll', onScroll, { passive: true });
-        onScroll();
-      }
-
-      var dismiss = bar.querySelector('[data-whatsapp-dismiss]');
-      if (dismiss) {
-        dismiss.addEventListener('click', function () {
-          zeigen(false);
-          try {
-            window.sessionStorage.setItem('vc-wa-dismissed', '1');
-          } catch (error) {
-            /* nichts zu tun */
-          }
-          /* Element und reservierter Platz verschwinden erst nach der
-             Ausblendung und gemeinsam – dadurch kein Layoutsprung. */
-          window.setTimeout(function () {
-            bar.remove();
-            document.body.classList.remove('has-whatsapp-bar');
-          }, 300);
-        });
-      }
-    }
-  }
 
   /* ------------------------------------------- Leisten weichen der Tastatur */
   document.addEventListener('focusin', function (event) {
