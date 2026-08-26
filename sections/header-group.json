@@ -37,9 +37,7 @@
         "whatsapp_teaser": "Nenn uns deinen Lieblingsduft – wir finden deinen Scent Code.",
         "mobile_primary_menu": "mobile-hauptziele",
         "mobile_secondary_menu": "mobile-nebenziele",
-        "mobile_footer_menu": "mobile-service",
-        "show_code_in_search": true,
-        "code_label": "Scent Code"
+        "mobile_footer_menu": "mobile-service"
       }
     }
   },

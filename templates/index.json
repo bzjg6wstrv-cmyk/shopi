@@ -9,7 +9,8 @@
         "text": "Dein Lieblingsduft. Dein VENT CELESTE Scent Code.",
         "show_whatsapp": true,
         "show_code_field": true,
-        "code_label": "Schon beraten? Scent Code eingeben"
+        "code_label": "Code schon erhalten? Scent Code eingeben",
+        "whatsapp_hint": "Noch keinen Code?"
       }
     },
     "most_wanted": {
@@ -34,7 +35,7 @@
         "eyebrow": "Persönliche Duftberatung",
         "heading": "Dein Duft ist nicht dabei?",
         "text": "<p>Nicht jeder Duft ist direkt im Shop gelistet. Schreib uns deinen Lieblingsduft – wir finden den passenden VENT CELESTE Scent Code.</p>",
-        "button_label": "Auf WhatsApp finden lassen"
+        "button_label": "Duftberatung starten"
       }
     },
     "how": {
@@ -123,7 +124,7 @@
         "eyebrow": "Bereits beraten",
         "heading": "Code bereits bekannt?",
         "text": "Gib deinen Scent Code ein und wähle deine Ausführung.",
-        "whatsapp_label": "Beratung starten"
+        "whatsapp_label": "Duftberatung starten"
       },
       "disabled": true
     },
@@ -268,7 +269,7 @@
       "settings": {
         "color_scheme": "scheme-2",
         "show_whatsapp": true,
-        "whatsapp_label": "Meinen Duft finden"
+        "whatsapp_label": "Duftberatung starten"
       }
     }
   },

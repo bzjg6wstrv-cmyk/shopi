@@ -17,7 +17,8 @@
   var errorTarget = form.querySelector('[data-form-error]');
   var variantField = form.querySelector('[data-variant-id]');
   var priceHost = form.querySelector('[data-product-price]');
-  var strings = window.VCCodeOrderStrings || {};
+  var orderStrings = window.VCCodeOrderStrings || {};
+  var codeStrings = window.VCCodeStrings || {};
 
   function normalise(value) {
     if (window.VCScentCode && typeof window.VCScentCode.normalise === 'function') {
@@ -43,14 +44,39 @@
     }
   }
 
+  function setCodeStatus(message, tone) {
+    var status = codeForm.querySelector('[data-scent-code-status]');
+    if (!status) return;
+    status.textContent = message || '';
+    status.setAttribute('data-tone', tone || '');
+  }
+
   /* Das Code-Formular auf dieser Seite leitet nicht weiter, sondern füllt
      das Bestellformular. */
   codeForm.addEventListener('submit', function (event) {
     event.preventDefault();
-    apply(normalise(input.value));
+    var code = normalise(input.value);
+    apply(code);
+    if (code) {
+      setCodeStatus((codeStrings.found || '').replace('__CODE__', code), 'ok');
+    } else {
+      /* Ohne gültigen Code bleibt der Warenkorb-Button gesperrt – der Grund
+         muss sichtbar sein und nicht nur der Button ausgegraut. */
+      setCodeStatus(codeStrings.invalid || '', 'error');
+      var row = codeForm.querySelector('.code-field__row');
+      if (row && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        row.classList.remove('is-invalid');
+        void row.offsetWidth;
+        row.classList.add('is-invalid');
+      }
+      input.focus();
+    }
   });
 
   input.addEventListener('input', function () {
+    var row = codeForm.querySelector('.code-field__row');
+    if (row) row.classList.remove('is-invalid', 'is-valid');
+    setCodeStatus('', '');
     apply(normalise(input.value));
   });
 
@@ -70,7 +96,7 @@
   var metaHost = form.querySelector('[data-variant-meta]');
   var skuHost = form.querySelector('[data-variant-sku]');
   var skuValue = form.querySelector('[data-variant-sku-value]');
-  var strings = window.VCStrings || {};
+  var buttonStrings = window.VCStrings || {};
 
   var variantData = {};
   var dataNode = document.querySelector('[data-variant-data]');
@@ -122,7 +148,7 @@
 
     if (submit) {
       submit.disabled = !available || !hasCode();
-      submit.textContent = available ? strings.addToCart : strings.soldOut;
+      submit.textContent = available ? buttonStrings.addToCart : buttonStrings.soldOut;
     }
   }
 
@@ -142,7 +168,7 @@
     event.preventDefault();
     event.stopImmediatePropagation();
     if (errorTarget) {
-      errorTarget.textContent = strings.required || '';
+      errorTarget.textContent = orderStrings.required || '';
       errorTarget.hidden = false;
     }
     input.focus();

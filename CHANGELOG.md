@@ -1,5 +1,110 @@
 # VENT CELESTE — Änderungsprotokoll
 
+## v4.2.12 — Suche und Duftberatung getrennt, Scent-Code-Bestellweg geprüft
+
+Basis: `vent-celeste-v4-2-11-claude-mobile-final.zip`. Entwurf, nicht veröffentlicht.
+
+### 1 · Suche und Duftberatung strikt getrennt
+
+**Gefundene Ursache der überlagerten Suchansicht.** In V4.2.3 und V4.2.6 wurden
+Warenkorb- und Menü-Drawer über den Abdunkler gehoben — `z-index: 2147483646`,
+der Abdunkler selbst auf `2147483600`. Das Suchpanel blieb bei
+`z-index: 70` und lag damit **unter** dem Abdunkler: Die Suche war sichtbar,
+aber von der Verdunklungsschicht überzogen. Es bekommt jetzt dieselbe
+Behandlung wie die beiden anderen Drawer — eigene Ebene, deckender Grund,
+eigener Stapelkontext.
+
+Gemessen: Panel `2147483646`, Abdunkler `2147483600`, Hintergrund
+`rgb(245, 242, 237)` (voll deckend), jeder Prüfpunkt im Panel gehört zum Panel.
+
+**Zweite Ursache: der Fokus.** `.drawer` blendet `visibility` über 420 ms ein.
+Im ersten Frame steht der Wert daher noch auf `hidden` — genau dann ruft die
+Fokusfalle `input.focus()` auf, und der Aufruf läuft ins Leere. Das Suchfeld
+bekam deshalb nie den Fokus. Für `#SearchDrawer` steht `visibility` jetzt
+nicht mehr in der Übergangsliste; der Fokus sitzt bei 390 px und 1280 px im
+Suchfeld.
+
+**Scent Code raus aus der Suche.** Das Suchpanel enthielt ein zweites
+Scent-Code-Eingabefeld. Markup und die beiden Einstellungen
+(`show_code_in_search`, `code_label`) sind entfernt. Die Lupe ist jetzt
+ausschließlich Suche.
+
+Auf dem Telefon bricht die Zeile jetzt um: Eingabefeld über die volle Breite,
+darunter „Suchen" links und das Schließen-Kreuz rechts. Vorher lagen beide
+außerhalb des Bildschirms.
+
+### 2 · Scent-Code-Eingabe
+
+* Platzhalter `047` → `071`
+* Fehlertext: „Kein gültiger Scent Code. Bitte eine Nummer von 001 bis 130 eingeben, zum Beispiel 071."
+* **Fehler im Bestellformular behoben:** `assets/scent-code-order.js` deklarierte
+  `strings` zweimal. Die zweite Deklaration überschrieb
+  `window.VCCodeOrderStrings`, wodurch die Meldung „Bitte gib deinen Scent Code
+  ein." leer blieb. Die drei Variablen heißen jetzt `orderStrings`,
+  `codeStrings` und `buttonStrings`.
+* Auf der Bestellseite erscheint bei ungültiger Eingabe jetzt die Meldung im
+  Feld selbst, nicht nur ein ausgegrauter Button.
+
+### 3 · Bestellweg für nicht gelistete Düfte
+
+Der Weg war bereits vorhanden und ist jetzt vollständig durchgeprüft. Das
+generische Produkt hängt den Code als Positionsangabe an das native
+Shopify-Formular:
+
+```
+id=9001  quantity=1
+properties[Scent Code]=VC-071
+properties[_vc_code]=VC-071
+```
+
+Drei verschiedene Codes ergeben drei verschiedene Eigenschaftssätze — Shopify
+führt Positionen mit unterschiedlichen Properties nicht zusammen.
+
+### 4 · Sprache vereinheitlicht
+
+„Beratung starten", „Meinen Duft finden" und „Auf WhatsApp finden lassen"
+heißen überall **„Duftberatung starten"**. Einzige Abweichung: die Floating-Bar
+bleibt beim kürzeren „Duftberatung" — dort ist die Fläche zu schmal.
+
+### 5 · Zwei Wege im Hero
+
+Ohne neues Design, nur zwei Beschriftungen und eine kleine Zeile in der
+vorhandenen Meta-Typografie:
+
+```
+NOCH KEINEN CODE?
+[ DUFTBERATUNG STARTEN ]
+
+CODE SCHON ERHALTEN? SCENT CODE EINGEBEN
+VC- 071                        WEITER →
+```
+
+### Geänderte Dateien
+
+| Datei | Änderung |
+| --- | --- |
+| `assets/base.css` | Block `#SearchDrawer`: eigene Ebene, deckender Grund, Fokus-Ursache, mobiler Zeilenumbruch |
+| `assets/scent-code-order.js` | Variablenkonflikt behoben, Fehlermeldung im Feld |
+| `assets/section-hero-v2.css` | Stil der Zeile „Noch keinen Code?" |
+| `sections/header.liquid` | Scent-Code-Feld und zwei Einstellungen aus dem Suchpanel entfernt |
+| `sections/header-group.json` | verwaiste Einstellungen entfernt |
+| `sections/hero-v2.liquid` | optionale Zeile `whatsapp_hint` |
+| `sections/launch-offer.liquid`, `main-product.liquid`, `main-product-scent-code.liquid`, `scent-code-entry.liquid`, `whatsapp-feature.liquid` | nur Standardbeschriftung des CTA |
+| `locales/de.default.json`, `locales/en.json` | Platzhalter, Fehlertext |
+| `templates/index.json`, `product.json`, `product.scent-code.json` | Beschriftungen, Hero-Texte |
+
+Nicht angefasst: `theme.js`, `scent-code.js`, `vc-search.js`, Warenkorb-Drawer,
+Warenkorb-Seite, Produktprofil-Balken, Duftnoten, Bestseller, Footer,
+`settings_data.json`, `settings_schema.json`.
+
+### Desktop
+
+Bei 990 px, 1280 px und 1600 px zeigt der gerenderte Vergleich **keinen
+einzigen** Unterschied. Bei 390 px und 750 px wächst allein der Hero um 22 px —
+die neue Zeile „Noch keinen Code?".
+
+---
+
 ## v4.2.11 — Mobile-Finalisierung
 
 Basis: `vent-celeste-v4-2-10-final-cleanup.zip`. Nur CSS-Abstände und eine

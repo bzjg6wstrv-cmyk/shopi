@@ -263,20 +263,15 @@
   </div>
 </vc-drawer>
 
-{%- comment -%} Suche mit vorgeschalteter Scent-Code-Erkennung {%- endcomment -%}
+{%- comment -%}
+  Suchpanel – ausschließlich Suche.
+  Die Scent-Code-Eingabe gehört zur Beratung und steht bewusst nur im Hero
+  und auf der Bestellseite, nicht hier. Suche und Duftberatung sind zwei
+  getrennte Wege.
+{%- endcomment -%}
 <vc-drawer id="SearchDrawer" class="drawer drawer--top color-{{ section.settings.color_scheme }} color-scheme" aria-label="{{ 'general.search.title' | t }}">
   <div class="drawer__body" style="padding-block: var(--space-2xl);">
     <div class="page-width">
-      {%- if section.settings.show_code_in_search -%}
-        <div class="search-panel__code">
-          {% render 'scent-code-field',
-            id: 'SearchScentCode',
-            size: 'compact',
-            label: section.settings.code_label
-          %}
-        </div>
-      {%- endif -%}
-
       <form
         action="{{ routes.search_url }}"
         method="get"
@@ -450,18 +445,6 @@
     {
       "type": "header",
       "content": "Suche"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_code_in_search",
-      "label": "Scent-Code-Feld über der Suche",
-      "default": true
-    },
-    {
-      "type": "text",
-      "id": "code_label",
-      "label": "Beschriftung des Code-Feldes",
-      "default": "Scent Code"
     },
     {
       "type": "text",

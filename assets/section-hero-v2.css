@@ -30,6 +30,15 @@
 /* ------------------------------------------------------- Beratungs-CTA --- */
 .hero2__actions { margin-top: 1.25rem; display: grid; gap: 0.6rem; }
 
+/* Weg B: benennt, für wen der Beratungsbutton gedacht ist. Gleiche Typografie
+   wie die Beschriftung über der Code-Eingabe (Weg A) – kein neues Element,
+   nur eine Zuordnung. */
+.hero2__hint {
+  margin-bottom: -0.15rem;
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+}
+
 /* Der primäre Weg in die Beratung. Durchgehende Fläche in der Textfarbe des
    Farbstils – tiefes Schwarz, ausdrücklich kein WhatsApp-Grün. Die Klasse
    hängt am Link, den snippets/whatsapp-link.liquid ausgibt. */

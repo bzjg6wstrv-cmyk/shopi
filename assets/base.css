@@ -1742,3 +1742,64 @@ body { max-width: 100%; overflow-x: clip; }
   line-height: 1.35;
   color: rgb(var(--color-muted));
 }
+
+/* V4.2.12 — Suchpanel in dieselbe Ebene wie Menü und Warenkorb ------------
+   In V4.2.3 und V4.2.6 wurden Warenkorb- und Menü-Drawer über den Abdunkler
+   gehoben (z-index 2147483646) und der Abdunkler selbst auf 2147483600
+   gesetzt. Das Suchpanel blieb bei z-index 70 und lag damit UNTER dem
+   Abdunkler – die Suche erschien dadurch halbtransparent überlagert.
+   Es bekommt hier dieselbe Behandlung: eigene Ebene, deckender Grund. */
+#SearchDrawer {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: auto !important;
+  z-index: 2147483646 !important;
+  width: 100% !important;
+  max-height: 92dvh !important;
+  margin: 0 !important;
+  background-color: rgb(var(--color-background, 245 242 237)) !important;
+  color: rgb(var(--color-text, 20 18 16)) !important;
+  opacity: 1 !important;
+  box-shadow: 0 16px 44px rgb(20 18 16 / .18) !important;
+  isolation: isolate !important;
+  transform: translateY(-100%) !important;
+  visibility: hidden !important;
+  /* Ohne visibility in der Übergangsliste: `.drawer` blendet visibility über
+     420 ms ein, zum Zeitpunkt des ersten Frames ist der Wert daher noch
+     `hidden` – und `input.focus()` aus der Fokusfalle läuft ins Leere. Das
+     Suchfeld bekam dadurch auf dem Telefon nie den Fokus. */
+  transition: transform var(--dur-slow, 420ms) var(--ease, ease) !important;
+}
+
+#SearchDrawer.is-open {
+  transform: none !important;
+  visibility: visible !important;
+}
+
+/* Deckender Grund auch dann, wenn eine Farbvariable fehlt. */
+#SearchDrawer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgb(var(--color-background, 245 242 237));
+  pointer-events: none;
+}
+
+#SearchDrawer .drawer__body {
+  position: relative;
+  z-index: 1;
+  background-color: rgb(var(--color-background, 245 242 237)) !important;
+  opacity: 1 !important;
+}
+
+@media (max-width: 749px) {
+  /* Auf dem Telefon greifbarer Schließen-Button und Platz für die Tastatur. */
+  #SearchDrawer .drawer__body { padding-block: var(--space-lg) !important; }
+  .search-panel__form { flex-wrap: wrap; }
+  .search-panel__input { flex: 1 1 100%; font-size: 1.25rem; }
+  /* Absenden links, Schließen rechts – beide gut erreichbar. */
+  .search-panel__form .button--quiet { flex: 0 0 auto; margin-right: auto; }
+}

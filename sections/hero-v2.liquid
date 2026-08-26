@@ -28,6 +28,9 @@
       {%- endif -%}
 
       <div class="hero2__actions reveal" data-reveal-delay="4">
+        {%- if section.settings.show_whatsapp and section.settings.whatsapp_hint != blank -%}
+          <span class="hero2__hint meta meta--muted">{{ section.settings.whatsapp_hint | escape }}</span>
+        {%- endif -%}
         {%- if section.settings.show_whatsapp -%}
           {% render 'whatsapp-link', class: 'button button--whatsapp hero2__cta', icon: true %}
         {%- endif -%}
@@ -116,6 +119,13 @@
     {
       "type": "header",
       "content": "Aktionen"
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_hint",
+      "label": "Kleine Zeile über dem Beratungsbutton",
+      "info": "Weg B – für alle ohne Code. Leer lassen blendet die Zeile aus.",
+      "default": "Noch keinen Code?"
     },
     {
       "type": "checkbox",
