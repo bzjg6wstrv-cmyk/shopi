@@ -66,6 +66,16 @@ summary::-webkit-details-marker { display: none; }
   --focus-offset: 3px;
 }
 
+/* Auf Telefonen standen zwischen zwei Abschnitten 2 x 56 px Leerraum. Der
+   Rhythmus wird dort enger gefasst; ab 750 px bleibt jeder Wert unverändert,
+   Tablet und Desktop sind von dieser Regel nicht betroffen. */
+@media (max-width: 749px) {
+  :root {
+    --section-space: 2.5rem;
+    --section-space-tight: 1.75rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root { --dur-fast: 1ms; --dur: 1ms; --dur-slow: 1ms; }
   *, *::before, *::after {

@@ -35,7 +35,7 @@
   max-width: 46ch;
 }
 
-.offer__cta { margin-top: var(--space-lg); }
+.offer__cta { margin-top: var(--space-md); }
 
 @media (min-width: 990px) {
   .offer { grid-template-columns: 1fr 1fr; }

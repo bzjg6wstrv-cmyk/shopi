@@ -1,5 +1,111 @@
 # VENT CELESTE — Änderungsprotokoll
 
+## V4.1 Step 3.1 — Mobile-Feinschliff am Launch-Angebot
+
+Kein Redesign. Vier Dateien, 18 geänderte Zeilen.
+
+### Geänderte Abstände
+
+| Regel | vorher | jetzt | Wirkung |
+| --- | --- | --- | --- |
+| `--section-space` (nur ≤ 749 px) | `clamp(3.5rem, 7vw, 8rem)` → 56 px | `2.5rem` = 40 px | Abstand zwischen zwei Abschnitten **112 px → 80 px** |
+| `--section-space-tight` (nur ≤ 749 px) | `clamp(2.5rem, 4vw, 4.5rem)` → 40 px | `1.75rem` = 28 px | betrifft „Das Prinzip“ und den Newsletter |
+| `.offer__cta` | `margin-top: var(--space-lg)` = 24 px | `var(--space-md)` = 16 px | Abstand vor dem WhatsApp-Button |
+
+Die beiden Abschnittswerte stehen in einer eigenen Medienabfrage
+`@media (max-width: 749px)` in `assets/base.css`. Oberhalb von 749 px greift
+sie nicht — Tablet und Desktop behalten jeden bisherigen Wert. Im gerenderten
+Vergleich beträgt der Abstand zwischen zwei Abschnitten bei 768 px und
+1280 px unverändert 179 px.
+
+Damit sind auch die beiden ausdrücklich genannten Lücken kleiner: „So
+funktioniert's“ → „Most Wanted“ und „Most Wanted“ → Launch-Offer jeweils
+112 px → 80 px. Der Launch-Offer-Bereich verliert dadurch oben und unten je
+16 px; innen bleiben Haarlinien, Innenabstände und Gestaltung unverändert.
+
+**Seitenhöhe mobil:** 5517 px → 5326 px bei 390 px.
+
+### Geänderte Texte
+
+Beide ausschließlich in `templates/index.json`, also im Theme-Editor
+weiterhin frei änderbar.
+
+**Kennenlernvorteil**
+
+| Feld | vorher | jetzt |
+| --- | --- | --- |
+| Eyebrow | Willkommen bei VENT CELESTE | *unverändert* |
+| Überschrift | 20 % KENNENLERNVORTEIL | **20 % AUF DEINEN ERSTEN DUFTKAUF** |
+| Text | Auf deine erste Bestellung. | *unverändert* |
+| Hinweis | Gültig für bis zu 3 Düfte. | **Für deine erste Bestellung mit bis zu 3 Düften.** |
+
+**Garantie**
+
+| Feld | vorher | jetzt |
+| --- | --- | --- |
+| Eyebrow | Ohne Risiko | *unverändert* |
+| Überschrift | 100 % ZUFRIEDENHEITSGARANTIE | **100 % ZUFRIEDEN / ODER GELD ZURÜCK** (fester Umbruch) |
+| Text | Du sollst deinen Duft lieben. Wenn du mit einem Duft aus deiner ersten Bestellung nicht zufrieden bist, kümmern wir uns darum. | **Du sollst deinen Duft lieben. / Wenn er nicht zu dir passt, erstatten wir dir den Kaufpreis.** |
+| Hinweis | Gültig für deine erste Bestellung und maximal 3 Flakons. | **Für deine erste Bestellung mit bis zu 3 Flakons.** |
+
+Damit die Garantie-Überschrift den gewünschten Umbruch trägt, läuft sie in
+`sections/launch-offer.liquid` jetzt zusätzlich durch `newline_to_br`. Ein
+Zeilenumbruch im Editor wird dadurch übernommen; ohne Umbruch verhält sich
+das Feld wie zuvor.
+
+Beide Überschriften stehen bei 390 px und 430 px in zwei ausgeglichenen
+Zeilen, ohne verkleinerte Schrift und ohne Überbreite:
+
+```
+20 % AUF DEINEN            100 % ZUFRIEDEN
+ERSTEN DUFTKAUF            ODER GELD ZURÜCK
+```
+
+Keine Badge-Optik, kein Siegel, kein Symbol, kein Gold, kein Schatten, kein
+Verlauf — Schriftgrad, Farben und Haarlinien sind unverändert.
+
+### Geänderte Dateien
+
+| Datei | Änderung |
+| --- | --- |
+| `assets/base.css` | 10 Zeilen: eine Medienabfrage für den mobilen Abschnittsrhythmus |
+| `assets/section-launch-offer.css` | 1 Zeile: Abstand vor dem Button |
+| `sections/launch-offer.liquid` | 1 Zeile: `newline_to_br` an der Überschrift |
+| `templates/index.json` | Texte der beiden Zusagen |
+
+### Unverändert — per Prüfsumme belegt
+
+`assets/theme.js`, `assets/scent-code.js`, `assets/cart-drawer.js`,
+`layout/theme.liquid`, `snippets/whatsapp-sticky.liquid`,
+`snippets/whatsapp-link.liquid`, `snippets/css-variables.liquid`,
+`config/settings_schema.json`, `config/settings_data.json`,
+`sections/hero-v2.liquid`, `assets/section-hero-v2.css`,
+`sections/how-it-works.liquid`, `assets/section-scent-code.css`,
+`sections/header.liquid`, `sections/announcement-bar.liquid`,
+`sections/product-row.liquid`, `sections/whatsapp-feature.liquid`,
+`sections/editorial-feature.liquid`, `sections/newsletter.liquid`,
+`sections/footer.liquid` — alle byte-identisch mit Step 3.
+
+Damit sind Hero, „So funktioniert's“, die Floating-Bar samt JavaScript und
+sämtliches JavaScript des Themes nachweislich unverändert. An `base.css`
+wurde ausschließlich der oben gezeigte Block **hinzugefügt**; die Regeln der
+Floating-Bar, die globale Typografie und die Farbklassen sind nicht berührt.
+
+Hero, Ankündigungsleiste, Header, der dunkle Beratungsbereich und der Footer
+verwenden die Klasse `.section` nicht und sind von der Rhythmus-Regel schon
+technisch nicht erfassbar. Der gerenderte Vergleich bestätigt das: Ihre
+Höhen sind bei 390 px, 768 px und 1280 px identisch.
+
+### Angebotslogik
+
+Unverändert: 30 ml, 30 % Extrait, 29,90 € regulär, 20 % auf die erste
+Bestellung, Garantie nur für die erste Bestellung, maximal 3 Flakons. Kein
+10 ml, kein Travel Size, kein Discovery Set, keine Samples, keine Essentials.
+Keine Produkt- oder Variantenmigration. Der Abschnitt rechnet weiterhin keine
+Preise und keine Rabatte aus.
+
+---
+
 ## V4.1 Step 3 — Launch-Angebot gestrafft
 
 Der Launch startet ausschließlich mit **30 ml Extrait, 30 % Konzentration,

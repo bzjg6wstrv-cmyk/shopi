@@ -17,7 +17,7 @@
             <span class="eyebrow">{{ block.settings.eyebrow | escape }}</span>
           {%- endif -%}
           {%- if block.settings.heading != blank -%}
-            <h2 class="h3 offer__heading">{{ block.settings.heading | escape }}</h2>
+            <h2 class="h3 offer__heading">{{ block.settings.heading | escape | newline_to_br }}</h2>
           {%- endif -%}
           {%- if block.settings.text != blank -%}
             <p class="offer__text">{{ block.settings.text | escape | newline_to_br }}</p>

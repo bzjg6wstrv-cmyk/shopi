@@ -281,19 +281,19 @@
         "o1": {
           "type": "claim",
           "settings": {
-            "eyebrow": "Willkommen bei VENT CELESTE",
-            "heading": "20 % KENNENLERNVORTEIL",
+            "eyebrow": "Willkommen bei VENT CELESTE",
+            "heading": "20 % AUF DEINEN ERSTEN DUFTKAUF",
             "text": "Auf deine erste Bestellung.",
-            "detail": "Gültig für bis zu 3 Düfte."
+            "detail": "Für deine erste Bestellung mit bis zu 3 Düften."
           }
         },
         "o2": {
           "type": "claim",
           "settings": {
             "eyebrow": "Ohne Risiko",
-            "heading": "100 % ZUFRIEDENHEITSGARANTIE",
-            "text": "Du sollst deinen Duft lieben.\nWenn du mit einem Duft aus deiner ersten Bestellung nicht zufrieden bist, kümmern wir uns darum.",
-            "detail": "Gültig für deine erste Bestellung und maximal 3 Flakons."
+            "heading": "100 % ZUFRIEDEN\nODER GELD ZURÜCK",
+            "text": "Du sollst deinen Duft lieben.\nWenn er nicht zu dir passt, erstatten wir dir den Kaufpreis.",
+            "detail": "Für deine erste Bestellung mit bis zu 3 Flakons."
           }
         }
       },
