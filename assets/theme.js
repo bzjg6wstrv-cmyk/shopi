@@ -99,6 +99,17 @@
 
   class VCDrawer extends HTMLElement {
     connectedCallback() {
+      /* Header-group sections can create their own stacking context in the
+         Shopify mobile preview. Portal menu/search drawers to <body> so their
+         fixed positioning and z-index are viewport-based, not section-based. */
+      if ((this.id === 'MenuDrawer' || this.id === 'SearchDrawer') && this.parentElement !== document.body) {
+        document.body.appendChild(this);
+        return;
+      }
+
+      if (this.dataset.vcDrawerInitialized === 'true') return;
+      this.dataset.vcDrawerInitialized = 'true';
+
       this.setAttribute('role', 'dialog');
       this.setAttribute('aria-modal', 'true');
       this.setAttribute('tabindex', '-1');

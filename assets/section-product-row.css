@@ -74,3 +74,15 @@
   transition: background-color var(--dur) var(--ease), width var(--dur) var(--ease);
 }
 .row-dot.is-active { background-color: rgb(var(--color-text)); width: 16px; }
+
+/* v4.2.10 mobile cleanup: keep the swipe rail inside the viewport. */
+@media (max-width: 599px) {
+  .product-row { min-width: 0; max-width: 100%; overflow: hidden; }
+  .row-track {
+    box-sizing: border-box;
+    width: calc(100% + (var(--gutter) * 2));
+    max-width: none;
+    grid-auto-columns: min(72vw, 320px);
+  }
+  .row-track > li { min-width: 0; overflow: hidden; }
+}

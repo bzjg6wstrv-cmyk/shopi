@@ -134,6 +134,8 @@
           {%- endif -%}
         </p>
 
+        {% render 'vc-scent-profile', product: product %}
+
         <div style="margin-top: var(--space-2xl);">
           {%- for block in section.blocks -%}
             {%- case block.type -%}

@@ -1,5 +1,16 @@
 # VENT CELESTE — Änderungsprotokoll
 
+## V4.2.7 — Konsolidierter Mobile-Finish
+
+- Mobile-Menü-Fix aus V4.2.6 beibehalten.
+- Warenkorb mobil deutlich kompakter: kleinere Abstände, klare Trennlinien zwischen Artikeln, kompaktere Mengensteuerung und Footer.
+- Produktseite mobil gestrafft: Kaufbereich und Duftprofil mit reduziertem vertikalem Leerraum.
+- Farbige Duftcharakter-, Jahreszeit- und Anlass-Balken beibehalten.
+- Ungültige literal `\n`-Sequenzen im Mobile-Polish-CSS bereinigt.
+- Empfehlungstitel von „Ähnliche Duftprofile“ auf „Das könnte dir auch gefallen“ geändert.
+- Keine Änderung an Preisen, Varianten, Warenkorb-Logik oder Checkout-Logik.
+
+
 ## V4.1 Step 3.1 — Mobile-Feinschliff am Launch-Angebot
 
 Kein Redesign. Vier Dateien, 18 geänderte Zeilen.
@@ -518,3 +529,39 @@ Geschätzt aus den gesetzten Werten, nicht im Browser gemessen.
 - Klammerbilanz aller CSS-Dateien ausgeglichen
 - Menü, Suche, Warenkorb, WhatsApp-Link und Scent-Code-Formular im Markup
   nachgewiesen
+
+
+## v4.2.2 — Cart Drawer Mobile Fix
+- iOS/Safari: `display: contents` im Cart-Drawer entfernt.
+- Drawer erhält eigenen weißen Hintergrund, feste 100dvh-Höhe und klare rechte Seitenfläche.
+- Body scrollt innerhalb des Drawers; Footer/Zwischensumme und Checkout bleiben sauber unten.
+- Warenkorb-Produktzeile, Menge und Preise für kleine Displays verdichtet.
+- Hintergrundseite bleibt nur als abgedunkelte Ebene sichtbar und mischt sich nicht mehr mit Drawer-Inhalten.
+
+## v4.2.3
+- Rebuilt cart drawer stacking for Shopify mobile preview.
+- Forces the cart section above the overlay and uses a fully opaque Ivory panel.
+- Prevents product-page content from visually bleeding through the open cart.
+- Simplifies mobile cart item layout and keeps footer/subtotal inside the drawer.
+
+## v4.2.4
+- Duftcharakter als elegante Farbbalken statt Text-Pills.
+- Jahreszeit und Anlass mit sichtbareren, dezenten Balken.
+- Mobile-Abstände und Duftnoten kompakter.
+- Stil/Beschreibung als ruhiger Abschluss des Duftprofils.
+
+## v4.2.6 — Mobile menu isolation
+- Mobile navigation drawer is portaled to `body` to escape Shopify preview stacking contexts.
+- Drawer receives a fully opaque ivory background and top-layer z-index.
+- Product content can no longer bleed through the open navigation.
+- Mobile drawer scrolling is isolated from the underlying page.
+
+## 4.2.8 — Search & scent aliases
+- Mobile menu search is now a real input with an explicit submit button.
+- Numeric search is normalized (`49` → `VC-049`).
+- Search page resolves the six launch scents by visible scent notes and character terms even when Shopify storefront tags are not yet indexed.
+- Examples: `Vanille`, `Tabak`, `Gourmand`, `Holzig`, `Bergamotte`.
+
+## v4.2.9 — Note search catalog fix
+- Duftnoten-/Duftcharakter-Suche durchsucht jetzt bewusst den gesamten Produktkatalog statt nur die konfigurierte Bestseller-/Scent-Code-Kollektion.
+- Codevergleich im Fallback-Index erfolgt numerisch/exakt, damit VC-049 zuverlässig auf `049` gematcht wird.

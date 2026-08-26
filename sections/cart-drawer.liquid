@@ -3,7 +3,7 @@
   neu gerendert – Warenkorb, Preise und Rabatte bleiben vollständig bei Shopify.
 {%- endcomment -%}
 <vc-drawer id="CartDrawer" class="drawer drawer--right color-{{ section.settings.color_scheme }} color-scheme" aria-label="{{ 'sections.cart.title' | t }}">
-  <div data-cart-section="cart-drawer" style="display: contents;">
+  <div data-cart-section="cart-drawer" class="cart-drawer__shell">
     <div class="drawer__header">
       <span class="meta meta--muted">{{ 'sections.cart.title' | t }}</span>
       <button type="button" class="drawer__close" data-drawer-close aria-label="{{ 'general.accessibility.close' | t }}">
@@ -145,32 +145,6 @@
           {%- endfor -%}
         </ul>
 
-        {%- liquid
-          assign cross_sell = settings.cart_cross_sell_product
-          assign show_cross_sell = false
-          if settings.cart_cross_sell_enabled and cross_sell != blank
-            assign show_cross_sell = true
-            for item in cart.items
-              if item.product.id == cross_sell.id
-                assign show_cross_sell = false
-              endif
-            endfor
-          endif
-        -%}
-        {%- if show_cross_sell -%}
-          <div class="cart-cross-sell">
-            <p class="meta meta--muted">{{ 'sections.cart.cross_sell_title' | t }}</p>
-            <a class="cart-cross-sell__item" href="{{ cross_sell.url }}">
-              {%- if cross_sell.featured_media -%}
-                <img src="{{ cross_sell.featured_media | image_url: width: 120 }}" alt="" width="56" height="72" loading="lazy">
-              {%- endif -%}
-              <span>
-                <span class="cart-item__title">{{ cross_sell.title }}</span>
-                <span class="cart-item__variant">{{ cross_sell.price | money }}</span>
-              </span>
-            </a>
-          </div>
-        {%- endif -%}
       {%- endif -%}
     </div>
 

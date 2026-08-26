@@ -24,21 +24,17 @@
             "title": "Rechtliches",
             "menu": "footer-rechtliches"
           }
-        },
-        "newsletter": {
-          "type": "newsletter"
         }
       },
       "block_order": [
         "brand",
         "menu_service",
-        "menu_legal",
-        "newsletter"
+        "menu_legal"
       ],
       "settings": {
         "color_scheme": "scheme-2",
         "show_payment_icons": true,
-        "show_legal_note": true
+        "show_legal_note": false
       }
     }
   },

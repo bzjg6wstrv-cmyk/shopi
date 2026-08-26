@@ -182,18 +182,27 @@
   </div>
 
   <div class="menu-drawer__top">
-    <form action="{{ routes.search_url }}" method="get" role="search" class="menu-drawer__search">
+    <form action="{{ routes.search_url }}" method="get" role="search" class="menu-drawer__search" data-vc-search-form>
       <label class="visually-hidden" for="MenuDrawerSearch">{{ 'general.search.title' | t }}</label>
-      <input
-        id="MenuDrawerSearch"
-        class="field__input"
-        type="search"
-        name="q"
-        data-drawer-initial-focus
-        placeholder="{{ settings.search_placeholder | escape }}"
-        autocomplete="off"
-      >
+      <div class="menu-drawer__search-row">
+        <input
+          id="MenuDrawerSearch"
+          class="field__input menu-drawer__search-input"
+          type="search"
+          name="q"
+          data-drawer-initial-focus
+          placeholder="{{ settings.search_placeholder | escape }}"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          inputmode="search"
+        >
+        <button type="submit" class="menu-drawer__search-submit" aria-label="{{ 'general.search.submit' | t }}">
+          {% render 'icon', name: 'search' %}
+        </button>
+      </div>
       <input type="hidden" name="options[prefix]" value="last">
+      <p class="menu-drawer__search-help">Code, Nummer, Duftnote oder Duftcharakter</p>
     </form>
 
     {%- if settings.whatsapp_enabled -%}
@@ -273,6 +282,7 @@
         method="get"
         role="search"
         class="search-panel__form"
+        data-vc-search-form
         data-predictive-search{% unless settings.predictive_search_enabled %}-off{% endunless %}
       >
         <label class="visually-hidden" for="SearchPanelInput">{{ 'general.search.title' | t }}</label>
@@ -309,6 +319,7 @@
   </div>
 </vc-drawer>
 
+<script src="{{ 'vc-search.js' | asset_url }}" defer="defer"></script>
 {%- if settings.predictive_search_enabled -%}
   <script src="{{ 'predictive-search.js' | asset_url }}" defer="defer"></script>
 {%- endif -%}

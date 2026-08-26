@@ -503,3 +503,6 @@ zip -r vent-celeste-theme.zip assets config layout locales sections snippets tem
 | `discovery-set.js`, `scent-code-order.js`, `product-card-swipe.js`, `scent-finder.js`, `recommendations.js` | nur auf den jeweiligen Seiten | ~12 KB |
 
 Alles unkomprimiert und mit `defer`; auf der Startseite laufen davon rund 24 KB.
+
+### Search behavior (v4.2.8)
+For the launch assortment, the theme contains a fallback scent-search index based on the same notes/traits shown on product pages. This means customer searches such as `49`, `VC-049`, `Vanille`, `Gourmand`, or `Holzig` can return matching launch products even before corresponding Shopify product tags are maintained. For future products, continue maintaining Shopify product tags/metafields so search scales beyond the launch set.

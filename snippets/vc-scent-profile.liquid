@@ -1,0 +1,151 @@
+{%- comment -%}
+  VENT CELESTE launch scent profiles. Uses product tags as stable mapping so
+  legacy imported product titles (VC-001..006) still render the correct code.
+{%- endcomment -%}
+{%- liquid
+  assign vc_ref = ''
+  assign vc_code = ''
+  assign vc_kicker = ''
+  assign vc_traits = ''
+  assign vc_notes = ''
+  assign vc_seasons = ''
+  assign vc_occasions = ''
+  assign vc_style = ''
+  assign vc_copy = ''
+
+  if product.tags contains 'Imagination' or product.title contains '047'
+    assign vc_ref = 'Imagination'
+    assign vc_code = 'VC-047'
+    assign vc_kicker = 'Klar. Frisch. Charaktervoll.'
+    assign vc_traits = 'Frisch:29|Zitrisch:27|Aquatisch:18|Grün:9|Würzig:7'
+    assign vc_notes = 'Kalabrische Bergamotte:bergamot|Chinesischer Schwarztee:tea|Nigerianischer Ingwer:ginger|Tunesisches Neroli:blossom|Ceylon-Zimt:cinnamon|Sizilianische Zeder:wood|Ambrox:amber'
+    assign vc_seasons = 'Sommer:42|Frühling:37|Herbst:14|Winter:6'
+    assign vc_occasions = 'Alltag:24|Freizeit:22|Arbeit:18|Sport:14|Ausgehen:12|Abend:10'
+    assign vc_style = 'Modern · frisch · eher maskulin, aber für jeden tragbar.'
+    assign vc_copy = 'Ein heller Auftakt aus Bergamotte trifft auf würzigen Ingwer und Neroli. Schwarzer Tee gibt dem Duft seine markante, klare Mitte; Zeder, Zimt und Ambrox sorgen für einen trockenen, modernen Ausklang.'
+  elsif product.tags contains 'Althaïr' or product.tags contains 'Althair' or product.title contains '078'
+    assign vc_ref = 'Althaïr'
+    assign vc_code = 'VC-078'
+    assign vc_kicker = 'Warm. Cremig. Verführerisch.'
+    assign vc_traits = 'Süß:26|Gourmand:23|Cremig:18|Würzig:15|Holzig:8'
+    assign vc_notes = 'Bergamotte:bergamot|Mandarine:mandarin|Elemi:elemi|Orangenblüte:blossom|Zimt:cinnamon|Kardamom:cardamom|Bourbon-Vanille:vanilla|Guajakholz:wood|Praline:praline'
+    assign vc_seasons = 'Winter:45|Herbst:43|Frühling:12|Sommer:0'
+    assign vc_occasions = 'Abend:32|Ausgehen:30|Freizeit:18|Alltag:13|Arbeit:8'
+    assign vc_style = 'Modern · warm · eher maskulin, mit weicher gourmandiger Signatur.'
+    assign vc_copy = 'Leuchtende Zitrusnoten öffnen den Duft, bevor Orangenblüte, Zimt und Kardamom Wärme aufbauen. Bourbon-Vanille, Praline und Guajakholz geben ihm seinen cremigen, satten Charakter.'
+  elsif product.tags contains 'Attrape-Rêves' or product.tags contains 'Attrape-Reves' or product.tags contains 'Attrap reve' or product.title contains '080'
+    assign vc_ref = 'Attrape-Rêves'
+    assign vc_code = 'VC-080'
+    assign vc_kicker = 'Leuchtend. Fruchtig. Elegant.'
+    assign vc_traits = 'Blumig:29|Süß:28|Fruchtig:25|Frisch:12|Gourmand:6'
+    assign vc_notes = 'Litschi:lychee|Pfingstrose:peony|Kakao:cocoa|Patschuli:patchouli|Bergamotte:bergamot|Ingwer:ginger'
+    assign vc_seasons = 'Frühling:36|Sommer:26|Herbst:23|Winter:15'
+    assign vc_occasions = 'Freizeit:24|Alltag:21|Ausgehen:20|Abend:18|Arbeit:17'
+    assign vc_style = 'Modern · feminin geprägt · leuchtend und verspielt.'
+    assign vc_copy = 'Spritzige Litschi trifft auf ein elegantes Pfingstrosenbouquet. Kakao bringt einen unerwartet dunklen Kontrast, während Patschuli dem Duft Tiefe und Kontur gibt.'
+  elsif product.tags contains 'Baccarat' or product.title contains '026'
+    assign vc_ref = 'Baccarat Rouge 540 Extrait'
+    assign vc_code = 'VC-026'
+    assign vc_kicker = 'Strahlend. Süß. Markant.'
+    assign vc_traits = 'Süß:29|Holzig:15|Würzig:13|Blumig:9|Gourmand:8'
+    assign vc_notes = 'Safran:saffron|Jasmin:jasmine|Bittermandel:almond|Zedernholz:wood|Amber-Akkord:amber|Moschus:musk'
+    assign vc_seasons = 'Herbst:34|Winter:32|Frühling:23|Sommer:12'
+    assign vc_occasions = 'Ausgehen:31|Abend:30|Freizeit:18|Alltag:13|Arbeit:9'
+    assign vc_style = 'Elegant · modern · ausgewogen unisex mit warmer Präsenz.'
+    assign vc_copy = 'Ein heller Safran-Jasmin-Akkord trifft auf die weiche Bittermandel des Extrait-Charakters. Trockene Hölzer, Amber und Moschus sorgen für eine warme, sehr präsente Basis.'
+  elsif product.tags contains 'Erba Pura' or product.title contains '040'
+    assign vc_ref = 'Erba Pura'
+    assign vc_code = 'VC-040'
+    assign vc_kicker = 'Saftig. Süß. Strahlend.'
+    assign vc_traits = 'Fruchtig:29|Süß:25|Frisch:12|Blumig:8|Zitrisch:8'
+    assign vc_notes = 'Zitrone:lemon|Kalabrische Bergamotte:bergamot|Sizilianische Orange:orange|Mediterrane Früchte:fruit|Amber:amber|Madagaskar-Vanille:vanilla|Weißer Moschus:musk'
+    assign vc_seasons = 'Frühling:35|Sommer:34|Herbst:19|Winter:11'
+    assign vc_occasions = 'Freizeit:28|Ausgehen:26|Abend:21|Alltag:17|Arbeit:7'
+    assign vc_style = 'Modern · fruchtig · unisex mit auffälliger, sonniger Signatur.'
+    assign vc_copy = 'Ein heller Zitrusstart aus Zitrone, Bergamotte und Orange geht in einen üppigen Fruchtakkord über. Vanille, Amber und weißer Moschus machen den Ausklang weich und langanhaltend.'
+  elsif product.tags contains 'Naxos' or product.title contains '049'
+    assign vc_ref = 'Naxos'
+    assign vc_code = 'VC-049'
+    assign vc_kicker = 'Würzig. Honigsüß. Souverän.'
+    assign vc_traits = 'Süß:28|Würzig:19|Gourmand:16|Cremig:15|Zitrisch:12'
+    assign vc_notes = 'Bergamotte:bergamot|Zitrone:lemon|Lavendel:lavender|Honig:honey|Zimt:cinnamon|Tabakblatt:tobacco|Vanille:vanilla|Tonkabohne:tonka'
+    assign vc_seasons = 'Herbst:33|Winter:31|Frühling:24|Sommer:12'
+    assign vc_occasions = 'Abend:29|Ausgehen:29|Freizeit:19|Alltag:14|Arbeit:9'
+    assign vc_style = 'Modern · warm · eher maskulin, dabei weich und luxuriös.'
+    assign vc_copy = 'Zitrus und Lavendel geben dem Auftakt Klarheit. Honig und Zimt bauen Wärme auf, bevor Tabakblatt, Vanille und Tonkabohne einen cremig-würzigen Ausklang bilden.'
+  endif
+-%}
+
+{%- if vc_code != blank -%}
+  <section class="vc-profile" aria-label="Duftprofil {{ vc_code }}">
+    <div class="vc-profile__head">
+      <div>
+        <p class="eyebrow">Duftprofil</p>
+        <h2 class="vc-profile__code">{{ vc_code }}</h2>
+        <p class="vc-profile__kicker">{{ vc_kicker }}</p>
+      </div>
+      <div class="vc-profile__facts" aria-label="Produktdetails">
+        <span>30 ml</span><span>30 %</span><span>Extrait</span>
+      </div>
+    </div>
+
+    <div class="vc-profile__section">
+      <p class="eyebrow">Duftcharakter</p>
+      <div class="vc-traits" role="list">
+        {%- assign traits = vc_traits | split: '|' -%}
+        {%- for item in traits -%}
+          {%- assign parts = item | split: ':' -%}
+          <div class="vc-trait-meter" role="listitem" style="--vc-pct: {{ parts[1] }}%;">
+            <span>{{ parts[0] }}</span>
+            <div class="vc-trait-meter__track" aria-hidden="true"><i></i></div>
+            <strong>{{ parts[1] }}%</strong>
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+
+    <div class="vc-profile__section vc-profile__notes-section">
+      <div class="vc-section-title"><span></span><h3>Die Duftnoten</h3><span></span></div>
+      <div class="vc-notes" role="list">
+        {%- assign notes = vc_notes | split: '|' -%}
+        {%- for item in notes -%}
+          {%- assign parts = item | split: ':' -%}
+          <div class="vc-note" role="listitem">
+            <div class="vc-note__art">{% render 'vc-note-icon', note: parts[1] %}</div>
+            <p>{{ parts[0] }}</p>
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+
+    <div class="vc-profile__analytics">
+      <div class="vc-stat-card">
+        <p class="eyebrow">Jahreszeit</p>
+        {%- assign seasons = vc_seasons | split: '|' -%}
+        {%- for item in seasons -%}
+          {%- assign parts = item | split: ':' -%}
+          <div class="vc-meter"><span>{{ parts[0] }}</span><div><i style="width: {{ parts[1] }}%"></i></div><strong>{{ parts[1] }}%</strong></div>
+        {%- endfor -%}
+      </div>
+      <div class="vc-stat-card">
+        <p class="eyebrow">Anlass</p>
+        {%- assign occasions = vc_occasions | split: '|' -%}
+        {%- for item in occasions -%}
+          {%- assign parts = item | split: ':' -%}
+          <div class="vc-meter"><span>{{ parts[0] }}</span><div><i style="width: {{ parts[1] }}%"></i></div><strong>{{ parts[1] }}%</strong></div>
+        {%- endfor -%}
+      </div>
+      <div class="vc-stat-card vc-stat-card--style">
+        <p class="eyebrow">Stil</p>
+        <p class="vc-style-word">Modern</p>
+        <p>{{ vc_style }}</p>
+      </div>
+    </div>
+
+    <div class="vc-profile__description">
+      <p class="eyebrow">Beschreibung</p>
+      <h3>{{ vc_kicker }}</h3>
+      <p>{{ vc_copy }}</p>
+    </div>
+  </section>
+{%- endif -%}

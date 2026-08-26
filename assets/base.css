@@ -1309,3 +1309,427 @@ body.is-typing .sticky-atc { transform: translateY(110%); }
   /* Zwei Spalten im mobilen Menü werden zu einer. */
   .menu-drawer__secondary { grid-template-columns: 1fr; }
 }
+
+/* VC v4.2.1 — Mobile overflow hardening ----------------------------------
+   Product pages must never widen the document. Horizontal movement is only
+   allowed inside components that are intentionally swipeable. */
+html,
+body { max-width: 100%; overflow-x: clip; }
+
+.page-width,
+.product,
+.product > *,
+.product__media,
+.product__info,
+.product-form,
+.product-form form,
+.product-form__actions,
+.variant-options,
+.variant-option,
+.variant-option__label { min-width: 0; max-width: 100%; }
+
+.product__media { overflow: hidden; }
+.product__media img,
+.product__media svg,
+.product__media .full-bleed-media {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+.product-form__actions .button {
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 749px) {
+  .product-form__actions { grid-template-columns: minmax(0, 1fr); }
+  .product-form__actions .quantity { justify-self: start; max-width: 100%; }
+  .product__title,
+  .product__meta,
+  .product__price,
+  .product__note { max-width: 100%; overflow-wrap: anywhere; }
+}
+
+
+/* V4.2.2 — Cart drawer mobile hardening ----------------------------------
+   Safari/iOS treated the previous display:contents wrapper inconsistently,
+   which let drawer content visually mix with the dimmed product page. */
+#CartDrawer {
+  width: min(28rem, 92vw);
+  height: 100dvh;
+  max-height: 100dvh;
+  background: rgb(var(--color-background));
+  color: rgb(var(--color-text));
+  box-shadow: -18px 0 48px rgb(20 18 16 / .18);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+#CartDrawer .cart-drawer__shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background: inherit;
+}
+
+#CartDrawer .drawer__header {
+  flex: 0 0 auto;
+  padding: 1.25rem 1.25rem .9rem;
+  background: inherit;
+  border-bottom: 1px solid rgb(var(--color-line));
+}
+
+#CartDrawer .drawer__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.1rem 1.25rem;
+  background: inherit;
+  -webkit-overflow-scrolling: touch;
+}
+
+#CartDrawer .drawer__footer {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 1rem 1.25rem calc(1rem + env(safe-area-inset-bottom));
+  background: inherit;
+  border-top: 1px solid rgb(var(--color-line));
+  box-shadow: 0 -10px 30px rgb(20 18 16 / .05);
+}
+
+#CartDrawer .cart-items { gap: 1rem; }
+#CartDrawer .cart-item {
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: .9rem;
+  padding-bottom: 1rem;
+}
+#CartDrawer .cart-item__media { width: 56px; min-width: 56px; }
+#CartDrawer .cart-item__media:empty { display: none; }
+#CartDrawer .cart-item__media img {
+  width: 56px;
+  height: 72px;
+  object-fit: cover;
+}
+#CartDrawer .cart-item > div { min-width: 0; }
+#CartDrawer .cart-item__title {
+  margin: 0;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+#CartDrawer .cart-item__variant { margin-top: .2rem; }
+#CartDrawer .cart-item__row {
+  gap: .75rem;
+  margin-top: .65rem;
+}
+#CartDrawer .cart-item__price {
+  margin-left: auto;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+#CartDrawer .quantity { flex: 0 0 auto; }
+#CartDrawer .quantity button,
+#CartDrawer .quantity input {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+#CartDrawer .cart-item__remove { min-height: 2.25rem; }
+#CartDrawer .cart-footer__row { margin-bottom: .35rem; }
+#CartDrawer .cart-footer__total { white-space: nowrap; }
+#CartDrawer .cart-footer .button {
+  width: 100%;
+  min-height: 3.25rem;
+  margin-top: .85rem;
+}
+
+@media (max-width: 749px) {
+  #CartDrawer { width: min(26rem, 94vw); }
+  #CartDrawer .drawer__header { padding-inline: 1rem; }
+  #CartDrawer .drawer__body { padding: 1rem; }
+  #CartDrawer .drawer__footer {
+    padding: .9rem 1rem calc(.9rem + env(safe-area-inset-bottom));
+  }
+  #CartDrawer .drawer__close { margin-right: -.5rem; }
+  #CartDrawer .cart-item {
+    grid-template-columns: 48px minmax(0,1fr);
+    gap: .75rem;
+  }
+  #CartDrawer .cart-item__media { width: 48px; min-width: 48px; }
+  #CartDrawer .cart-item__media img { width: 48px; height: 64px; }
+  #CartDrawer .cart-item__row { align-items: center; }
+}
+
+/* V4.2.3 — Cart drawer stacking-context rebuild ---------------------------
+   Shopify's mobile theme preview can wrap sections in its own stacking
+   context. Keep the whole cart section above the dimmer and force a fully
+   opaque panel so the product page can never bleed through. */
+#shopify-section-cart-drawer {
+  position: relative !important;
+  z-index: 2147483646 !important;
+}
+
+[data-overlay].overlay {
+  z-index: 2147483600 !important;
+}
+
+#CartDrawer {
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: auto !important;
+  z-index: 2147483646 !important;
+  width: min(28rem, 94vw) !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background-color: rgb(245 242 237) !important;
+  color: rgb(20 18 16) !important;
+  opacity: 1 !important;
+  box-shadow: -16px 0 44px rgb(20 18 16 / .20) !important;
+  isolation: isolate !important;
+  contain: layout paint;
+}
+
+#CartDrawer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgb(245 242 237);
+  pointer-events: none;
+}
+
+#CartDrawer .cart-drawer__shell,
+#CartDrawer .drawer__header,
+#CartDrawer .drawer__body,
+#CartDrawer .drawer__footer {
+  background-color: rgb(245 242 237) !important;
+  opacity: 1 !important;
+}
+
+#CartDrawer .cart-drawer__shell {
+  position: relative;
+  z-index: 1;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+#CartDrawer .drawer__header {
+  min-height: 4.5rem;
+  padding: 1rem 1.1rem !important;
+}
+
+#CartDrawer .drawer__body {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 1rem 1.1rem !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+#CartDrawer .drawer__footer {
+  position: relative !important;
+  inset: auto !important;
+  width: auto !important;
+  padding: .9rem 1.1rem calc(.9rem + env(safe-area-inset-bottom)) !important;
+}
+
+#CartDrawer .cart-item,
+#CartDrawer .cart-item > div,
+#CartDrawer .cart-item__row,
+#CartDrawer .cart-footer,
+#CartDrawer .cart-footer form {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+@media (max-width: 749px) {
+  #CartDrawer {
+    width: calc(100vw - 1rem) !important;
+    max-width: calc(100vw - 1rem) !important;
+  }
+  #CartDrawer .cart-item {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  #CartDrawer .cart-item__media {
+    display: none !important;
+  }
+  #CartDrawer .cart-item__row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+  }
+}
+
+/* V4.2.6 — Mobile menu drawer isolation ----------------------------------
+   In Shopify's mobile preview the header section can form a stacking context.
+   The menu drawer then sits underneath the global overlay and the product page
+   appears to bleed through. Force the menu into its own opaque top layer. */
+#MenuDrawer {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: auto !important;
+  bottom: 0 !important;
+  z-index: 2147483646 !important;
+  width: min(25rem, 94vw) !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background-color: rgb(245 242 237) !important;
+  color: rgb(20 18 16) !important;
+  box-shadow: 16px 0 44px rgb(20 18 16 / .18) !important;
+  isolation: isolate !important;
+  contain: layout paint;
+  transform: translateX(-100%) !important;
+  visibility: hidden !important;
+}
+
+#MenuDrawer.is-open {
+  transform: translateX(0) !important;
+  visibility: visible !important;
+}
+
+#MenuDrawer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgb(245 242 237);
+  pointer-events: none;
+}
+
+#MenuDrawer .drawer__header,
+#MenuDrawer .menu-drawer__top,
+#MenuDrawer .drawer__body {
+  background-color: rgb(245 242 237) !important;
+  opacity: 1 !important;
+}
+
+#MenuDrawer .drawer__header {
+  flex: 0 0 auto;
+  min-height: 4.5rem;
+  padding: 1rem 1.1rem !important;
+}
+
+#MenuDrawer .menu-drawer__top {
+  flex: 0 0 auto;
+  padding: 1rem 1.1rem !important;
+}
+
+#MenuDrawer .drawer__body {
+  flex: 1 1 auto;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: .5rem 1.1rem calc(1rem + env(safe-area-inset-bottom)) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 749px) {
+  #MenuDrawer { width: min(23rem, 92vw) !important; }
+  #MenuDrawer .field__input { max-width: 100%; }
+  #MenuDrawer .menu-drawer__wa { width: 100%; }
+}
+
+
+/* V4.2.7 — consolidated cart polish ------------------------------------- */
+@media (max-width: 749px) {
+  #CartDrawer .drawer__header {
+    min-height: 4rem;
+    padding: .85rem 1.1rem !important;
+  }
+  #CartDrawer .drawer__body {
+    padding: .35rem 1.1rem .7rem !important;
+  }
+  #CartDrawer .cart-items { gap: 0 !important; }
+  #CartDrawer .cart-item {
+    display: block !important;
+    padding: 1rem 0 .85rem !important;
+    border-bottom: 1px solid rgb(var(--color-line));
+  }
+  #CartDrawer .cart-item:last-child { border-bottom: 0; }
+  #CartDrawer .cart-item__title { font-size: 1.02rem; line-height: 1.2; }
+  #CartDrawer .cart-item__variant { margin-top: .15rem; font-size: .82rem; }
+  #CartDrawer .cart-item__row {
+    margin-top: .65rem;
+    gap: .55rem !important;
+    flex-wrap: nowrap !important;
+  }
+  #CartDrawer .quantity button,
+  #CartDrawer .quantity input {
+    width: 2rem;
+    height: 2rem;
+  }
+  #CartDrawer .cart-item__remove {
+    min-height: 1.9rem;
+    margin-top: .3rem;
+    font-size: .72rem;
+  }
+  #CartDrawer .drawer__footer {
+    padding: .75rem 1.1rem calc(.75rem + env(safe-area-inset-bottom)) !important;
+  }
+  #CartDrawer .cart-footer__row { margin-bottom: .2rem; }
+  #CartDrawer .cart-footer__total { font-size: 1.15rem; }
+  #CartDrawer .cart-footer p { margin: .45rem 0 .65rem; line-height: 1.4; }
+  #CartDrawer .cart-footer .button { min-height: 3rem; margin-top: .55rem; }
+  #CartDrawer .cart-footer .link-underline { margin-top: .6rem !important; font-size: .75rem; }
+}
+
+/* V4.2.8 — usable mobile search ----------------------------------------- */
+#MenuDrawer .menu-drawer__search {
+  padding: 0 !important;
+  border: 0 !important;
+}
+#MenuDrawer .menu-drawer__search-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3rem;
+  align-items: center;
+  border-bottom: 1px solid rgb(var(--color-line));
+}
+#MenuDrawer .menu-drawer__search-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 3.4rem;
+  padding: .3rem .15rem .35rem 0;
+  border: 0 !important;
+  background: transparent !important;
+  font-family: var(--font-heading-family);
+  font-size: clamp(1.15rem, 5vw, 1.55rem);
+  line-height: 1.2;
+  color: inherit;
+  text-align: left;
+}
+#MenuDrawer .menu-drawer__search-input:focus { outline: none; }
+#MenuDrawer .menu-drawer__search-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+#MenuDrawer .menu-drawer__search-submit svg { width: 1.25rem; height: 1.25rem; }
+#MenuDrawer .menu-drawer__search-help {
+  margin: .55rem 0 0;
+  font-size: .75rem;
+  line-height: 1.35;
+  color: rgb(var(--color-muted));
+}

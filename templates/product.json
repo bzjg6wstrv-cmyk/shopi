@@ -12,36 +12,15 @@
         "wear": {
           "type": "when_to_wear"
         },
-        "concentration": {
-          "type": "concentration_note",
-          "settings": {
-            "heading": "Unsere Konzentrationen",
-            "text": "<p><strong>Extrait – 30 % Parfumöl.</strong> Die Hauptlinie. Ein hoher Anteil bedeutet, dass der Duft dichter auf der Haut liegt und sich langsamer entwickelt.</p><p><strong>Eau de Parfum – 20 % Parfumöl.</strong> Dasselbe Duftprofil, leichter aufgetragen und unauffälliger im Verlauf.</p><p>Travel und Probe entsprechen der Extrait-Rezeptur, nur in kleinerem Flakon.</p>"
-          }
-        },
-        "addons": {
-          "type": "addons",
-          "settings": {
-            "sample_keyword": "sample",
-            "travel_keyword": "travel"
-          }
-        },
         "description": {
           "type": "description",
           "settings": {
             "heading": "Duftbeschreibung",
-            "open": true
+            "open": false
           }
         },
         "ingredients": {
           "type": "ingredients"
-        },
-        "care": {
-          "type": "text",
-          "settings": {
-            "heading": "Hinweise",
-            "text": "<p>Platzhalter: Aufbewahrung, Chargenhinweis und Pflichtangaben nach EU 1223/2009 hier ergänzen.</p>"
-          }
         },
         "whatsapp": {
           "type": "whatsapp",
@@ -56,18 +35,15 @@
         "pyramid",
         "character",
         "wear",
-        "concentration",
-        "addons",
         "whatsapp",
         "description",
-        "ingredients",
-        "care"
+        "ingredients"
       ]
     },
     "recommendations": {
       "type": "product-recommendations",
       "settings": {
-        "heading": "Ähnliche Duftprofile",
+        "heading": "Das könnte dir auch gefallen",
         "intent": "related",
         "limit": 4
       }

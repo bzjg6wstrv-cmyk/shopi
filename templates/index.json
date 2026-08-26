@@ -32,8 +32,8 @@
         "three": {
           "type": "statement",
           "settings": {
-            "value": "29,90 €",
-            "label": "Musterpreis – verbindlich ist der Shop-Preis"
+            "value": "30,00 €",
+            "label": "Preis der Extrait-Linie"
           }
         }
       },
@@ -53,7 +53,7 @@
       "settings": {
         "color_scheme": "scheme-1",
         "eyebrow": "Die meistgewählten Codes",
-        "heading": "Most Wanted",
+        "heading": "Bestseller",
         "collection": "bestseller",
         "product_limit": 8,
         "link_label": "Alle Bestseller",
@@ -67,9 +67,9 @@
       "settings": {
         "color_scheme": "scheme-3",
         "scrim": 45,
-        "eyebrow": "Über 120 Duftprofile",
+        "eyebrow": "Persönliche Duftberatung",
         "heading": "Dein Duft ist nicht dabei?",
-        "text": "<p>Über 120 Duftprofile sind verfügbar – nicht alle davon sind im Shop gelistet. Schreib uns deinen Lieblingsduft, wir finden deinen Scent Code.</p>",
+        "text": "<p>Nicht jeder Duft ist direkt im Shop gelistet. Schreib uns deinen Lieblingsduft – wir finden den passenden VENT CELESTE Scent Code.</p>",
         "button_label": "Auf WhatsApp finden lassen"
       }
     },
@@ -259,8 +259,8 @@
         "media_shape": "wide",
         "eyebrow": "Über uns",
         "heading": "VENT CELESTE",
-        "text": "<p>Mustertext. Hier steht später die Haltung der Marke: warum es diese Düfte gibt, wie ausgewählt wird und was der Anspruch an Konzentration und Rohstoffe ist. Bitte vor dem Livegang vollständig ersetzen – es wurde bewusst keine Gründungsgeschichte erfunden.</p>",
-        "placeholder_note": true,
+        "text": "<p>VENT CELESTE steht für konzentrierte Duftkompositionen mit klarer Auswahl und eigenständiger Präsentation. Im Mittelpunkt stehen der Duft selbst, eine hohe Parfumkonzentration und persönliche Beratung bei der Auswahl des passenden Scent Codes.</p>",
+        "placeholder_note": false,
         "show_price": false,
         "primary_label": "Mehr über die Marke",
         "primary_link": "/pages/ueber-uns"
@@ -290,10 +290,10 @@
         "o2": {
           "type": "claim",
           "settings": {
-            "eyebrow": "Ohne Risiko",
-            "heading": "100 % ZUFRIEDEN\nODER GELD ZURÜCK",
-            "text": "Du sollst deinen Duft lieben.\nWenn er nicht zu dir passt, erstatten wir dir den Kaufpreis.",
-            "detail": "Für deine erste Bestellung mit bis zu 3 Flakons."
+            "eyebrow": "Persönlich beraten",
+            "heading": "DEN PASSENDEN DUFT\nSICHERER FINDEN",
+            "text": "Du bist unsicher, welcher Duft zu dir passt?\nWir helfen dir persönlich bei der Auswahl.",
+            "detail": "Duftberatung direkt per WhatsApp."
           }
         }
       },
