@@ -85,3 +85,18 @@
   padding: var(--space-lg);
   border: var(--border-width) dashed rgb(var(--color-muted));
 }
+
+/* v4.2.11 Mobile: Der Abstand zwischen Bild und Text sowie die Zeilen der
+   Merkmalsliste (Konzentration / Groesse / Charakter) waren auf dem Telefon
+   zu grosszuegig. Bildformate bleiben unveraendert. */
+@media (max-width: 749px) {
+  .section-head { margin-bottom: var(--space-lg); }
+
+  .feature { gap: var(--space-lg); }
+  .feature__points { margin-top: var(--space-md); }
+  .feature__points li { padding-block: var(--space-xs); gap: var(--space-sm); }
+  .feature__points .meta { min-width: 5.5rem; }
+  .feature__actions { margin-top: var(--space-lg); }
+
+  .newsletter__form { margin-top: var(--space-md); gap: var(--space-sm); }
+}

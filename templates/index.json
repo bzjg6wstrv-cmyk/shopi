@@ -12,42 +12,6 @@
         "code_label": "Schon beraten? Scent Code eingeben"
       }
     },
-    "promise": {
-      "type": "brand-promise",
-      "blocks": {
-        "one": {
-          "type": "statement",
-          "settings": {
-            "value": "30 ml",
-            "label": "Flakongröße der Hauptlinie"
-          }
-        },
-        "two": {
-          "type": "statement",
-          "settings": {
-            "value": "30 %",
-            "label": "Parfumkonzentration im Extrait"
-          }
-        },
-        "three": {
-          "type": "statement",
-          "settings": {
-            "value": "30,00 €",
-            "label": "Preis der Extrait-Linie"
-          }
-        }
-      },
-      "block_order": [
-        "one",
-        "two",
-        "three"
-      ],
-      "settings": {
-        "color_scheme": "scheme-1",
-        "heading": "Das Prinzip",
-        "footnote": "Angaben beziehen sich auf die Extrait-Linie."
-      }
-    },
     "most_wanted": {
       "type": "product-row",
       "settings": {
@@ -315,7 +279,6 @@
     "most_wanted",
     "offer",
     "extrait",
-    "promise",
     "brand",
     "newsletter",
     "discovery",

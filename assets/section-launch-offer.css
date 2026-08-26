@@ -50,3 +50,9 @@
   }
   .offer__cta { margin-top: var(--space-xl); }
 }
+
+/* v4.2.11 Mobile: etwas engere Innenabstaende, Haarlinien unveraendert. */
+@media (max-width: 749px) {
+  .offer__item { padding-block: var(--space-sm); }
+  .offer__cta { margin-top: var(--space-sm); }
+}

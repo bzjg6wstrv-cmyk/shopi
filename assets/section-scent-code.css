@@ -126,3 +126,16 @@
 .code-order__badge[hidden] { display: none; }
 .code-order__field { max-width: 22rem; margin-bottom: var(--space-xl); }
 .code-order__note { margin-top: var(--space-lg); font-size: .8125rem; color: rgb(var(--color-muted)); }
+
+/* v4.2.11 Mobile: engere Abstaende in den drei Schritten und im dunklen
+   Beratungsabschnitt. Schriftgroessen, Farben und Haarlinien bleiben. */
+@media (max-width: 749px) {
+  .steps__heading { margin-bottom: var(--space-md); }
+  .steps__item { padding-block: var(--space-sm); }
+  .steps__cta { margin-top: var(--space-md); }
+
+  .wa-feature__media img,
+  .wa-feature__media svg { min-height: 21rem; }
+  .wa-feature__content { padding-block: var(--space-xl); }
+  .wa-feature__actions { margin-top: var(--space-lg); }
+}

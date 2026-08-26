@@ -451,6 +451,15 @@ p { text-wrap: pretty; }
   border-top: var(--border-width) solid rgb(var(--color-line));
 }
 
+/* v4.2.11 Mobile: Der Fußbereich stapelt auf dem Telefon vier Blöcke
+   untereinander – mit 48 px Abstand dazwischen und 64 px oben und unten kam
+   er allein auf 272 px reinen Leerraum. Die Werte gelten nur bis 749 px;
+   Tippflächen und Schriftgrößen bleiben unverändert. */
+@media (max-width: 749px) {
+  .footer__top { gap: var(--space-xl); padding-block: var(--space-xl); }
+  .footer__bottom { padding-block: var(--space-md); }
+}
+
 .payment-icons { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
 .payment-icons svg { width: 38px; height: 24px; }
 

@@ -1,5 +1,51 @@
 # VENT CELESTE — Änderungsprotokoll
 
+## v4.2.11 — Mobile-Finalisierung
+
+Basis: `vent-celeste-v4-2-10-final-cleanup.zip`. Nur CSS-Abstände und eine
+Template-Änderung. **Kein Liquid, kein JavaScript, keine Locale- und keine
+Config-Datei wurde angefasst.** Alle CSS-Blöcke stehen in
+`@media (max-width: 749px)` — ab 750 px greift keine einzige neue Regel.
+
+| Datei | Änderung |
+| --- | --- |
+| `assets/section-product-row.css` | Bestseller-Reihe: Karten `min(72vw, 320px)` → `min(62vw, 280px)`, Bildformat 3/4 → 4/5, `height: 100%` → `auto` innerhalb der Reihe, Kopfabstand 24 → 16 px, Bahn-Innenabstand 8 → 0, Punkte 16 → 12 px |
+| `assets/section-scent-code.css` | Schritte: Überschriftabstand 24 → 16 px, Zeilen 16 → 12 px, CTA 24 → 16 px. Beratungsbereich: Bild-Mindesthöhe 26 → 21 rem, Innenabstand 48 → 32 px, Buttonabstand 32 → 24 px |
+| `assets/section-editorial.css` | Bild/Text-Abstand 32 → 24 px, Merkmalsliste 24 → 16 px, Zeilen 12 → 8 px, Labelspalte 6 → 5,5 rem, Buttons 32 → 24 px, Newsletter-Formular 24 → 16 px |
+| `assets/section-launch-offer.css` | Innenabstände 16 → 12 px, Abstand vor dem Button 16 → 12 px |
+| `assets/base.css` | nur `.footer__top` und `.footer__bottom`: Abstand 48 → 32 px, Innenabstand 64 → 32 px bzw. 24 → 16 px |
+| `templates/index.json` | Abschnitt `promise` („Das Prinzip") entfernt |
+
+### Wirkung auf dem Telefon (390 px)
+
+| Abschnitt | vorher | jetzt |
+| --- | --- | --- |
+| Bestseller | 647 px | 551 px |
+| Fußbereich | 855 px | 743 px |
+| 30 % Extrait | 864 px | 816 px |
+| Über uns | 710 px | 694 px |
+| So funktioniert's | 472 px | 432 px |
+| Dein Duft ist nicht dabei? | 420 px | 380 px |
+| Vorteil & Garantie | 523 px | 503 px |
+| Das Prinzip | 514 px | entfällt |
+| **Gesamte Seite** | **5832 px** | **4945 px** (−15 %) |
+
+### Desktop
+
+Bei 750 px, 990 px, 1280 px und 1600 px ist der einzige gemessene Unterschied
+der entfernte Abschnitt „Das Prinzip". Jede andere Abschnittshöhe, die
+Produktkarte und der Fußbereich sind identisch.
+
+### Hinweis zum entfernten Abschnitt
+
+„Das Prinzip" zeigte 30 ml, 30 % und **30,00 €**. Größe und Konzentration
+stehen bereits im Extrait-Abschnitt, der Preis stand nur dort. Auf der
+Startseite bleiben die echten Shop-Preise an den Bestseller-Karten sichtbar.
+Der Abschnittstyp `brand-promise` bleibt im Theme und lässt sich im
+Theme-Editor jederzeit wieder hinzufügen.
+
+---
+
 ## V4.2.7 — Konsolidierter Mobile-Finish
 
 - Mobile-Menü-Fix aus V4.2.6 beibehalten.

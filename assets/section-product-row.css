@@ -86,3 +86,29 @@
   }
   .row-track > li { min-width: 0; overflow: hidden; }
 }
+
+/* v4.2.11 Mobile: Die Reihe nahm auf dem Telefon 647 px ein, davon 374 px
+   allein das Bild einer Karte. Schmalere Karten und ein etwas flacheres
+   Bildformat machen sie kompakter, ohne den Bildausschnitt umzustellen –
+   das Hochformat bleibt erhalten, es wird nur weniger hoch.
+   Alles ausschließlich innerhalb der Reihe; die Karten in Kollektionen und
+   Suchergebnissen sind nicht betroffen. */
+@media (max-width: 749px) {
+  .row-head { margin-bottom: var(--space-md); }
+
+  .row-track {
+    grid-auto-columns: min(62vw, 280px);
+    padding-bottom: 0;
+  }
+
+  /* Ohne height:100% entsteht unter kurzen Karten kein Leerraum mehr,
+     wenn eine andere Karte in der Reihe zwei Titelzeilen hat. */
+  .product-row .card { height: auto; gap: var(--space-xs); }
+  .product-row .card__media { aspect-ratio: 4 / 5; }
+
+  .row-dots { margin-top: var(--space-sm); }
+}
+
+@media (max-width: 599px) {
+  .row-track { grid-auto-columns: min(62vw, 280px); }
+}
