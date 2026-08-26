@@ -231,7 +231,7 @@
       "checking": "Checking code",
       "found": "__CODE__ found",
       "order": "__CODE__ – choose a format",
-      "invalid": "Please enter a number between 1 and 130.",
+      "invalid": "Not a valid scent code. Please enter the number only, for example 071.",
       "search_hit": "Scent code",
       "order_cta": "Select now",
       "your_code": "Your scent code",

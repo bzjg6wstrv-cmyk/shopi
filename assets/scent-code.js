@@ -1,5 +1,6 @@
 /* Scent Code – Normalisierung und Auflösung.
    Eingaben wie 47, 047, vc47, VC 047 oder VC-047 führen alle zu VC-047.
+   Die Nummernkreise sind nach oben offen: 1250 wird zu VC-1250.
 
    Auflösung in drei Stufen:
      1. Tabelle der öffentlich gelisteten Düfte (serverseitig gerendert, 0 ms)
@@ -15,7 +16,7 @@
   if (!forms.length) return;
 
   var configNode = document.querySelector('[data-scent-code-map]');
-  var config = { prefix: 'VC', max: 130, allowed: [], codes: {}, fallback: '', searchUrl: '/search/suggest' };
+  var config = { prefix: 'VC', allowed: [], codes: {}, fallback: '', searchUrl: '/search/suggest' };
   if (configNode) {
     try {
       config = Object.assign(config, JSON.parse(configNode.textContent));
@@ -28,21 +29,41 @@
   var root = window.VCRoutes || {};
 
   /* ------------------------------------------------------- Normalisierung */
-  function normalise(raw) {
-    if (!raw) return null;
-    var digits = String(raw).replace(/\D+/g, '');
-    if (!digits) return null;
-    if (digits.length > 4) return null;
+  /* Erlaubt ist ausschließlich: optionales Präfix, danach ausschließlich
+     Ziffern. Ein Minuszeichen, Buchstaben im Zahlteil oder ein Trennzeichen
+     ohne Präfix führen zur Ablehnung – „-5", „a7b1" und „71a" sind kein Code.
+     Das Muster wird einmal aus dem eingestellten Präfix gebaut. */
+  function escapeForRegex(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\-]/g, '\\$&');
+  }
 
-    var number = parseInt(digits, 10);
-    if (!number || number < 1 || number > config.max) return null;
+  var codePattern = new RegExp(
+    '^(?:' + escapeForRegex(config.prefix || 'VC') + '[-_.#\\s]*)?(\\d{1,9})$',
+    'i'
+  );
+
+  function normalise(raw) {
+    if (raw === null || raw === undefined) return null;
+    /* Nur außen kürzen, nicht innen: „VC 071" ist ein Code, „1 2" nicht. */
+    var value = String(raw).trim();
+    if (!value) return null;
+
+    var match = value.match(codePattern);
+    if (!match) return null;
+
+    var number = parseInt(match[1], 10);
+    /* 0 und 000 sind keine Kennung. Nach oben gibt es keine Grenze: Die
+       Nummernkreise wachsen, das Theme darf dabei nicht im Weg stehen. */
+    if (!number || number < 1) return null;
 
     /* Ist eine Liste vergebener Nummern hinterlegt, muss der Code darin stehen.
-       Ohne Liste gilt der Bereich 1 … max – siehe README. */
+       Ohne Liste ist jede positive Nummer gültig – siehe README. */
     if (Array.isArray(config.allowed) && config.allowed.length > 0) {
       if (config.allowed.indexOf(number) === -1) return null;
     }
 
+    /* Unter 100 dreistellig mit führenden Nullen, ab 100 die volle Nummer:
+       1 → VC-001, 71 → VC-071, 130 → VC-130, 1250 → VC-1250. */
     return config.prefix + '-' + String(number).padStart(3, '0');
   }
 

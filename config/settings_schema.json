@@ -5,7 +5,8 @@
     "theme_version": "1.0.0",
     "theme_author": "VENT CELESTE",
     "theme_documentation_url": "https://shopify.dev",
-    "theme_support_url": "https://shopify.dev"
+    "theme_support_url": "https://shopify.dev",
+    "settings": []
   },
   {
     "name": "Logo & Marke",
@@ -338,16 +339,6 @@
         "default": "VC"
       },
       {
-        "type": "range",
-        "id": "scent_code_max",
-        "min": 50,
-        "max": 500,
-        "step": 10,
-        "label": "Höchste vergebene Nummer",
-        "default": 130,
-        "info": "Eingaben darüber werden als ungültig behandelt."
-      },
-      {
         "type": "collection",
         "id": "scent_code_collection",
         "label": "Collection der öffentlichen Düfte",
@@ -372,7 +363,7 @@
         "id": "valid_scent_codes",
         "label": "Liste gültiger Codes",
         "default": "",
-        "info": "Kommagetrennt. Erlaubt sind 047, VC-047 oder 47 – die Schreibweise wird vereinheitlicht."
+        "info": "Kommagetrennt, optional. Leer lassen heißt: Jede positive Nummer wird angenommen. Erlaubt sind 047, VC-047 oder 47 – die Schreibweise wird vereinheitlicht."
       }
     ]
   },

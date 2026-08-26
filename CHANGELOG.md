@@ -1,5 +1,77 @@
 # VENT CELESTE — Änderungsprotokoll
 
+## v4.2.13 — Scent Codes ohne Obergrenze
+
+Jede positive Nummer ist jetzt ein gültiger Scent Code. Unter 100 wird
+dreistellig aufgefüllt, ab 100 bleibt die Nummer stehen:
+
+```
+1    → VC-001        130  → VC-130
+71   → VC-071        1250 → VC-1250
+99   → VC-099        9999 → VC-9999
+```
+
+Abgelehnt werden weiterhin `0`, `000`, negative Zahlen, Buchstaben und
+alles Gemischte.
+
+### Strengere Eingabeprüfung
+
+Bisher wurden schlicht alle Nicht-Ziffern entfernt. Dadurch galt `a7b1` als
+`VC-071` und `-5` als `VC-005`. Erlaubt ist jetzt ausschließlich: optionales
+Präfix, danach nur Ziffern. Trennzeichen zählen nur nach dem Präfix —
+`VC 071` ist ein Code, `1 2` nicht.
+
+| Eingabe | vorher | jetzt |
+| --- | --- | --- |
+| `71`, `071`, `VC71`, `VC-71`, `vc071`, `VC 071` | VC-071 | VC-071 |
+| `1250` | abgelehnt (über 130) | **VC-1250** |
+| `131`, `999` | abgelehnt | **VC-131**, **VC-999** |
+| `-5` | VC-005 | **abgelehnt** |
+| `a7b1`, `71a` | VC-071 | **abgelehnt** |
+| `1 2` | VC-012 | **abgelehnt** |
+| `0`, `000`, `abc` | abgelehnt | abgelehnt |
+
+### Die Einstellung „Höchste vergebene Nummer" ist entfernt
+
+`scent_code_max` hätte die Grenze sonst weiter erzwungen und im Theme-Editor
+etwas versprochen, das nicht mehr stimmt. Entfernt aus
+`config/settings_schema.json`, `config/settings_data.json` (auch aus dem
+Preset), `snippets/scent-code-map.liquid` und beiden Prüfpfaden.
+
+Die Liste `valid_scent_codes` bleibt: Wird sie gefüllt, gilt weiterhin nur,
+was darin steht. Leer bedeutet jetzt „jede positive Nummer".
+
+### Beide Prüfpfade stimmen überein
+
+Die Erkennung läuft an zwei Stellen — im Browser (`assets/scent-code.js`,
+`assets/vc-search.js`) und serverseitig in Liquid für die Suchergebnisseite
+ohne JavaScript (`snippets/scent-code-hit.liquid`). Beide wurden mit
+denselben 31 Fällen geprüft und liefern identische Ergebnisse.
+
+Zwei Fallstricke dabei:
+* Liquid behandelt einen String aus reinen Leerzeichen als `blank` — `1 2`
+  wäre durch die Ziffernprüfung gerutscht. Geprüft wird jetzt über die Länge.
+* `'-5' | plus: 0` ergibt in Liquid `-5`, das Minuszeichen wurde vorher aber
+  vorab entfernt. Trennzeichen werden jetzt nur noch nach einem erkannten
+  Präfix entfernt.
+
+### Geänderte Dateien
+
+| Datei | Änderung |
+| --- | --- |
+| `assets/scent-code.js` | neues Muster, keine Obergrenze, `max` aus der Konfiguration |
+| `assets/vc-search.js` | dieselbe Regel für die Suche |
+| `snippets/scent-code-hit.liquid` | serverseitige Erkennung angeglichen |
+| `snippets/scent-code-map.liquid` | `max` nicht mehr ausgegeben |
+| `config/settings_schema.json` | `scent_code_max` entfernt, Hinweis bei `valid_scent_codes` |
+| `config/settings_data.json` | gespeicherter Wert entfernt, auch im Preset |
+| `locales/de.default.json`, `locales/en.json` | Fehlermeldung ohne Zahlenbereich |
+
+Nicht angefasst: Layout, Design, Hero, Warenkorb, Bestellformular. Bei
+990 px, 1280 px und 1600 px keine gemessene Layoutänderung.
+
+---
+
 ## v4.2.12 — Suche und Duftberatung getrennt, Scent-Code-Bestellweg geprüft
 
 Basis: `vent-celeste-v4-2-11-claude-mobile-final.zip`. Entwurf, nicht veröffentlicht.

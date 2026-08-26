@@ -10,19 +10,47 @@
 {%- liquid
   assign prefix = settings.scent_code_prefix | default: 'VC'
   assign prefix_down = prefix | downcase
+  assign prefix_len = prefix_down | size
 
-  assign digits = terms | downcase | remove: prefix_down | remove: '-' | remove: '–' | remove: ' ' | remove: '#' | strip
+  comment
+    Dieselbe Regel wie im Eingabefeld: optionales Präfix, danach ausschließlich
+    Ziffern. Trennzeichen sind nur nach dem Präfix erlaubt – „-5" ist damit
+    kein Code, „VC-5" schon. Nach oben gibt es keine Grenze.
+  endcomment
+  comment
+    Leerzeichen zählen nur außen und als Trennzeichen nach dem Präfix:
+    „VC 071" ist ein Code, „1 2" nicht.
+  endcomment
+  assign body = terms | downcase | strip
+  assign head = body | slice: 0, prefix_len
+  if prefix_len > 0 and head == prefix_down
+    assign body = body | remove_first: prefix_down
+    assign body = body | replace: '-', '' | replace: '–', '' | replace: '_', '' | replace: '.', '' | replace: '#', '' | replace: ' ', ''
+  endif
+
+  comment
+    Ziffernprüfung ohne regulären Ausdruck: Bleibt nach dem Entfernen aller
+    Ziffern nichts übrig, bestand die Eingabe nur aus Ziffern.
+  endcomment
+  assign rest = body | replace: '0', '' | replace: '1', '' | replace: '2', '' | replace: '3', '' | replace: '4', ''
+  assign rest = rest | replace: '5', '' | replace: '6', '' | replace: '7', '' | replace: '8', '' | replace: '9', ''
+
+  comment
+    Über die Länge prüfen, nicht über „blank": Liquid behandelt einen String
+    aus reinen Leerzeichen als blank – „1 2" wäre sonst durchgerutscht.
+  endcomment
+  assign rest_len = rest | size
+  assign digits = body
   assign number = digits | plus: 0
-  assign max_code = settings.scent_code_max | default: 130
 
   assign has_code = false
-  if number > 0 and number <= max_code and digits != blank
+  if digits != blank and rest_len == 0 and number > 0
     assign has_code = true
   endif
 
   comment
     Ist eine Liste vergebener Nummern hinterlegt, muss der Code darin stehen.
-    Ohne Liste gilt der Bereich 1 … Höchstnummer.
+    Ohne Liste ist jede positive Nummer gültig.
   endcomment
   assign allow_raw = settings.valid_scent_codes | strip
   if has_code and allow_raw != blank

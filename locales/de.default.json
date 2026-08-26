@@ -231,7 +231,7 @@
       "checking": "Code wird geprüft",
       "found": "__CODE__ gefunden",
       "order": "__CODE__ – Ausführung wählen",
-      "invalid": "Kein gültiger Scent Code. Bitte eine Nummer von 001 bis 130 eingeben, zum Beispiel 071.",
+      "invalid": "Kein gültiger Scent Code. Bitte nur die Nummer eingeben, zum Beispiel 071.",
       "search_hit": "Scent Code",
       "order_cta": "Jetzt auswählen",
       "your_code": "Dein Scent Code",

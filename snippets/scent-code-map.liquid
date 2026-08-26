@@ -13,11 +13,11 @@
   <script type="application/json" data-scent-code-map>
     {
       "prefix": {{ settings.scent_code_prefix | default: 'VC' | json }},
-      "max": {{ settings.scent_code_max | default: 130 | json }},
       {%- comment -%}
         Liste der tatsächlich vergebenen Nummern. Ist sie leer, akzeptiert das
-        Theme aus Kompatibilitätsgründen jede Nummer bis „max" – dann kann ein
-        Kunde auch einen Code bestellen, den es nicht gibt.
+        Theme jede positive Nummer – dann kann ein Kunde auch einen Code
+        bestellen, den es nicht gibt. Die Nummernkreise sind bewusst nach oben
+        offen; eine Obergrenze gibt es nicht mehr.
       {%- endcomment -%}
       "allowed": [
         {%- assign allow_raw = settings.valid_scent_codes | strip -%}
