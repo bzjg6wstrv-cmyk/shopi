@@ -1,3 +1,37 @@
+# v4.2.24 – Mobile-Politur auf v4.2.23
+
+Die Runde v4.2.18 (Schlagzeile, Code-Eingabe, Bestseller-Reihe) war auf einem
+älteren Stand entstanden und fehlte in v4.2.23. Sie ist jetzt sauber darauf
+angewandt. Die Änderungen aus v4.2.21 und v4.2.23 – Suchergebnis-Darstellung,
+persönliche Scent Codes, `section-search-results.css` – bleiben vollständig
+erhalten: Die vier hier geänderten Dateien waren in v4.2.23 unverändert, es
+gab keine Überschneidung.
+
+**Geändert gegenüber v4.2.23** – vier Dateien, 69 Zeilen:
+
+* `assets/section-hero-v2.css` – „SCENT." bricht nicht mehr im Wort
+  (`white-space: nowrap`, `word-break: keep-all`), die Zeile richtet ihre
+  Größe notfalls an der Spaltenbreite aus (`container-type` +
+  `font-size: min(1em, 26cqi)`). Dazu stehen „VC-" und die Ziffern ohne Lücke
+  beieinander: Rasterabstand 0, Feldbreite auf drei Stellen, gleiche Sperrung,
+  `tabular-nums`, „Weiter" am rechten Rand.
+* `assets/section-product-row.css` – Karten `min(62vw, 280px)` →
+  `min(70vw, 300px)`, `overflow: hidden` an der einzelnen Karte entfernt,
+  `scroll-snap-stop: always`.
+* `assets/scent-code.js` – Ziffernfilter für alle Code-Felder.
+* `snippets/scent-code-field.liquid` – `maxlength="3"`, `pattern="[0-9]*"`,
+  `enterkeyhint="go"`.
+
+**Geprüft auf der neuen Basis:** Schlagzeile bei 13 Breiten von 320 bis
+1600 px einzeilig, kein Wortumbruch. Code-Eingabe: nur Ziffern, führende
+Nullen bleiben, Enter löst aus, Normalisierung `071 → VC-071`. Bestseller bei
+375, 390, 414 und 430 px durch alle acht Karten gewischt: jede vollständig
+sichtbar, kein Beschnitt, keine horizontale Scrollbar. Der Warenkorb-Weg der
+v4.2.23 mit dem neuen `vc-code-card`-Markup arbeitet unverändert:
+`POST /cart/add.js` mit `properties["Scent Code"]`, Warenkorb-Lade öffnet,
+Fehlerpfad und Doppelklickschutz greifen. Bei 990, 1280 und 1600 px kein
+Layoutunterschied.
+
 # v4.2.23 – Scent-Code Darstellung
 
 - Die sechs öffentlich gelisteten Bestseller bleiben unverändert und führen weiterhin auf ihre vollständigen Produktseiten.

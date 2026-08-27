@@ -20,6 +20,22 @@
 
 .hero2__title { margin-bottom: 0.625rem; }
 
+/* Kein Umbruch innerhalb eines Wortes: „SCENT." darf nie zu „SCEN / T." werden.
+   Die Überschrift wird zum Größenbezug (container), damit die Zeile ihre
+   Schriftgröße notfalls an der tatsächlich verfügbaren Spaltenbreite
+   ausrichtet statt am Fenster. Der Deckel greift erst, wenn die Zeile sonst
+   nicht mehr passt – gemessen bleibt die Schriftgröße bei 320, 375, 390, 430,
+   750, 844, 896, 932, 1024, 1280 und 1600 px unverändert. */
+.hero2__title { container-type: inline-size; }
+
+.hero2__title .display__line {
+  font-size: min(1em, 26cqi);
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  hyphens: none;
+}
+
 .hero2__text {
   max-width: 30ch;
   font-size: 0.9375rem;
@@ -90,7 +106,9 @@
   border-radius: 0;
   background-color: transparent;
   align-items: baseline;
-  gap: 0.15rem;
+  /* Kein Abstand zwischen Präfix und Ziffern: „VC-071" liest sich als ein
+     Wert und nicht als zwei getrennte Elemente. */
+  gap: 0;
   transition: border-color var(--dur) var(--ease);
 }
 .hero2__code .code-field__row:focus-within {
@@ -102,17 +120,26 @@
 .hero2__code .code-field__prefix {
   padding: 0;
   font-size: 1.125rem;
-  letter-spacing: 0.08em;
+  /* Präfix und Ziffern teilen sich Schriftgrad, Sperrung und Farbe. */
+  letter-spacing: 0.1em;
   color: rgb(var(--color-text));
 }
 
 .hero2__code .code-field__input {
+  /* Nur so breit wie drei Ziffern: Das Feld steht direkt hinter „VC-", die
+     Zeile bleibt eine zusammenhängende Angabe statt einer weiten Fläche. */
+  flex: 0 0 auto;
+  width: 4.25ch;
   min-height: 3rem;
-  padding: 0 0.4rem;
+  padding: 0;
   font-size: 1.125rem;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
 }
-.hero2__code .code-field__input::placeholder { opacity: 0.35; }
+.hero2__code .code-field__input::placeholder { opacity: 0.35; letter-spacing: 0.1em; }
+
+/* Die Schaltfläche rückt ans rechte Ende, der Wert bleibt links kompakt. */
+.hero2__code .code-field__submit { margin-left: auto; }
 
 .hero2__code .code-field__submit {
   min-height: 3rem;
