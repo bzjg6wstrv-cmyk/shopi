@@ -238,7 +238,8 @@
       "code_in_order": "Scent code",
       "code_required": "Please enter your scent code.",
       "code_help": "You received the code from us via WhatsApp.",
-      "no_code_yet": "No code yet?"
+      "no_code_yet": "No code yet?",
+      "check": "Check"
     },
     "product_row": {
       "previous": "Previous fragrances",

@@ -238,7 +238,8 @@
       "code_in_order": "Scent Code",
       "code_required": "Bitte gib deinen Scent Code ein.",
       "code_help": "Den Code hast du per WhatsApp von uns bekommen.",
-      "no_code_yet": "Noch keinen Code?"
+      "no_code_yet": "Noch keinen Code?",
+      "check": "Prüfen"
     },
     "product_row": {
       "previous": "Vorherige Düfte",

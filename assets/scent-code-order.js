@@ -4,27 +4,58 @@
 (function () {
   'use strict';
 
-  var form = document.querySelector('[data-scent-code-order]');
   var codeForm = document.querySelector('[data-scent-code-form="local"]');
-  if (!form || !codeForm) return;
+  if (!codeForm) return;
 
   var input = codeForm.querySelector('[data-scent-code-input]');
+  if (!input) return;
+
+  /* Zwei Vorlagen, ein Skript:
+
+     A  Eigene Vorlage `product.scent-code` – der Abschnitt bringt sein
+        eigenes Bestellformular mit Varianten- und Preiswechsel mit.
+     B  Standard-Produktvorlage – die Code-Eingabe steht vor dem regulären
+        Produktformular, die Positionsangaben liegen darin. Varianten und
+        Preis regelt dort weiterhin product-form.js.
+
+     Dadurch funktioniert der Bestellweg unabhängig davon, welche Vorlage dem
+     Produkt im Adminbereich zugewiesen ist. */
+  var orderForm = document.querySelector('[data-scent-code-order]');
+  var inlineHost = document.querySelector('[data-scent-code-inline]');
+  var form = orderForm;
+  if (!form && inlineHost) {
+    form = document.querySelector('form[action*="/cart/add"]');
+  }
+  if (!form) return;
+
+  var eigeneVorlage = Boolean(orderForm);
+  var anzeige = eigeneVorlage ? form : inlineHost;
+
   var visibleProperty = form.querySelector('[data-code-property]');
   var hiddenProperty = form.querySelector('[data-code-property-hidden]');
-  var badge = form.querySelector('[data-code-badge]');
-  var badgeValue = form.querySelector('[data-code-badge-value]');
-  var submit = form.querySelector('[data-code-submit]');
+  var badge = anzeige.querySelector('[data-code-badge]');
+  var badgeValue = anzeige.querySelector('[data-code-badge-value]');
+  var submit = form.querySelector('[data-code-submit]') || form.querySelector('[data-add-button]');
   var errorTarget = form.querySelector('[data-form-error]');
   var variantField = form.querySelector('[data-variant-id]');
   var priceHost = form.querySelector('[data-product-price]');
   var orderStrings = window.VCCodeOrderStrings || {};
   var codeStrings = window.VCCodeStrings || {};
 
+  /* Dieselbe Regel wie in scent-code.js. Der eigene Weg greift nur, falls
+     jenes Skript auf dieser Seite nicht zum Zug kam. */
+  var ERSATZMUSTER = /^(?:VC[-_.#\s]*)?(\d{1,9})$/i;
+
   function normalise(value) {
     if (window.VCScentCode && typeof window.VCScentCode.normalise === 'function') {
       return window.VCScentCode.normalise(value);
     }
-    return null;
+    if (value === null || value === undefined) return null;
+    var treffer = String(value).trim().match(ERSATZMUSTER);
+    if (!treffer) return null;
+    var nummer = parseInt(treffer[1], 10);
+    if (!nummer || nummer < 1) return null;
+    return 'VC-' + String(nummer).padStart(3, '0');
   }
 
   function apply(code) {
@@ -88,6 +119,30 @@
       input.value = normalised.replace(/^[A-Z]+-/, '');
       apply(normalised);
     }
+  }
+
+  /* Ohne gültigen Code wird nicht abgesendet – in beiden Vorlagen. */
+  form.addEventListener('submit', function (event) {
+    if (visibleProperty && visibleProperty.value) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (errorTarget) {
+      errorTarget.textContent = orderStrings.required || '';
+      errorTarget.hidden = false;
+    }
+    setCodeStatus(codeStrings.invalid || '', 'error');
+    input.focus();
+  });
+
+  /* Variantenwechsel nur auf der eigenen Vorlage: Auf der Standardvorlage
+     erledigt das product-form.js, ein zweiter Zugriff würde sich in die Quere
+     kommen. Dort wird nach jedem Wechsel nur die Codesperre erneut gesetzt. */
+  if (!eigeneVorlage) {
+    form.addEventListener('change', function () {
+      window.setTimeout(function () { apply(normalise(input.value)); }, 0);
+    });
+    apply(normalise(input.value));
+    return;
   }
 
   /* Variantenwechsel: identisch zur normalen Produktseite.
@@ -163,14 +218,4 @@
     );
   });
 
-  form.addEventListener('submit', function (event) {
-    if (visibleProperty && visibleProperty.value) return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    if (errorTarget) {
-      errorTarget.textContent = orderStrings.required || '';
-      errorTarget.hidden = false;
-    }
-    input.focus();
-  });
 })();

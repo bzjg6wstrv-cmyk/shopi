@@ -1,5 +1,81 @@
 # VENT CELESTE — Änderungsprotokoll
 
+## v4.2.16 — Bestellweg über die Produktseite statt direktem Warenkorb
+
+Der direkte Warenkorb-Absender aus den Suchergebnissen ist entfernt. Der
+Suchtreffer ist wieder ein normaler Link:
+
+```
+71 → VC-071 → JETZT AUSWÄHLEN
+   → /products/vent-celeste-scent-code?code=VC-071
+```
+
+Codes mit eigener Produktseite verlinken unverändert dorthin.
+
+### Der Bestellweg funktioniert jetzt mit beiden Produktvorlagen
+
+Bisher verarbeitete nur `main-product-scent-code` den Parameter `?code=` —
+also nur bei zugewiesener Vorlage `product.scent-code`. `scent-code-order.js`
+kennt jetzt zwei Betriebsarten:
+
+| | Vorlage | Formular | Varianten und Preis |
+| --- | --- | --- | --- |
+| A | `product.scent-code` | eigenes Bestellformular des Abschnitts | dieses Skript |
+| B | Standard-Produkt | das reguläre Produktformular | weiterhin `product-form.js` |
+
+In beiden Fällen liest das Skript beim Laden `?code=`, füllt Eingabefeld,
+`data-code-property`, `data-code-property-hidden` und die Kennzeichnung und
+gibt den Warenkorb-Button frei, sofern die Variante verfügbar ist. Ohne
+gültigen Code bleibt der Button gesperrt und das Formular wird nicht
+abgesendet.
+
+Für Betriebsart B rendert `sections/main-product.liquid` zwei Dinge —
+**ausschließlich**, wenn das aufgerufene Produkt das eingestellte
+Scent-Code-Produkt ist:
+
+* vor dem Produktformular die Code-Eingabe (`snippets/scent-code-inline.liquid`)
+* im Produktformular die beiden verborgenen Positionsangaben
+
+Die Eingabe steht bewusst **vor** dem Formular: Das Feld ist selbst ein
+`<form>`, verschachtelte Formulare sind ungültiges HTML und der Browser würde
+das innere verwerfen.
+
+Für jedes andere Produkt ist die Ausgabe von `main-product.liquid`
+**byte-identisch** mit v4.2.15 — nachgemessen an einer gerenderten normalen
+Produktseite.
+
+### Geänderte Dateien
+
+| Datei | Änderung |
+| --- | --- |
+| `snippets/scent-code-hit.liquid` | wieder ein Link auf `?code=`, kein `<form action="/cart/add">` mehr |
+| `assets/scent-code-order.js` | zweite Betriebsart, eigener Ersatz-Normalisierer, Absendesperre in beiden Vorlagen |
+| `sections/main-product.liquid` | Erkennung des Scent-Code-Produkts, Code-Eingabe und Positionsangaben, nur für dieses eine Produkt |
+| `snippets/scent-code-inline.liquid` | **neu** – die Code-Eingabe für die Standardvorlage |
+| `assets/section-scent-code.css` | Abstände der Inline-Eingabe |
+| `locales/de.default.json`, `locales/en.json` | Beschriftung `sections.scent_code.check` |
+
+### Geprüft
+
+`?code=VC-001`, `?code=VC-071`, `?code=VC-250` auf **beiden** Vorlagen:
+Eingabefeld, Positionsangabe, interne Angabe, Kennzeichnung und Button jeweils
+korrekt; Absenden liefert
+`id=<echte Variante> · properties[Scent Code]=VC-0xx · properties[_vc_code]=VC-0xx`.
+Ohne Code bleibt der Button gesperrt und es wird nichts abgesendet — auch
+dann nicht, wenn der Button künstlich entsperrt wird. Sechs Absendevorgänge
+über beide Vorlagen ergeben drei unterschiedliche Codes, also drei getrennte
+Positionen.
+
+Suchtreffer für `1`, `71`, `VC-71`, `250`: normaler Link auf
+`/products/vent-celeste-scent-code?code=…`, CTA „Jetzt auswählen", kein
+Warenkorb-Formular, kein „Keine Treffer" daneben. `101` (eigenes Produkt)
+verlinkt weiterhin auf `/products/vc-101`.
+
+Startseite bei 390, 750, 990, 1280 und 1600 px unverändert, keine JS-Fehler,
+Theme Check ohne Fehler.
+
+---
+
 ## v4.2.15 — Richtiger Produkt-Handle `vent-celeste-scent-code`
 
 Die Theme-Einstellung „Produkt für nicht gelistete Codes" zeigte auf den

@@ -17,6 +17,20 @@
   if option_name == blank or option_name == 'Title'
     assign option_name = 'products.product.variant_label' | t
   endif
+
+  comment
+    Ist dies das zentrale Produkt für nicht gelistete Scent Codes? Nur dann
+    erscheint weiter unten die Code-Eingabe. Für jedes andere Produkt ist die
+    Ausgabe dieser Datei unverändert.
+  endcomment
+  assign sc_product = settings.scent_code_product
+  if sc_product == blank
+    assign sc_product = all_products['vent-celeste-scent-code']
+  endif
+  assign is_scent_code_product = false
+  if sc_product != blank and sc_product.handle == product.handle
+    assign is_scent_code_product = true
+  endif
 -%}
 <section class="section">
   <div class="page-width">
@@ -71,9 +85,23 @@
           </p>
         {%- endif -%}
 
+        {%- if is_scent_code_product -%}
+          {% render 'scent-code-inline' %}
+        {%- endif -%}
+
         <div class="product-form">
           {%- form 'product', product, id: 'ProductForm', novalidate: 'novalidate' -%}
             <input type="hidden" name="id" value="{{ current_variant.id }}" data-variant-id>
+
+            {%- if is_scent_code_product -%}
+              {%- comment -%}
+                Die beiden Angaben reisen mit dem regulären Absenden mit und
+                landen als Positionsangabe im Warenkorb, im Checkout und in der
+                Bestellung. Gefüllt werden sie von scent-code-order.js.
+              {%- endcomment -%}
+              <input type="hidden" name="properties[{{ 'sections.scent_code.code_in_order' | t }}]" value="" data-code-property>
+              <input type="hidden" name="properties[_vc_code]" value="" data-code-property-hidden>
+            {%- endif -%}
 
             {%- unless product.has_only_default_variant -%}
               <fieldset class="variant-options" data-variant-options>
@@ -399,6 +427,19 @@
   }
 </script>
 <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+{%- if is_scent_code_product %}
+  {%- comment -%}
+    Nur auf dem zentralen Scent-Code-Produkt: liest ?code= aus der Adresszeile,
+    füllt Feld, Positionsangabe und Kennzeichnung und sperrt den Button ohne
+    gültigen Code. Auf allen anderen Produktseiten wird die Datei nicht geladen.
+  {%- endcomment -%}
+  <script>
+    window.VCCodeOrderStrings = {
+      required: {{ 'sections.scent_code.code_required' | t | json }}
+    };
+  </script>
+  <script src="{{ 'scent-code-order.js' | asset_url }}" defer="defer"></script>
+{% endif %}
 
 <script type="application/ld+json">
 {

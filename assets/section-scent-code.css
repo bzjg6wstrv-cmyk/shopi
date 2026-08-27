@@ -139,3 +139,10 @@
   .wa-feature__content { padding-block: var(--space-xl); }
   .wa-feature__actions { margin-top: var(--space-lg); }
 }
+
+/* Code-Eingabe innerhalb der Standard-Produktseite. Nur für das zentrale
+   Scent-Code-Produkt – dieselben Bausteine wie auf der eigenen Vorlage. */
+.code-inline { margin-bottom: var(--space-lg); }
+.code-inline .code-field { max-width: 22rem; }
+.code-inline .code-order__badge { margin-top: var(--space-md); }
+.code-inline .code-order__note { margin-top: var(--space-sm); font-size: .8125rem; color: rgb(var(--color-muted)); }
