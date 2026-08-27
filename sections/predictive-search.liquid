@@ -4,9 +4,17 @@
   Die Suche selbst ist eine native Shopify-Funktion – keine externe App.
 {%- endcomment -%}
 {%- if predictive_search.performed -%}
-  {% render 'scent-code-hit', terms: predictive_search.terms %}
+  {%- comment -%}
+    Erst erzeugen, dann ausgeben: Nur so lässt sich unten prüfen, ob ein
+    Scent-Code-Treffer vorliegt. Sonst stand darunter gleichzeitig
+    „Keine Treffer".
+  {%- endcomment -%}
+  {%- capture vc_code_hit -%}{% render 'scent-code-hit', terms: predictive_search.terms %}{%- endcapture -%}
+  {%- assign vc_code_hit = vc_code_hit | strip -%}
+  {{ vc_code_hit }}
 
-  {%- if predictive_search.resources.products.size == 0
+  {%- if vc_code_hit == blank
+    and predictive_search.resources.products.size == 0
     and predictive_search.resources.collections.size == 0
     and predictive_search.resources.pages.size == 0
     and predictive_search.resources.queries.size == 0

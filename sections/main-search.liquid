@@ -113,7 +113,14 @@
       </div>
 
       {%- if search.performed -%}
-        {% render 'scent-code-hit', terms: search.terms %}
+        {%- comment -%}
+          Der Treffer wird zuerst erzeugt und dann ausgegeben. So lässt sich
+          weiter unten prüfen, ob es ihn gibt – sonst stand unter einem
+          gefundenen Scent Code gleichzeitig „Keine Treffer".
+        {%- endcomment -%}
+        {%- capture vc_code_hit -%}{% render 'scent-code-hit', terms: search.terms %}{%- endcapture -%}
+        {%- assign vc_code_hit = vc_code_hit | strip -%}
+        {{ vc_code_hit }}
 
         {%- if vc_alias_codes != blank and vc_search_pool != blank -%}
           {%- capture vc_alias_cards -%}
@@ -146,7 +153,7 @@
           {%- endif -%}
         {%- endif -%}
 
-        {%- if vc_alias_count == 0 and search.results.size == 0 -%}
+        {%- if vc_alias_count == 0 and search.results.size == 0 and vc_code_hit == blank -%}
           <div class="note-placeholder">
             <p>{{ 'general.search.no_results' | t: terms: search.terms }}</p>
             <p>Suche nach einem Scent Code, einer Nummer, Duftnote oder einem Duftcharakter – zum Beispiel „49“, „Vanille“, „Gourmand“ oder „Holzig“.</p>
@@ -157,7 +164,7 @@
               </p>
             {%- endif -%}
           </div>
-        {%- elsif vc_alias_count == 0 -%}
+        {%- elsif vc_alias_count == 0 and search.results.size > 0 -%}
           <p class="meta meta--muted" style="margin-bottom: var(--space-lg);">
             {{ 'general.search.results_count' | t: count: search.results_count }}
           </p>

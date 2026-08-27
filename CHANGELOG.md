@@ -1,5 +1,83 @@
 # VENT CELESTE — Änderungsprotokoll
 
+## v4.2.14 — Scent Code direkt aus dem Suchtreffer in den Warenkorb
+
+### Die Ursache
+
+Der Treffer war ein Link auf `/products/scent-code?code=VC-001`. Den Code
+verarbeitet dort aber nur der Abschnitt `main-product-scent-code`, und der
+läuft ausschließlich über die Theme-Vorlage `product.scent-code`. Trägt das
+Produkt im Adminbereich die normale Produktvorlage, wird `?code=` schlicht
+ignoriert: Die Seite zeigt das Produkt ohne Code-Feld, die Positionsangabe
+entsteht nie — der Code lässt sich nicht bestellen.
+
+### Der Treffer legt jetzt selbst in den Warenkorb
+
+Statt zu verlinken, ist der generische Treffer ein Formular auf
+`routes.cart_add_url` mit der **echten** Variantennummer des Produkts —
+bevorzugt aus dem Metafeld `custom.hauptvariante`, sonst
+`selected_or_first_available_variant`. Es wird keine Nummer geraten und keine
+fest eingetragen.
+
+```
+id       = <echte Variante des Produkts „VENT CELESTE Scent Code">
+quantity = 1
+properties[Scent Code] = VC-071
+properties[_vc_code]   = VC-071
+```
+
+`cart-drawer.js` fängt jedes Formular auf `/cart/add` ohnehin ab: mit
+JavaScript wird per AJAX hinzugefügt und die Warenkorb-Lade öffnet, ohne
+JavaScript übernimmt Shopify und zeigt den Warenkorb. Damit hängt der
+Bestellweg an keiner Theme-Vorlage mehr.
+
+Ist die Variante nicht verfügbar oder kein Produkt hinterlegt, bleibt es beim
+bisherigen Link — es entsteht keine Sackgasse.
+
+Der Treffer nennt jetzt zusätzlich Ausführung und Preis, weil ein Klick
+direkt in den Warenkorb führt:
+
+```
+VC-071
+Extrait · 30 ml · 30 % · 30,00 €        JETZT AUSWÄHLEN
+```
+
+### „Keine Treffer" erscheint nicht mehr daneben
+
+`main-search.liquid` und `predictive-search.liquid` erzeugten den Code-Treffer
+und prüften unabhängig davon auf leere Ergebnisse. Beide erfassen den Treffer
+jetzt zuerst in einer Variablen und blenden den Hinweis aus, wenn es ihn gibt.
+
+### Gelistete Codes bleiben unberührt
+
+Hat ein Code ein eigenes Produkt — VC-049, VC-040 —, führt der Treffer
+weiterhin als Link auf dessen Produktseite. Nur Codes ohne eigenes Produkt
+laufen über das zentrale Produkt.
+
+### Geänderte Dateien
+
+| Datei | Änderung |
+| --- | --- |
+| `snippets/scent-code-hit.liquid` | Formular mit echter Variantennummer und Positionsangabe statt Link |
+| `sections/main-search.liquid` | Treffer erfassen, „Keine Treffer" nur ohne Treffer |
+| `sections/predictive-search.liquid` | dieselbe Prüfung |
+| `assets/base.css` | Darstellung des Treffer-Buttons, Titel und Zeile untereinander |
+
+Nicht angefasst: Header, Menü, Produktdesign, Profilbalken, Warenkorbdesign,
+Bestseller, Footer, `theme.js`, `cart-drawer.js`, `scent-code.js`. Die
+Startseite misst bei 390, 750, 990, 1280 und 1600 px unverändert.
+
+### Noch im Adminbereich nötig
+
+Für den Weg über das **Eingabefeld im Hero** (nicht über die Suche) muss dem
+Produkt „VENT CELESTE Scent Code" weiterhin die Theme-Vorlage
+**`scent-code`** zugewiesen sein — Produkt öffnen, rechts unter
+„Theme-Vorlage" auswählen. Ohne diese Zuweisung führt das Hero-Feld auf die
+normale Produktseite ohne Code-Feld. Der Weg über die Suche funktioniert
+unabhängig davon.
+
+---
+
 ## v4.2.13 — Scent Codes ohne Obergrenze
 
 Jede positive Nummer ist jetzt ein gültiger Scent Code. Unter 100 wird

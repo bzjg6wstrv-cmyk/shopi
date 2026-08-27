@@ -1266,6 +1266,23 @@ body.is-typing .sticky-atc { transform: translateY(110%); }
   border: var(--border-width) solid rgb(var(--color-text));
   margin-bottom: var(--space-lg);
 }
+/* Der generische Treffer ist ein Absende-Button statt eines Links: gleiche
+   Darstellung, damit der Wechsel im Markup optisch nicht auffällt. */
+/* Titel und Ausführungszeile untereinander, damit die Beschriftung rechts
+   nicht in den Text läuft. */
+.predictive__code > span:first-child { display: grid; gap: .15rem; min-width: 0; }
+.predictive__code-meta { display: block; }
+
+button.predictive__code {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  background: none;
+}
+.predictive__code-form { margin: 0; }
+.predictive__code-form .field__error { margin-top: calc(var(--space-lg) * -1 + var(--space-xs)); margin-bottom: var(--space-lg); }
+
 .predictive__code-title { font-family: var(--font-heading-family); font-size: 1.125rem; letter-spacing: .1em; }
 .predictive__code-meta { font-size: .8125rem; color: rgb(var(--color-muted)); }
 .predictive__code-cta { font-size: .75rem; letter-spacing: var(--meta-tracking); text-transform: uppercase; white-space: nowrap; }
