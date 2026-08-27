@@ -240,7 +240,8 @@
       "code_help": "Den Code hast du per WhatsApp von uns bekommen.",
       "no_code_yet": "Noch keinen Code?",
       "check": "Prüfen",
-      "add_failed": "Der Duft konnte nicht in den Warenkorb gelegt werden. Bitte versuche es noch einmal."
+      "add_failed": "Der Duft konnte nicht in den Warenkorb gelegt werden. Bitte versuche es noch einmal.",
+      "view_product_cta": "Produkt ansehen"
     },
     "product_row": {
       "previous": "Vorherige Düfte",

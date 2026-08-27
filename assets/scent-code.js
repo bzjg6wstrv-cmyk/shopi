@@ -148,21 +148,6 @@
     });
   }
 
-  /* Ziffernfilter fuer alle Code-Felder, unabhaengig von der Betriebsart.
-     Buchstaben und Zeichen kommen gar nicht erst ins Feld; fuehrende Nullen
-     bleiben erhalten, weil der Wert als Text behandelt wird. Die Laenge
-     begrenzt maxlength im Markup. */
-  document.querySelectorAll('[data-scent-code-input]').forEach(function (feld) {
-    feld.addEventListener('input', function () {
-      var nurZiffern = feld.value.replace(/\D+/g, '');
-      if (nurZiffern !== feld.value) {
-        var position = feld.selectionStart;
-        feld.value = nurZiffern;
-        try { feld.setSelectionRange(position - 1, position - 1); } catch (error) {}
-      }
-    });
-  });
-
   forms.forEach(function (form) {
     /* Felder mit mode="local" werden von der jeweiligen Seite selbst
        verarbeitet (z. B. der generische Bestellweg) – hier nichts tun. */

@@ -9,7 +9,7 @@
     Scent-Code-Treffer vorliegt. Sonst stand darunter gleichzeitig
     „Keine Treffer".
   {%- endcomment -%}
-  {%- capture vc_code_hit -%}{% render 'scent-code-hit', terms: predictive_search.terms %}{%- endcapture -%}
+  {%- capture vc_code_hit -%}{% render 'scent-code-hit', terms: predictive_search.terms, results: predictive_search.resources.products %}{%- endcapture -%}
   {%- assign vc_code_hit = vc_code_hit | strip -%}
   {{ vc_code_hit }}
 

@@ -1,76 +1,19 @@
+# v4.2.23 – Scent-Code Darstellung
+
+- Die sechs öffentlich gelisteten Bestseller bleiben unverändert und führen weiterhin auf ihre vollständigen Produktseiten.
+- Nicht gelistete/persönliche Scent Codes zeigen jetzt „DEIN SCENT CODE“ statt „1 PASSENDES DUFTPROFIL“.
+- Persönliche Codes erklären direkt, dass der ausgewählte Duft nach Bestellung frisch gemischt und als 30 ml Extrait abgefüllt wird.
+- Cart-API, Code-Normalisierung und öffentliche Produkterkennung wurden nicht verändert.
+
+## v4.2.21 – Search result intent cleanup
+
+- Gelistete Duftprofile wie VC-049 führen über Bild, Titel und CTA auf die vollständige Produktseite.
+- CTA für gelistete Produkte heißt jetzt „Produkt ansehen“ statt „Jetzt auswählen“.
+- Persönliche/generische Scent Codes behalten den direkten Cart-API-Weg mit „Jetzt auswählen“.
+- Suchtreffer zeigen konsistent „Extrait · 30 ml · 30 %“ und den Preis; der Preis fällt bei Bedarf auf den Produktpreis zurück.
+- Keine Änderungen an der bestehenden Scent-Code-Cart-API-Logik.
+
 # VENT CELESTE — Änderungsprotokoll
-
-## v4.2.18 — Mobile-Feinschliff: Schlagzeile, Code-Eingabe, Bestseller-Reihe
-
-### 1 · „SCENT." bleibt ein Wort
-
-Gemessen mit der echten Playfair Display: „SCENT." ist **3,37 em** breit. In
-der Schlagzeilenspalte wurde es damit ab 750 px auf 81–84 % der Breite —
-wenige Pixel Reserve. Genau dort kippt es und bricht zu „SCEN / T.". Auf
-schmalen Telefonen (320–430 px) ist der Anteil unkritisch.
-
-Zwei Zeilen in `assets/section-hero-v2.css`:
-
-* `.hero2__title .display__line { white-space: nowrap; word-break: keep-all; }`
-  – innerhalb eines Wortes wird nie mehr umbrochen.
-* `.hero2__title { container-type: inline-size; }` und
-  `font-size: min(1em, 26cqi)` – die Zeile richtet ihre Größe notfalls an der
-  **tatsächlichen Spaltenbreite** aus statt am Fenster. Der Deckel greift
-  erst, wenn es sonst nicht mehr passt.
-
-Gemessen bei 320, 360, 375, 390, 414, 430, 896, 932, 1024, 1280 und 1600 px:
-Schriftgröße unverändert. Einzige Ausnahme 750 px: 97,5 → 95,9 px (−1,6 %) —
-das ist die Reserve, die den Umbruch verhindert.
-
-### 2 · Scent-Code-Eingabe
-
-„VC-" und die Ziffern stehen jetzt ohne Lücke beieinander (gemessen 0 px
-statt vorher rund 9 px): Abstand im Feldraster auf 0, Innenabstand der
-Eingabe entfernt, gleiche Sperrung 0,1 em für Präfix und Ziffern, Feldbreite
-auf drei Stellen begrenzt, `tabular-nums`. „Weiter" rückt ans rechte Ende.
-
-Im Markup: `maxlength="3"`, `pattern="[0-9]*"`, `enterkeyhint="go"`,
-weiterhin `inputmode="numeric"` und `type="text"` — führende Nullen bleiben
-dadurch erhalten. In `assets/scent-code.js` filtert ein `input`-Ereignis
-alles außer Ziffern heraus, für jedes Code-Feld.
-
-Geprüft: `abc` → leer, `0a7b1` → `071`, `12345` → `123`, `001`, `049`, `071`
-bleiben stehen. Enter löst den Scent-Code-Weg aus, die Normalisierung liefert
-weiterhin `071 → VC-071`.
-
-**Hinweis:** Drei Stellen heißt VC-001 bis VC-999. Ein vierstelliger Code wie
-`VC-1250` lässt sich in diesem Feld nicht mehr tippen; über Suche, Link oder
-`?code=` funktioniert er unverändert. Eine Zeile in
-`snippets/scent-code-field.liquid` nimmt die Grenze bei Bedarf wieder zurück.
-
-### 3 · Bestseller-Reihe
-
-* Karten `min(62vw, 280px)` → `min(70vw, 300px)`: mehr Raum für Titel,
-  Ausführungszeile und Preis. Bei 390 px sind das 273 statt 242 px, die
-  nächste Karte bleibt mit 81 px sichtbar.
-* `overflow: hidden` an der einzelnen Karte entfernt — dort wurden Texte
-  abgeschnitten, sobald sie ein paar Pixel breiter waren als die Karte. Die
-  Reihe selbst bleibt begrenzt, die Seite scrollt weiterhin nicht seitlich.
-* `scroll-snap-stop: always`: Ein schneller Wisch überspringt keine Karte
-  mehr, jede kommt einzeln zum Stehen.
-
-Geprüft bei 375, 390, 414 und 430 px, jeweils durch alle acht Karten
-gewischt: jede Karte danach vollständig sichtbar, kein Text abgeschnitten,
-Vorschau der nächsten Karte erkennbar, keine horizontale Scrollbar.
-
-### Geänderte Dateien
-
-`assets/section-hero-v2.css` · `assets/section-product-row.css` ·
-`assets/scent-code.js` · `snippets/scent-code-field.liquid`
-
-### Nicht verändert
-
-Bei 990, 1280 und 1600 px zeigt der Vergleich **keinen** Unterschied. Auf
-Mobilgeräten änderte sich außer den drei bearbeiteten Stellen nur die Höhe
-der Bestseller-Reihe (551 → 590 px, größere Karten). Alle übrigen Abschnitte,
-Header, Footer, Produktseiten, Suchergebnisse und Warenkorb sind unberührt.
-
----
 
 ## v4.2.17 — „Jetzt auswählen" legt über die Cart API in den Warenkorb
 
@@ -1147,3 +1090,24 @@ Geschätzt aus den gesetzten Werten, nicht im Browser gemessen.
 ## v4.2.9 — Note search catalog fix
 - Duftnoten-/Duftcharakter-Suche durchsucht jetzt bewusst den gesamten Produktkatalog statt nur die konfigurierte Bestseller-/Scent-Code-Kollektion.
 - Codevergleich im Fallback-Index erfolgt numerisch/exakt, damit VC-049 zuverlässig auf `049` gematcht wird.
+
+## v4.2.19 – Einheitliche Scent-Code-Suchergebnisse
+- Direkte Code-Suchen (z. B. VC-001 und VC-049) verwenden jetzt dieselbe Ergebnisdarstellung.
+- Doppelte Treffer bei gelisteten Codes entfernt.
+- Suchformular wird bei einem eindeutigen direkten Code-Treffer ausgeblendet.
+- Produktbild, Code, Ausführung, Preis und CTA kompakt in einem Ergebnisblock zusammengeführt.
+- Bestehende Cart-API-Logik für nicht gelistete Scent Codes unverändert weiterverwendet.
+- Neue Styles nur für den Suchergebnisbereich in `assets/section-search-results.css`.
+
+## v4.2.20 – Search compact + product links
+- Mobile direct-code results vertically compacted so media, code, facts, price and CTA fit much earlier in the viewport.
+- Listed scent-code results now link to their real product page from both image and code title.
+- Generic/private codes keep the working Cart API flow unchanged.
+
+## v4.2.22 – Public product detection fix
+- Direct Scent-Code search now checks the actual Shopify search products first.
+- Listed codes such as VC-049 open their real product page and show “Produkt ansehen”.
+- Private/advised codes such as VC-001 keep the direct Scent-Code add-to-cart flow.
+- Generic Scent-Code product is resolved by its live handle first, preventing stale product references.
+- Price rendering uses the live product/variant price more robustly.
+

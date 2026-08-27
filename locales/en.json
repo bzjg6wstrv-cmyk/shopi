@@ -240,7 +240,8 @@
       "code_help": "You received the code from us via WhatsApp.",
       "no_code_yet": "No code yet?",
       "check": "Check",
-      "add_failed": "This scent could not be added to your cart. Please try again."
+      "add_failed": "This scent could not be added to your cart. Please try again.",
+      "view_product_cta": "View product"
     },
     "product_row": {
       "previous": "Previous fragrances",

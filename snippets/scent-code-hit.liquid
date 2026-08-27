@@ -1,26 +1,13 @@
 {%- comment -%}
-  Erkennt einen Scent Code in einer Sucheingabe und rendert einen direkten
-  Treffer. Läuft serverseitig – funktioniert damit auch ohne JavaScript und
-  auf der normalen Suchergebnisseite.
-
-  Parameter: terms (die Sucheingabe)
-
-  „47", „047", „vc47", „VC 047" und „VC-047" führen alle zum selben Code.
+  Einheitlicher Treffer für eine direkte Scent-Code-Suche.
+  Gelistete Codes öffnen ihre Produktseite; nicht gelistete Codes werden über
+  das zentrale Scent-Code-Produkt per bestehender Cart-API-Logik hinzugefügt.
 {%- endcomment -%}
 {%- liquid
   assign prefix = settings.scent_code_prefix | default: 'VC'
   assign prefix_down = prefix | downcase
   assign prefix_len = prefix_down | size
 
-  comment
-    Dieselbe Regel wie im Eingabefeld: optionales Präfix, danach ausschließlich
-    Ziffern. Trennzeichen sind nur nach dem Präfix erlaubt – „-5" ist damit
-    kein Code, „VC-5" schon. Nach oben gibt es keine Grenze.
-  endcomment
-  comment
-    Leerzeichen zählen nur außen und als Trennzeichen nach dem Präfix:
-    „VC 071" ist ein Code, „1 2" nicht.
-  endcomment
   assign body = terms | downcase | strip
   assign head = body | slice: 0, prefix_len
   if prefix_len > 0 and head == prefix_down
@@ -28,17 +15,8 @@
     assign body = body | replace: '-', '' | replace: '–', '' | replace: '_', '' | replace: '.', '' | replace: '#', '' | replace: ' ', ''
   endif
 
-  comment
-    Ziffernprüfung ohne regulären Ausdruck: Bleibt nach dem Entfernen aller
-    Ziffern nichts übrig, bestand die Eingabe nur aus Ziffern.
-  endcomment
   assign rest = body | replace: '0', '' | replace: '1', '' | replace: '2', '' | replace: '3', '' | replace: '4', ''
   assign rest = rest | replace: '5', '' | replace: '6', '' | replace: '7', '' | replace: '8', '' | replace: '9', ''
-
-  comment
-    Über die Länge prüfen, nicht über „blank": Liquid behandelt einen String
-    aus reinen Leerzeichen als blank – „1 2" wäre sonst durchgerutscht.
-  endcomment
   assign rest_len = rest | size
   assign digits = body
   assign number = digits | plus: 0
@@ -48,10 +26,6 @@
     assign has_code = true
   endif
 
-  comment
-    Ist eine Liste vergebener Nummern hinterlegt, muss der Code darin stehen.
-    Ohne Liste ist jede positive Nummer gültig.
-  endcomment
   assign allow_raw = settings.valid_scent_codes | strip
   if has_code and allow_raw != blank
     assign has_code = false
@@ -76,119 +50,162 @@
     assign code = prefix | append: '-' | append: padded
 
     assign matched_product = blank
-    for candidate in settings.scent_code_collection.products limit: 60
-      assign candidate_code = candidate.metafields.custom.scent_code.value | default: candidate.title | strip | upcase
-      if matched_product == blank and candidate_code == code
-        assign matched_product = candidate
-      endif
-    endfor
 
-    assign target_url = ''
-    assign target_meta = ''
-    assign generic_variant = blank
+    comment
+      First use the actual Shopify search products passed by the calling section.
+      This reliably distinguishes a publicly listed product such as VC-049 from
+      a private/advised code such as VC-001, without depending on one theme
+      collection being perfectly maintained.
+    endcomment
+    if results != blank
+      for candidate in results limit: 24
+        assign candidate_code = candidate.metafields.custom.scent_code.value | default: candidate.title | strip | upcase
+        if matched_product == blank and candidate_code == code and candidate.handle != 'vent-celeste-scent-code'
+          assign matched_product = candidate
+        endif
+      endfor
+    endif
+
+    comment
+      Fallback for direct code hits that Shopify did not return in the first
+      search page: check the configured scent collection, then the all-products
+      collection. This keeps the public/private distinction stable.
+    endcomment
+    if matched_product == blank and settings.scent_code_collection != blank
+      for candidate in settings.scent_code_collection.products limit: 100
+        assign candidate_code = candidate.metafields.custom.scent_code.value | default: candidate.title | strip | upcase
+        if matched_product == blank and candidate_code == code and candidate.handle != 'vent-celeste-scent-code'
+          assign matched_product = candidate
+        endif
+      endfor
+    endif
+
+    if matched_product == blank and collections['all'] != blank
+      for candidate in collections['all'].products limit: 100
+        assign candidate_code = candidate.metafields.custom.scent_code.value | default: candidate.title | strip | upcase
+        if matched_product == blank and candidate_code == code and candidate.handle != 'vent-celeste-scent-code'
+          assign matched_product = candidate
+        endif
+      endfor
+    endif
+
+    assign result_product = matched_product
+    assign result_variant = blank
+    assign result_url = blank
+    assign is_generic = false
 
     if matched_product != blank
-      comment
-        Der Code hat eine eigene Produktseite – dorthin verlinken wie bisher.
-      endcomment
-      assign target_url = matched_product.url
-      assign main_variant = matched_product.metafields.custom.hauptvariante.value
-      if main_variant == blank
-        assign main_variant = matched_product.selected_or_first_available_variant
+      assign result_url = matched_product.url
+      assign result_variant = matched_product.metafields.custom.hauptvariante.value
+      if result_variant == blank
+        assign result_variant = matched_product.selected_or_first_available_variant
       endif
-      assign variant_price = main_variant.price | money
-      assign target_meta = main_variant.title | append: ' · ' | append: variant_price
     else
-      comment
-        Kein eigenes Produkt: Der Code wird über das zentrale Produkt bestellt.
-        Die Variantennummer kommt aus dem echten Produkt – bevorzugt aus dem
-        Metafeld „hauptvariante", sonst die erste verfügbare Variante. Es wird
-        nie eine Nummer geraten.
-      endcomment
-      assign generic = settings.scent_code_product
-      if generic == blank
-        comment
-          Rückfall auf den bekannten Handle: Zeigt die Theme-Einstellung ins
-          Leere – etwa weil das Produkt später neu angelegt wurde –, findet das
-          Theme das Produkt trotzdem. Die Variantennummer kommt weiterhin aus
-          dem Produkt selbst, nie aus einer festen Angabe.
-        endcomment
-        assign generic = all_products['vent-celeste-scent-code']
+      assign is_generic = true
+      assign result_product = all_products['vent-celeste-scent-code']
+      if result_product == blank
+        assign result_product = settings.scent_code_product
       endif
-      if generic != blank
-        assign generic_variant = generic.metafields.custom.hauptvariante.value
-        if generic_variant == blank or generic_variant.available == false
-          assign generic_variant = generic.selected_or_first_available_variant
+      if result_product != blank
+        assign result_variant = result_product.metafields.custom.hauptvariante.value
+        if result_variant == blank or result_variant.available == false
+          assign result_variant = result_product.selected_or_first_available_variant
         endif
-        assign target_url = generic.url | append: '?code=' | append: code
       endif
     endif
   endif
 -%}
-{%- if has_code -%}
-  {%- if matched_product != blank -%}
-    {%- comment -%}
-      Der Code hat eine eigene Produktseite – ganz normaler Link dorthin.
-    {%- endcomment -%}
-    <a class="predictive__code" href="{{ target_url }}" role="option">
-      <span>
-        <span class="predictive__code-title">{{ code }}</span>
-        <span class="predictive__code-meta">{{ target_meta }}</span>
-      </span>
-      <span class="predictive__code-cta">{{ 'sections.scent_code.order_cta' | t }}</span>
-    </a>
 
-  {%- elsif generic != blank -%}
-    {%- comment -%}
-      Codes ohne eigene Produktseite: ein Button, kein Link und kein Formular.
-      Es gibt hier bewusst kein href, kein action und kein target – hinter der
-      Schaltfläche steckt keinerlei Navigation. Der Klick legt über die
-      Shopify Cart API in den Warenkorb und öffnet die Warenkorb-Lade.
-
-      Die Variantennummer wird serverseitig aus dem Produkt gesetzt. Fehlt sie
-      – etwa weil das Produkt gerade neu angelegt wurde –, holt
-      scent-code-add.js sie zur Laufzeit über /products/<handle>.js. Es steht
-      keine Nummer fest im Theme.
-    {%- endcomment -%}
-    {%- capture generic_facts -%}{% render 'variant-facts', variant: generic_variant, mode: 'line' %}{%- endcapture -%}
-    {%- assign generic_facts = generic_facts | strip -%}
-    {%- if generic_facts == blank and generic_variant != blank -%}
-      {%- assign generic_facts = generic_variant.title -%}
-    {%- endif -%}
-    {%- assign generic_meta = generic_facts -%}
-    {%- if generic_variant != blank -%}
-      {%- assign generic_price = generic_variant.price | money -%}
-      {%- if generic_meta != blank -%}
-        {%- assign generic_meta = generic_meta | append: ' · ' | append: generic_price -%}
-      {%- else -%}
-        {%- assign generic_meta = generic_price -%}
-      {%- endif -%}
-    {%- endif -%}
-    {%- if generic_meta == blank -%}
-      {%- assign generic_meta = 'sections.scent_code.code_help' | t -%}
-    {%- endif -%}
-    {%- assign add_error_text = 'sections.scent_code.add_failed' | t -%}
-    {%- assign add_busy_text = 'products.product.adding' | t -%}
-
-    <div class="predictive__code-add">
-      <button
-        type="button"
-        class="predictive__code"
-        role="option"
-        data-scent-code-add
-        data-code="{{ code }}"
-        data-variant-id="{{ generic_variant.id }}"
-        data-product-handle="{{ generic.handle }}"
-        data-error-text="{{ add_error_text | escape }}"
-        data-busy-text="{{ add_busy_text | escape }}"
-      >
-        <span>
-          <span class="predictive__code-title">{{ code }}</span>
-          <span class="predictive__code-meta">{{ generic_meta }}</span>
-        </span>
-        <span class="predictive__code-cta" data-scent-code-add-label>{{ 'sections.scent_code.order_cta' | t }}</span>
-      </button>
-      <p class="predictive__code-error" data-scent-code-add-error role="status" aria-live="polite" hidden></p>
-    </div>
+{%- if has_code and result_product != blank -%}
+  {%- capture result_conc -%}{% render 'variant-facts', variant: result_variant, mode: 'conc' %}{%- endcapture -%}
+  {%- capture result_size -%}{% render 'variant-facts', variant: result_variant, mode: 'size' %}{%- endcapture -%}
+  {%- capture result_pct -%}{% render 'variant-facts', variant: result_variant, mode: 'pct' %}{%- endcapture -%}
+  {%- assign result_conc = result_conc | strip -%}
+  {%- assign result_size = result_size | strip -%}
+  {%- assign result_pct = result_pct | strip -%}
+  {%- if result_conc == blank -%}{%- assign result_conc = 'Extrait' -%}{%- endif -%}
+  {%- if result_size == blank -%}{%- assign result_size = '30 ml' -%}{%- endif -%}
+  {%- if result_pct == blank -%}{%- assign result_pct = '30' -%}{%- endif -%}
+  {%- assign result_facts = result_conc | append: ' · ' | append: result_size | append: ' · ' | append: result_pct | append: ' %' -%}
+  {%- assign result_price_value = result_product.price -%}
+  {%- if result_variant != blank and result_variant.price > 0 -%}
+    {%- assign result_price_value = result_variant.price -%}
   {%- endif -%}
+  {%- assign result_price = result_price_value | money -%}
+  {%- assign add_error_text = 'sections.scent_code.add_failed' | t -%}
+  {%- assign add_busy_text = 'products.product.adding' | t -%}
+
+  <div class="vc-code-result{% if is_generic %} vc-code-result--generic{% endif %}">
+    <p class="vc-code-result__count">{% if is_generic %}DEIN SCENT CODE{% else %}1 PASSENDES DUFTPROFIL{% endif %}</p>
+
+    <article class="vc-code-card">
+      {%- if is_generic -%}
+        <div class="vc-code-card__media">
+      {%- else -%}
+        <a class="vc-code-card__media vc-code-card__media-link" href="{{ result_url }}" aria-label="{{ code | escape }} ansehen">
+      {%- endif -%}
+        {%- if result_product.featured_media -%}
+          <img
+            src="{{ result_product.featured_media | image_url: width: 800 }}"
+            srcset="{{ result_product.featured_media | image_url: width: 400 }} 400w, {{ result_product.featured_media | image_url: width: 800 }} 800w"
+            sizes="(max-width: 749px) 62vw, 420px"
+            alt="{{ result_product.featured_media.alt | default: code | escape }}"
+            width="{{ result_product.featured_media.width }}"
+            height="{{ result_product.featured_media.height }}"
+            loading="eager"
+          >
+        {%- else -%}
+          {{ 'product-1' | placeholder_svg_tag: 'vc-code-card__placeholder' }}
+        {%- endif -%}
+      {%- if is_generic -%}
+        </div>
+      {%- else -%}
+        </a>
+      {%- endif -%}
+
+      <div class="vc-code-card__content">
+        <div>
+          <h2 class="vc-code-card__title">
+            {%- if is_generic -%}
+              {{ code }}
+            {%- else -%}
+              <a href="{{ result_url }}">{{ code }}</a>
+            {%- endif -%}
+          </h2>
+          <p class="vc-code-card__meta">{{ result_facts }}</p>
+          <p class="vc-code-card__price">{{ result_price }}</p>
+          {%- if is_generic -%}
+            <div class="vc-code-card__personal">
+              <p class="vc-code-card__personal-title">Dein persönlicher Scent Code</p>
+              <p class="vc-code-card__personal-text">Dein ausgewählter Duft wird nach deiner Bestellung frisch für dich gemischt und als 30 ml Extrait abgefüllt.</p>
+            </div>
+          {%- endif -%}
+        </div>
+
+        {%- if is_generic -%}
+          <div class="predictive__code-add vc-code-card__action-wrap">
+            <button
+              type="button"
+              class="vc-code-card__action"
+              data-scent-code-add
+              data-code="{{ code }}"
+              data-variant-id="{{ result_variant.id }}"
+              data-product-handle="{{ result_product.handle }}"
+              data-error-text="{{ add_error_text | escape }}"
+              data-busy-text="{{ add_busy_text | escape }}"
+            >
+              <span data-scent-code-add-label>{{ 'sections.scent_code.order_cta' | t }}</span>
+              <span aria-hidden="true">→</span>
+            </button>
+            <p class="predictive__code-error" data-scent-code-add-error role="status" aria-live="polite" hidden></p>
+          </div>
+        {%- else -%}
+          <a class="vc-code-card__action" href="{{ result_url }}">
+            <span>{{ 'sections.scent_code.view_product_cta' | t }}</span>
+            <span aria-hidden="true">→</span>
+          </a>
+        {%- endif -%}
+      </div>
+    </article>
+  </div>
 {%- endif -%}

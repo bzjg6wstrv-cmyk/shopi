@@ -1,3 +1,7 @@
+# VENT CELESTE Theme v4.2.21
+
+Direkte Code-Suche mit getrenntem Verhalten für gelistete Produkte (Produktseite) und persönliche Scent Codes (Cart API).
+
 # VENT CELESTE — Shopify Online Store 2.0 Theme (V3)
 
 Beratungsgetriebener Duftshop: 20 Bestseller sind öffentlich gelistet, das
@@ -506,3 +510,11 @@ Alles unkomprimiert und mit `defer`; auf der Startseite laufen davon rund 24 KB.
 
 ### Search behavior (v4.2.8)
 For the launch assortment, the theme contains a fallback scent-search index based on the same notes/traits shown on product pages. This means customer searches such as `49`, `VC-049`, `Vanille`, `Gourmand`, or `Holzig` can return matching launch products even before corresponding Shopify product tags are maintained. For future products, continue maintaining Shopify product tags/metafields so search scales beyond the launch set.
+
+## v4.2.22 – Public product detection fix
+- Direct Scent-Code search now checks the actual Shopify search products first.
+- Listed codes such as VC-049 open their real product page and show “Produkt ansehen”.
+- Private/advised codes such as VC-001 keep the direct Scent-Code add-to-cart flow.
+- Generic Scent-Code product is resolved by its live handle first, preventing stale product references.
+- Price rendering uses the live product/variant price more robustly.
+

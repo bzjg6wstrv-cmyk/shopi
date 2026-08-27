@@ -1,0 +1,210 @@
+/* VENT CELESTE – kompakte, einheitliche direkte Scent-Code-Ergebnisse. */
+.vc-code-result {
+  margin-top: clamp(.9rem, 2vw, 1.5rem);
+  max-width: 58rem;
+}
+
+.vc-code-result__count {
+  margin: 0 0 clamp(.9rem, 2vw, 1.4rem);
+  font-size: .78rem;
+  line-height: 1.3;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.vc-code-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(16rem, .95fr);
+  align-items: center;
+  gap: clamp(1.75rem, 4vw, 4rem);
+}
+
+.vc-code-card__media {
+  width: min(100%, 29rem);
+  justify-self: center;
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: transparent;
+}
+
+.vc-code-card__media-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.vc-code-card__media img,
+.vc-code-card__placeholder {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.vc-code-card__content {
+  display: grid;
+  gap: 1.35rem;
+  align-content: center;
+}
+
+.vc-code-card__title {
+  margin: 0;
+  font-family: var(--font-heading-family);
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: 1;
+  font-weight: 400;
+}
+
+.vc-code-card__title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.vc-code-card__media-link:hover,
+.vc-code-card__title a:hover {
+  opacity: .72;
+}
+
+.vc-code-card__meta {
+  margin: .6rem 0 0;
+  font-size: .9rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.vc-code-card__price {
+  margin: .5rem 0 0;
+  font-family: var(--font-heading-family);
+  font-size: 1.35rem;
+  font-variant-numeric: tabular-nums;
+}
+
+
+.vc-code-card__personal {
+  margin-top: 1rem;
+  max-width: 32rem;
+}
+
+.vc-code-card__personal-title {
+  margin: 0 0 .38rem;
+  font-size: .76rem;
+  line-height: 1.35;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.vc-code-card__personal-text {
+  margin: 0;
+  max-width: 31rem;
+  font-size: .95rem;
+  line-height: 1.55;
+  color: rgb(var(--color-text) / .72);
+}
+
+.vc-code-card__action-wrap { width: 100%; }
+
+.vc-code-card__action {
+  width: 100%;
+  min-height: 3.45rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .9rem 1.05rem;
+  border: 0;
+  border-top: 1px solid rgb(var(--color-text));
+  border-bottom: 1px solid rgb(var(--color-text));
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: .78rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.vc-code-card__action:disabled { opacity: .55; cursor: wait; }
+.vc-code-card__action:hover { opacity: .65; }
+
+.vc-code-card .predictive__code-error {
+  margin-top: .75rem;
+  font-size: .8rem;
+}
+
+@media (max-width: 749px) {
+  .collection-head {
+    margin-bottom: .7rem;
+  }
+
+  .collection-head .h2 {
+    margin-bottom: 0;
+  }
+
+  .vc-code-result {
+    margin-top: 0;
+  }
+
+  .vc-code-result__count {
+    margin-bottom: .45rem;
+    font-size: .7rem;
+  }
+
+  .vc-code-card {
+    grid-template-columns: 1fr;
+    gap: .25rem;
+  }
+
+  .vc-code-card__media {
+    width: min(58vw, 16.5rem);
+    aspect-ratio: 1 / 1;
+    margin-top: -.2rem;
+    margin-bottom: -.35rem;
+  }
+
+  .vc-code-card__content {
+    gap: .6rem;
+  }
+
+  .vc-code-card__title {
+    font-size: 1.9rem;
+  }
+
+  .vc-code-card__meta {
+    margin-top: .38rem;
+    font-size: .72rem;
+    letter-spacing: .11em;
+  }
+
+  .vc-code-card__price {
+    margin-top: .35rem;
+    font-size: 1.12rem;
+  }
+
+
+  .vc-code-result--generic .vc-code-card__media {
+    width: min(52vw, 14.5rem);
+  }
+
+  .vc-code-card__personal {
+    margin-top: .75rem;
+  }
+
+  .vc-code-card__personal-title {
+    font-size: .68rem;
+    letter-spacing: .12em;
+  }
+
+  .vc-code-card__personal-text {
+    font-size: .88rem;
+    line-height: 1.5;
+  }
+
+  .vc-code-card__action {
+    min-height: 3.05rem;
+    padding: .75rem 0;
+    font-size: .72rem;
+  }
+}
