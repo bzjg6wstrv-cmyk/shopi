@@ -1,5 +1,77 @@
 # VENT CELESTE — Änderungsprotokoll
 
+## v4.2.18 — Mobile-Feinschliff: Schlagzeile, Code-Eingabe, Bestseller-Reihe
+
+### 1 · „SCENT." bleibt ein Wort
+
+Gemessen mit der echten Playfair Display: „SCENT." ist **3,37 em** breit. In
+der Schlagzeilenspalte wurde es damit ab 750 px auf 81–84 % der Breite —
+wenige Pixel Reserve. Genau dort kippt es und bricht zu „SCEN / T.". Auf
+schmalen Telefonen (320–430 px) ist der Anteil unkritisch.
+
+Zwei Zeilen in `assets/section-hero-v2.css`:
+
+* `.hero2__title .display__line { white-space: nowrap; word-break: keep-all; }`
+  – innerhalb eines Wortes wird nie mehr umbrochen.
+* `.hero2__title { container-type: inline-size; }` und
+  `font-size: min(1em, 26cqi)` – die Zeile richtet ihre Größe notfalls an der
+  **tatsächlichen Spaltenbreite** aus statt am Fenster. Der Deckel greift
+  erst, wenn es sonst nicht mehr passt.
+
+Gemessen bei 320, 360, 375, 390, 414, 430, 896, 932, 1024, 1280 und 1600 px:
+Schriftgröße unverändert. Einzige Ausnahme 750 px: 97,5 → 95,9 px (−1,6 %) —
+das ist die Reserve, die den Umbruch verhindert.
+
+### 2 · Scent-Code-Eingabe
+
+„VC-" und die Ziffern stehen jetzt ohne Lücke beieinander (gemessen 0 px
+statt vorher rund 9 px): Abstand im Feldraster auf 0, Innenabstand der
+Eingabe entfernt, gleiche Sperrung 0,1 em für Präfix und Ziffern, Feldbreite
+auf drei Stellen begrenzt, `tabular-nums`. „Weiter" rückt ans rechte Ende.
+
+Im Markup: `maxlength="3"`, `pattern="[0-9]*"`, `enterkeyhint="go"`,
+weiterhin `inputmode="numeric"` und `type="text"` — führende Nullen bleiben
+dadurch erhalten. In `assets/scent-code.js` filtert ein `input`-Ereignis
+alles außer Ziffern heraus, für jedes Code-Feld.
+
+Geprüft: `abc` → leer, `0a7b1` → `071`, `12345` → `123`, `001`, `049`, `071`
+bleiben stehen. Enter löst den Scent-Code-Weg aus, die Normalisierung liefert
+weiterhin `071 → VC-071`.
+
+**Hinweis:** Drei Stellen heißt VC-001 bis VC-999. Ein vierstelliger Code wie
+`VC-1250` lässt sich in diesem Feld nicht mehr tippen; über Suche, Link oder
+`?code=` funktioniert er unverändert. Eine Zeile in
+`snippets/scent-code-field.liquid` nimmt die Grenze bei Bedarf wieder zurück.
+
+### 3 · Bestseller-Reihe
+
+* Karten `min(62vw, 280px)` → `min(70vw, 300px)`: mehr Raum für Titel,
+  Ausführungszeile und Preis. Bei 390 px sind das 273 statt 242 px, die
+  nächste Karte bleibt mit 81 px sichtbar.
+* `overflow: hidden` an der einzelnen Karte entfernt — dort wurden Texte
+  abgeschnitten, sobald sie ein paar Pixel breiter waren als die Karte. Die
+  Reihe selbst bleibt begrenzt, die Seite scrollt weiterhin nicht seitlich.
+* `scroll-snap-stop: always`: Ein schneller Wisch überspringt keine Karte
+  mehr, jede kommt einzeln zum Stehen.
+
+Geprüft bei 375, 390, 414 und 430 px, jeweils durch alle acht Karten
+gewischt: jede Karte danach vollständig sichtbar, kein Text abgeschnitten,
+Vorschau der nächsten Karte erkennbar, keine horizontale Scrollbar.
+
+### Geänderte Dateien
+
+`assets/section-hero-v2.css` · `assets/section-product-row.css` ·
+`assets/scent-code.js` · `snippets/scent-code-field.liquid`
+
+### Nicht verändert
+
+Bei 990, 1280 und 1600 px zeigt der Vergleich **keinen** Unterschied. Auf
+Mobilgeräten änderte sich außer den drei bearbeiteten Stellen nur die Höhe
+der Bestseller-Reihe (551 → 590 px, größere Karten). Alle übrigen Abschnitte,
+Header, Footer, Produktseiten, Suchergebnisse und Warenkorb sind unberührt.
+
+---
+
 ## v4.2.17 — „Jetzt auswählen" legt über die Cart API in den Warenkorb
 
 ### Ursache

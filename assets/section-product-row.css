@@ -84,7 +84,11 @@
     max-width: none;
     grid-auto-columns: min(72vw, 320px);
   }
-  .row-track > li { min-width: 0; overflow: hidden; }
+  /* Kein overflow:hidden mehr an der einzelnen Karte – dort wurden Titel,
+     Ausführungszeile und Preis abgeschnitten, sobald sie ein paar Pixel
+     breiter waren als die Karte. Die Reihe selbst bleibt begrenzt, damit die
+     Seite weiterhin nicht seitlich scrollt. */
+  .row-track > li { min-width: 0; }
 }
 
 /* v4.2.11 Mobile: Die Reihe nahm auf dem Telefon 647 px ein, davon 374 px
@@ -97,9 +101,20 @@
   .row-head { margin-bottom: var(--space-md); }
 
   .row-track {
-    grid-auto-columns: min(62vw, 280px);
+    /* Etwas breiter als zuvor: mehr Raum für Titel, Ausführung und Preis,
+       die nächste Karte bleibt trotzdem deutlich sichtbar. */
+    grid-auto-columns: min(70vw, 300px);
     padding-bottom: 0;
   }
+
+  /* Ein schneller Wisch überspringt keine Karte mehr – jede kommt einzeln
+     zum Stehen und ist dann vollständig sichtbar. */
+  .row-track > * { scroll-snap-stop: always; }
+
+  /* Die Textzeilen dürfen umbrechen statt abgeschnitten zu werden. */
+  .product-row .card__title,
+  .product-row .card__meta,
+  .product-row .card__price { white-space: normal; }
 
   /* Ohne height:100% entsteht unter kurzen Karten kein Leerraum mehr,
      wenn eine andere Karte in der Reihe zwei Titelzeilen hat. */
@@ -110,5 +125,5 @@
 }
 
 @media (max-width: 599px) {
-  .row-track { grid-auto-columns: min(62vw, 280px); }
+  .row-track { grid-auto-columns: min(70vw, 300px); }
 }
