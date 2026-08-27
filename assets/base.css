@@ -1280,8 +1280,17 @@ button.predictive__code {
   color: inherit;
   background: none;
 }
-.predictive__code-form { margin: 0; }
-.predictive__code-form .field__error { margin-top: calc(var(--space-lg) * -1 + var(--space-xs)); margin-bottom: var(--space-lg); }
+button.predictive__code[disabled] { opacity: .6; cursor: default; }
+
+/* Meldung, falls Shopify den Artikel nicht annimmt. Sitzt im Platz, den der
+   untere Abstand des Treffers ohnehin freihält – kein zusätzlicher Raum. */
+.predictive__code-error {
+  margin-top: calc(var(--space-lg) * -1 + var(--space-xs));
+  margin-bottom: var(--space-lg);
+  font-size: .8125rem;
+  color: rgb(var(--color-text));
+}
+.predictive__code-error[hidden] { display: none; }
 
 .predictive__code-title { font-family: var(--font-heading-family); font-size: 1.125rem; letter-spacing: .1em; }
 .predictive__code-meta { font-size: .8125rem; color: rgb(var(--color-muted)); }

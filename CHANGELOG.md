@@ -1,5 +1,77 @@
 # VENT CELESTE — Änderungsprotokoll
 
+## v4.2.17 — „Jetzt auswählen" legt über die Cart API in den Warenkorb
+
+### Ursache
+
+Hinter „Jetzt auswählen" steckte eine **Navigation**. Je nach ausgelieferter
+Fassung war das ein `<form action="/cart/add">` oder ein `<a href>` auf die
+Produktseite. Beides erklärt den Rücksprung auf „Düfte suchen":
+
+* Ein natives `POST /cart/add` leitet bei einem Fehler – etwa einer
+  Variantennummer, die es nach dem Neuanlegen des Produkts nicht mehr gibt –
+  zurück auf die **verweisende Seite**. Das ist die Suchseite.
+* `fallbackUrl()` in `assets/scent-code.js` liefert
+  `/search?q=<Code>`, sobald die Zuordnungstabelle kein Produkt kennt.
+  `general.search.title` ist genau „Düfte suchen".
+
+Gemeinsamer Nenner: Sobald das Produkt nicht sauber auflöste, landete der
+Kunde wieder in der Suche – ohne Hinweis, was schiefgelaufen ist.
+
+### Was jetzt passiert
+
+Der generische Treffer ist ein `<button type="button">`. Kein `href`, kein
+`action`, kein `target`, kein `window.location` – hinter der Schaltfläche
+liegt keine Navigation mehr, die den Kunden irgendwohin schicken könnte.
+
+Der Klick läuft ausschließlich über die Cart API:
+
+```
+POST /cart/add.js
+{ "items": [ { "id": <Variante>, "quantity": 1,
+               "properties": { "Scent Code": "VC-071" } } ],
+  "sections": "cart-drawer" }
+```
+
+* **Variantennummer** – serverseitig aus dem Produkt (`data-variant-id`).
+  Fehlt sie, holt `scent-code-add.js` sie zur Laufzeit über
+  `/products/<handle>.js` und nimmt die erste verfügbare Variante. Im Theme
+  steht keine feste Nummer, weder Produkt- noch Varianten-ID.
+* **Danach** – der Abschnitt `cart-drawer` aus der Antwort wird übernommen,
+  der Zähler aktualisiert und die vorhandene Warenkorb-Lade geöffnet. Gibt es
+  sie nicht, geht es auf `routes.cart_url`.
+* **Bei einem Fehler** – `console.error` mit dem echten Grund, eine
+  verständliche Meldung unter dem Treffer, keine geöffnete Lade, kein
+  vorgetäuschter Erfolg, kein Rücksprung.
+* **Doppelklickschutz** – während der Anfrage ist die Schaltfläche
+  deaktiviert und trägt `aria-busy`; danach wird sie wieder freigegeben.
+
+Codes mit eigener Produktseite (VC-049, VC-040) verlinken unverändert dorthin.
+
+### Geänderte Dateien
+
+| Datei | Änderung |
+| --- | --- |
+| `snippets/scent-code-hit.liquid` | Button statt Link für generische Codes, mit Code, Variantennummer, Handle und Meldungstexten als Datenattribute |
+| `assets/scent-code-add.js` | **neu** – Cart API, Laufzeitermittlung der Variante, Warenkorb-Lade, Fehlerbehandlung, Doppelklickschutz |
+| `sections/header.liquid` | lädt das Skript (die Sofortsuche ist auf jeder Seite erreichbar) |
+| `assets/base.css` | Zustand des Buttons und Platz für die Meldung |
+| `locales/de.default.json`, `locales/en.json` | `sections.scent_code.add_failed` |
+
+Nicht angefasst: Typografie, Abstände, Header-Layout, Footer, Suchseite,
+Ergebnisdarstellung, Farben, mobile Darstellung, Warenkorb, Produktseiten.
+
+### Nummernkreis
+
+Unverändert offen. Geprüft: `1`, `01`, `001`, `VC-1`, `VC-01`, `VC-001` → alle
+`VC-001`; `71`, `071`, `VC-71`, `VC-071` → alle `VC-071`; `9` → `VC-009`,
+`130` → `VC-130`, `131` → `VC-131`, `999` → `VC-999`, `1000` → `VC-1000`,
+`2847` → `VC-2847`. Alle Nummern von 1 bis 3000 durchlaufen, keine
+Abweichung. `0`, negative Zahlen, Buchstaben und `1 2` werden abgelehnt.
+Die Suche nach Duftnoten und Duftfamilien ist unberührt.
+
+---
+
 ## v4.2.16 — Bestellweg über die Produktseite statt direktem Warenkorb
 
 Der direkte Warenkorb-Absender aus den Suchergebnissen ist entfernt. Der

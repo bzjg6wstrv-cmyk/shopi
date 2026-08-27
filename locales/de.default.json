@@ -239,7 +239,8 @@
       "code_required": "Bitte gib deinen Scent Code ein.",
       "code_help": "Den Code hast du per WhatsApp von uns bekommen.",
       "no_code_yet": "Noch keinen Code?",
-      "check": "Prüfen"
+      "check": "Prüfen",
+      "add_failed": "Der Duft konnte nicht in den Warenkorb gelegt werden. Bitte versuche es noch einmal."
     },
     "product_row": {
       "previous": "Vorherige Düfte",

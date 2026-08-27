@@ -125,31 +125,70 @@
     endif
   endif
 -%}
-{%- if has_code and target_url != blank -%}
-  {%- comment -%}
-    Bewusst ein normaler Link, kein Warenkorb-Formular: Der Kunde landet auf
-    der Produktseite, sieht Preis und Ausführung und legt dort selbst in den
-    Warenkorb. Der Code reist als Adressparameter mit.
-  {%- endcomment -%}
-  {%- if matched_product == blank and generic_variant != blank -%}
+{%- if has_code -%}
+  {%- if matched_product != blank -%}
+    {%- comment -%}
+      Der Code hat eine eigene Produktseite – ganz normaler Link dorthin.
+    {%- endcomment -%}
+    <a class="predictive__code" href="{{ target_url }}" role="option">
+      <span>
+        <span class="predictive__code-title">{{ code }}</span>
+        <span class="predictive__code-meta">{{ target_meta }}</span>
+      </span>
+      <span class="predictive__code-cta">{{ 'sections.scent_code.order_cta' | t }}</span>
+    </a>
+
+  {%- elsif generic != blank -%}
+    {%- comment -%}
+      Codes ohne eigene Produktseite: ein Button, kein Link und kein Formular.
+      Es gibt hier bewusst kein href, kein action und kein target – hinter der
+      Schaltfläche steckt keinerlei Navigation. Der Klick legt über die
+      Shopify Cart API in den Warenkorb und öffnet die Warenkorb-Lade.
+
+      Die Variantennummer wird serverseitig aus dem Produkt gesetzt. Fehlt sie
+      – etwa weil das Produkt gerade neu angelegt wurde –, holt
+      scent-code-add.js sie zur Laufzeit über /products/<handle>.js. Es steht
+      keine Nummer fest im Theme.
+    {%- endcomment -%}
     {%- capture generic_facts -%}{% render 'variant-facts', variant: generic_variant, mode: 'line' %}{%- endcapture -%}
     {%- assign generic_facts = generic_facts | strip -%}
-    {%- if generic_facts == blank -%}
+    {%- if generic_facts == blank and generic_variant != blank -%}
       {%- assign generic_facts = generic_variant.title -%}
     {%- endif -%}
-    {%- assign generic_price = generic_variant.price | money -%}
-    {%- assign target_meta = generic_facts | append: ' · ' | append: generic_price -%}
-  {%- endif -%}
-
-  <a class="predictive__code" href="{{ target_url }}" role="option">
-    <span>
-      <span class="predictive__code-title">{{ code }}</span>
-      {%- if target_meta != blank -%}
-        <span class="predictive__code-meta">{{ target_meta }}</span>
+    {%- assign generic_meta = generic_facts -%}
+    {%- if generic_variant != blank -%}
+      {%- assign generic_price = generic_variant.price | money -%}
+      {%- if generic_meta != blank -%}
+        {%- assign generic_meta = generic_meta | append: ' · ' | append: generic_price -%}
       {%- else -%}
-        <span class="predictive__code-meta">{{ 'sections.scent_code.code_help' | t }}</span>
+        {%- assign generic_meta = generic_price -%}
       {%- endif -%}
-    </span>
-    <span class="predictive__code-cta">{{ 'sections.scent_code.order_cta' | t }}</span>
-  </a>
+    {%- endif -%}
+    {%- if generic_meta == blank -%}
+      {%- assign generic_meta = 'sections.scent_code.code_help' | t -%}
+    {%- endif -%}
+    {%- assign add_error_text = 'sections.scent_code.add_failed' | t -%}
+    {%- assign add_busy_text = 'products.product.adding' | t -%}
+
+    <div class="predictive__code-add">
+      <button
+        type="button"
+        class="predictive__code"
+        role="option"
+        data-scent-code-add
+        data-code="{{ code }}"
+        data-variant-id="{{ generic_variant.id }}"
+        data-product-handle="{{ generic.handle }}"
+        data-error-text="{{ add_error_text | escape }}"
+        data-busy-text="{{ add_busy_text | escape }}"
+      >
+        <span>
+          <span class="predictive__code-title">{{ code }}</span>
+          <span class="predictive__code-meta">{{ generic_meta }}</span>
+        </span>
+        <span class="predictive__code-cta" data-scent-code-add-label>{{ 'sections.scent_code.order_cta' | t }}</span>
+      </button>
+      <p class="predictive__code-error" data-scent-code-add-error role="status" aria-live="polite" hidden></p>
+    </div>
+  {%- endif -%}
 {%- endif -%}

@@ -315,6 +315,11 @@
 </vc-drawer>
 
 <script src="{{ 'vc-search.js' | asset_url }}" defer="defer"></script>
+{%- comment -%}
+  Legt Scent Codes ohne eigene Produktseite aus dem Suchtreffer in den
+  Warenkorb. Liegt hier, weil die Sofortsuche auf jeder Seite erreichbar ist.
+{%- endcomment -%}
+<script src="{{ 'scent-code-add.js' | asset_url }}" defer="defer"></script>
 {%- if settings.predictive_search_enabled -%}
   <script src="{{ 'predictive-search.js' | asset_url }}" defer="defer"></script>
 {%- endif -%}
