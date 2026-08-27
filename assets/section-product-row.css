@@ -77,7 +77,13 @@
 
 /* v4.2.10 mobile cleanup: keep the swipe rail inside the viewport. */
 @media (max-width: 599px) {
-  .product-row { min-width: 0; max-width: 100%; overflow: hidden; }
+  /* Ohne overflow: hidden. Die Regel beschnitt die Bahn auf die Breite des
+     Textrasters – die Vorschau der nächsten Karte brach dadurch schon 20 px
+     vor dem Bildschirmrand hart ab, mitten im Text. Die Bahn ist ein eigener
+     Scroll-Bereich und ragt durch die negativen Außenabstände genau bis an
+     die Bildschirmkanten, nicht darüber hinaus: Die Seite bekommt dadurch
+     keine waagerechte Bildlaufleiste. */
+  .product-row { min-width: 0; max-width: 100%; }
   .row-track {
     box-sizing: border-box;
     width: calc(100% + (var(--gutter) * 2));

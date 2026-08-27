@@ -1,36 +1,70 @@
-# v4.2.24 – Mobile-Politur auf v4.2.23
+# v4.2.25 – Mobile-Politur auf v4.2.23, Bestseller-Beschnitt behoben
 
-Die Runde v4.2.18 (Schlagzeile, Code-Eingabe, Bestseller-Reihe) war auf einem
-älteren Stand entstanden und fehlte in v4.2.23. Sie ist jetzt sauber darauf
-angewandt. Die Änderungen aus v4.2.21 und v4.2.23 – Suchergebnis-Darstellung,
-persönliche Scent Codes, `section-search-results.css` – bleiben vollständig
-erhalten: Die vier hier geänderten Dateien waren in v4.2.23 unverändert, es
-gab keine Überschneidung.
+Basis ist ausschließlich die hochgeladene `v4-2-23-scent-code-personal`. Alle
+Neuerungen daraus bleiben erhalten – Scent-Code-System, Suchergebnisse mit
+`vc-code-card`, Unterscheidung Bestseller / persönlicher Code,
+`section-search-results.css`, Produktseiten, Warenkorb, Duftberatung, Texte,
+Startseite, Navigation. Die vier hier geänderten Dateien waren in v4.2.23
+unverändert; es gab keine Überschneidung.
 
-**Geändert gegenüber v4.2.23** – vier Dateien, 69 Zeilen:
+## 1 · Hero
 
-* `assets/section-hero-v2.css` – „SCENT." bricht nicht mehr im Wort
-  (`white-space: nowrap`, `word-break: keep-all`), die Zeile richtet ihre
-  Größe notfalls an der Spaltenbreite aus (`container-type` +
-  `font-size: min(1em, 26cqi)`). Dazu stehen „VC-" und die Ziffern ohne Lücke
-  beieinander: Rasterabstand 0, Feldbreite auf drei Stellen, gleiche Sperrung,
-  `tabular-nums`, „Weiter" am rechten Rand.
-* `assets/section-product-row.css` – Karten `min(62vw, 280px)` →
-  `min(70vw, 300px)`, `overflow: hidden` an der einzelnen Karte entfernt,
-  `scroll-snap-stop: always`.
-* `assets/scent-code.js` – Ziffernfilter für alle Code-Felder.
-* `snippets/scent-code-field.liquid` – `maxlength="3"`, `pattern="[0-9]*"`,
-  `enterkeyhint="go"`.
+`assets/section-hero-v2.css` – „SCENT." bricht nicht mehr im Wort
+(`white-space: nowrap`, `word-break: keep-all`); die Zeile richtet ihre Größe
+notfalls an der Spaltenbreite aus statt am Fenster (`container-type` und
+`font-size: min(1em, 26cqi)`).
 
-**Geprüft auf der neuen Basis:** Schlagzeile bei 13 Breiten von 320 bis
-1600 px einzeilig, kein Wortumbruch. Code-Eingabe: nur Ziffern, führende
-Nullen bleiben, Enter löst aus, Normalisierung `071 → VC-071`. Bestseller bei
-375, 390, 414 und 430 px durch alle acht Karten gewischt: jede vollständig
-sichtbar, kein Beschnitt, keine horizontale Scrollbar. Der Warenkorb-Weg der
-v4.2.23 mit dem neuen `vc-code-card`-Markup arbeitet unverändert:
-`POST /cart/add.js` mit `properties["Scent Code"]`, Warenkorb-Lade öffnet,
-Fehlerpfad und Doppelklickschutz greifen. Bei 990, 1280 und 1600 px kein
-Layoutunterschied.
+## 2 · Scent-Code-Eingabe
+
+`assets/section-hero-v2.css` – „VC-" und die Ziffern stehen ohne Lücke
+beieinander: Rasterabstand 0, Feldbreite auf drei Stellen, gleiche Sperrung
+für Präfix und Ziffern, `tabular-nums`, „Weiter" am rechten Rand.
+
+`snippets/scent-code-field.liquid` – `maxlength="3"`, `pattern="[0-9]*"`,
+`enterkeyhint="go"`, weiterhin `inputmode="numeric"` und `type="text"`, damit
+führende Nullen erhalten bleiben.
+
+`assets/scent-code.js` – ein `input`-Ereignis filtert alles außer Ziffern.
+Die Weiterleitung der aktuellen Version ist unverändert.
+
+## 3 · Bestseller-Reihe – die Ursache des Beschnitts
+
+`.product-row` trug auf Mobilgeräten `overflow: hidden`. Die Bahn ragt über
+negative Außenabstände absichtlich bis an die Bildschirmkanten – diese Regel
+beschnitt sie aber auf die Breite des Textrasters. Gemessen bei 390 px: Die
+Bahn reicht bis 390, sichtbar war sie nur bis **370**. Die Vorschau der
+nächsten Karte brach dadurch 20 px vor dem Rand hart ab, mitten im Text.
+
+`assets/section-product-row.css`:
+
+* `overflow: hidden` an `.product-row` entfernt – die Vorschau reicht jetzt
+  bis zur Bildschirmkante statt 20 px davor.
+* `overflow: hidden` an der einzelnen Karte entfernt – dort wurden Titel,
+  Ausführungszeile und Preis abgeschnitten, sobald sie ein paar Pixel breiter
+  waren als die Karte.
+* Karten `min(62vw, 280px)` → `min(70vw, 300px)`: mehr Raum für den Text.
+* `scroll-snap-stop: always` – ein schneller Wisch überspringt keine Karte.
+
+Geprüft bei 320, 360, 375, 390, 414, 430, 480, 560, 599, 600 und 749 px, mit
+sechs Karten und jeder einzeln angeschnappt: Bild, VC-Code,
+„EXTRAIT · 30 ML · 30 %" und Preis jeweils vollständig sichtbar, Vorschau
+reicht exakt bis zur Bildschirmkante, keine waagerechte Bildlaufleiste.
+
+## Geprüft
+
+1. Theme Check ohne Fehler, alle JS-Dateien syntaktisch fehlerfrei.
+2. **VC-001** – persönlicher Code: Button, `POST /cart/add.js` mit
+   `properties["Scent Code"] = "VC-001"`, Warenkorb-Lade öffnet.
+3. **VC-049** – gelisteter Bestseller: kein Warenkorb-Button, Link auf
+   `/products/vc-049`, kein „Keine Treffer". Die Unterscheidung aus v4.2.21
+   arbeitet unverändert.
+4. **VC-250** – normaler Nicht-Bestseller: wie VC-001.
+5. Bestseller-Reihe: siehe oben.
+6. Warenkorb: Fehlerpfad zeigt die Meldung und öffnet die Lade nicht,
+   Dreifachklick ergibt eine Position, fehlende Variantennummer wird zur
+   Laufzeit über `/products/vent-celeste-scent-code.js` ermittelt.
+7. Desktop bei 990, 1280 und 1600 px: kein Unterschied. Auf Mobilgeräten nur
+   die Bestseller-Reihe (551 → 590 px) und der Hero bei 750 px (−4 px).
 
 # v4.2.23 – Scent-Code Darstellung
 
