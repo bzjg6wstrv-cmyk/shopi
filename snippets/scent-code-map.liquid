@@ -8,7 +8,15 @@
 {%- endcomment -%}
   {%- liquid
     assign public_collection = settings.scent_code_collection
-    assign fallback_handle = settings.scent_code_product.handle
+    assign fallback_product = settings.scent_code_product
+    if fallback_product == blank
+      comment
+        Derselbe Rückfall wie im Suchtreffer, damit beide Wege dasselbe
+        Produkt ansteuern.
+      endcomment
+      assign fallback_product = all_products['vent-celeste-scent-code']
+    endif
+    assign fallback_handle = fallback_product.handle
   -%}
   <script type="application/json" data-scent-code-map>
     {

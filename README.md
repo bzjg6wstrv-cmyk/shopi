@@ -32,7 +32,7 @@ in V2 der zweite Weg für Stöberer, nicht mehr der Einstieg.
 - Code-Felder im Hero, in einem eigenen Startseiten-Abschnitt, über der Suche und auf der Bestellseite
 - Code-Erkennung auch **serverseitig** in Sofortsuche und Suchergebnisseite — funktioniert ohne JavaScript
 
-### Generischer Bestellweg (`/products/scent-code`)
+### Generischer Bestellweg (`/products/vent-celeste-scent-code`)
 - Ein Produkt trägt das gesamte nicht gelistete Sortiment, vier Ausführungen
 - Der Code wird als **Positionsangabe** übergeben: `Scent Code: VC-081` plus versteckte, maschinenlesbare Fassung `_vc_code`
 - Damit sichtbar in Warenkorb, Checkout, Bestellbestätigung, Admin, Lieferschein und jedem Export — kein zweiter Datenspeicher
@@ -242,7 +242,7 @@ Varianten davon abweichen sollen.
 | Produkt | Aufbau |
 |---|---|
 | **20 Bestseller** | Titel `VC-047`, Handle `vc-047`, eine Option `Ausführung` mit `Extrait 30 ml` (29,90 €), `Eau de Parfum 30 ml` (22,90 €), `Travel 10 ml` (12,90 €), `Sample 2 ml` (1,00 €) |
-| **Scent Code** | Titel `VENT CELESTE Scent Code`, Handle `scent-code`, dieselben vier Ausführungen, Bestandsverfolgung aus |
+| **Scent Code** | Titel `VENT CELESTE Scent Code`, Handle `vent-celeste-scent-code`, dieselben vier Ausführungen, Bestandsverfolgung aus |
 | **Discovery Set** | Handle `discovery-set`, eine Variante, 3,90 € |
 | **Essentials** | Eigene Produkte, Handle-Präfix `essentials-`, 9,90 € |
 

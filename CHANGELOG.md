@@ -1,5 +1,66 @@
 # VENT CELESTE — Änderungsprotokoll
 
+## v4.2.15 — Richtiger Produkt-Handle `vent-celeste-scent-code`
+
+Die Theme-Einstellung „Produkt für nicht gelistete Codes" zeigte auf den
+Handle `scent-code`. Den gibt es im Shop nicht — das Produkt heißt
+`vent-celeste-scent-code`. Shopify löst einen unbekannten Handle zu `nil` auf:
+Die Einstellung war damit leer, der Suchtreffer fand kein Produkt und konnte
+keine Variantennummer liefern.
+
+### Geändert
+
+| Datei | Änderung |
+| --- | --- |
+| `config/settings_data.json` | `scent_code_product` auf `vent-celeste-scent-code`, in den aktuellen Werten **und** im Preset |
+| `snippets/scent-code-hit.liquid` | Rückfall über `all_products['vent-celeste-scent-code']`, falls die Einstellung leer ist |
+| `snippets/scent-code-map.liquid` | derselbe Rückfall, damit beide Wege dasselbe Produkt ansteuern |
+| `README.md`, `docs/test-scent-code.js` | Handle in Beschreibung und Testdaten |
+
+### Bewusst nicht geändert
+
+`scent-code` kommt an vielen weiteren Stellen vor, meint dort aber nie den
+Produkt-Handle:
+
+* Dateinamen `assets/scent-code.js`, `assets/scent-code-order.js`,
+  `assets/section-scent-code.css`
+* Snippets `scent-code-field`, `scent-code-map`, `scent-code-hit`
+* Abschnitte `main-product-scent-code`, `scent-code-entry`
+* Datenattribute `data-scent-code-*`
+* **Theme-Vorlage** `templates/product.scent-code.json` und die Abfrage
+  `template.suffix == 'scent-code'` in `snippets/meta-tags.liquid` — der
+  Vorlagenname ist frei wählbar und unabhängig vom Handle. Umbenennen würde
+  die Zuweisung im Adminbereich zerstören.
+
+### Keine feste Variantennummer
+
+Die Nummer kommt weiterhin aus dem Produkt selbst — bevorzugt aus dem
+Metafeld `custom.hauptvariante`, sonst `selected_or_first_available_variant`.
+Im Theme steht keine Variantennummer.
+
+### Geprüft
+
+Mit einem Produktindex nach Handle, der Shopifys Auflösung nachbildet: Steht
+ein unbekannter Handle in der Einstellung, ist sie leer — genau wie im Shop.
+
+| Einstellung | 1 | 71 | VC-71 | 250 |
+| --- | --- | --- | --- | --- |
+| `vent-celeste-scent-code` | VC-001 | VC-071 | VC-071 | VC-250 |
+| `scent-code` (falsch) | VC-001 | VC-071 | VC-071 | VC-250 |
+| leer | — | VC-071 | — | — |
+
+In allen Fällen echte Variantennummer aus dem Produkt und
+`properties[Scent Code]` korrekt gesetzt. Die Zuordnungstabelle nennt in
+beiden Fällen `"fallback": "vent-celeste-scent-code"`.
+
+Im Browser: Klick auf „Jetzt auswählen" ruft `/cart/add.js` mit der echten
+Variantennummer auf, die Warenkorb-Lade öffnet, kein Seitenwechsel, kein
+„Keine Treffer" daneben. Vier Codes ergeben vier eigene Positionen.
+
+Startseite bei 390, 750, 990, 1280 und 1600 px unverändert.
+
+---
+
 ## v4.2.14 — Scent Code direkt aus dem Suchtreffer in den Warenkorb
 
 ### Die Ursache

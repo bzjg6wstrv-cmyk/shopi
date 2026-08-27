@@ -106,6 +106,15 @@
         nie eine Nummer geraten.
       endcomment
       assign generic = settings.scent_code_product
+      if generic == blank
+        comment
+          Rückfall auf den bekannten Handle: Zeigt die Theme-Einstellung ins
+          Leere – etwa weil das Produkt später neu angelegt wurde –, findet das
+          Theme das Produkt trotzdem. Die Variantennummer kommt weiterhin aus
+          dem Produkt selbst, nie aus einer festen Angabe.
+        endcomment
+        assign generic = all_products['vent-celeste-scent-code']
+      endif
       if generic != blank
         assign generic_variant = generic.metafields.custom.hauptvariante.value
         if generic_variant == blank or generic_variant.available == false

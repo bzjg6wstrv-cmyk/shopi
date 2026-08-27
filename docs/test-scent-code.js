@@ -48,7 +48,7 @@ function check(label, actual, expected) {
 }
 
 console.log('--- ohne Positivliste (Fallback 1..130) ---');
-let api = load({ prefix: 'VC', max: 130, allowed: [], codes: {}, fallback: 'scent-code' });
+let api = load({ prefix: 'VC', max: 130, allowed: [], codes: {}, fallback: 'vent-celeste-scent-code' });
 check('47', api.normalise('47'), 'VC-047');
 check('047', api.normalise('047'), 'VC-047');
 check('VC47', api.normalise('VC47'), 'VC-047');
@@ -65,17 +65,17 @@ check('leer', api.normalise(''), null);
 check('12345 (zu lang)', api.normalise('12345'), null);
 
 console.log('\n--- mit Positivliste [47, 81] ---');
-api = load({ prefix: 'VC', max: 130, allowed: [47, 81], codes: {}, fallback: 'scent-code' });
+api = load({ prefix: 'VC', max: 130, allowed: [47, 81], codes: {}, fallback: 'vent-celeste-scent-code' });
 check('47 (in Liste)', api.normalise('47'), 'VC-047');
 check('081 (in Liste)', api.normalise('081'), 'VC-081');
 check('50 (nicht in Liste)', api.normalise('50'), null);
 check('130 (nicht in Liste)', api.normalise('130'), null);
 
 console.log('\n--- Auflösung öffentlicher Code ---');
-api = load({ prefix: 'VC', max: 130, allowed: [], codes: { 'VC-047': { handle: 'vc-047', price: '29,90 €' } }, fallback: 'scent-code' });
+api = load({ prefix: 'VC', max: 130, allowed: [], codes: { 'VC-047': { handle: 'vc-047', price: '29,90 €' } }, fallback: 'vent-celeste-scent-code' });
 check('VC-047 ist öffentlich', JSON.stringify(api.lookupLocal('VC-047')), '{"handle":"vc-047","price":"29,90 €"}');
 check('VC-081 nicht öffentlich', api.lookupLocal('VC-081'), null);
-check('Fallback-URL', api.fallbackUrl('VC-081'), '/products/scent-code?code=VC-081');
+check('Fallback-URL', api.fallbackUrl('VC-081'), '/products/vent-celeste-scent-code?code=VC-081');
 
 console.log(failures === 0 ? '\nAlle Prüfungen bestanden.' : `\n${failures} Prüfung(en) fehlgeschlagen.`);
 process.exit(failures === 0 ? 0 : 1);
