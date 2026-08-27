@@ -31,6 +31,9 @@
 .row-arrow svg { width: 16px; height: 16px; }
 .row-arrow--prev svg { transform: rotate(180deg); }
 
+/* Breite der Vorschau auf die nächste Karte – der Wisch-Hinweis. */
+:root { --row-peek: 3.5rem; }
+
 .row-track {
   display: grid;
   grid-auto-flow: column;
@@ -107,9 +110,15 @@
   .row-head { margin-bottom: var(--space-md); }
 
   .row-track {
-    /* Etwas breiter als zuvor: mehr Raum für Titel, Ausführung und Preis,
-       die nächste Karte bleibt trotzdem deutlich sichtbar. */
-    grid-auto-columns: min(70vw, 300px);
+    /* Die Kartenbreite wird aus der Bahn selbst abgeleitet, nicht aus vw:
+       verfügbare Breite minus Vorschau minus Spaltenabstand. Dadurch kann
+       keine Rundung gegenüber dem Fenster entstehen und die aktive Karte
+       passt immer vollständig zwischen die beiden Seitenränder.
+       100 % = Fensterbreite minus 2 × Seitenrand. */
+    /* Nach oben gedeckelt, damit die Karte auf breiten Telefonen nicht
+       die halbe Seite einnimmt – dort werden wie bisher zwei Karten
+       gleichzeitig sichtbar. */
+    grid-auto-columns: min(calc(100% - var(--row-peek, 3.5rem) - var(--space-md)), 20rem);
     padding-bottom: 0;
   }
 
@@ -131,5 +140,5 @@
 }
 
 @media (max-width: 599px) {
-  .row-track { grid-auto-columns: min(70vw, 300px); }
+  .row-track { grid-auto-columns: min(calc(100% - var(--row-peek, 3.5rem) - var(--space-md)), 20rem); }
 }

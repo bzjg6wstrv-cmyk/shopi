@@ -1,70 +1,68 @@
-# v4.2.25 – Mobile-Politur auf v4.2.23, Bestseller-Beschnitt behoben
+# v4.2.26 – Hero-Schlagzeile und Bestseller-Reihe deterministisch
 
-Basis ist ausschließlich die hochgeladene `v4-2-23-scent-code-personal`. Alle
-Neuerungen daraus bleiben erhalten – Scent-Code-System, Suchergebnisse mit
-`vc-code-card`, Unterscheidung Bestseller / persönlicher Code,
-`section-search-results.css`, Produktseiten, Warenkorb, Duftberatung, Texte,
-Startseite, Navigation. Die vier hier geänderten Dateien waren in v4.2.23
-unverändert; es gab keine Überschneidung.
+Nur zwei Dateien, nur die beiden gemeldeten Punkte. Scent-Code-Eingabe,
+Scent-Code-Suche, Topseller-Erkennung, generischer Bestellweg, Produktseiten
+und Warenkorb sind unberührt.
 
-## 1 · Hero
+## 1 · Hero „SCENT."
 
-`assets/section-hero-v2.css` – „SCENT." bricht nicht mehr im Wort
-(`white-space: nowrap`, `word-break: keep-all`); die Zeile richtet ihre Größe
-notfalls an der Spaltenbreite aus statt am Fenster (`container-type` und
-`font-size: min(1em, 26cqi)`).
+Die mobile Schriftgröße geht von `clamp(2.25rem, 10vw, 3rem)` auf
+`clamp(2rem, 9vw, 2.75rem)` – bei 390 px sind das 35 statt 39 px. Zusammen
+mit dem bereits vorhandenen `white-space: nowrap` kann das Wort weder brechen
+noch überlaufen.
 
-## 2 · Scent-Code-Eingabe
+Gemessen mit der echten Playfair Display, „SCENT." misst darin 3,37 em:
 
-`assets/section-hero-v2.css` – „VC-" und die Ziffern stehen ohne Lücke
-beieinander: Rasterabstand 0, Feldbreite auf drei Stellen, gleiche Sperrung
-für Präfix und Ziffern, `tabular-nums`, „Weiter" am rechten Rand.
+| Fenster | Schrift | Spalte | „SCENT." | Anteil |
+| --- | --- | --- | --- | --- |
+| 375 px | 33,8 px | 335 px | 106 px | 32 % |
+| **390 px** | **35,1 px** | **350 px** | **110 px** | **31 %** |
+| 393 px | 35,4 px | 353 px | 111 px | 31 % |
+| 402 px | 36,2 px | 362 px | 113 px | 31 % |
+| 414 px | 37,3 px | 374 px | 117 px | 31 % |
+| 428 px | 38,5 px | 388 px | 121 px | 31 % |
+| **430 px** | **38,7 px** | **390 px** | **121 px** | **31 %** |
 
-`snippets/scent-code-field.liquid` – `maxlength="3"`, `pattern="[0-9]*"`,
-`enterkeyhint="go"`, weiterhin `inputmode="numeric"` und `type="text"`, damit
-führende Nullen erhalten bleiben.
+Reserve also mehr als das Dreifache: Selbst eine deutlich breiter laufende
+Schrift kann die Zeile nicht mehr sprengen. Alle drei Zeilen stehen als
+`FIND / YOUR / SCENT.`, kein Umbruch, kein Überlauf, kein Seitenscroll.
+Desktop unverändert – die Regel steht in `@media (max-width: 749px)`.
 
-`assets/scent-code.js` – ein `input`-Ereignis filtert alles außer Ziffern.
-Die Weiterleitung der aktuellen Version ist unverändert.
+## 2 · Bestseller-Reihe
 
-## 3 · Bestseller-Reihe – die Ursache des Beschnitts
+Die Kartenbreite wird nicht mehr aus `vw` abgeleitet, sondern aus der Bahn
+selbst:
 
-`.product-row` trug auf Mobilgeräten `overflow: hidden`. Die Bahn ragt über
-negative Außenabstände absichtlich bis an die Bildschirmkanten – diese Regel
-beschnitt sie aber auf die Breite des Textrasters. Gemessen bei 390 px: Die
-Bahn reicht bis 390, sichtbar war sie nur bis **370**. Die Vorschau der
-nächsten Karte brach dadurch 20 px vor dem Rand hart ab, mitten im Text.
+```
+grid-auto-columns: min(calc(100% - var(--row-peek) - var(--space-md)), 20rem)
+--row-peek: 3.5rem
+```
 
-`assets/section-product-row.css`:
+`100 %` ist hier die Breite der Bahn, also Fensterbreite minus beide
+Seitenränder. Damit kann keine Rundung gegenüber dem Fenster mehr entstehen:
+Karte plus Vorschau plus Spaltenabstand ergeben exakt die verfügbare Breite.
+Der Deckel bei 20 rem sorgt dafür, dass auf breiteren Telefonen wie bisher
+zwei Karten nebeneinander stehen.
 
-* `overflow: hidden` an `.product-row` entfernt – die Vorschau reicht jetzt
-  bis zur Bildschirmkante statt 20 px davor.
-* `overflow: hidden` an der einzelnen Karte entfernt – dort wurden Titel,
-  Ausführungszeile und Preis abgeschnitten, sobald sie ein paar Pixel breiter
-  waren als die Karte.
-* Karten `min(62vw, 280px)` → `min(70vw, 300px)`: mehr Raum für den Text.
-* `scroll-snap-stop: always` – ein schneller Wisch überspringt keine Karte.
+Gemessen bei 320, 360, 375, 390, 393, 402, 414, 428, 430, 480, 560, 599, 600
+und 749 px, jede der sechs Karten einzeln angeschnappt: Die aktive Karte
+steht immer bei 20 … 20 + Kartenbreite, also vollständig im Fenster – mit
+Bild, VC-Code, „EXTRAIT · 30 ML · 30 %" und Preis. Die Vorschau auf die
+nächste Karte beträgt auf Telefonen konstant 76 px. Keine waagerechte
+Bildlaufleiste.
 
-Geprüft bei 320, 360, 375, 390, 414, 430, 480, 560, 599, 600 und 749 px, mit
-sechs Karten und jeder einzeln angeschnappt: Bild, VC-Code,
-„EXTRAIT · 30 ML · 30 %" und Preis jeweils vollständig sichtbar, Vorschau
-reicht exakt bis zur Bildschirmkante, keine waagerechte Bildlaufleiste.
+## Geänderte Dateien
+
+`assets/base.css` (nur die mobile Schriftgröße der Schlagzeile) ·
+`assets/section-product-row.css` (Kartenbreite und Vorschauwert)
 
 ## Geprüft
 
-1. Theme Check ohne Fehler, alle JS-Dateien syntaktisch fehlerfrei.
-2. **VC-001** – persönlicher Code: Button, `POST /cart/add.js` mit
-   `properties["Scent Code"] = "VC-001"`, Warenkorb-Lade öffnet.
-3. **VC-049** – gelisteter Bestseller: kein Warenkorb-Button, Link auf
-   `/products/vc-049`, kein „Keine Treffer". Die Unterscheidung aus v4.2.21
-   arbeitet unverändert.
-4. **VC-250** – normaler Nicht-Bestseller: wie VC-001.
-5. Bestseller-Reihe: siehe oben.
-6. Warenkorb: Fehlerpfad zeigt die Meldung und öffnet die Lade nicht,
-   Dreifachklick ergibt eine Position, fehlende Variantennummer wird zur
-   Laufzeit über `/products/vent-celeste-scent-code.js` ermittelt.
-7. Desktop bei 990, 1280 und 1600 px: kein Unterschied. Auf Mobilgeräten nur
-   die Bestseller-Reihe (551 → 590 px) und der Hero bei 750 px (−4 px).
+Scent-Code-Eingabe unverändert: nur Ziffern, führende Nullen, Enter,
+`071 → VC-071`. Warenkorb-Weg, Produktseiten-Bestellweg, Suche und Menü
+laufen unverändert durch. Desktop bei 990, 1280 und 1600 px: kein
+Unterschied. Auf Mobilgeräten ändern sich nur Hero (434 → 424 px) und
+Bestseller-Reihe (551 → 596 px).
 
 # v4.2.23 – Scent-Code Darstellung
 

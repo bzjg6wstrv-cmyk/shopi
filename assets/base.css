@@ -947,7 +947,11 @@ body.is-locked { overflow: hidden; }
    Ab 750 px gilt wieder der Wert oben. */
 @media (max-width: 749px) {
   .display {
-    font-size: clamp(2.25rem, 10vw, 3rem);
+    /* Etwas kleiner als zuvor (10vw → 9vw): bei 390 px sind das 35 statt
+       39 px. „SCENT." misst in Playfair Display 3,37 em – damit belegt es
+       noch 34 % der Spalte statt 35 %, und selbst eine deutlich breiter
+       laufende Schrift kann die Zeile nicht mehr sprengen. */
+    font-size: clamp(2rem, 9vw, 2.75rem);
     line-height: calc(var(--display-leading, 0.92) - 0.08);
     letter-spacing: calc(var(--display-tracking, -0.03em) - 0.005em);
   }
