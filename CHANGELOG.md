@@ -1,3 +1,86 @@
+# v6.2 – Eine Art-Direction für Fotos und Seite
+
+Die Produktfotos und die Seite sollen als ein System gelesen werden. Sechs
+Eingriffe, keine Änderung an der Kauf-, Such- oder Scent-Code-Logik.
+
+## 1 · Farbsystem in vier Stufen
+
+| Stufe | Farbe | Verwendung |
+| --- | --- | --- |
+| 1 Hauptfläche | `#F7F3EC` | Grundton der Seite, nah am Hintergrund der Produktfotos |
+| 2 Redaktionell | `#EFE8DB` | Bereiche, die sich bewusst absetzen (Kennenlernvorteil, Fußbereich) |
+| 3 Kontrast | `#0B0B0A` | der Beratungsmoment, die Markenaussage, die Ankündigungszeile |
+| 4 Stein | `#9A9185` | seltene Sonderflächen |
+
+Der Rhythmus der Startseite entsteht aus dem Wechsel dieser Stufen:
+Schwarz (Ankündigung) · Ivory (Kopf, Hero, Bestseller) · Schwarz (Beratung) ·
+Ivory (So funktioniert's, 30 % Extrait) · **Beige (20 %)** · Schwarz (Marke) ·
+Ivory (Newsletter) · Beige (Fußbereich).
+
+Kontrastwerte: Text auf Ivory 17,80:1 · gedämpfter Text auf Ivory 5,21:1 ·
+Text auf Beige 16,16:1 · gedämpfter Text auf Beige 5,18:1 · Ivory auf Schwarz
+17,80:1 · Champagne auf Schwarz 7,79:1.
+
+## 2 · Bestseller-Karten
+
+Kachel, Radius und Rahmen sind entfernt; das Bild geht ohne Kante in den
+Seitenton über. `object-fit: contain` statt `cover` – der Flakon wird nie
+angeschnitten und steht in voller Bahnbreite. Die Trennlinie unter dem Bild
+entfällt, die Abstände Bild → Code → Ausführung → Preis sind neu abgestimmt.
+Schnell-hinzufügen sitzt jetzt als Zeile unter den Angaben statt als Knopf
+auf dem Foto; Formular, Varianten-ID und Warenkorb-Rückmeldung sind
+unverändert. Vorschau auf die nächste Karte: 12 %, gemessen bei 320, 375,
+390, 393 und 430 px.
+
+## 3 · Produktgalerie
+
+**Warum sie vorher wie ein Stapel wirkte:** `object-fit: cover` in einem auf
+42 vh gedeckelten Kasten schnitt jedes Foto auf einen fast quadratischen
+Block, und vom nächsten Bild blieb ein 12 px breiter Splitter am Rand. Es gab
+weder Zähler noch Punkte, nur eine 1 px hohe Fortschrittslinie. Nichts daran
+las sich als Galerie.
+
+**Jetzt:** auf dem Telefon ein Bild pro Blick, rund 10 % Vorschau auf das
+nächste, Zähler „2 / 4" rechts unter der Bahn. `contain` statt `cover`, damit
+das Bild mit den Duftnoten vollständig lesbar bleibt. Ab Tablet wird dieselbe
+Bahn zur Bühne: ein großes Bild, darunter eine Reihe kleiner Vorschauen zum
+Anspringen, rechts die mitlaufende Kaufspalte. Jedes Bild liegt in einer
+eigenen Bahnbreite, damit Einrasten und Schrittweite gleich bleiben. Ohne
+JavaScript stehen die Bilder untereinander und bleiben vollständig
+erreichbar. Der Variantenwechsel holt weiterhin das passende Bild heran.
+
+## 4 · 20-%-Bereich
+
+Von Schwarz auf die warme Beigefläche. Rahmenlinien oben und unten entfernt –
+der Farbwechsel trennt bereits. Mehr vertikale Luft, die tragende Zusage
+deutlich größer (60 px auf dem Schreibtisch, 34 px auf dem Telefon gegen
+23/24 px der Beratungsspalte) und mittig zur rechten Spalte gesetzt.
+Überschriften in gemischter Schreibweise statt Versalien.
+
+## 5 · Typografie
+
+Kein Text mehr unter 11 px. Auszeichnungen eine Stufe größer, die
+Grundsperrung von 0,12 auf 0,09 em gesenkt und alle zusätzlichen Aufschläge
+entfernt. Ganze Sätze laufen nicht mehr in Versalien – die Ankündigungszeile
+und die kleinen Hinweistexte stehen in gemischter Schreibweise. `h2` und `h3`
+auf dem Telefon eine Stufe größer.
+
+## 6 · Nebenbei behoben
+
+Der Warenkorb ersetzte beim Hinzufügen den Knopfinhalt über `textContent` und
+verlor dabei dauerhaft das Symbol neben der Beschriftung. Jetzt wird
+`innerHTML` gesichert und zurückgeschrieben.
+
+## Prüfungen
+
+Theme Check 33 Verstöße gegen 36 der Basis, keine neue Art. 27 JSON-Dateien,
+36 Section-Schemas und 13 JS-Dateien fehlerfrei. Sweep über 320, 375, 390,
+393, 430, 750, 768, 1024, 1280, 1440 und 1600 px auf sechs Seitentypen ohne
+waagerechten Überlauf. Treiber für Code-Normalisierung, Cart-API-Bestellweg
+und Kaufweg unverändert grün.
+
+---
+
 # v4.2.26 – Hero-Schlagzeile und Bestseller-Reihe deterministisch
 
 Nur zwei Dateien, nur die beiden gemeldeten Punkte. Scent-Code-Eingabe,
