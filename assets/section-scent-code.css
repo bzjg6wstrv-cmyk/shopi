@@ -203,7 +203,7 @@
   display: block;
   margin-bottom: var(--space-sm);
   font-size: 0.625rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.03em);
+  letter-spacing: var(--meta-tracking);
   text-transform: uppercase;
   color: rgb(var(--color-muted));
 }
@@ -258,7 +258,7 @@
   border: 0;
   color: rgb(var(--color-text));
   font-size: 0.6875rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.03em);
+  letter-spacing: var(--meta-tracking);
   text-transform: uppercase;
   white-space: nowrap;
 }

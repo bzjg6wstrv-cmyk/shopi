@@ -23,6 +23,16 @@
 
     if (arrows) arrows.hidden = false;
 
+    /* Zähler und Vorschauen der Produktgalerie. Beide sind optional: Fehlt
+       die Auszeichnung, läuft der Rest unverändert weiter. */
+    var count = row.querySelector('[data-row-count]');
+    var countValue = row.querySelector('[data-row-count-current]');
+    var thumbs = row.querySelector('[data-media-thumbs]');
+    var thumbButtons = thumbs
+      ? Array.prototype.slice.call(thumbs.querySelectorAll('[data-media-target]'))
+      : [];
+    var aktiv = -1;
+
     /* Fortschrittslinie: Der helle Balken entspricht dem sichtbaren
        Ausschnitt der Reihe und wandert mit dem Scrollen. Passt alles ohne
        Scrollen hinein, bleibt die Linie ausgeblendet. */
@@ -40,6 +50,39 @@
       var weg = track.scrollLeft / (gesamt - sichtbar);
       progressBar.style.transform = 'translateX(' + (weg * (100 / anteil - 100)).toFixed(2) + '%)';
     }
+
+    /* Welches Bild liegt im Blick? Der Abstand vom linken Rand der Bahn zum
+       linken Rand jedes Bildes, geteilt durch eine Schrittbreite. */
+    function stand() {
+      if (!count && !thumbButtons.length) return;
+      var breite = step();
+      if (!breite) return;
+      var index = Math.round(track.scrollLeft / breite);
+      if (index < 0) index = 0;
+      if (index > items.length - 1) index = items.length - 1;
+      if (index === aktiv) return;
+      aktiv = index;
+      if (countValue) countValue.textContent = String(index + 1);
+      thumbButtons.forEach(function (button, i) {
+        var an = i === index;
+        button.classList.toggle('is-active', an);
+        if (an) {
+          button.setAttribute('aria-current', 'true');
+        } else {
+          button.removeAttribute('aria-current');
+        }
+      });
+    }
+
+    thumbButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        var ziel = track.querySelector(
+          '[data-media-id="' + button.getAttribute('data-media-target') + '"]'
+        );
+        if (!ziel) return;
+        ziel.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+      });
+    });
 
     function step() {
       var first = items[0];
@@ -72,15 +115,19 @@
       window.requestAnimationFrame(function () {
         updateArrows();
         fortschritt();
+        stand();
         ticking = false;
       });
     }, { passive: true });
     window.addEventListener('resize', function () {
       updateArrows();
       fortschritt();
+      aktiv = -1;
+      stand();
     });
     updateArrows();
     fortschritt();
+    stand();
 
     /* Fokus per Tastatur scrollt die Kachel in den Blick. */
     track.addEventListener('focusin', function (event) {

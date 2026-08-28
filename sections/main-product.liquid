@@ -36,36 +36,75 @@
   <div class="page-width">
     <div class="product">
       {%- comment -%}
-        Galerie. Auf dem Telefon eine waagerechte Bahn mit Einrasten und
-        einer feinen Fortschrittslinie – dieselbe Bedienung wie in der
-        Bestseller-Reihe. Ab Tablet stehen die Bilder untereinander.
-        Die Bilder behalten ihre data-media-id: Der Variantenwechsel
-        scrollt weiterhin das passende Bild in den Blick.
+        Galerie. Ein Mechanismus für alle Größen: eine waagerechte Bahn mit
+        Einrasten. Auf dem Telefon liegt genau ein Bild im Blick, das nächste
+        blitzt als Wischhinweis auf; ab Tablet steht dieselbe Bahn als große
+        Bühne, darunter eine Reihe kleiner Vorschauen zum Anspringen.
+
+        Die Bilder werden nie beschnitten (object-fit: contain). Bild 3 trägt
+        die Duftnoten als Text – ein Anschnitt würde sie unlesbar machen.
+
+        Die data-media-id bleibt an jedem Bild: Der Variantenwechsel scrollt
+        weiterhin das passende Bild in den Blick.
       {%- endcomment -%}
       <div class="product__gallery" data-product-row>
-      <div class="product__media" data-row-track>
-        {%- if product.media.size > 0 -%}
-          {%- for media in product.media -%}
-            <img
-              data-media-id="{{ media.id }}"
-              src="{{ media | image_url: width: 1400 }}"
-              srcset="{{ media | image_url: width: 600 }} 600w,
-                      {{ media | image_url: width: 900 }} 900w,
-                      {{ media | image_url: width: 1400 }} 1400w"
-              sizes="(min-width: 990px) 55vw, 100vw"
-              alt="{{ media.alt | default: product.title | escape }}"
-              width="{{ media.width }}"
-              height="{{ media.height }}"
-              {% if forloop.first %}loading="eager" fetchpriority="high"{% else %}loading="lazy"{% endif %}
-            >
-          {%- endfor -%}
-        {%- else -%}
-          {{ 'product-1' | placeholder_svg_tag: 'full-bleed-media' }}
-        {%- endif -%}
-      </div>
-        <div class="row-progress product__progress" data-row-progress aria-hidden="true" hidden>
-          <span class="row-progress__bar" data-row-progress-bar></span>
+        <div class="product__media" data-row-track>
+          {%- if product.media.size > 0 -%}
+            {%- for media in product.media -%}
+              {%- comment -%}
+                Jedes Bild sitzt in einer eigenen Bahnbreite. Ohne diese
+                Hülle wäre das Bild selbst die Spalte – und da es auf großen
+                Bildschirmen sein natürliches Maß behält, würden Einrasten
+                und Schrittweite von Bild zu Bild unterschiedlich ausfallen.
+              {%- endcomment -%}
+              <div class="product__slide" data-media-id="{{ media.id }}">
+              <img
+                src="{{ media | image_url: width: 1400 }}"
+                srcset="{{ media | image_url: width: 600 }} 600w,
+                        {{ media | image_url: width: 900 }} 900w,
+                        {{ media | image_url: width: 1400 }} 1400w"
+                sizes="(min-width: 990px) 55vw, 92vw"
+                alt="{{ media.alt | default: product.title | escape }}"
+                width="{{ media.width }}"
+                height="{{ media.height }}"
+                {% if forloop.first %}loading="eager" fetchpriority="high"{% else %}loading="lazy"{% endif %}
+              >
+              </div>
+            {%- endfor -%}
+          {%- else -%}
+            <div class="product__slide">{{ 'product-1' | placeholder_svg_tag: 'full-bleed-media' }}</div>
+          {%- endif -%}
         </div>
+
+        {%- if product.media.size > 1 -%}
+          {%- comment -%}
+            Zähler auf dem Telefon, Vorschauen ab Tablet. Beides beschreibt
+            denselben Zustand; sichtbar ist je nach Breite nur eines.
+          {%- endcomment -%}
+          <p class="product__count" data-row-count>
+            <span data-row-count-current>1</span><span class="product__count-sep"> / </span>{{ product.media.size }}
+          </p>
+
+          <div class="product__thumbs" data-media-thumbs>
+            {%- for media in product.media -%}
+              <button
+                type="button"
+                class="product__thumb{% if forloop.first %} is-active{% endif %}"
+                data-media-target="{{ media.id }}"
+                aria-label="{{ 'products.product.media_position' | t: position: forloop.index }}"
+                {% if forloop.first %}aria-current="true"{% endif %}
+              >
+                <img
+                  src="{{ media | image_url: width: 220 }}"
+                  alt=""
+                  width="110"
+                  height="138"
+                  loading="lazy"
+                >
+              </button>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
       </div>
 
       <div class="product__info">

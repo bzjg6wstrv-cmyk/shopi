@@ -45,58 +45,64 @@
 
 
 {%- comment -%}
-  Vier Farbstile aus einer Palette, abgestimmt auf die warme Bildwelt der
-  Produktfotos:
+  Das Farbsystem hat vier Stufen. Aus ihrem Wechsel entsteht der Rhythmus
+  beim Scrollen – nicht aus Rahmen oder Kacheln.
 
-    Deep Black       #0B0B0A   Grund der dunklen Abschnitte, Schrift auf hell
-    Warm Ivory       #F7F4EE   Grundfläche, warm statt kalt
-    Soft Sand        #E7DED0   die zweite helle Fläche
-    Warm Grey        #9A9185   Linien, Stein-Farbstil, gedämpfte Schrift auf dunkel
-    Champagne        #B5A080   Akzent, sehr sparsam
+    1  Hauptfläche      #F7F3EC   sehr helles warmes Ivory. Es liegt so nah
+                                  am Hintergrund der Produktfotos, dass die
+                                  Bilder ohne sichtbare Kante in die Seite
+                                  übergehen.
+    2  Redaktionell     #EFE8DB   eine Stufe tiefer, warmes Beige. Für
+                                  Bereiche, die sich bewusst absetzen sollen
+                                  (Kennenlernvorteil, Fußbereich).
+    3  Kontrast         #0B0B0A   tiefes Schwarz. Sparsam und dafür stark –
+                                  der Beratungsmoment.
+    4  Stein            #9A9185   für seltene Sonderflächen.
 
-  Zwei Anmerkungen zur Lesbarkeit:
-  Warm Grey erreicht auf Ivory nur 2,8:1 und Champagne nur 2,3:1 – beide sind
-  dort als Fließtext nicht zulässig. Auf hellen Flächen läuft gedämpfter Text
-  deshalb in einem dunkleren Warmgrau, und Champagne erscheint dort nur als
-  Linie oder Fläche. Auf den dunklen Farbstilen tragen beide Töne genug
-  Kontrast und werden dort auch für Schrift eingesetzt.
+  Zwei Töne begleiten alle Stufen:
+    Sand      #EAE2D5  Grundfläche unter freigestellten Motiven
+    Champagne #B5A080  Akzent – nur als Linie oder auf dunklem Grund
+
+  Zur Lesbarkeit: Warm Grey erreicht auf Ivory nur 2,8:1, Champagne 2,3:1.
+  Auf hellen Flächen läuft gedämpfter Text deshalb in einem dunkleren
+  Warmgrau; Champagne erscheint dort ausschließlich als Linie.
 {%- endcomment -%}
 :root,
 .color-scheme,
 .color-scheme-1,
 .color-scheme-ivory {
-  --color-background: 247 244 238;
+  --color-background: 247 243 236;
   --color-text: 11 11 10;
-  --color-muted: 110 103 92;
-  --color-line: 224 215 201;
+  --color-muted: 108 101 90;
+  --color-line: 226 217 202;
   --color-accent: 181 160 128;
   --color-stone: 154 145 133;
-  --color-sand: 231 222 208;
+  --color-sand: 234 226 213;
   --color-button: 11 11 10;
-  --color-button-label: 247 244 238;
+  --color-button-label: 247 243 236;
 }
 .color-scheme-2,
 .color-scheme-ivory-deep {
-  --color-background: 231 222 208;
+  --color-background: 239 232 219;
   --color-text: 11 11 10;
-  --color-muted: 103 96 86;
-  --color-line: 209 198 181;
+  --color-muted: 102 95 84;
+  --color-line: 218 208 190;
   --color-accent: 168 147 114;
   --color-stone: 154 145 133;
-  --color-sand: 231 222 208;
+  --color-sand: 234 226 213;
   --color-button: 11 11 10;
-  --color-button-label: 247 244 238;
+  --color-button-label: 247 243 236;
 }
 .color-scheme-3,
 .color-scheme-ink {
   --color-background: 11 11 10;
-  --color-text: 247 244 238;
-  --color-muted: 154 145 133;
+  --color-text: 247 243 236;
+  --color-muted: 158 149 136;
   --color-line: 42 40 36;
   --color-accent: 181 160 128;
   --color-stone: 154 145 133;
-  --color-sand: 231 222 208;
-  --color-button: 247 244 238;
+  --color-sand: 234 226 213;
+  --color-button: 247 243 236;
   --color-button-label: 11 11 10;
 }
 {%- comment -%}
@@ -112,9 +118,9 @@
   --color-line: 133 125 113;
   --color-accent: 11 11 10;
   --color-stone: 154 145 133;
-  --color-sand: 231 222 208;
+  --color-sand: 234 226 213;
   --color-button: 11 11 10;
-  --color-button-label: 247 244 238;
+  --color-button-label: 247 243 236;
 }
 
 {%- comment -%}
@@ -122,8 +128,8 @@
   etwas dunkler, damit Haarlinien auf Ivory sichtbar bleiben.
 {%- endcomment -%}
 {%- if settings.section_contrast == 'crisp' -%}
-.color-scheme-1 { --color-line: 214 204 188; }
-.color-scheme-2 { --color-line: 198 186 168; }
+.color-scheme-1 { --color-line: 217 206 189; }
+.color-scheme-2 { --color-line: 208 196 176; }
 {%- endif -%}
 
 

@@ -252,7 +252,7 @@
           "type": "claim",
           "settings": {
             "eyebrow": "Willkommen bei VENT CELESTE",
-            "heading": "20 % AUF DEINEN ERSTEN DUFTKAUF",
+            "heading": "20 % auf deinen ersten Duftkauf",
             "text": "Auf deine erste Bestellung.",
             "detail": "Für deine erste Bestellung mit bis zu 3 Düften."
           }
@@ -261,7 +261,7 @@
           "type": "claim",
           "settings": {
             "eyebrow": "Persönlich beraten",
-            "heading": "DEN PASSENDEN DUFT\nSICHERER FINDEN",
+            "heading": "Den passenden Duft\nsicherer finden",
             "text": "Du bist unsicher, welcher Duft zu dir passt?\nWir helfen dir persönlich bei der Auswahl.",
             "detail": "Duftberatung direkt per WhatsApp."
           }
@@ -272,7 +272,7 @@
         "o2"
       ],
       "settings": {
-        "color_scheme": "scheme-3",
+        "color_scheme": "scheme-2",
         "show_whatsapp": true,
         "whatsapp_label": "Duftberatung starten"
       }

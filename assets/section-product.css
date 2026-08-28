@@ -112,7 +112,7 @@
 /* Angaben als Zeile, nicht als Pillen. */
 .vc-profile__facts {
   font-size: 0.6875rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  letter-spacing: var(--meta-tracking);
   text-transform: uppercase;
   color: rgb(var(--color-muted));
 }

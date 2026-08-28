@@ -52,7 +52,9 @@
 
     event.preventDefault();
     var button = form.querySelector('[type="submit"]');
-    var label = button ? button.textContent : '';
+    /* innerHTML, nicht textContent: Manche Knöpfe tragen ein Symbol neben der
+       Beschriftung. Mit textContent wäre es nach dem ersten Klick verloren. */
+    var label = button ? button.innerHTML : '';
     if (button) {
       button.setAttribute('aria-disabled', 'true');
       button.textContent = window.VCStrings.adding;
@@ -81,7 +83,7 @@
       .finally(function () {
         if (button) {
           button.removeAttribute('aria-disabled');
-          button.textContent = label;
+          button.innerHTML = label;
         }
       });
   });

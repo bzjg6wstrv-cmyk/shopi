@@ -129,7 +129,9 @@
       "no_recommendations": "No matching recommendations available right now.",
       "share": "Share",
       "concentration_short": "__PERCENT__ %",
-      "size_short": "__SIZE__"
+      "size_short": "__SIZE__",
+      "media_position": "Show image {{ position }}",
+      "media_counter": "Image {{ current }} of {{ total }}"
     },
     "facets": {
       "title": "Filters",

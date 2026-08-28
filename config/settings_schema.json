@@ -221,7 +221,7 @@
         "step": 1,
         "unit": "/100em",
         "label": "Laufweite Meta-Text",
-        "default": 12
+        "default": 9
       },
       {
         "type": "header",

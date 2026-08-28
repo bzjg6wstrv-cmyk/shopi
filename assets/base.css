@@ -180,8 +180,8 @@ h1, h2, h3, h4, h5, h6,
    dadurch entsteht Hierarchie, ohne dass irgendwo ausgezeichnet werden muss. */
 .h1, h1, .h2, h2, .h3, h3, .h4, h4 { font-size: calc(var(--_fs) * var(--heading-scale, 1)); }
 .h1, h1 { --_fs: clamp(2.25rem, 1.35rem + 3.8vw, 4.5rem); letter-spacing: calc(var(--heading-tracking) - 0.01em); }
-.h2, h2 { --_fs: clamp(1.625rem, 1.1rem + 2.2vw, 2.875rem); }
-.h3, h3 { --_fs: clamp(1.25rem, 1.05rem + 0.9vw, 1.75rem); line-height: 1.15; }
+.h2, h2 { --_fs: clamp(1.75rem, 1.15rem + 2.4vw, 2.875rem); }
+.h3, h3 { --_fs: clamp(1.3125rem, 1.1rem + 1vw, 1.75rem); line-height: 1.15; }
 .h4, h4 { --_fs: clamp(1.0625rem, 1rem + 0.35vw, 1.3125rem); line-height: 1.25; }
 
 p { text-wrap: pretty; }
@@ -196,10 +196,14 @@ p { text-wrap: pretty; }
 .text-body-sm { font-size: 0.9375rem; }
 
 /* Auszeichnungstypografie – der eigentliche Träger der Wertigkeit.
-   Sehr klein, weit gesperrt, versal. Sie kommt überall dort zum Einsatz, wo
-   sonst ein Symbol oder eine Kapsel stünde. */
+   Klein, versal, leicht gesperrt. Sie kommt überall dort zum Einsatz, wo
+   sonst ein Symbol oder eine Kapsel stünde.
+
+   Bewusst nicht kleiner als 11 px und bewusst ohne zusätzliche Sperrung
+   über der Grundeinstellung: Sehr kleine, sehr weit auseinandergezogene
+   Versalien lesen sich auf dem Telefon nur noch als Muster. */
 .meta {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   line-height: 1.4;
   text-transform: uppercase;
   letter-spacing: var(--meta-tracking);
@@ -207,22 +211,25 @@ p { text-wrap: pretty; }
 }
 .meta--muted { color: rgb(var(--color-muted)); }
 
+/* Kleiner Beitext: Hinweise, Antwortzeiten, Wegweiser. Bewusst NICHT versal.
+   Ganze Sätze in Versalien lesen sich langsamer und wirken wie eine Vorlage,
+   nicht wie eine Marke. Versalien bleiben den kurzen Auszeichnungen
+   vorbehalten (siehe .meta und .eyebrow). */
 .micro {
   display: block;
-  font-size: 0.625rem;
-  line-height: 1.4;
-  text-transform: uppercase;
-  letter-spacing: calc(var(--meta-tracking) + 0.03em);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  letter-spacing: 0;
   color: rgb(var(--color-muted));
 }
 
 .eyebrow {
   display: block;
   margin-bottom: var(--space-sm);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   line-height: 1.4;
   text-transform: uppercase;
-  letter-spacing: calc(var(--meta-tracking) + 0.03em);
+  letter-spacing: var(--meta-tracking);
   color: rgb(var(--color-muted));
 }
 
@@ -238,8 +245,8 @@ p { text-wrap: pretty; }
   margin-bottom: var(--space-lg);
 }
 .sec-head__index {
-  font-size: 0.625rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.03em);
+  font-size: 0.6875rem;
+  letter-spacing: var(--meta-tracking);
   color: rgb(var(--color-muted));
   font-variant-numeric: tabular-nums;
 }
@@ -397,11 +404,11 @@ p { text-wrap: pretty; }
   border: var(--border-width) solid rgb(var(--color-button, 18 16 14));
   border-radius: var(--button-radius, 0px);
   background-color: rgb(var(--color-button, 18 16 14));
-  color: rgb(var(--color-button-label, 247 244 238));
+  color: rgb(var(--color-button-label, 247 243 236));
   font-size: 0.75rem;
   font-weight: 500;
   line-height: 1.2;
-  letter-spacing: calc(var(--meta-tracking) + 0.03em);
+  letter-spacing: var(--meta-tracking);
   text-transform: var(--button-transform);
   text-align: center;
   transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
@@ -464,7 +471,7 @@ p { text-wrap: pretty; }
   color: rgb(var(--color-text));
   font-size: 0.8125rem;
   line-height: 1.2;
-  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  letter-spacing: var(--meta-tracking);
   text-transform: uppercase;
 }
 .action-link::before,
@@ -510,7 +517,7 @@ p { text-wrap: pretty; }
   padding-bottom: 4px;
   border-bottom: 0;
   font-size: 0.75rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  letter-spacing: var(--meta-tracking);
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -568,7 +575,7 @@ p { text-wrap: pretty; }
 
 .field__label {
   font-size: 0.6875rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  letter-spacing: var(--meta-tracking);
   text-transform: uppercase;
   color: rgb(var(--color-muted));
 }
@@ -642,7 +649,7 @@ p { text-wrap: pretty; }
   border: 0;
   color: rgb(var(--color-text));
   font-size: 0.6875rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.03em);
+  letter-spacing: var(--meta-tracking);
   text-transform: uppercase;
   transition: opacity var(--dur) var(--ease);
 }
@@ -745,7 +752,7 @@ p { text-wrap: pretty; }
   min-width: 0.9rem;
   display: grid;
   place-items: center;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   color: rgb(var(--color-text));
@@ -773,7 +780,7 @@ p { text-wrap: pretty; }
   gap: 0.35rem;
   padding-block: 0.5rem;
   font-size: 0.6875rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  letter-spacing: var(--meta-tracking);
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -930,7 +937,7 @@ p { text-wrap: pretty; }
 .social-list { display: flex; flex-wrap: wrap; gap: var(--space-md); margin-top: var(--space-lg); }
 .social-list a {
   font-size: 0.75rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  letter-spacing: var(--meta-tracking);
   text-transform: uppercase;
   color: rgb(var(--color-muted));
   transition: color var(--dur) var(--ease);
@@ -970,18 +977,24 @@ p { text-wrap: pretty; }
 .card__media {
   position: relative;
   overflow: hidden;
-  margin-bottom: var(--space-md);
-  /* Sehr leichter warmer Grund – nur damit freigestellte Motive nicht im
-     Nichts schweben. Keine graue Kachel. */
-  background-color: rgb(var(--color-line) / 0.3);
-  border-radius: var(--card-radius);
+  margin-bottom: var(--space-sm);
+  /* Bewusst ohne Fläche, ohne Rundung, ohne Kante: Der helle warme Grund der
+     Produktfotografie und der Seitenton sind aufeinander abgestimmt. Alles,
+     was hier läge – eine Kachel, ein Radius, ein Schatten –, würde das Bild
+     wieder zu einem Kärtchen machen. */
+  background-color: transparent;
+  border-radius: 0;
 }
 
+/* „contain" statt „cover": Der Flakon wird nie angeschnitten. Da das Bild in
+   voller Breite sitzt, steht er trotzdem groß im Raum; der Rest des Kastens
+   ist derselbe Seitenton wie daneben und damit unsichtbar. */
 .card__media img,
 .card__media svg {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   transition: opacity var(--dur-slow) var(--ease), transform var(--dur-reveal) var(--ease-out);
 }
 
@@ -1010,21 +1023,25 @@ p { text-wrap: pretty; }
   position: absolute;
   top: 0;
   left: 0;
-  padding: 0.4rem 0.65rem;
-  background-color: rgb(var(--color-background));
-  color: rgb(var(--color-text));
-  font-size: 0.5625rem;
+  padding: 0;
+  background-color: transparent;
+  color: rgb(var(--color-muted));
+  font-size: 0.6875rem;
   line-height: 1;
   text-transform: uppercase;
-  letter-spacing: calc(var(--meta-tracking) + 0.03em);
+  letter-spacing: var(--meta-tracking);
 }
 
+/* Bild, Code, Ausführung, Preis stehen in einer Leseachse untereinander.
+   Keine Trennlinie unter dem Bild – die Linie wäre die Kartenkante, die hier
+   ausdrücklich nicht sein soll. Der Takt kommt aus den Abständen:
+   Bild → Code weit, Code → Ausführung eng, Ausführung → Preis mittel. */
 .card__content {
   display: grid;
-  gap: 0.25rem;
+  gap: 0.3rem;
   align-content: start;
-  padding-top: var(--space-sm);
-  border-top: var(--hair);
+  padding-top: 0;
+  border-top: 0;
 }
 
 /* Der Name im Display-Register – der Scent Code ist das Markenzeichen. */
@@ -1033,9 +1050,9 @@ p { text-wrap: pretty; }
   display: inline-block;
   font-family: var(--font-display-family, var(--font-heading-family));
   font-weight: var(--font-display-weight, var(--font-heading-weight));
-  font-size: clamp(1.0625rem, 1rem + 0.5vw, 1.375rem);
+  font-size: clamp(1.125rem, 1rem + 0.65vw, 1.5rem);
   line-height: 1.1;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   font-variant-numeric: tabular-nums lining-nums;
 }
@@ -1056,16 +1073,20 @@ p { text-wrap: pretty; }
 .card__family {
   color: rgb(var(--color-muted));
   font-size: 0.8125rem;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 /* Die Ausführung in derselben Auszeichnung wie alle Detailangaben. */
-.card__meta { color: rgb(var(--color-muted)); font-size: 0.625rem; letter-spacing: calc(var(--meta-tracking) + 0.02em); }
+.card__meta {
+  color: rgb(var(--color-muted));
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+}
 
 .card__price {
-  margin-top: 0.35rem;
-  font-size: 0.9375rem;
-  font-variant-numeric: tabular-nums;
+  margin-top: 0.45rem;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 .card__unit-price { font-size: 0.75rem; color: rgb(var(--color-muted)); }
 
@@ -1324,11 +1345,13 @@ body.is-locked { overflow: hidden; }
   text-align: center;
 }
 .announcement__inner { padding-block: 0.55rem; }
+/* Die Ankündigungszeile trägt einen ganzen Satz. In Versalien und weit
+   gesperrt wäre er auf dem Telefon eine Mauer – er läuft deshalb in
+   gemischter Schreibweise. */
 .announcement__text {
-  font-size: 0.625rem;
-  line-height: 1.4;
-  text-transform: uppercase;
-  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  letter-spacing: 0;
   color: rgb(var(--color-muted));
 }
 .announcement__text a {
@@ -1435,7 +1458,7 @@ body.is-locked { overflow: hidden; }
   padding: 0 0 var(--space-xs);
   color: rgb(var(--color-text));
   font-size: 0.6875rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  letter-spacing: var(--meta-tracking);
   text-transform: uppercase;
   white-space: nowrap;
   transition: opacity var(--dur) var(--ease);
@@ -1582,16 +1605,22 @@ body.is-locked { overflow: hidden; }
 
 .product__gallery { min-width: 0; }
 
+/* Die Bahn läuft bis an beide Bildschirmkanten, ohne die Seite zu
+   verbreitern. Die Kartenbreite ist eine Bahnbreite minus Wischvorschau:
+   Genau ein Bild liegt im Blick, vom nächsten steht ein schmaler Streifen
+   am Rand. Erst dieser Streifen macht aus einem großen Bild sichtbar eine
+   Galerie – ohne ihn liest sich die Seite wie ein Stapel Vollbilder. */
 .product__media {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: 100%;
-  gap: var(--space-xs);
+  grid-auto-columns: calc(
+    (100% + var(--gutter) - var(--space-sm)) / var(--gallery-peek-ratio, 1.1)
+  );
+  gap: var(--space-sm);
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
-  /* Bis an beide Bildschirmkanten – ohne die Seite zu verbreitern. */
   width: calc(100% + (var(--gutter) * 2));
   margin-inline: calc(var(--gutter) * -1);
   padding-inline: var(--gutter);
@@ -1600,27 +1629,49 @@ body.is-locked { overflow: hidden; }
 }
 .product__media::-webkit-scrollbar { display: none; }
 .product__media > * { scroll-snap-align: start; scroll-snap-stop: always; min-width: 0; }
+
+/* Die Bahnbreite. Das Bild darin bleibt in der Mitte, egal welches Maß es
+   hat – dadurch rastet jede Position gleich weit ein. */
+.product__slide { display: grid; place-items: center; min-width: 0; }
+
+/* „contain" statt „cover": Bild 3 trägt die Duftnoten als Text. Ein
+   Anschnitt würde sie unlesbar machen, ein Strecken sie verzerren. Alle
+   Bilder liegen deshalb ungeschnitten in einem festen Rahmen; was übrig
+   bleibt, ist Seitenton und damit unsichtbar. */
 .product__media img,
 .product__media svg,
 .product__media .full-bleed-media {
   width: 100%;
   max-width: 100%;
   height: auto;
-  /* Großzügig, aber gedeckelt: Preis, Ausführung und der Kaufbutton sollen
-     auf einem iPhone ohne Scrollen erreichbar sein. */
-  aspect-ratio: 5 / 6;
-  max-height: 42vh;
-  object-fit: cover;
+  aspect-ratio: 4 / 5;
+  max-height: 54vh;
+  object-fit: contain;
+  object-position: center;
 }
 
-.product__progress { margin-top: var(--space-md); }
+/* Zähler statt Fortschrittsbalken: „2 / 4“ sagt genau, wo man steht.
+   Rechtsbündig unter der Bahn, in der Auszeichnungsschrift. */
+.product__count {
+  margin-top: var(--space-sm);
+  text-align: right;
+  color: rgb(var(--color-muted));
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.product__count[hidden] { display: none; }
+.product__count-sep { opacity: 0.5; }
 
-/* Sehr niedrige Geräte: Das Bild gibt etwas Höhe ab, damit der Preis ohne
-   Scrollen sichtbar bleibt. */
+/* Vorschauen erst ab Tablet – auf dem Telefon führt der Zähler. */
+.product__thumbs { display: none; }
+
+/* Sehr niedrige Geräte: Das Bild gibt etwas Höhe ab, damit Preis und
+   Kaufbutton mit einer kurzen Bewegung erreichbar bleiben. */
 @media (max-height: 700px) {
   .product__media img,
   .product__media svg,
-  .product__media .full-bleed-media { max-height: 40vh; }
+  .product__media .full-bleed-media { max-height: 46vh; }
 }
 
 /* Auf dem Telefon beginnt die Produktseite dichter unter dem Kopfbereich –
@@ -1668,7 +1719,7 @@ body.is-locked { overflow: hidden; }
   width: 100%;
   padding: var(--space-xs) 0;
   font-size: 0.6875rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  letter-spacing: var(--meta-tracking);
   text-transform: uppercase;
   color: rgb(var(--color-muted));
 }
@@ -1717,7 +1768,7 @@ body.is-locked { overflow: hidden; }
      deshalb knapper gefasst, damit „In den Warenkorb" in eine Zeile passt. */
   padding-inline: var(--space-sm);
   font-size: 0.8125rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  letter-spacing: var(--meta-tracking);
   white-space: normal;
   overflow-wrap: anywhere;
 }
@@ -1751,22 +1802,79 @@ body.is-locked { overflow: hidden; }
 .product__accordion details[open] summary svg { transform: rotate(180deg); }
 .product__accordion .rte { padding-bottom: var(--space-lg); }
 
+/* Ab Tablet bleibt es dieselbe Bahn – sie wird zur Bühne. Kein Stapel aus
+   vier riesigen Bildern mehr: ein großes Bild steht im Blick, darunter
+   führen kleine Vorschauen durch die Reihe. */
 @media (min-width: 750px) {
-  /* Ab Tablet stehen die Bilder untereinander – die Bahn wird zur Spalte. */
   .product__media {
-    grid-auto-flow: row;
-    grid-auto-columns: auto;
-    gap: var(--space-sm);
-    overflow-x: visible;
+    grid-auto-columns: 100%;
+    gap: var(--space-md);
     width: 100%;
     margin-inline: 0;
     padding-inline: 0;
-    scroll-snap-type: none;
+    scroll-padding-inline: 0;
   }
+  /* Auf der Bühne bekommt jedes Bild sein eigenes Maß: Breite und Höhe
+     laufen frei, begrenzt von der Spalte und von der Bildschirmhöhe. Es
+     entsteht kein Rahmen um das Bild, also auch kein Kasten. */
   .product__media img,
   .product__media svg,
-  .product__media .full-bleed-media { aspect-ratio: auto; max-height: none; }
-  .product__progress { display: none; }
+  .product__media .full-bleed-media {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: auto;
+    max-height: min(74vh, 46rem);
+  }
+
+  .product__count { display: none; }
+
+  /* Vorschauen: kleine Bilder auf dem Seitenton, ohne Rahmen und ohne
+     Rundung. Die aktive trägt eine Haarlinie unter sich – mehr braucht es
+     nicht, um den Stand zu zeigen. */
+  .product__thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+  }
+  .product__thumb {
+    width: clamp(3.75rem, 6vw, 5.5rem);
+    padding-bottom: var(--space-2xs);
+    border-bottom: var(--border-width) solid transparent;
+    opacity: 0.55;
+    transition: opacity var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  }
+  .product__thumb img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: var(--ratio-portrait);
+    object-fit: contain;
+  }
+  .product__thumb.is-active {
+    opacity: 1;
+    border-bottom-color: rgb(var(--color-text));
+  }
+  .product__thumb:focus-visible {
+    outline: var(--focus-width) solid rgb(var(--color-text));
+    outline-offset: var(--focus-offset);
+  }
+}
+
+@media (min-width: 750px) and (hover: hover) {
+  .product__thumb:hover { opacity: 1; }
+}
+
+/* Ohne JavaScript gibt es keine Vorschauen, die die Bühne weiterschalten
+   könnten – dann stehen die Bilder untereinander und bleiben vollständig
+   erreichbar. */
+.no-js .product__thumbs,
+.no-js .product__count { display: none; }
+.no-js .product__media {
+  grid-auto-flow: row;
+  grid-auto-columns: 100%;
+  overflow-x: visible;
+  scroll-snap-type: none;
 }
 
 @media (min-width: 990px) {
@@ -2116,7 +2224,7 @@ html:not(.no-js) .animations-on .display__mask:nth-of-type(4) > span { transitio
   grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
   align-items: center;
   background-color: rgb(var(--color-text, 11 11 10));
-  color: rgb(var(--color-background, 247 244 238));
+  color: rgb(var(--color-background, 247 243 236));
 }
 
 .whatsapp-bar__link {
@@ -2272,57 +2380,58 @@ img.brand-mark { object-fit: contain; }
 /* Auf Touch: ein kleines Feld in der Bildecke, dauerhaft erreichbar.
    Auf Zeigegeräten: eine beschriftete Leiste, die hinter einer Maske aus dem
    unteren Bildrand hervorfährt. Bewegt wird ausschließlich transform. */
+/* Schnell-hinzufügen sitzt unter den Angaben, nicht auf dem Bild. Es ist
+   eine Zeile in der Auszeichnungsschrift über einer Haarlinie – kein Knopf,
+   der sich vor das Produktfoto legt. */
 .card__quick-add {
-  position: absolute;
-  right: var(--space-xs);
-  bottom: var(--space-xs);
+  position: relative;
   z-index: 2;
+  /* Keine Linie über der Zeile: Sie wäre die untere Kartenkante, und genau
+     die soll es hier nicht geben. Der Abstand allein trennt Angabe von
+     Handlung. */
+  margin-top: var(--space-md);
 }
-.card__quick-add-label { display: none; }
+
 .card__quick-add-button {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.55rem;
-  width: 2.75rem;
-  height: 2.75rem;
-  border: var(--border-width) solid rgb(var(--color-text));
-  border-radius: var(--button-radius);
-  background-color: rgb(var(--color-background));
-  color: rgb(var(--color-text));
-  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur-slow) var(--ease-out);
-}
-.card__quick-add-button svg { width: 15px; height: 15px; flex: none; }
-.card__quick-add-button[data-state='added'] {
-  background-color: rgb(var(--color-text));
-  color: rgb(var(--color-background));
+  justify-content: flex-start;
+  gap: 0.5rem;
+  width: auto;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+  color: rgb(var(--color-muted));
+  font-size: 0.6875rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  text-align: left;
+  transition: color var(--dur) var(--ease);
 }
 
-@media (hover: hover) and (min-width: 750px) {
-  .card__quick-add {
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 3rem;
-    overflow: hidden;
-  }
-  .card__quick-add-label { display: inline; }
-  .card__quick-add-button {
-    width: 100%;
-    height: 100%;
-    border: 0;
-    border-radius: 0;
-    font-size: 0.5625rem;
-    letter-spacing: calc(var(--meta-tracking) + 0.02em);
-    text-transform: uppercase;
-    transform: translateY(101%);
-  }
-  .card:hover .card__quick-add-button,
-  .card__quick-add-button:focus-visible { transform: none; }
+.card__quick-add-label { display: inline; }
+.card__quick-add-button svg {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  transition: transform var(--dur) var(--ease);
+}
+
+@media (hover: hover) {
   .card__quick-add-button:hover {
-    background-color: rgb(var(--color-text));
-    color: rgb(var(--color-background));
+    color: rgb(var(--color-text));
+    text-decoration: underline;
+    text-underline-offset: 0.35em;
   }
+  .card__quick-add-button:hover svg { transform: rotate(90deg); }
+}
+
+/* Rückmeldung nach dem Absenden: die Zeile wird kurz zur Textfarbe. */
+.card__quick-add-button[data-state='added'] {
+  background-color: transparent;
+  color: rgb(var(--color-text));
 }
 
 /* 22 Mobiles Menü, Suchpanel, Sofortsuche ------------------------------- */
@@ -2615,7 +2724,7 @@ body { max-width: 100%; overflow-x: clip; }
   margin: 0 !important;
   padding: 0 !important;
   overflow: hidden !important;
-  background-color: rgb(247 244 238) !important;
+  background-color: rgb(247 243 236) !important;
   color: rgb(11 11 10) !important;
   opacity: 1 !important;
   box-shadow: -1px 0 0 rgb(var(--color-line)) !important;
@@ -2628,7 +2737,7 @@ body { max-width: 100%; overflow-x: clip; }
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: rgb(247 244 238);
+  background: rgb(247 243 236);
   pointer-events: none;
 }
 
@@ -2636,7 +2745,7 @@ body { max-width: 100%; overflow-x: clip; }
 #CartDrawer .drawer__header,
 #CartDrawer .drawer__body,
 #CartDrawer .drawer__footer {
-  background-color: rgb(247 244 238) !important;
+  background-color: rgb(247 243 236) !important;
   opacity: 1 !important;
 }
 
@@ -2714,7 +2823,7 @@ body { max-width: 100%; overflow-x: clip; }
   margin: 0 !important;
   padding: 0 !important;
   overflow: hidden !important;
-  background-color: rgb(247 244 238) !important;
+  background-color: rgb(247 243 236) !important;
   color: rgb(11 11 10) !important;
   box-shadow: 1px 0 0 rgb(var(--color-line)) !important;
   isolation: isolate !important;
@@ -2733,14 +2842,14 @@ body { max-width: 100%; overflow-x: clip; }
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: rgb(247 244 238);
+  background: rgb(247 243 236);
   pointer-events: none;
 }
 
 #MenuDrawer .drawer__header,
 #MenuDrawer .menu-drawer__top,
 #MenuDrawer .drawer__body {
-  background-color: rgb(247 244 238) !important;
+  background-color: rgb(247 243 236) !important;
   opacity: 1 !important;
 }
 
@@ -2875,7 +2984,7 @@ body { max-width: 100%; overflow-x: clip; }
   width: 100% !important;
   max-height: 92dvh !important;
   margin: 0 !important;
-  background-color: rgb(var(--color-background, 247 244 238)) !important;
+  background-color: rgb(var(--color-background, 247 243 236)) !important;
   color: rgb(var(--color-text, 11 11 10)) !important;
   opacity: 1 !important;
   box-shadow: 0 1px 0 rgb(var(--color-line)) !important;
@@ -2900,7 +3009,7 @@ body { max-width: 100%; overflow-x: clip; }
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: rgb(var(--color-background, 247 244 238));
+  background: rgb(var(--color-background, 247 243 236));
   pointer-events: none;
 }
 
@@ -2910,7 +3019,7 @@ body { max-width: 100%; overflow-x: clip; }
   overflow-y: auto;
   overscroll-behavior: contain;
   max-height: 92dvh;
-  background-color: rgb(var(--color-background, 247 244 238)) !important;
+  background-color: rgb(var(--color-background, 247 243 236)) !important;
   opacity: 1 !important;
 }
 

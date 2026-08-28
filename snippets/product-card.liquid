@@ -127,21 +127,6 @@
     {%- if badge_label != blank -%}
       <span class="card__badge">{{ badge_label }}</span>
     {%- endif -%}
-
-    {%- if quick_add and display_variant.available -%}
-      <form method="post" action="{{ routes.cart_add_url }}" class="card__quick-add">
-        <input type="hidden" name="id" value="{{ display_variant.id }}">
-        <input type="hidden" name="quantity" value="1">
-        <button
-          type="submit"
-          class="card__quick-add-button"
-          aria-label="{{ 'sections.quick_add.label' | t }} – {{ product.title | escape }} {{ display_variant.title | escape }}"
-        >
-          <span class="card__quick-add-label" aria-hidden="true">{{ 'sections.quick_add.label' | t }}</span>
-          {% render 'icon', name: 'plus' %}
-        </button>
-      </form>
-    {%- endif -%}
   </div>
 
   <div class="card__content">
@@ -183,5 +168,25 @@
     {%- endif -%}
 
     {%- render 'product-price', variant: display_variant, product: product, class: 'card__price' -%}
+
+    {%- comment -%}
+      Schnell-hinzufügen steht bewusst UNTER den Angaben, nicht auf dem Bild:
+      Das Produktfoto bleibt frei von Bedienelementen. Die Funktion selbst –
+      Formular, Varianten-ID, Cart-Rückmeldung – ist unverändert.
+    {%- endcomment -%}
+    {%- if quick_add and display_variant.available -%}
+      <form method="post" action="{{ routes.cart_add_url }}" class="card__quick-add">
+        <input type="hidden" name="id" value="{{ display_variant.id }}">
+        <input type="hidden" name="quantity" value="1">
+        <button
+          type="submit"
+          class="card__quick-add-button"
+          aria-label="{{ 'sections.quick_add.label' | t }} – {{ product.title | escape }} {{ display_variant.title | escape }}"
+        >
+          <span class="card__quick-add-label">{{ 'sections.quick_add.label' | t }}</span>
+          {% render 'icon', name: 'plus' %}
+        </button>
+      </form>
+    {%- endif -%}
   </div>
 </article>

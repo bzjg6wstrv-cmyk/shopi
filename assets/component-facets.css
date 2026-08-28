@@ -22,7 +22,7 @@
   min-height: 3.25rem;
   font-size: .6875rem;
   text-transform: uppercase;
-  letter-spacing: calc(var(--meta-tracking) + .02em);
+  letter-spacing: var(--meta-tracking);
 }
 .facet__summary svg { width: 12px; height: 12px; flex: none; transition: transform var(--dur) var(--ease); }
 .facet[open] .facet__summary svg { transform: rotate(180deg); }

@@ -129,7 +129,9 @@
       "no_recommendations": "Derzeit keine passenden Empfehlungen verfügbar.",
       "share": "Teilen",
       "concentration_short": "__PERCENT__ %",
-      "size_short": "__SIZE__"
+      "size_short": "__SIZE__",
+      "media_position": "Bild {{ position }} anzeigen",
+      "media_counter": "Bild {{ current }} von {{ total }}"
     },
     "facets": {
       "title": "Filter",
