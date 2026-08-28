@@ -563,30 +563,9 @@
     kopfAnwenden();
   }
 
-  /* ------------------------------------------------------------ Hero-Drift */
-  var drift = document.querySelector('[data-hero-drift]');
-  if (drift && !reduceMotion.matches) {
-    var driftTicking = false;
-    var updateDrift = function () {
-      if (driftTicking) return;
-      driftTicking = true;
-      window.requestAnimationFrame(function () {
-        var rect = drift.getBoundingClientRect();
-        var viewport = window.innerHeight || 1;
-        /* -1 … 1 über den sichtbaren Bereich, gedeckelt auf 24 px */
-        var relative = (rect.top + rect.height / 2 - viewport / 2) / viewport;
-        var begrenzt = Math.max(-1, Math.min(1, relative));
-        /* Hoehe und Skalierung sind bewusst klein gehalten: Das Bild soll
-           atmen, nicht wandern. Gedeckelt auf 34 px und 2,5 %. */
-        drift.style.setProperty('--hero-drift', (begrenzt * -34).toFixed(1) + 'px');
-        drift.style.setProperty('--hero-zoom', (1.025 - Math.abs(begrenzt) * 0.025).toFixed(4));
-        driftTicking = false;
-      });
-    };
-    window.addEventListener('scroll', updateDrift, { passive: true });
-    window.addEventListener('resize', updateDrift);
-    updateDrift();
-  }
+  /* Bewusst ohne Parallax: Ein mitlaufendes Hintergrundbild wirkt schnell
+     nach Effekt und nicht nach Marke. Bewegung gibt es auf dieser Seite nur
+     als einmaliges Aufdecken beim Scrollen. */
 
   /* -------------------------------------------------- Quick-Add-Rückmeldung */
   document.addEventListener('submit', function (event) {

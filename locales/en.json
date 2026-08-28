@@ -45,7 +45,9 @@
       "articles": "Articles",
       "queries": "Searches",
       "view_all": "View all results",
-      "popular": "Frequently searched"
+      "popular": "Frequently searched",
+      "eyebrow": "Search result",
+      "code_found": "{{ code }} found"
     },
     "newsletter": {
       "label": "Email address",
@@ -157,7 +159,11 @@
       "cart_count": {
         "one": "{{ count }} item in cart",
         "other": "{{ count }} items in cart"
-      }
+      },
+      "all_scents": "All scents",
+      "bestsellers": "Bestsellers",
+      "advice": "Scent consultation",
+      "about": "About VENT CELESTE"
     },
     "cart": {
       "title": "Cart",

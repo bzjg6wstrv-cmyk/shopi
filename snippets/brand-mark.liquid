@@ -1,0 +1,43 @@
+{%- comment -%}
+  VENT CELESTE Signet.
+
+  Parameter:
+    size   – Höhe in px (Pflichtangabe in der Praxis, Standard 22)
+    class  – zusätzliche CSS-Klassen
+    label  – Beschriftung. Fehlt sie, gilt das Signet als Zierde und wird
+             beim Vorlesen übersprungen (etwa neben der Wortmarke).
+
+  Einfärbung: Ist „Signet automatisch einfärben" aktiv, wird die Datei als
+  Maske verwendet und die Fläche in der Textfarbe des jeweiligen Farbstils
+  gefüllt. Dadurch steht das Signet auf hellen Flächen in tiefem Schwarz und
+  auf dunklen Flächen in Elfenbein – aus derselben Datei, ohne zweite
+  Variante. Voraussetzung ist ein transparenter Hintergrund.
+
+  Ohne Einfärbung wird die Datei unverändert als Bild ausgegeben.
+{%- endcomment -%}
+{%- liquid
+  assign mark = settings.signet
+  assign mark_size = size | default: 22
+  assign mark_ratio = mark.aspect_ratio | default: 1
+-%}
+{%- if mark != blank -%}
+  {%- if settings.signet_recolor -%}
+    <span
+      class="brand-mark brand-mark--tint {{ class }}"
+      style="--mark-size: {{ mark_size }}px; --mark-ratio: {{ mark_ratio }}; --mark-src: url({{ mark | image_url: width: 480 }});"
+      {% if label != blank %}role="img" aria-label="{{ label | escape }}"{% else %}aria-hidden="true"{% endif %}
+    ></span>
+  {%- else -%}
+    <img
+      class="brand-mark {{ class }}"
+      style="--mark-size: {{ mark_size }}px; --mark-ratio: {{ mark_ratio }};"
+      src="{{ mark | image_url: width: 480 }}"
+      srcset="{{ mark | image_url: width: 240 }} 240w, {{ mark | image_url: width: 480 }} 480w"
+      sizes="{{ mark_size }}px"
+      width="{{ mark.width }}"
+      height="{{ mark.height }}"
+      alt="{% if label != blank %}{{ label | escape }}{% endif %}"
+      loading="lazy"
+    >
+  {%- endif -%}
+{%- endif -%}

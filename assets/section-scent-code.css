@@ -21,14 +21,17 @@
   position: absolute;
   inset: 0;
   background-image:
+    /* Etwas offener als zuvor: Das Motiv bleibt erkennbar, der Text steht
+       trotzdem sicher – unten liegt die Deckung bei rund 0,79, dort wo die
+       Schrift sitzt. */
     linear-gradient(to top,
-      rgb(var(--color-background) / calc(var(--scrim, 0.45) + 0.42)) 0%,
-      rgb(var(--color-background) / calc(var(--scrim, 0.45) + 0.2)) 38%,
-      rgb(var(--color-background) / calc(var(--scrim, 0.45) * 0.5)) 72%,
-      rgb(var(--color-background) / calc(var(--scrim, 0.45) * 0.1)) 100%),
+      rgb(var(--color-background) / calc(var(--scrim, 0.45) + 0.34)) 0%,
+      rgb(var(--color-background) / calc(var(--scrim, 0.45) + 0.12)) 40%,
+      rgb(var(--color-background) / calc(var(--scrim, 0.45) * 0.38)) 74%,
+      rgb(var(--color-background) / calc(var(--scrim, 0.45) * 0.06)) 100%),
     linear-gradient(to right,
-      rgb(var(--color-background) / calc(var(--scrim, 0.45) * 0.7)) 0%,
-      rgb(var(--color-background) / 0) 70%);
+      rgb(var(--color-background) / calc(var(--scrim, 0.45) * 0.6)) 0%,
+      rgb(var(--color-background) / 0) 72%);
 }
 
 .wa__content {
@@ -65,12 +68,21 @@
   color: rgb(var(--color-text) / 0.84);
 }
 
+/* Der Weg in die Beratung ist die einzige Handlung im Abschnitt und darf
+   deshalb deutlich als Fläche lesbar sein: eine Zeile zwischen zwei
+   Haarlinien, über die volle Textbreite, mit großzügiger Tippfläche. */
 .wa__actions {
   margin-top: var(--space-xl);
   display: grid;
   gap: var(--space-md);
   max-width: 26rem;
 }
+.wa__cta {
+  min-height: 3.5rem;
+  padding-top: var(--space-sm);
+  border-top: var(--border-width) solid rgb(var(--color-text) / 0.45);
+}
+.wa__cta::before { opacity: 0.45; }
 .wa__alt { justify-self: start; }
 
 .wa__note { color: rgb(var(--color-text) / 0.6); }
@@ -101,26 +113,29 @@
    ========================================================================== */
 .steps { display: grid; }
 
+/* Auf dem Telefon steht die Ziffer auf derselben Grundlinie wie der Titel,
+   der Text schließt direkt darunter an. Dadurch liest sich jeder Schritt als
+   eine Gruppe statt als drei lose Zeilen. */
 .steps__item {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  align-items: start;
-  gap: var(--space-lg);
-  padding-block: var(--space-lg);
+  align-items: baseline;
+  column-gap: var(--space-md);
+  padding-block: var(--space-md);
   border-top: var(--hair);
 }
 .steps__item:last-child { border-bottom: var(--hair); }
 
 .steps__number {
-  font-size: clamp(2rem, 9vw, 3.25rem);
-  line-height: 0.8;
-  min-width: 2.1em;
+  font-size: clamp(1.5rem, 6vw, 2.25rem);
+  line-height: 1;
+  min-width: 1.9em;
 }
 
-.steps__title { margin-bottom: var(--space-xs); }
+.steps__title { margin-bottom: var(--space-2xs); }
 .steps__text {
   font-size: 0.9375rem;
-  line-height: 1.55;
+  line-height: 1.5;
   color: rgb(var(--color-muted));
   max-width: 44ch;
   /* Verhindert einzelne Wörter am Zeilenende, etwa bei „VENT CELESTE Code". */
@@ -188,7 +203,7 @@
   display: block;
   margin-bottom: var(--space-sm);
   font-size: 0.625rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.06em);
+  letter-spacing: calc(var(--meta-tracking) + 0.03em);
   text-transform: uppercase;
   color: rgb(var(--color-muted));
 }
@@ -243,7 +258,7 @@
   border: 0;
   color: rgb(var(--color-text));
   font-size: 0.6875rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.06em);
+  letter-spacing: calc(var(--meta-tracking) + 0.03em);
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -280,7 +295,8 @@
 .code-order__note { margin-top: var(--space-lg); font-size: .8125rem; color: rgb(var(--color-muted)); }
 
 @media (max-width: 749px) {
-  .steps__item { padding-block: var(--space-md); gap: var(--space-md); }
+  .steps__item { padding-block: var(--space-md); }
+  .steps__text { max-width: none; }
   .steps__cta { margin-top: var(--space-lg); }
 }
 

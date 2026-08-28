@@ -45,53 +45,76 @@
 
 
 {%- comment -%}
-  Vier Farbstile, dieselbe Familie wie bisher – aber deutlich kontrastreicher
-  eingestellt. Die gedämpften Töne waren gegenüber Ivory zu schwach: Beitexte
-  lagen unter 4,5:1. Sie sind jetzt dunkler und leicht kühler, Ivory wirkt
-  dadurch wärmer statt beige. Die Akzentfarbe ist reines Champagner und
-  erscheint ausschließlich in Zuständen und feinen Marken.
+  Vier Farbstile aus einer Palette, abgestimmt auf die warme Bildwelt der
+  Produktfotos:
+
+    Deep Black       #0B0B0A   Grund der dunklen Abschnitte, Schrift auf hell
+    Warm Ivory       #F7F4EE   Grundfläche, warm statt kalt
+    Soft Sand        #E7DED0   die zweite helle Fläche
+    Warm Grey        #9A9185   Linien, Stein-Farbstil, gedämpfte Schrift auf dunkel
+    Champagne        #B5A080   Akzent, sehr sparsam
+
+  Zwei Anmerkungen zur Lesbarkeit:
+  Warm Grey erreicht auf Ivory nur 2,8:1 und Champagne nur 2,3:1 – beide sind
+  dort als Fließtext nicht zulässig. Auf hellen Flächen läuft gedämpfter Text
+  deshalb in einem dunkleren Warmgrau, und Champagne erscheint dort nur als
+  Linie oder Fläche. Auf den dunklen Farbstilen tragen beide Töne genug
+  Kontrast und werden dort auch für Schrift eingesetzt.
 {%- endcomment -%}
 :root,
 .color-scheme,
 .color-scheme-1,
 .color-scheme-ivory {
-  --color-background: 245 242 237;
-  --color-text: 18 16 14;
-  --color-muted: 116 108 96;
-  --color-line: 214 206 194;
-  --color-accent: 176 148 102;
-  --color-button: 18 16 14;
-  --color-button-label: 245 242 237;
+  --color-background: 247 244 238;
+  --color-text: 11 11 10;
+  --color-muted: 110 103 92;
+  --color-line: 224 215 201;
+  --color-accent: 181 160 128;
+  --color-stone: 154 145 133;
+  --color-sand: 231 222 208;
+  --color-button: 11 11 10;
+  --color-button-label: 247 244 238;
 }
 .color-scheme-2,
 .color-scheme-ivory-deep {
-  --color-background: 233 228 219;
-  --color-text: 18 16 14;
-  --color-muted: 108 100 89;
-  --color-line: 203 194 180;
-  --color-accent: 166 138 92;
-  --color-button: 18 16 14;
-  --color-button-label: 233 228 219;
+  --color-background: 231 222 208;
+  --color-text: 11 11 10;
+  --color-muted: 103 96 86;
+  --color-line: 209 198 181;
+  --color-accent: 168 147 114;
+  --color-stone: 154 145 133;
+  --color-sand: 231 222 208;
+  --color-button: 11 11 10;
+  --color-button-label: 247 244 238;
 }
 .color-scheme-3,
 .color-scheme-ink {
-  --color-background: 15 14 12;
-  --color-text: 244 241 235;
-  --color-muted: 168 158 143;
-  --color-line: 48 44 38;
-  --color-accent: 201 178 134;
-  --color-button: 244 241 235;
-  --color-button-label: 15 14 12;
+  --color-background: 11 11 10;
+  --color-text: 247 244 238;
+  --color-muted: 154 145 133;
+  --color-line: 42 40 36;
+  --color-accent: 181 160 128;
+  --color-stone: 154 145 133;
+  --color-sand: 231 222 208;
+  --color-button: 247 244 238;
+  --color-button-label: 11 11 10;
 }
+{%- comment -%}
+  Stein trägt dunkle Schrift, nicht helle: Elfenbein auf Warm Grey erreicht
+  nur 3:1, tiefes Schwarz dagegen 6,3:1. Ein Akzentton ist auf dieser Fläche
+  nicht unterzubringen – dort übernimmt die Textfarbe.
+{%- endcomment -%}
 .color-scheme-4,
 .color-scheme-stone {
-  --color-background: 124 115 102;
-  --color-text: 252 250 247;
-  --color-muted: 232 226 216;
-  --color-line: 145 136 122;
-  --color-accent: 242 229 205;
-  --color-button: 252 250 247;
-  --color-button-label: 46 41 35;
+  --color-background: 154 145 133;
+  --color-text: 11 11 10;
+  --color-muted: 46 42 37;
+  --color-line: 133 125 113;
+  --color-accent: 11 11 10;
+  --color-stone: 154 145 133;
+  --color-sand: 231 222 208;
+  --color-button: 11 11 10;
+  --color-button-label: 247 244 238;
 }
 
 {%- comment -%}
@@ -99,8 +122,8 @@
   etwas dunkler, damit Haarlinien auf Ivory sichtbar bleiben.
 {%- endcomment -%}
 {%- if settings.section_contrast == 'crisp' -%}
-.color-scheme-1 { --color-line: 205 196 182; }
-.color-scheme-2 { --color-line: 193 183 168; }
+.color-scheme-1 { --color-line: 214 204 188; }
+.color-scheme-2 { --color-line: 198 186 168; }
 {%- endif -%}
 
 

@@ -107,7 +107,12 @@
 
     <div class="header__brand">
       {%- if request.page_type == 'index' -%}<h1 class="header__brand-heading">{%- endif -%}
-      <a href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
+      <a class="brand-lockup" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
+        {%- comment -%}
+          Signet und Wortmarke bilden ein Paar. Das Signet ist Zierde – die
+          Beschriftung des Verweises trägt bereits den Shopnamen.
+        {%- endcomment -%}
+        {% render 'brand-mark', size: settings.signet_size_header, class: 'brand-lockup__mark' %}
         {%- if settings.logo_svg != blank -%}
           <span class="header__logo-svg" style="width: {{ settings.logo_width_mobile }}px;">
             {{ settings.logo_svg }}
@@ -175,7 +180,10 @@
 {%- endcomment -%}
 <vc-drawer id="MenuDrawer" class="drawer drawer--left color-{{ section.settings.color_scheme }} color-scheme" aria-label="{{ 'general.accessibility.menu' | t }}">
   <div class="drawer__header">
-    <span class="meta meta--muted">{{ 'general.accessibility.menu' | t }}</span>
+    <span class="menu-drawer__brand">
+      {% render 'brand-mark', size: 20 %}
+      <span class="wordmark">{{ settings.wordmark | escape }}</span>
+    </span>
     <button type="button" class="drawer__close" data-drawer-close aria-label="{{ 'general.accessibility.close_menu' | t }}">
       {% render 'icon', name: 'close' %}
     </button>
@@ -211,6 +219,11 @@
   </div>
 
   <div class="drawer__body">
+    {%- comment -%}
+      Hauptnavigation. Ist im Theme-Editor ein Menü zugewiesen, gilt dieses.
+      Solange keines gepflegt ist, greift eine bewusst kurze Grundfassung –
+      sonst stünde der Drawer leer da.
+    {%- endcomment -%}
     {%- if section.settings.mobile_primary_menu.links.size > 0 -%}
       <ul class="menu-drawer__primary">
         {%- for link in section.settings.mobile_primary_menu.links -%}
@@ -221,6 +234,33 @@
             </a>
           </li>
         {%- endfor -%}
+      </ul>
+    {%- else -%}
+      <ul class="menu-drawer__primary">
+        <li>
+          <a class="menu-drawer__link" href="{{ routes.all_products_collection_url }}">
+            {{ 'sections.header.all_scents' | t }}
+            {% render 'icon', name: 'arrow' %}
+          </a>
+        </li>
+        <li>
+          <a class="menu-drawer__link" href="/collections/bestseller">
+            {{ 'sections.header.bestsellers' | t }}
+            {% render 'icon', name: 'arrow' %}
+          </a>
+        </li>
+        <li>
+          <a class="menu-drawer__link" href="/pages/duftfinder">
+            {{ 'sections.header.advice' | t }}
+            {% render 'icon', name: 'arrow' %}
+          </a>
+        </li>
+        <li>
+          <a class="menu-drawer__link" href="/pages/ueber-uns">
+            {{ 'sections.header.about' | t }}
+            {% render 'icon', name: 'arrow' %}
+          </a>
+        </li>
       </ul>
     {%- endif -%}
 

@@ -38,7 +38,7 @@
 <section class="hero2 hero2--{{ hero_layout }} color-{{ hero_scheme }} color-scheme">
   {%- if has_image -%}
     <div class="hero2__media" aria-hidden="{% if hero_layout == 'overlay' %}true{% else %}false{% endif %}">
-      <div class="hero2__media-inner" data-hero-drift>
+      <div class="hero2__media-inner">
         <img
           src="{{ section.settings.image | image_url: width: 1800 }}"
           srcset="{{ section.settings.image | image_url: width: 600 }} 600w,

@@ -61,7 +61,10 @@
     "cart_cross_sell_product": "discovery-set",
     "brand_accent": "#C3AC82",
     "display_font": "sans",
-    "section_contrast": "crisp"
+    "section_contrast": "crisp",
+    "signet_recolor": true,
+    "signet_size_header": 22,
+    "signet_size_footer": 56
   },
   "presets": {
     "VENT CELESTE": {
@@ -126,7 +129,10 @@
       "cart_cross_sell_product": "discovery-set",
       "brand_accent": "#C3AC82",
       "display_font": "sans",
-      "section_contrast": "crisp"
+      "section_contrast": "crisp",
+      "signet_recolor": true,
+      "signet_size_header": 22,
+      "signet_size_footer": 56
     }
   }
 }

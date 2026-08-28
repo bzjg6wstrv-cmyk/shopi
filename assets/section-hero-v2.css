@@ -70,18 +70,19 @@
   z-index: 1;
   display: flex;
   align-items: flex-end;
-  padding-block: var(--sect-lg) var(--space-xl);
+  /* Auf dem Telefon knapper gefasst: Weißraum ja, Leerlauf nein. */
+  padding-block: var(--sect-sm) var(--space-lg);
 }
 
 .hero2__head { width: 100%; min-width: 0; }
 
 /* Champagner steht nur dort, wo er kräftig genug ist: auf dunklem Grund.
    Auf hellen Farbstilen bleibt die gedämpfte Textfarbe. */
-.hero2__eyebrow { margin-bottom: var(--space-md); }
+.hero2__eyebrow { margin-bottom: var(--space-sm); }
 .color-scheme-3 .hero2__eyebrow,
 .color-scheme-4 .hero2__eyebrow { color: rgb(var(--color-accent)); }
 
-.hero2__title { margin-bottom: var(--space-md); }
+.hero2__title { margin-bottom: var(--space-sm); }
 
 /* Kein Umbruch innerhalb eines Wortes: „SCENT." darf nie zu „SCEN / T."
    werden. Die Überschrift ist ihr eigener Größenbezug (container), damit die
@@ -97,13 +98,15 @@
   hyphens: none;
 }
 
+/* Die Erklärzeile unter der Schlagzeile. Deutlich kleiner als diese, aber
+   nie kleiner als 15 px – sie trägt die Kernaussage der Marke. */
 .hero2__lede {
-  max-width: 34ch;
-  font-size: clamp(0.9375rem, 0.9rem + 0.35vw, 1.125rem);
-  line-height: 1.5;
+  max-width: 30ch;
+  font-size: 0.9375rem;
+  line-height: 1.45;
   /* Über einem Bild muss die Unterzeile sicher lesbar bleiben – deshalb die
      Textfarbe leicht zurückgenommen statt der gedämpften Farbe. */
-  color: rgb(var(--color-text) / 0.82);
+  color: rgb(var(--color-text) / 0.84);
 }
 
 /* --------------------------------------------------- Einstiegsleiste --- */
@@ -194,7 +197,7 @@
   border: 0;
   color: rgb(var(--color-text));
   font-size: 0.6875rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.06em);
+  letter-spacing: calc(var(--meta-tracking) + 0.03em);
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -286,23 +289,20 @@
   .hero2--type .hero2__head { max-width: 62rem; }
 }
 
-/* ------------------------------------------------------------- Drift --- */
-/* Sehr sanfte Bewegung des Bildes beim Scrollen, per JS gesteuert. */
-.hero2__media-inner {
-  will-change: transform;
-  transform: translate3d(0, var(--hero-drift, 0px), 0) scale(var(--hero-zoom, 1));
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero2__media-inner { transform: none; }
-}
+/* Das Hero-Bild steht still. Kein Parallax, keine Dauerbewegung – die
+   einzige Bewegung auf der Seite ist das einmalige Aufdecken beim Scrollen. */
+.hero2__media-inner { height: 100%; }
 
 /* Sehr niedrige Geräte (iPhone SE und ähnlich): Die Schlagzeile bleibt der
    Auftritt, gibt aber Höhe ab, damit die Einstiegsleiste erreichbar bleibt. */
+/* Sehr niedrige Geräte (iPhone SE und ähnlich): Die Schlagzeile gibt Höhe
+   ab, die Erklärzeile bleibt – sie erklärt, worum es geht. */
 @media (max-height: 720px) and (max-width: 749px) {
-  .hero2 { min-height: min(calc(100svh - var(--header-block, 8.5rem) - 6rem), 24rem); }
-  .hero2__inner { padding-block: var(--space-xl) var(--space-md); }
-  .hero2__title .display__line { font-size: min(1em, 26cqi); }
+  .hero2 { min-height: min(calc(100svh - var(--header-block, 8.5rem) - 5rem), 25rem); }
+  .hero2__inner { padding-block: var(--space-lg) var(--space-md); }
   .hero2 .display { font-size: clamp(2.25rem, 13vw, 3.25rem); }
-  .hero2__lede { display: none; }
+  .hero2__eyebrow { margin-bottom: var(--space-xs); }
+  .hero2__title { margin-bottom: var(--space-xs); }
+  .hero2__lede { font-size: 0.875rem; }
   .hero2__path { min-height: 4.25rem; padding-block: var(--space-sm); }
 }

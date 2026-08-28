@@ -1,6 +1,23 @@
+/* Seitenkopf der Suche – bewusst kurz.
+   Ein kleiner Vortext, eine ruhige Überschrift, danach sofort das Ergebnis.
+   Bei einem direkten Codetreffer entfällt zusätzlich das Suchfeld, weil die
+   Eingabe im Kopfbereich jederzeit erreichbar bleibt. */
+.search-head {
+  display: grid;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-md);
+  border-bottom: var(--hair);
+  margin-bottom: var(--space-lg);
+}
+.search-head__eyebrow { margin-bottom: 0; }
+.search-head__title { margin: 0; overflow-wrap: anywhere; }
+@media (min-width: 990px) {
+  .search-head { padding-bottom: var(--space-lg); margin-bottom: var(--space-xl); }
+}
+
 /* VENT CELESTE – kompakte, einheitliche direkte Scent-Code-Ergebnisse. */
 .vc-code-result {
-  margin-top: clamp(.9rem, 2vw, 1.5rem);
+  margin-top: 0;
   max-width: 58rem;
 }
 

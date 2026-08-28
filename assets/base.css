@@ -212,7 +212,7 @@ p { text-wrap: pretty; }
   font-size: 0.625rem;
   line-height: 1.4;
   text-transform: uppercase;
-  letter-spacing: calc(var(--meta-tracking) + 0.06em);
+  letter-spacing: calc(var(--meta-tracking) + 0.03em);
   color: rgb(var(--color-muted));
 }
 
@@ -222,7 +222,7 @@ p { text-wrap: pretty; }
   font-size: 0.625rem;
   line-height: 1.4;
   text-transform: uppercase;
-  letter-spacing: calc(var(--meta-tracking) + 0.06em);
+  letter-spacing: calc(var(--meta-tracking) + 0.03em);
   color: rgb(var(--color-muted));
 }
 
@@ -239,7 +239,7 @@ p { text-wrap: pretty; }
 }
 .sec-head__index {
   font-size: 0.625rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.06em);
+  letter-spacing: calc(var(--meta-tracking) + 0.03em);
   color: rgb(var(--color-muted));
   font-variant-numeric: tabular-nums;
 }
@@ -397,11 +397,11 @@ p { text-wrap: pretty; }
   border: var(--border-width) solid rgb(var(--color-button, 18 16 14));
   border-radius: var(--button-radius, 0px);
   background-color: rgb(var(--color-button, 18 16 14));
-  color: rgb(var(--color-button-label, 245 242 237));
+  color: rgb(var(--color-button-label, 247 244 238));
   font-size: 0.75rem;
   font-weight: 500;
   line-height: 1.2;
-  letter-spacing: calc(var(--meta-tracking) + 0.06em);
+  letter-spacing: calc(var(--meta-tracking) + 0.03em);
   text-transform: var(--button-transform);
   text-align: center;
   transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
@@ -464,7 +464,7 @@ p { text-wrap: pretty; }
   color: rgb(var(--color-text));
   font-size: 0.8125rem;
   line-height: 1.2;
-  letter-spacing: calc(var(--meta-tracking) + 0.04em);
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
   text-transform: uppercase;
 }
 .action-link::before,
@@ -510,7 +510,7 @@ p { text-wrap: pretty; }
   padding-bottom: 4px;
   border-bottom: 0;
   font-size: 0.75rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.04em);
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -568,7 +568,7 @@ p { text-wrap: pretty; }
 
 .field__label {
   font-size: 0.6875rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.04em);
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
   text-transform: uppercase;
   color: rgb(var(--color-muted));
 }
@@ -642,7 +642,7 @@ p { text-wrap: pretty; }
   border: 0;
   color: rgb(var(--color-text));
   font-size: 0.6875rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.06em);
+  letter-spacing: calc(var(--meta-tracking) + 0.03em);
   text-transform: uppercase;
   transition: opacity var(--dur) var(--ease);
 }
@@ -773,7 +773,7 @@ p { text-wrap: pretty; }
   gap: 0.35rem;
   padding-block: 0.5rem;
   font-size: 0.6875rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.08em);
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -1016,7 +1016,7 @@ p { text-wrap: pretty; }
   font-size: 0.5625rem;
   line-height: 1;
   text-transform: uppercase;
-  letter-spacing: calc(var(--meta-tracking) + 0.06em);
+  letter-spacing: calc(var(--meta-tracking) + 0.03em);
 }
 
 .card__content {
@@ -1060,7 +1060,7 @@ p { text-wrap: pretty; }
 }
 
 /* Die Ausführung in derselben Auszeichnung wie alle Detailangaben. */
-.card__meta { color: rgb(var(--color-muted)); font-size: 0.625rem; letter-spacing: calc(var(--meta-tracking) + 0.04em); }
+.card__meta { color: rgb(var(--color-muted)); font-size: 0.625rem; letter-spacing: calc(var(--meta-tracking) + 0.02em); }
 
 .card__price {
   margin-top: 0.35rem;
@@ -1247,7 +1247,7 @@ html:not(.no-js) .animations-on .reveal--stagger.is-visible > *:nth-child(n + 6)
   position: fixed;
   inset: 0;
   z-index: var(--z-overlay);
-  background-color: rgb(20 18 16 / 0.42);
+  background-color: rgb(11 11 10 / 0.42);
   opacity: 0;
   visibility: hidden;
   transition: opacity var(--dur) var(--ease), visibility var(--dur) var(--ease);
@@ -1328,7 +1328,7 @@ body.is-locked { overflow: hidden; }
   font-size: 0.625rem;
   line-height: 1.4;
   text-transform: uppercase;
-  letter-spacing: calc(var(--meta-tracking) + 0.04em);
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
   color: rgb(var(--color-muted));
 }
 .announcement__text a {
@@ -1435,7 +1435,7 @@ body.is-locked { overflow: hidden; }
   padding: 0 0 var(--space-xs);
   color: rgb(var(--color-text));
   font-size: 0.6875rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.04em);
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
   text-transform: uppercase;
   white-space: nowrap;
   transition: opacity var(--dur) var(--ease);
@@ -1606,10 +1606,10 @@ body.is-locked { overflow: hidden; }
   width: 100%;
   max-width: 100%;
   height: auto;
-  /* Großzügig, aber gedeckelt: Preis, Ausführung und Kaufen sollen auf dem
-     Telefon ohne langes Scrollen erreichbar bleiben. */
+  /* Großzügig, aber gedeckelt: Preis, Ausführung und der Kaufbutton sollen
+     auf einem iPhone ohne Scrollen erreichbar sein. */
   aspect-ratio: 5 / 6;
-  max-height: 56vh;
+  max-height: 42vh;
   object-fit: cover;
 }
 
@@ -1620,8 +1620,13 @@ body.is-locked { overflow: hidden; }
 @media (max-height: 700px) {
   .product__media img,
   .product__media svg,
-  .product__media .full-bleed-media { max-height: 50vh; }
-  .product__price { margin-block: var(--space-md); }
+  .product__media .full-bleed-media { max-height: 40vh; }
+}
+
+/* Auf dem Telefon beginnt die Produktseite dichter unter dem Kopfbereich –
+   jede eingesparte Zeile bringt den Kaufbutton höher. */
+@media (max-width: 749px) {
+  .product__page { padding-top: var(--sect-sm); }
 }
 
 .product__title { margin-bottom: var(--space-2xs); }
@@ -1636,8 +1641,8 @@ body.is-locked { overflow: hidden; }
 .product__variant-line { margin-top: var(--space-xs); color: rgb(var(--color-muted)); }
 
 .product__price {
-  margin-block: var(--space-lg);
-  padding-top: var(--space-md);
+  margin-block: var(--space-md);
+  padding-top: var(--space-sm);
   border-top: var(--hair);
   font-size: 1.25rem;
   font-variant-numeric: tabular-nums;
@@ -1647,10 +1652,12 @@ body.is-locked { overflow: hidden; }
    Zeile ist an der kräftigeren Linie und der vollen Textfarbe erkennbar. */
 .variant-options {
   display: grid;
+  /* Auf dem Telefon knapp gehalten – zwischen Preis und Kaufbutton soll
+     möglichst wenig Höhe liegen. */
   /* Ein Fieldset bringt einen eigenen Rahmen, eigene Innenabstände und einen
      Mindestwert für die Breite mit. Alles zurücksetzen, sonst steht um die
      Ausführungen der graue Standardkasten des Browsers. */
-  margin: 0 0 var(--space-lg);
+  margin: 0 0 var(--space-md);
   padding: 0;
   border: 0;
   border-top: var(--hair);
@@ -1672,8 +1679,8 @@ body.is-locked { overflow: hidden; }
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
-  min-height: 3.25rem;
-  padding: var(--space-sm) 0;
+  min-height: 3rem;
+  padding: var(--space-xs) 0;
   border-bottom: var(--hair);
   color: rgb(var(--color-muted));
   transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
@@ -1693,16 +1700,29 @@ body.is-locked { overflow: hidden; }
 
 .product-form__actions {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
   gap: var(--space-md);
 }
 .product-form__actions .quantity { justify-self: start; max-width: 100%; }
+.product-form__actions [data-form-error] { grid-column: 1 / -1; }
+/* Der Hauptweg der Seite: volle Breite, ruhige Fläche, klare Beschriftung.
+   Er steht unmittelbar nach Preis und Ausführung. */
 .product-form__actions .button {
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  min-height: 3.5rem;
+  /* Neben der Mengenwahl bleibt wenig Breite – der Innenabstand wird
+     deshalb knapper gefasst, damit „In den Warenkorb" in eine Zeile passt. */
+  padding-inline: var(--space-sm);
+  font-size: 0.8125rem;
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
   white-space: normal;
   overflow-wrap: anywhere;
+}
+@media (min-width: 750px) {
+  .product-form__actions .button { padding-inline: calc(var(--button-padding) * 1.5); }
 }
 
 .product__note { font-size: 0.75rem; color: rgb(var(--color-muted)); }
@@ -2095,8 +2115,8 @@ html:not(.no-js) .animations-on .display__mask:nth-of-type(4) > span { transitio
   display: grid;
   grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
   align-items: center;
-  background-color: rgb(var(--color-text, 20 18 16));
-  color: rgb(var(--color-background, 245 242 237));
+  background-color: rgb(var(--color-text, 11 11 10));
+  color: rgb(var(--color-background, 247 244 238));
 }
 
 .whatsapp-bar__link {
@@ -2165,7 +2185,84 @@ html:not(.no-js) .animations-on .reveal[data-reveal-delay='2'] { transition-dela
 html:not(.no-js) .animations-on .reveal[data-reveal-delay='3'] { transition-delay: 210ms; }
 html:not(.no-js) .animations-on .reveal[data-reveal-delay='4'] { transition-delay: 280ms; }
 
-/* 20 Logo als Inline-SVG ------------------------------------------------- */
+/* 20 Marke: Signet und Wortmarke ---------------------------------------- */
+/* Das Signet wird als Maske gefüllt und übernimmt dadurch die Textfarbe des
+   Farbstils: tiefes Schwarz auf hellen Flächen, Elfenbein auf schwarzen.
+   Eine Datei, zwei Erscheinungen – und die Originalfarbe der Datei spielt
+   keine Rolle mehr. Ohne Maskierungsunterstützung im Browser bleibt die
+   Fläche leer, deshalb greift dort der Bildpfad aus dem Snippet. */
+.brand-mark {
+  display: block;
+  flex: none;
+  height: var(--mark-size, 22px);
+  width: calc(var(--mark-size, 22px) * var(--mark-ratio, 1));
+}
+/* Ohne Maskierungsunterstützung bliebe eine schwarze Fläche stehen – dann
+   lieber gar kein Signet. Alle aktuellen Browser unterstützen die Maske. */
+.brand-mark--tint { display: none; }
+@supports ((-webkit-mask-image: url('#m')) or (mask-image: url('#m'))) {
+  .brand-mark--tint {
+    display: block;
+    background-color: currentColor;
+    -webkit-mask-image: var(--mark-src);
+    mask-image: var(--mark-src);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+  }
+}
+img.brand-mark { object-fit: contain; }
+
+/* Kopfbereich: Signet und Wortmarke bilden ein Paar. */
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  color: rgb(var(--color-text));
+}
+.brand-lockup .wordmark { display: inline-block; }
+
+/* Mobiles Menü: kleine Markenreferenz über der Navigation. */
+.menu-drawer__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: rgb(var(--color-text));
+}
+.menu-drawer__brand .wordmark { font-size: 0.9375rem; }
+
+/* Fußbereich: das Signet steht neben der Wortmarke auf einer Grundlinie. */
+.footer__brand-row {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(0.75rem, 3vw, 1.5rem);
+  padding-block: var(--space-xl) var(--space-lg);
+  border-bottom: var(--hair);
+}
+.footer__brand-row .footer__brandline {
+  padding-block: 0;
+  border-bottom: 0;
+  flex: 1;
+  min-width: 0;
+}
+@media (min-width: 990px) {
+  .footer__brand-row { padding-block: var(--space-2xl) var(--space-xl); align-items: center; }
+}
+
+/* Wasserzeichen – bewusst nur an einer einzigen Stelle und sehr schwach.
+   Es liegt hinter dem Inhalt und wird nie zum Muster. */
+.brand-watermark {
+  position: absolute;
+  z-index: 0;
+  opacity: 0.05;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* 20b Logo als Inline-SVG ------------------------------------------------ */
 .header__logo-svg { display: block; }
 .header__logo-svg svg { display: block; width: 100%; height: auto; }
 .header__logo-svg svg [fill]:not([fill='none']) { fill: currentColor; }
@@ -2216,7 +2313,7 @@ html:not(.no-js) .animations-on .reveal[data-reveal-delay='4'] { transition-dela
     border: 0;
     border-radius: 0;
     font-size: 0.5625rem;
-    letter-spacing: calc(var(--meta-tracking) + 0.08em);
+    letter-spacing: calc(var(--meta-tracking) + 0.02em);
     text-transform: uppercase;
     transform: translateY(101%);
   }
@@ -2518,8 +2615,8 @@ body { max-width: 100%; overflow-x: clip; }
   margin: 0 !important;
   padding: 0 !important;
   overflow: hidden !important;
-  background-color: rgb(245 242 237) !important;
-  color: rgb(20 18 16) !important;
+  background-color: rgb(247 244 238) !important;
+  color: rgb(11 11 10) !important;
   opacity: 1 !important;
   box-shadow: -1px 0 0 rgb(var(--color-line)) !important;
   isolation: isolate !important;
@@ -2531,7 +2628,7 @@ body { max-width: 100%; overflow-x: clip; }
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: rgb(245 242 237);
+  background: rgb(247 244 238);
   pointer-events: none;
 }
 
@@ -2539,7 +2636,7 @@ body { max-width: 100%; overflow-x: clip; }
 #CartDrawer .drawer__header,
 #CartDrawer .drawer__body,
 #CartDrawer .drawer__footer {
-  background-color: rgb(245 242 237) !important;
+  background-color: rgb(247 244 238) !important;
   opacity: 1 !important;
 }
 
@@ -2617,8 +2714,8 @@ body { max-width: 100%; overflow-x: clip; }
   margin: 0 !important;
   padding: 0 !important;
   overflow: hidden !important;
-  background-color: rgb(245 242 237) !important;
-  color: rgb(20 18 16) !important;
+  background-color: rgb(247 244 238) !important;
+  color: rgb(11 11 10) !important;
   box-shadow: 1px 0 0 rgb(var(--color-line)) !important;
   isolation: isolate !important;
   contain: layout paint;
@@ -2636,14 +2733,14 @@ body { max-width: 100%; overflow-x: clip; }
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: rgb(245 242 237);
+  background: rgb(247 244 238);
   pointer-events: none;
 }
 
 #MenuDrawer .drawer__header,
 #MenuDrawer .menu-drawer__top,
 #MenuDrawer .drawer__body {
-  background-color: rgb(245 242 237) !important;
+  background-color: rgb(247 244 238) !important;
   opacity: 1 !important;
 }
 
@@ -2778,8 +2875,8 @@ body { max-width: 100%; overflow-x: clip; }
   width: 100% !important;
   max-height: 92dvh !important;
   margin: 0 !important;
-  background-color: rgb(var(--color-background, 245 242 237)) !important;
-  color: rgb(var(--color-text, 20 18 16)) !important;
+  background-color: rgb(var(--color-background, 247 244 238)) !important;
+  color: rgb(var(--color-text, 11 11 10)) !important;
   opacity: 1 !important;
   box-shadow: 0 1px 0 rgb(var(--color-line)) !important;
   isolation: isolate !important;
@@ -2803,7 +2900,7 @@ body { max-width: 100%; overflow-x: clip; }
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: rgb(var(--color-background, 245 242 237));
+  background: rgb(var(--color-background, 247 244 238));
   pointer-events: none;
 }
 
@@ -2813,7 +2910,7 @@ body { max-width: 100%; overflow-x: clip; }
   overflow-y: auto;
   overscroll-behavior: contain;
   max-height: 92dvh;
-  background-color: rgb(var(--color-background, 245 242 237)) !important;
+  background-color: rgb(var(--color-background, 247 244 238)) !important;
   opacity: 1 !important;
 }
 

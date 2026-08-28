@@ -5,7 +5,10 @@
       Display-Register über die volle Breite. Auf dem Telefon bleibt sie
       klein, damit der Fußbereich kompakt bleibt.
     {%- endcomment -%}
-    <p class="footer__brandline reveal reveal--mask"><span>{{ settings.wordmark | escape }}</span></p>
+    <div class="footer__brand-row">
+      {% render 'brand-mark', size: settings.signet_size_footer, class: 'footer__signet', label: settings.wordmark %}
+      <p class="footer__brandline reveal reveal--mask"><span>{{ settings.wordmark | escape }}</span></p>
+    </div>
 
     <div class="footer__top">
       {%- for block in section.blocks -%}

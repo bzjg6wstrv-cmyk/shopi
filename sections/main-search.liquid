@@ -88,15 +88,34 @@
   {%- if search.performed -%}{% render 'scent-code-hit', terms: search.terms, results: search.results %}{%- endif -%}
 {%- endcapture -%}
 {%- assign vc_code_hit = vc_code_hit | strip -%}
+{%- liquid
+  comment
+    Für den Seitenkopf: Liegt ein direkter Codetreffer vor und ist genau ein
+    Code gemeint, wird er im Kopf genannt – „VC-001 gefunden" statt der
+    langen Zeile „Ergebnisse für …". Das hält den Kopf kurz und bringt das
+    Produkt früher ins Bild.
+  endcomment
+  assign vc_head_code = ''
+  assign vc_code_list = vc_alias_codes | split: '|'
+  if vc_code_hit != blank and vc_code_list.size == 1 and vc_alias_codes != blank
+    assign vc_prefix = settings.scent_code_prefix | default: 'VC'
+    assign vc_head_code = vc_prefix | append: '-' | append: vc_alias_codes
+  endif
+-%}
 
 {{ 'section-search-results.css' | asset_url | stylesheet_tag }}
 
 {%- paginate search.results by 24 -%}
   <section class="section">
     <div class="page-width">
-      <div class="collection-head">
-        <h1 class="h2">
-          {%- if search.performed -%}
+      <div class="search-head">
+        {%- if search.performed -%}
+          <span class="eyebrow search-head__eyebrow">{{ 'general.search.eyebrow' | t }}</span>
+        {%- endif -%}
+        <h1 class="h3 search-head__title">
+          {%- if vc_head_code != blank -%}
+            {{ 'general.search.code_found' | t: code: vc_head_code }}
+          {%- elsif search.performed -%}
             {{ 'general.search.results_for' | t: terms: search.terms }}
           {%- else -%}
             {{ 'general.search.title' | t }}

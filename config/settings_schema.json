@@ -13,7 +13,7 @@
     "settings": [
       {
         "type": "paragraph",
-        "content": "Solange kein finales Logo hinterlegt ist, zeigt das Theme die Wortmarke als Text. Sobald hier eine Datei liegt, wird sie automatisch verwendet."
+        "content": "Zwei getrennte Elemente: die Wortmarke VENT CELESTE als Schriftzug und das Signet als Bildmarke. Solange nichts hinterlegt ist, zeigt das Theme die Wortmarke als Text."
       },
       {
         "type": "image_picker",
@@ -25,6 +25,43 @@
         "id": "logo_svg",
         "label": "Logo als Inline-SVG",
         "info": "Optional und gegenüber einer Bilddatei bevorzugt: gestochen scharf, beliebig skalierbar, und die Farbe folgt automatisch dem Farbschema. Den Inhalt der SVG-Datei hier einfügen. Wird verwendet, sobald etwas eingetragen ist."
+      },
+      {
+        "type": "header",
+        "content": "Signet"
+      },
+      {
+        "type": "image_picker",
+        "id": "signet",
+        "label": "Signet (Bildmarke)",
+        "info": "Die Originaldatei mit transparentem Hintergrund. Erscheint im Kopfbereich neben der Wortmarke, im mobilen Menü und im Fußbereich."
+      },
+      {
+        "type": "checkbox",
+        "id": "signet_recolor",
+        "label": "Signet automatisch einfärben",
+        "default": true,
+        "info": "Empfohlen. Das Signet wird als Maske verwendet und übernimmt die Textfarbe des Abschnitts: tiefes Schwarz auf hellen Flächen, Elfenbein auf schwarzen. Voraussetzung ist ein transparenter Hintergrund. Ausschalten, wenn die Originalfarben erhalten bleiben sollen."
+      },
+      {
+        "type": "range",
+        "id": "signet_size_header",
+        "min": 14,
+        "max": 48,
+        "step": 2,
+        "unit": "px",
+        "label": "Signethöhe im Kopfbereich",
+        "default": 22
+      },
+      {
+        "type": "range",
+        "id": "signet_size_footer",
+        "min": 24,
+        "max": 120,
+        "step": 4,
+        "unit": "px",
+        "label": "Signethöhe im Fußbereich",
+        "default": 56
       },
       {
         "type": "range",
