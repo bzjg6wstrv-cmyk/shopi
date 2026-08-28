@@ -29,14 +29,14 @@
             height="{{ product.featured_media.height }}"
             loading="eager"
             fetchpriority="high"
-            style="aspect-ratio: 4 / 5; object-fit: cover;"
+            class="code-page__image"
           >
         {%- endif -%}
 
-        <h1 class="h2" style="margin-top: var(--space-lg);">{{ product.title }}</h1>
+        <h1 class="h2 mt-lg">{{ product.title }}</h1>
 
         {%- if product.description != blank -%}
-          <div class="rte measure" style="margin-top: var(--space-md);">{{ product.description }}</div>
+          <div class="rte measure mt-md">{{ product.description }}</div>
         {%- endif -%}
 
         {%- if settings.whatsapp_enabled -%}
@@ -113,10 +113,10 @@
           </div>
         </form>
 
-        <p class="product__note" style="margin-top: var(--space-md);">
+        <p class="product__note mt-md">
           {{ settings.tax_note }}
           {%- if settings.shipping_page != blank -%}
-            , <a href="{{ settings.shipping_page }}" style="text-decoration: underline;">{{ 'sections.cart.taxes_note' | t }}</a>
+            , <a class="link-inline" href="{{ settings.shipping_page }}">{{ 'sections.cart.taxes_note' | t }}</a>
           {%- endif -%}
         </p>
 
@@ -151,7 +151,11 @@
           assign vd_unit = vd_unit | append: variant.unit_price_measurement.reference_unit
         endif
       -%}
-      {{ variant.id | json }}: {
+      {%- comment -%}
+        Schlüssel in Anführungszeichen – siehe main-product.liquid: eine
+        Zahl als unquotierter Objektschlüssel ergibt kein gültiges JSON.
+      {%- endcomment -%}
+      "{{ variant.id }}": {
         "price": {{ variant.price | money | json }},
         "compare": {{ vd_compare | json }},
         "onSale": {{ vd_on_sale | json }},

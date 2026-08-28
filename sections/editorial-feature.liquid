@@ -1,8 +1,18 @@
 {{ 'section-editorial.css' | asset_url | stylesheet_tag }}
 {%- comment -%}
   Wiederverwendbarer Editorial-Abschnitt: Bild plus Text.
-  Wird auf der Startseite für Discovery Set, Extrait, Travel Size,
-  Essentials und „Über VENT CELESTE“ eingesetzt.
+
+  Zwei ausdrücklich verschiedene Kompositionen, damit zwei Abschnitte
+  hintereinander nie wie dieselbe Vorlage zweimal wirken:
+
+    „spec"      – produktnah und präzise. Hochformatiges Bild links, Text
+                  rechts, die Merkmale als exakte Angabenliste mit
+                  Haarlinien und rechtsbündigen Werten.
+    „statement" – markenorientiert. Breites Bild, das rechts aus dem
+                  Innenabstand herausläuft, daneben eine schmale Textspalte
+                  auf einer Haarlinie, größerer Schriftgrad, kein
+                  Angabenblock, kein gefüllter Button.
+
   Preise stammen bei Bedarf aus einem echten Shopify-Produkt.
 {%- endcomment -%}
 {%- liquid
@@ -14,7 +24,7 @@
 -%}
 <section class="section color-{{ section.settings.color_scheme }} color-scheme">
   <div class="page-width">
-    <div class="feature{% if section.settings.media_position == 'right' %} feature--reverse{% endif %}{% if section.settings.media_shape == 'tall' %} feature--narrow-media{% endif %} reveal">
+    <div class="feature feature--{{ section.settings.layout | default: 'spec' }}{% if section.settings.media_position == 'right' %} feature--reverse{% endif %}{% if section.settings.media_shape == 'tall' %} feature--narrow-media{% endif %} reveal">
       <div class="feature__media feature__media--{{ section.settings.media_shape }}">
         {%- if section.settings.image != blank -%}
           <img
@@ -43,7 +53,7 @@
         {%- endif -%}
 
         {%- if section.settings.text != blank -%}
-          <div class="rte text-lead measure">{{ section.settings.text }}</div>
+          <div class="rte feature__text">{{ section.settings.text }}</div>
         {%- endif -%}
 
         {%- if section.blocks.size > 0 -%}
@@ -58,24 +68,30 @@
         {%- endif -%}
 
         {%- if linked_product != blank and section.settings.show_price -%}
-          <div style="margin-top: var(--space-lg);">
+          <div class="feature__price">
             {% render 'product-price', variant: feature_variant, product: linked_product %}
           </div>
         {%- endif -%}
 
         {%- if section.settings.placeholder_note -%}
-          <p class="demo-flag" style="margin-top: var(--space-lg);">{{ 'general.demo_notice' | t }}</p>
+          <p class="demo-flag feature__note">{{ 'general.demo_notice' | t }}</p>
         {%- endif -%}
 
         {%- if section.settings.primary_label != blank or section.settings.secondary_label != blank -%}
           <div class="feature__actions">
             {%- if section.settings.primary_label != blank -%}
-              <a class="button" href="{{ section.settings.primary_link | default: linked_product.url }}">
-                {{ section.settings.primary_label | escape }}
-              </a>
+              {%- if section.settings.layout == 'statement' -%}
+                <a class="link-underline" href="{{ section.settings.primary_link | default: linked_product.url }}">
+                  {{ section.settings.primary_label | escape }}
+                </a>
+              {%- else -%}
+                <a class="button" href="{{ section.settings.primary_link | default: linked_product.url }}">
+                  {{ section.settings.primary_label | escape }}
+                </a>
+              {%- endif -%}
             {%- endif -%}
             {%- if section.settings.secondary_label != blank -%}
-              <a class="button button--secondary" href="{{ section.settings.secondary_link }}">
+              <a class="link-underline" href="{{ section.settings.secondary_link }}">
                 {{ section.settings.secondary_label | escape }}
               </a>
             {%- endif -%}
@@ -103,6 +119,17 @@
         { "value": "scheme-4", "label": "Taupe" }
       ],
       "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Komposition",
+      "options": [
+        { "value": "spec", "label": "Produktnah – Bild hochformatig, Angaben rechts" },
+        { "value": "statement", "label": "Markenauftritt – breites Bild, schmale Textspalte" }
+      ],
+      "default": "spec",
+      "info": "Der Markenauftritt setzt Bildseite und Bildformat selbst; Position und Format unten wirken dann nicht."
     },
     {
       "type": "image_picker",

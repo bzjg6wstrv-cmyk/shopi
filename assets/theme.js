@@ -510,6 +510,38 @@
     }, 60);
   });
 
+  /* --------------------------------------------- Kopfbereich beim Scrollen */
+  /* Ab 990 px raeumt der Kopf beim Scrollen seinen oberen Reserveraum aus dem
+     Blick. Verschoben wird nur der Klebeabstand der Leiste – die Hoehe im
+     Textfluss bleibt gleich, der Seiteninhalt springt daher nicht. Der Kopf
+     wird nie ganz ausgeblendet. */
+  var kopf = document.querySelector('.header');
+  if (kopf) {
+    var breit = window.matchMedia('(min-width: 990px)');
+    var kopfTicking = false;
+
+    var kopfAnwenden = function () {
+      var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+      kopf.classList.toggle('is-compact', breit.matches && y > 48);
+    };
+
+    var kopfPruefen = function () {
+      if (kopfTicking) return;
+      kopfTicking = true;
+      window.requestAnimationFrame(function () {
+        kopfAnwenden();
+        kopfTicking = false;
+      });
+    };
+
+    window.addEventListener('scroll', kopfPruefen, { passive: true });
+    window.addEventListener('resize', kopfPruefen);
+    if (typeof breit.addEventListener === 'function') {
+      breit.addEventListener('change', kopfAnwenden);
+    }
+    kopfAnwenden();
+  }
+
   /* ------------------------------------------------------------ Hero-Drift */
   var drift = document.querySelector('[data-hero-drift]');
   if (drift && !reduceMotion.matches) {

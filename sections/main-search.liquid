@@ -104,7 +104,7 @@
         </h1>
 
         {%- unless vc_code_hit != blank -%}
-        <form action="{{ routes.search_url }}" method="get" role="search" class="search-panel__form" style="max-width: 40rem;" data-vc-search-form>
+        <form action="{{ routes.search_url }}" method="get" role="search" class="search-panel__form search-page__form" data-vc-search-form>
           <label class="visually-hidden" for="SearchPageInput">{{ 'general.search.title' | t }}</label>
           <input
             id="SearchPageInput"
@@ -148,26 +148,24 @@
           {%- endcapture -%}
 
           {%- if vc_alias_count > 0 -%}
-            <p class="meta meta--muted" style="margin-bottom: var(--space-lg);">
-              {{ vc_alias_count }} passende Duftprofile
-            </p>
+            <p class="meta meta--muted results-count">{{ vc_alias_count }} passende Duftprofile</p>
             <ul class="grid grid--products">{{ vc_alias_cards }}</ul>
           {%- endif -%}
         {%- endif -%}
 
         {%- if vc_alias_count == 0 and search.results.size == 0 and vc_code_hit == blank -%}
-          <div class="note-placeholder">
-            <p>{{ 'general.search.no_results' | t: terms: search.terms }}</p>
-            <p>Suche nach einem Scent Code, einer Nummer, Duftnote oder einem Duftcharakter – zum Beispiel „49“, „Vanille“, „Gourmand“ oder „Holzig“.</p>
+          <div class="empty-state">
+            <p class="h4 empty-state__title">{{ 'general.search.no_results' | t: terms: search.terms }}</p>
+            <p class="empty-state__text">Suche nach einem Scent Code, einer Nummer, Duftnote oder einem Duftcharakter – zum Beispiel „49“, „Vanille“, „Gourmand“ oder „Holzig“.</p>
             {%- if settings.whatsapp_enabled -%}
               {%- assign wa_context = 'sections.whatsapp.context_search' | t | replace: '__CODE__', search.terms -%}
-              <p style="margin-top: var(--space-lg);">
-                {% render 'whatsapp-link', class: 'button button--whatsapp', icon: true, context: wa_context %}
-              </p>
+              <div class="empty-state__actions">
+                {% render 'whatsapp-link', class: 'button', icon: true, context: wa_context %}
+              </div>
             {%- endif -%}
           </div>
         {%- elsif vc_alias_count == 0 and search.results.size > 0 and vc_code_hit == blank -%}
-          <p class="meta meta--muted" style="margin-bottom: var(--space-lg);">
+          <p class="meta meta--muted results-count">
             {{ 'general.search.results_count' | t: count: search.results_count }}
           </p>
           <ul class="grid grid--products">

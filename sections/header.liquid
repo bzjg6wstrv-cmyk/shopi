@@ -88,7 +88,7 @@
                             loading="lazy"
                           >
                         {%- endif -%}
-                        <p class="mega__title meta" style="margin-top: 1rem; border: 0; padding: 0;">
+                        <p class="mega__title mega__title--plain meta">
                           {{ section.settings.feature_title | escape }}
                         </p>
                         <p class="text-muted text-body-sm">{{ section.settings.feature_text | escape }}</p>
@@ -106,7 +106,7 @@
     </div>
 
     <div class="header__brand">
-      {%- if request.page_type == 'index' -%}<h1 style="margin:0;">{%- endif -%}
+      {%- if request.page_type == 'index' -%}<h1 class="header__brand-heading">{%- endif -%}
       <a href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
         {%- if settings.logo_svg != blank -%}
           <span class="header__logo-svg" style="width: {{ settings.logo_width_mobile }}px;">
@@ -270,8 +270,15 @@
   getrennte Wege.
 {%- endcomment -%}
 <vc-drawer id="SearchDrawer" class="drawer drawer--top color-{{ section.settings.color_scheme }} color-scheme" aria-label="{{ 'general.search.title' | t }}">
-  <div class="drawer__body" style="padding-block: var(--space-2xl);">
-    <div class="page-width">
+  <div class="search-panel">
+    <div class="page-width search-panel__inner">
+      <div class="search-panel__head">
+        <span class="meta meta--muted">{{ 'general.search.title' | t }}</span>
+        <button type="button" class="drawer__close" data-drawer-close aria-label="{{ 'general.accessibility.close_search' | t }}">
+          {% render 'icon', name: 'close' %}
+        </button>
+      </div>
+
       <form
         action="{{ routes.search_url }}"
         method="get"
@@ -298,18 +305,18 @@
           aria-autocomplete="list"
         >
         <input type="hidden" name="options[prefix]" value="last">
-        <button type="submit" class="button button--quiet">{{ 'general.search.submit' | t }}</button>
-        <button type="button" class="drawer__close" data-drawer-close aria-label="{{ 'general.accessibility.close_search' | t }}">
-          {% render 'icon', name: 'close' %}
+        <button type="submit" class="search-panel__submit">
+          <span>{{ 'general.search.submit' | t }}</span>
+          {% render 'icon', name: 'arrow' %}
         </button>
       </form>
 
-      <div id="PredictiveResults" data-predictive-results role="listbox" style="margin-top: var(--space-2xl);"></div>
-      <p class="visually-hidden" role="status" aria-live="polite" data-predictive-status></p>
-
       {%- if section.settings.search_hint != blank -%}
-        <p class="text-muted text-body-sm" style="margin-top: var(--space-lg);">{{ section.settings.search_hint | escape }}</p>
+        <p class="search-panel__hint">{{ section.settings.search_hint | escape }}</p>
       {%- endif -%}
+
+      <div id="PredictiveResults" class="search-panel__results" data-predictive-results role="listbox"></div>
+      <p class="visually-hidden" role="status" aria-live="polite" data-predictive-status></p>
     </div>
   </div>
 </vc-drawer>

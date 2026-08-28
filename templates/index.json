@@ -113,7 +113,8 @@
         "text": "<p>Fünf Codes auswählen, in Ruhe tragen, Favoriten finden. Der einfachste Weg, sich zu entscheiden.</p>",
         "show_price": false,
         "primary_label": "Set zusammenstellen",
-        "primary_link": "/products/discovery-set"
+        "primary_link": "/products/discovery-set",
+        "layout": "spec"
       },
       "disabled": true
     },
@@ -167,7 +168,8 @@
         "text": "<p>Ein hoher Anteil an Parfumöl bedeutet vor allem eines: Der Duft trägt sich dichter und muss seltener nachgelegt werden. Die Rohstoffe werden sorgfältig ausgewählt, die Komposition bleibt eigenständig.</p>",
         "show_price": false,
         "primary_label": "Extrait ansehen",
-        "primary_link": "/collections/extrait"
+        "primary_link": "/collections/extrait",
+        "layout": "spec"
       }
     },
     "travel": {
@@ -201,7 +203,8 @@
         "text": "<p>Das kleine Format für Handtasche und Reise – und ein ruhiger Weg, einen Duft über mehrere Tage kennenzulernen.</p>",
         "show_price": false,
         "primary_label": "Travel Size ansehen",
-        "primary_link": "/collections/travel-size"
+        "primary_link": "/collections/travel-size",
+        "layout": "spec"
       },
       "disabled": true
     },
@@ -228,7 +231,8 @@
         "placeholder_note": false,
         "show_price": false,
         "primary_label": "Mehr über die Marke",
-        "primary_link": "/pages/ueber-uns"
+        "primary_link": "/pages/ueber-uns",
+        "layout": "statement"
       }
     },
     "newsletter": {

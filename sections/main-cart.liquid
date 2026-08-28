@@ -1,6 +1,6 @@
 <section class="section">
   <div class="page-width">
-    <h1 class="h2" style="margin-bottom: var(--space-xl);">{{ 'sections.cart.title' | t }}</h1>
+    <h1 class="h2 mb-xl">{{ 'sections.cart.title' | t }}</h1>
 
     {%- if cart.item_count == 0 -%}
       <div class="stack">
@@ -10,7 +10,7 @@
       </div>
     {%- else -%}
       <form action="{{ routes.cart_url }}" method="post" novalidate data-no-ajax>
-        <ul class="cart-items" style="max-width: 46rem;">
+        <ul class="cart-items cart-page__items">
           {%- for item in cart.items -%}
             <li class="cart-item">
               <a class="cart-item__media" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
@@ -56,7 +56,7 @@
           {%- endfor -%}
         </ul>
 
-        <div style="max-width: 46rem; margin-top: var(--space-2xl);">
+        <div class="cart-page__summary">
           {%- if settings.cart_show_note -%}
             <div class="field cart-note">
               <label class="field__label" for="CartPageNote">{{ 'sections.cart.note' | t }}</label>
@@ -64,20 +64,20 @@
             </div>
           {%- endif -%}
 
-          <div class="cart-footer__row" style="margin-top: var(--space-lg);">
+          <div class="cart-footer__row mt-lg">
             <span class="meta meta--muted">{{ 'sections.cart.subtotal' | t }}</span>
             <span class="cart-footer__total">{{ cart.total_price | money }}</span>
           </div>
 
-          <p class="text-muted" style="font-size: .75rem;">{{ settings.tax_note }}. {{ 'sections.cart.taxes_note' | t }}</p>
+          <p class="text-fine">{{ settings.tax_note }}. {{ 'sections.cart.taxes_note' | t }}</p>
 
-          <div style="display:flex; gap: var(--space-md); flex-wrap: wrap; margin-top: var(--space-lg);">
+          <div class="actions-row mt-lg">
             <button type="submit" name="update" class="button button--secondary">{{ 'sections.cart.update' | t }}</button>
             <button type="submit" name="checkout" class="button">{{ 'sections.cart.checkout' | t }}</button>
           </div>
 
           {%- if additional_checkout_buttons -%}
-            <div style="margin-top: var(--space-lg);">{{ content_for_additional_checkout_buttons }}</div>
+            <div class="mt-lg">{{ content_for_additional_checkout_buttons }}</div>
           {%- endif -%}
         </div>
       </form>

@@ -1,41 +1,88 @@
 /* Abschnitte rund um Beratung und Scent Code. */
 
-/* Vollflächiger Beratungsabschnitt */
+/* Vollflächiger Beratungsabschnitt.
+   Bild über die volle Breite, Text unten links auf der Rasterkante. Die
+   Lesbarkeit entsteht aus einem nach unten zunehmenden Verlauf – keine
+   Fläche, kein Kasten, kein Schatten. */
 .wa-feature { position: relative; display: grid; isolation: isolate; }
 .wa-feature__media { grid-area: 1 / 1; position: relative; }
 .wa-feature__media img,
 .wa-feature__media svg {
   width: 100%;
   height: 100%;
-  min-height: 26rem;
+  min-height: 21rem;
   object-fit: cover;
 }
-@media (min-width: 750px) { .wa-feature__media img, .wa-feature__media svg { min-height: 34rem; } }
-.wa-feature__scrim { position: absolute; inset: 0; }
+@media (min-width: 750px) { .wa-feature__media img, .wa-feature__media svg { min-height: 30rem; } }
+@media (min-width: 990px) { .wa-feature__media img, .wa-feature__media svg { min-height: 36rem; } }
+
+/* Die Flächendeckung kommt aus dem Theme-Editor (inline background-color),
+   der Verlauf darüber sorgt dafür, dass der Text unten sicher lesbar ist
+   und das Bild oben offen bleibt. */
+.wa-feature__scrim {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    to top,
+    rgb(var(--color-background) / 0.7) 0%,
+    rgb(var(--color-background) / 0.3) 42%,
+    rgb(var(--color-background) / 0) 76%
+  );
+}
 
 .wa-feature__content {
   grid-area: 1 / 1;
   position: relative;
   z-index: 1;
   display: grid;
-  align-content: center;
-  padding-block: clamp(3rem, 8vw, 6rem);
+  align-content: end;
+  gap: var(--space-md);
+  padding-block: var(--space-xl);
 }
 .wa-feature__inner { max-width: 34rem; }
-.wa-feature__title { margin-bottom: var(--space-md); }
-.wa-feature__text { font-size: clamp(1rem, .95rem + .4vw, 1.25rem); line-height: 1.5; }
-.wa-feature__actions { margin-top: var(--space-xl); display: flex; flex-wrap: wrap; gap: var(--space-md); }
-.wa-feature__actions .button { min-height: 3.25rem; }
-@media (max-width: 599px) { .wa-feature__actions .button { width: 100%; } }
-.wa-feature__note { margin-top: var(--space-sm); font-size: .75rem; opacity: .75; }
+.wa-feature__title { margin-bottom: var(--space-sm); }
+.wa-feature__text {
+  font-size: clamp(0.9375rem, 0.9rem + 0.35vw, 1.125rem);
+  line-height: 1.55;
+  max-width: 40ch;
+}
+
+/* Ein durchgehender Hauptweg, daneben höchstens eine Textmarke – bewusst
+   keine zwei gleichwertigen Schaltflächen. */
+.wa-feature__actions {
+  margin-top: var(--space-lg);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md) var(--space-xl);
+}
+.wa-feature__cta { min-height: 3.25rem; }
+@media (max-width: 599px) { .wa-feature__cta { display: flex; width: 100%; } }
+
+.wa-feature__note {
+  font-size: 0.6875rem;
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+}
+
+/* Ab Tablet steht die Antwortzeit rechts unten auf der Grundlinie des
+   Textblocks – die Komposition bleibt dadurch asymmetrisch. */
+@media (min-width: 750px) {
+  .wa-feature__content {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: var(--space-2xl);
+    padding-block: clamp(2.5rem, 5vw, 4.5rem);
+  }
+  .wa-feature__note { padding-bottom: 0.35rem; text-align: right; }
+}
 
 /* Ablauf: nummerierte Zeilen statt Karten.
    Zwei Spalten je Schritt – Ziffer links, Titel und Beschreibung rechts in
    einem gemeinsamen Textblock. Getrennt wird nur durch eine Haarlinie:
    keine Karten, keine Rahmen, keine Schatten, keine Symbole. */
 .steps { counter-reset: vc-step; }
-
-.steps__heading { margin-bottom: var(--space-lg); }
 
 .steps__item {
   counter-increment: vc-step;
@@ -74,7 +121,17 @@
   text-wrap: pretty;
 }
 
-.steps__cta { margin-top: var(--space-lg); }
+/* Der Beratungsweg schließt die Liste ab und sitzt auf derselben Textkante
+   wie die Titel – nicht als frei stehende Schaltfläche unter dem Abschnitt. */
+.steps__cta {
+  margin-top: var(--space-lg);
+  padding-left: calc(2.25rem + var(--space-sm));
+}
+.steps__button { min-height: 3.25rem; }
+@media (max-width: 599px) {
+  .steps__cta { padding-left: 0; }
+  .steps__button { display: flex; width: 100%; }
+}
 
 @media (min-width: 990px) {
   .steps__item {
@@ -94,8 +151,10 @@
   .steps__title { font-size: 1.25rem; }
   /* Auf breiten Schirmen passt jede Beschreibung in eine Zeile. */
   .steps__text { margin-top: 0; font-size: .9375rem; max-width: 52ch; }
-  .steps__heading { margin-bottom: var(--space-xl); }
-  .steps__cta { margin-top: var(--space-xl); }
+  .steps__cta {
+    margin-top: var(--space-xl);
+    padding-left: calc(3.5rem + var(--space-md));
+  }
 }
 
 /* Code-Abschnitt auf der Startseite */
@@ -130,14 +189,9 @@
 /* v4.2.11 Mobile: engere Abstaende in den drei Schritten und im dunklen
    Beratungsabschnitt. Schriftgroessen, Farben und Haarlinien bleiben. */
 @media (max-width: 749px) {
-  .steps__heading { margin-bottom: var(--space-md); }
   .steps__item { padding-block: var(--space-sm); }
   .steps__cta { margin-top: var(--space-md); }
 
-  .wa-feature__media img,
-  .wa-feature__media svg { min-height: 21rem; }
-  .wa-feature__content { padding-block: var(--space-xl); }
-  .wa-feature__actions { margin-top: var(--space-lg); }
 }
 
 /* Code-Eingabe innerhalb der Standard-Produktseite. Nur für das zentrale

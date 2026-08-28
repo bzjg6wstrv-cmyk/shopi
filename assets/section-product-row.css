@@ -2,33 +2,40 @@
    Keine Slider-Library: Momentum-Scrolling, Wischen und Tastaturbedienung
    kommen vom Browser. Ohne JavaScript bleibt die Reihe voll benutzbar. */
 
+/* Abschnittskopf auf einer Haarlinie: Titel links, Ziel und Steuerung rechts
+   auf derselben Grundlinie. */
 .row-head {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: var(--hair);
   margin-bottom: var(--space-lg);
 }
-.row-head__actions { display: flex; align-items: center; gap: var(--space-md); }
+.row-head__title { min-width: 0; }
+.row-head__actions { display: flex; align-items: center; gap: var(--space-lg); }
 
+/* Die Pfeile sind reine Zeichen ohne Rahmen – nichts an dieser Reihe soll
+   nach einem eingebundenen Slider aussehen. */
 .row-arrows { display: none; }
 @media (min-width: 990px) {
-  .row-arrows { display: flex; gap: .5rem; }
+  .row-arrows { display: flex; gap: var(--space-xs); }
 }
 .row-arrow {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border: var(--border-width) solid rgb(var(--color-line));
-  border-radius: var(--button-radius);
-  transition: border-color var(--dur) var(--ease), opacity var(--dur) var(--ease);
+  width: 2.25rem;
+  height: 2.25rem;
+  color: rgb(var(--color-muted));
+  transition: color var(--dur) var(--ease), opacity var(--dur) var(--ease);
 }
-.row-arrow:hover { border-color: rgb(var(--color-text)); }
-.row-arrow[disabled] { opacity: .3; cursor: default; }
-.row-arrow svg { width: 16px; height: 16px; }
+.row-arrow:hover { color: rgb(var(--color-text)); }
+.row-arrow[disabled] { opacity: .25; cursor: default; }
+.row-arrow[disabled]:hover { color: rgb(var(--color-muted)); }
+.row-arrow svg { width: 17px; height: 17px; }
 .row-arrow--prev svg { transform: rotate(180deg); }
 
 /* Breite der Vorschau auf die nächste Karte – der Wisch-Hinweis. */
@@ -54,7 +61,10 @@
 @media (min-width: 600px) { .row-track { grid-auto-columns: 44vw; } }
 @media (min-width: 990px) {
   .row-track {
-    grid-auto-columns: minmax(0, calc((100% - (var(--space-lg) * 4)) / 5));
+    /* Feste Spaltenbreite, kein minmax mit 0 als Minimum: Sonst schrumpfen
+       alle Karten so weit, bis sie gemeinsam in die Bahn passen – die Reihe
+       ließe sich dann gar nicht mehr scrollen. */
+    grid-auto-columns: calc((100% - (var(--space-lg) * 4)) / 5);
     gap: var(--space-lg);
     padding-inline: 0;
     margin-inline: 0;
@@ -62,21 +72,28 @@
   }
 }
 
-.row-dots {
-  display: flex;
-  justify-content: center;
-  gap: .4rem;
-  margin-top: var(--space-md);
-}
-@media (min-width: 990px) { .row-dots { display: none; } }
-.row-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 999px;
+/* Fortschritt als Haarlinie: Die Bahn ist die Gesamtbreite der Reihe, der
+   dunkle Abschnitt darauf der gerade sichtbare Ausschnitt. Kein Punktmuster,
+   keine Zahlen, keine Animation im Ruhezustand. */
+.row-progress {
+  position: relative;
+  height: var(--border-width);
+  margin-top: var(--space-lg);
   background-color: rgb(var(--color-line));
-  transition: background-color var(--dur) var(--ease), width var(--dur) var(--ease);
+  overflow: hidden;
 }
-.row-dot.is-active { background-color: rgb(var(--color-text)); width: 16px; }
+.row-progress[hidden] { display: none; }
+.row-progress__bar {
+  display: block;
+  width: 30%;
+  height: 100%;
+  background-color: rgb(var(--color-text));
+  transform: translateX(0);
+  transition: transform var(--dur-fast) linear;
+}
+@media (prefers-reduced-motion: reduce) {
+  .row-progress__bar { transition: none; }
+}
 
 /* v4.2.10 mobile cleanup: keep the swipe rail inside the viewport. */
 @media (max-width: 599px) {
@@ -133,10 +150,10 @@
 
   /* Ohne height:100% entsteht unter kurzen Karten kein Leerraum mehr,
      wenn eine andere Karte in der Reihe zwei Titelzeilen hat. */
-  .product-row .card { height: auto; gap: var(--space-xs); }
-  .product-row .card__media { aspect-ratio: 4 / 5; }
+  .product-row .card { height: auto; }
+  .product-row .card__media { aspect-ratio: 4 / 5; margin-bottom: var(--space-sm); }
 
-  .row-dots { margin-top: var(--space-sm); }
+  .row-progress { margin-top: var(--space-md); }
 }
 
 @media (max-width: 599px) {

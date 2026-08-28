@@ -11,18 +11,18 @@
   .facets-aside { display: block; position: sticky; top: 7rem; max-height: calc(100vh - 9rem); overflow-y: auto; }
 }
 
-.facet { border-bottom: var(--border-width) solid rgb(var(--color-line)); }
-.facet:first-child { border-top: var(--border-width) solid rgb(var(--color-line)); }
+.facet { border-bottom: var(--hair); }
+.facet:first-child { border-top: var(--hair); }
 
 .facet__summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-sm);
-  min-height: 3rem;
-  font-size: .75rem;
+  min-height: 3.25rem;
+  font-size: .6875rem;
   text-transform: uppercase;
-  letter-spacing: var(--meta-tracking);
+  letter-spacing: calc(var(--meta-tracking) + .02em);
 }
 .facet__summary svg { width: 12px; height: 12px; flex: none; transition: transform var(--dur) var(--ease); }
 .facet[open] .facet__summary svg { transform: rotate(180deg); }
@@ -45,19 +45,28 @@
   margin-bottom: var(--space-md);
 }
 
-.active-filters { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-bottom: var(--space-lg); }
+/* Aktive Filter: keine gerahmten Kapseln, sondern beschriftete Marken auf
+   einer Haarlinie. Das Kreuz zeigt, dass sie sich entfernen lassen. */
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
 .active-filter {
   display: inline-flex;
   align-items: center;
-  gap: .4rem;
-  min-height: 2.25rem;
-  padding: .3rem .65rem;
-  border: var(--border-width) solid rgb(var(--color-line));
-  border-radius: var(--input-radius);
+  gap: .45rem;
+  min-height: 2.5rem;
+  padding-bottom: 2px;
+  border-bottom: var(--border-width) solid rgb(var(--color-text) / .3);
   font-size: .8125rem;
+  transition: border-color var(--dur) var(--ease);
 }
-.active-filter svg { width: 11px; height: 11px; }
-.active-filter:hover { border-color: rgb(var(--color-text)); }
+.active-filter svg { width: 11px; height: 11px; color: rgb(var(--color-muted)); }
+.active-filter:hover { border-bottom-color: rgb(var(--color-text)); }
+
+.facets__clear { font-size: .6875rem; }
 
 .facets-toggle { display: inline-flex; align-items: center; gap: .5rem; min-height: 2.75rem; }
 @media (min-width: 990px) { .facets-toggle { display: none; } }

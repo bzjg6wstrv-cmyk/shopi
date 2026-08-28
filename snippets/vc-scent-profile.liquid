@@ -1,9 +1,22 @@
 {%- comment -%}
-  VENT CELESTE launch scent profiles. Uses product tags as stable mapping so
-  legacy imported product titles (VC-001..006) still render the correct code.
+  Duftprofile der Launch-Codes.
+
+  Zugeordnet wird zuerst über das Metafeld custom.scent_code, danach über den
+  Produkttitel und zuletzt über die bereits im Shop gepflegten Produkt-Tags.
+  Die Tag-Prüfung bleibt erhalten, weil ältere importierte Produkte
+  (VC-001..006) sonst kein Profil mehr bekämen. Ausgegeben wird ausschließlich
+  der VENT CELESTE Scent Code – nie eine fremde Bezeichnung.
+
+  Darstellung: Angaben und Anteile stehen auf Haarlinien, die Balken benutzen
+  ausschließlich die Textfarbe des Farbstils. Keine Pillen, keine
+  Zusatzfarben, keine Animation.
 {%- endcomment -%}
 {%- liquid
-  assign vc_ref = ''
+  assign vc_key = product.metafields.custom.scent_code.value
+  if vc_key == blank
+    assign vc_key = product.title
+  endif
+
   assign vc_code = ''
   assign vc_kicker = ''
   assign vc_traits = ''
@@ -13,8 +26,7 @@
   assign vc_style = ''
   assign vc_copy = ''
 
-  if product.tags contains 'Imagination' or product.title contains '047'
-    assign vc_ref = 'Imagination'
+  if product.tags contains 'Imagination' or vc_key contains '047'
     assign vc_code = 'VC-047'
     assign vc_kicker = 'Klar. Frisch. Charaktervoll.'
     assign vc_traits = 'Frisch:29|Zitrisch:27|Aquatisch:18|Grün:9|Würzig:7'
@@ -23,8 +35,7 @@
     assign vc_occasions = 'Alltag:24|Freizeit:22|Arbeit:18|Sport:14|Ausgehen:12|Abend:10'
     assign vc_style = 'Modern · frisch · eher maskulin, aber für jeden tragbar.'
     assign vc_copy = 'Ein heller Auftakt aus Bergamotte trifft auf würzigen Ingwer und Neroli. Schwarzer Tee gibt dem Duft seine markante, klare Mitte; Zeder, Zimt und Ambrox sorgen für einen trockenen, modernen Ausklang.'
-  elsif product.tags contains 'Althaïr' or product.tags contains 'Althair' or product.title contains '078'
-    assign vc_ref = 'Althaïr'
+  elsif product.tags contains 'Althaïr' or product.tags contains 'Althair' or vc_key contains '078'
     assign vc_code = 'VC-078'
     assign vc_kicker = 'Warm. Cremig. Verführerisch.'
     assign vc_traits = 'Süß:26|Gourmand:23|Cremig:18|Würzig:15|Holzig:8'
@@ -33,8 +44,7 @@
     assign vc_occasions = 'Abend:32|Ausgehen:30|Freizeit:18|Alltag:13|Arbeit:8'
     assign vc_style = 'Modern · warm · eher maskulin, mit weicher gourmandiger Signatur.'
     assign vc_copy = 'Leuchtende Zitrusnoten öffnen den Duft, bevor Orangenblüte, Zimt und Kardamom Wärme aufbauen. Bourbon-Vanille, Praline und Guajakholz geben ihm seinen cremigen, satten Charakter.'
-  elsif product.tags contains 'Attrape-Rêves' or product.tags contains 'Attrape-Reves' or product.tags contains 'Attrap reve' or product.title contains '080'
-    assign vc_ref = 'Attrape-Rêves'
+  elsif product.tags contains 'Attrape-Rêves' or product.tags contains 'Attrape-Reves' or product.tags contains 'Attrap reve' or vc_key contains '080'
     assign vc_code = 'VC-080'
     assign vc_kicker = 'Leuchtend. Fruchtig. Elegant.'
     assign vc_traits = 'Blumig:29|Süß:28|Fruchtig:25|Frisch:12|Gourmand:6'
@@ -43,8 +53,7 @@
     assign vc_occasions = 'Freizeit:24|Alltag:21|Ausgehen:20|Abend:18|Arbeit:17'
     assign vc_style = 'Modern · feminin geprägt · leuchtend und verspielt.'
     assign vc_copy = 'Spritzige Litschi trifft auf ein elegantes Pfingstrosenbouquet. Kakao bringt einen unerwartet dunklen Kontrast, während Patschuli dem Duft Tiefe und Kontur gibt.'
-  elsif product.tags contains 'Baccarat' or product.title contains '026'
-    assign vc_ref = 'Baccarat Rouge 540 Extrait'
+  elsif product.tags contains 'Baccarat' or vc_key contains '026'
     assign vc_code = 'VC-026'
     assign vc_kicker = 'Strahlend. Süß. Markant.'
     assign vc_traits = 'Süß:29|Holzig:15|Würzig:13|Blumig:9|Gourmand:8'
@@ -53,8 +62,7 @@
     assign vc_occasions = 'Ausgehen:31|Abend:30|Freizeit:18|Alltag:13|Arbeit:9'
     assign vc_style = 'Elegant · modern · ausgewogen unisex mit warmer Präsenz.'
     assign vc_copy = 'Ein heller Safran-Jasmin-Akkord trifft auf die weiche Bittermandel des Extrait-Charakters. Trockene Hölzer, Amber und Moschus sorgen für eine warme, sehr präsente Basis.'
-  elsif product.tags contains 'Erba Pura' or product.title contains '040'
-    assign vc_ref = 'Erba Pura'
+  elsif product.tags contains 'Erba Pura' or vc_key contains '040'
     assign vc_code = 'VC-040'
     assign vc_kicker = 'Saftig. Süß. Strahlend.'
     assign vc_traits = 'Fruchtig:29|Süß:25|Frisch:12|Blumig:8|Zitrisch:8'
@@ -63,8 +71,7 @@
     assign vc_occasions = 'Freizeit:28|Ausgehen:26|Abend:21|Alltag:17|Arbeit:7'
     assign vc_style = 'Modern · fruchtig · unisex mit auffälliger, sonniger Signatur.'
     assign vc_copy = 'Ein heller Zitrusstart aus Zitrone, Bergamotte und Orange geht in einen üppigen Fruchtakkord über. Vanille, Amber und weißer Moschus machen den Ausklang weich und langanhaltend.'
-  elsif product.tags contains 'Naxos' or product.title contains '049'
-    assign vc_ref = 'Naxos'
+  elsif product.tags contains 'Naxos' or vc_key contains '049'
     assign vc_code = 'VC-049'
     assign vc_kicker = 'Würzig. Honigsüß. Souverän.'
     assign vc_traits = 'Süß:28|Würzig:19|Gourmand:16|Cremig:15|Zitrisch:12'
@@ -84,9 +91,7 @@
         <h2 class="vc-profile__code">{{ vc_code }}</h2>
         <p class="vc-profile__kicker">{{ vc_kicker }}</p>
       </div>
-      <div class="vc-profile__facts" aria-label="Produktdetails">
-        <span>30 ml</span><span>30 %</span><span>Extrait</span>
-      </div>
+      <p class="vc-profile__facts">30 ml · 30 % · Extrait</p>
     </div>
 
     <div class="vc-profile__section">
@@ -105,7 +110,7 @@
     </div>
 
     <div class="vc-profile__section vc-profile__notes-section">
-      <div class="vc-section-title"><span></span><h3>Die Duftnoten</h3><span></span></div>
+      <h3 class="vc-notes__title">Die Duftnoten</h3>
       <div class="vc-notes" role="list">
         {%- assign notes = vc_notes | split: '|' -%}
         {%- for item in notes -%}
@@ -137,8 +142,7 @@
       </div>
       <div class="vc-stat-card vc-stat-card--style">
         <p class="eyebrow">Stil</p>
-        <p class="vc-style-word">Modern</p>
-        <p>{{ vc_style }}</p>
+        <p class="vc-style-text">{{ vc_style }}</p>
       </div>
     </div>
 

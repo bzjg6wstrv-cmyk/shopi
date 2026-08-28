@@ -22,7 +22,7 @@
             <div class="facets__header">
               <span class="meta meta--muted">{{ 'products.facets.title' | t }}</span>
               {%- if collection.filters.size > 0 -%}
-                <a class="link-underline" style="font-size:.6875rem;" href="{{ collection.url }}" data-facet-remove>
+                <a class="link-underline facets__clear" href="{{ collection.url }}" data-facet-remove>
                   {{ 'products.facets.clear' | t }}
                 </a>
               {%- endif -%}
@@ -45,9 +45,9 @@
                 {{ 'products.facets.product_count' | t: count: collection.products_count }}
               </p>
 
-              <div>
+              <div class="collection-toolbar__sort field">
                 <label class="visually-hidden" for="SortBy">{{ 'products.facets.sort_by' | t }}</label>
-                <select id="SortBy" name="sort_by" class="field__input" data-sort-select style="min-height:2.75rem;">
+                <select id="SortBy" name="sort_by" class="field__input" data-sort-select>
                   {%- assign sort_value = collection.sort_by | default: collection.default_sort_by -%}
                   {%- for option in collection.sort_options -%}
                     <option value="{{ option.value }}" {% if option.value == sort_value %}selected{% endif %}>
@@ -93,10 +93,15 @@
 
             <div data-product-grid>
               {%- if collection.products.size == 0 -%}
-                <p class="note-placeholder">
-                  {{ 'products.facets.no_results' | t }}<br>
-                  <span class="text-muted">{{ 'products.facets.no_results_help' | t }}</span>
-                </p>
+                <div class="empty-state">
+                  <p class="h4 empty-state__title">{{ 'products.facets.no_results' | t }}</p>
+                  <p class="empty-state__text">{{ 'products.facets.no_results_help' | t }}</p>
+                  <div class="empty-state__actions">
+                    <a class="button button--secondary" href="{{ collection.url }}" data-facet-remove>
+                      {{ 'products.facets.clear_all' | t }}
+                    </a>
+                  </div>
+                </div>
               {%- else -%}
                 <ul class="grid grid--products">
                   {%- for product in collection.products -%}

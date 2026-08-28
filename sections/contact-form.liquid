@@ -7,11 +7,11 @@
   <div class="page-width page-width--narrow">
     <h2 class="h3">{{ section.settings.heading | escape }}</h2>
 
-    {%- form 'contact', class: 'stack-lg', style: 'max-width: 34rem; margin-top: var(--space-xl);' -%}
+    {%- form 'contact', class: 'form-grid' -%}
       {%- if form.posted_successfully? -%}
-        <p class="form-status" role="status">{{ 'templates.contact.form.success' | t }}</p>
+        <p class="form-status form-grid__wide" role="status">{{ 'templates.contact.form.success' | t }}</p>
       {%- elsif form.errors -%}
-        <p class="field__error" role="alert">{{ 'templates.contact.form.error' | t }}</p>
+        <p class="field__error form-grid__wide" role="alert">{{ 'templates.contact.form.error' | t }}</p>
       {%- endif -%}
 
       <div class="field">
@@ -22,21 +22,21 @@
         <label class="field__label" for="ContactEmail">{{ 'templates.contact.form.email' | t }}</label>
         <input class="field__input" id="ContactEmail" type="email" name="contact[email]" autocomplete="email" required>
       </div>
-      <div class="field">
+      <div class="field form-grid__wide">
         <label class="field__label" for="ContactSubject">{{ 'templates.contact.form.subject' | t }}</label>
         <input class="field__input" id="ContactSubject" type="text" name="contact[Betreff]">
       </div>
-      <div class="field">
+      <div class="field form-grid__wide">
         <label class="field__label" for="ContactBody">{{ 'templates.contact.form.message' | t }}</label>
         <textarea class="field__input" id="ContactBody" name="contact[body]" rows="6" required></textarea>
       </div>
-      <button type="submit" class="button">{{ 'templates.contact.form.send' | t }}</button>
+      <button type="submit" class="button form-grid__wide">{{ 'templates.contact.form.send' | t }}</button>
     {%- endform -%}
 
     {%- if section.settings.show_company_data -%}
-      <div style="margin-top: var(--space-2xl);">
+      <div class="contact-company">
         <p class="meta meta--muted">{{ section.settings.company_heading | escape }}</p>
-        <ul class="footer__list text-muted" style="margin-top: var(--space-sm);">
+        <ul class="footer__list text-muted contact-company__list">
           <li>{{ settings.company_name }}</li>
           <li>{{ settings.company_address }}</li>
           <li>USt-IdNr.: {{ settings.company_vat }}</li>
@@ -44,7 +44,7 @@
           <li>{{ settings.contact_phone }}</li>
           <li>{{ settings.contact_hours }}</li>
         </ul>
-        <p class="demo-flag" style="margin-top: var(--space-md);">{{ 'general.demo_notice' | t }}</p>
+        <p class="demo-flag contact-company__note">{{ 'general.demo_notice' | t }}</p>
       </div>
     {%- endif -%}
   </div>

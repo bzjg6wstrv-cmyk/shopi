@@ -1,5 +1,5 @@
 <section class="section">
-  <div class="page-width page-width--narrow" style="max-width: 34rem;">
+  <div class="page-width page-width--narrow account-panel">
     <h1 class="h3">{{ 'customer.login_page.title' | t }}</h1>
 
     {%- form 'customer_login', class: 'stack-lg', style: 'margin-top: var(--space-xl);' -%}
@@ -16,7 +16,7 @@
       <p><a class="link-underline" href="#recover">{{ 'customer.login_page.forgot_password' | t }}</a></p>
     {%- endform -%}
 
-    <div id="recover" style="margin-top: var(--space-2xl);">
+    <div id="recover" class="mt-2xl">
       {%- form 'recover_customer_password', class: 'stack-lg' -%}
         <h2 class="h4">{{ 'customer.recover_password.title' | t }}</h2>
         <p class="text-muted text-body-sm">{{ 'customer.recover_password.subtext' | t }}</p>
@@ -31,7 +31,7 @@
       {%- endform -%}
     </div>
 
-    <p style="margin-top: var(--space-2xl);">
+    <p class="mt-2xl">
       <a class="link-underline" href="{{ routes.account_register_url }}">{{ 'customer.login_page.create_account' | t }}</a>
     </p>
   </div>

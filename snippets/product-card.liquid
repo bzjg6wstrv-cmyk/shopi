@@ -137,6 +137,7 @@
           class="card__quick-add-button"
           aria-label="{{ 'sections.quick_add.label' | t }} – {{ product.title | escape }} {{ display_variant.title | escape }}"
         >
+          <span class="card__quick-add-label" aria-hidden="true">{{ 'sections.quick_add.label' | t }}</span>
           {% render 'icon', name: 'plus' %}
         </button>
       </form>

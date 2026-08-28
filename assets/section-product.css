@@ -1,101 +1,96 @@
-/* Produktseite – Duftprofil, Charakter, Anlass, Sample und Travel. */
+/* Produktseite – Duftprofil, Angaben, Ergänzungen.
+
+   Diese Datei war über mehrere Ausbaustufen mit angehängten Korrekturblöcken
+   gewachsen. Sie ist hier zu einem Stand zusammengeführt: ein Regelsatz je
+   Bauteil, mobil zuerst, danach die Erweiterungen für größere Schirme.
+
+   Grundsätze: Haarlinien statt Kästen, keine Textpillen, keine Zusatzfarben.
+   Alle Anteilsbalken benutzen ausschließlich Text- und Linienfarbe des
+   Farbstils. */
 
 .product-block + .product-block { margin-top: var(--space-xl); }
 
+/* Angabenliste – Bezeichnung links, Wert rechts, dazwischen nichts als
+   Weißraum. Ersetzt die früheren Merkmals-Pillen. */
+.spec-list { margin-top: var(--space-md); }
+.spec-list__row {
+  display: grid;
+  grid-template-columns: minmax(6rem, auto) minmax(0, 1fr);
+  gap: var(--space-md);
+  align-items: baseline;
+  padding-block: var(--space-sm);
+  border-top: var(--hair);
+}
+.spec-list__row:last-child { border-bottom: var(--hair); }
+.spec-list dt { color: rgb(var(--color-muted)); }
+.spec-list dd { margin: 0; font-size: 0.9375rem; text-align: right; }
+
+/* Duftpyramide – dieselbe Aufstellung wie die Angabenliste. */
 .pyramid { margin-top: var(--space-md); }
 .pyramid__row {
   display: grid;
-  grid-template-columns: 6.5rem minmax(0, 1fr);
+  grid-template-columns: minmax(6rem, 7rem) minmax(0, 1fr);
   gap: var(--space-md);
+  align-items: baseline;
   padding-block: var(--space-sm);
-  border-top: var(--border-width) solid rgb(var(--color-line));
+  border-top: var(--hair);
 }
-.pyramid__row:last-child { border-bottom: var(--border-width) solid rgb(var(--color-line)); }
+.pyramid__row:last-child { border-bottom: var(--hair); }
 .pyramid__label { color: rgb(var(--color-muted)); }
 
-.trait-list { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-top: var(--space-md); }
-.trait {
-  padding: .35rem .6rem;
-  border: var(--border-width) solid rgb(var(--color-line));
-  font-size: .8125rem;
+/* Hinweis zur Konzentration: eine Aussage auf einer Haarlinie, keine
+   eingefärbte Fläche. */
+.concentration-note {
+  padding-top: var(--space-md);
+  border-top: var(--hair-strong);
 }
+.concentration-note__text { margin-top: var(--space-sm); max-width: 52ch; }
 
-.wear-grid { display: grid; gap: var(--space-md); margin-top: var(--space-md); }
-@media (min-width: 600px) { .wear-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.wear-grid__item { padding-top: var(--space-sm); border-top: var(--border-width) solid rgb(var(--color-line)); }
-
+/* Ergänzungen (Probe, Travel, Beratung): eine Zeile auf Haarlinien statt
+   einer gerahmten Kachel. */
 .addon {
   display: grid;
-  grid-template-columns: 4rem minmax(0, 1fr) auto;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
   gap: var(--space-md);
   align-items: center;
-  padding: var(--space-md);
-  border: var(--border-width) solid rgb(var(--color-line));
-  border-radius: var(--card-radius);
+  padding-block: var(--space-md);
+  border-top: var(--hair);
 }
-.addon + .addon { margin-top: var(--space-sm); }
-.addon img { width: 4rem; height: 5rem; object-fit: cover; }
-.addon__title { font-family: var(--font-heading-family); font-size: 1rem; }
-.addon__text { font-size: .8125rem; color: rgb(var(--color-muted)); }
-.addon__button { min-height: 2.75rem; padding-inline: var(--space-md); font-size: .6875rem; }
-@media (max-width: 599px) {
-  .addon { grid-template-columns: 3.5rem minmax(0, 1fr); }
-  .addon img { width: 3.5rem; height: 4.5rem; }
-  .addon__button { grid-column: 1 / -1; width: 100%; }
+.addon:last-child { border-bottom: var(--hair); }
+.addon + .addon { border-top: var(--hair); }
+.addon img { width: 3.5rem; height: 4.5rem; object-fit: cover; }
+.addon__body { grid-column: 1 / -1; }
+.addon__title { font-family: var(--font-heading-family); font-size: 1rem; line-height: 1.25; }
+.addon__text { margin-top: 0.15rem; font-size: 0.8125rem; color: rgb(var(--color-muted)); }
+.addon__button {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 2.875rem;
+  padding-inline: var(--space-md);
+  font-size: 0.6875rem;
 }
 
-.concentration-note {
-  padding: var(--space-lg);
-  border-left: 2px solid rgb(var(--color-accent));
-  background-color: rgb(var(--color-line) / .25);
+@media (min-width: 600px) {
+  .addon { grid-template-columns: 4rem minmax(0, 1fr) auto; }
+  .addon img { width: 4rem; height: 5rem; }
+  .addon__body { grid-column: auto; }
+  .addon__button { grid-column: auto; width: auto; }
 }
 
 .reviews-summary { display: flex; align-items: center; gap: var(--space-sm); margin-top: var(--space-xs); }
-.reviews-summary__stars { letter-spacing: .1em; }
+.reviews-summary__stars { letter-spacing: 0.1em; }
 
-.product-recommendations { margin-top: var(--space-4xl); }
+.product-recommendations { margin-top: var(--space-3xl); }
+@media (min-width: 990px) { .product-recommendations { margin-top: var(--space-4xl); } }
 
-/* VENT CELESTE – visuelles Duftprofil für Launch-Codes */
-.vc-profile { margin-top: var(--space-3xl); border-top: 1px solid rgb(var(--color-line)); padding-top: var(--space-2xl); }
-.vc-profile__head { display:flex; justify-content:space-between; gap:var(--space-xl); align-items:flex-end; }
-.vc-profile__code { margin:.2rem 0 0; font-family:var(--font-heading-family); font-size:clamp(2rem,6vw,3.5rem); font-weight:400; letter-spacing:.02em; }
-.vc-profile__kicker { margin-top:.35rem; font-size:1rem; }
-.vc-profile__facts { display:flex; gap:.4rem; flex-wrap:wrap; justify-content:flex-end; }
-.vc-profile__facts span { border:1px solid rgb(var(--color-line)); padding:.45rem .7rem; font-size:.7rem; text-transform:uppercase; letter-spacing:.12em; }
-.vc-profile__section { margin-top:var(--space-2xl); }
-.vc-traits { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.7rem; }
-.vc-trait { display:inline-flex; gap:.55rem; align-items:baseline; padding:.55rem .7rem; border:1px solid rgb(var(--color-line)); border-radius:999px; }
-.vc-trait strong { font-size:.78rem; font-weight:500; }
-.vc-trait small { color:rgb(var(--color-muted)); font-size:.68rem; }
-.vc-section-title { display:grid; grid-template-columns:1fr auto 1fr; gap:1rem; align-items:center; margin-bottom:1rem; }
-.vc-section-title span { height:1px; background:rgb(var(--color-line)); }
-.vc-section-title h3 { margin:0; font-family:var(--font-heading-family); font-weight:400; font-size:1.35rem; }
-.vc-notes { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(112px,1fr); overflow-x:auto; scroll-snap-type:x mandatory; border:1px solid rgb(var(--color-line)); background:rgb(var(--color-background)); }
-.vc-note { min-height:158px; padding:1rem .7rem .9rem; border-right:1px solid rgb(var(--color-line)); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.8rem; text-align:center; scroll-snap-align:start; }
-.vc-note:last-child { border-right:0; }
-.vc-note__art { width:74px; height:74px; display:grid; place-items:center; color:rgb(var(--color-foreground)); background:rgb(var(--color-line)/.18); border-radius:50%; }
-.vc-note-icon { width:62px; height:62px; }
-.vc-note p { margin:0; font-size:.72rem; line-height:1.25; text-transform:uppercase; letter-spacing:.07em; }
-.vc-profile__analytics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem; margin-top:var(--space-2xl); }
-.vc-stat-card { border:1px solid rgb(var(--color-line)); padding:1rem; min-width:0; }
-.vc-meter { display:grid; grid-template-columns:minmax(5rem,auto) minmax(65px,1fr) 2.2rem; gap:.55rem; align-items:center; margin-top:.7rem; font-size:.72rem; }
-.vc-meter div { height:4px; background:rgb(var(--color-line)); overflow:hidden; border-radius:999px; }
-.vc-meter i { display:block; height:100%; background:rgb(var(--color-foreground)); border-radius:inherit; }
-.vc-meter strong { font-weight:500; text-align:right; }
-.vc-stat-card--style { display:flex; flex-direction:column; justify-content:flex-start; }
-.vc-style-word { margin:.8rem 0 .45rem; font-family:var(--font-heading-family); font-size:1.75rem; }
-.vc-stat-card--style > p:last-child { color:rgb(var(--color-muted)); font-size:.82rem; line-height:1.5; }
-.vc-profile__description { margin-top:var(--space-xl); padding:1.2rem; border:1px solid rgb(var(--color-line)); }
-.vc-profile__description h3 { margin:.45rem 0 .5rem; font-family:var(--font-heading-family); font-size:1.25rem; font-weight:400; }
-.vc-profile__description > p:last-child { margin:0; color:rgb(var(--color-muted)); line-height:1.65; }
-@media (max-width: 749px) {
-  .vc-profile__head { align-items:flex-start; flex-direction:column; }
-  .vc-profile__facts { justify-content:flex-start; }
-  .vc-profile__analytics { grid-template-columns:1fr; }
-  .vc-notes { grid-auto-columns:44%; }
+/* ====================================================================== */
+/* Duftprofil der Launch-Codes                                            */
+/* ====================================================================== */
+.vc-profile {
+  margin-top: var(--space-2xl);
+  padding-top: var(--space-lg);
+  border-top: var(--hair-strong);
 }
-
-/* VC v4.2.1 — scent profile responsive containment */
 .vc-profile,
 .vc-profile__head,
 .vc-profile__section,
@@ -103,157 +98,157 @@
 .vc-stat-card,
 .vc-profile__description { min-width: 0; max-width: 100%; }
 
-.vc-traits { max-width: 100%; }
-.vc-trait { min-width: 0; }
-.vc-trait strong,
-.vc-trait small { overflow-wrap: anywhere; }
+.vc-profile__head { display: grid; gap: var(--space-sm); }
+.vc-profile__code {
+  margin: 0.15rem 0 0;
+  font-family: var(--font-heading-family);
+  font-size: clamp(1.75rem, 1.2rem + 2.2vw, 2.75rem);
+  font-weight: var(--font-heading-weight);
+  letter-spacing: 0.04em;
+  line-height: 1.05;
+}
+.vc-profile__kicker { margin-top: 0.3rem; font-size: 1rem; }
 
-.vc-notes {
-  width: 100%;
-  max-width: 100%;
-  overscroll-behavior-inline: contain;
-  -webkit-overflow-scrolling: touch;
+/* Angaben als Zeile, nicht als Pillen. */
+.vc-profile__facts {
+  font-size: 0.6875rem;
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
 }
 
-.vc-meter { min-width: 0; }
-.vc-meter > span { min-width: 0; overflow-wrap: anywhere; }
+.vc-profile__section { margin-top: var(--space-xl); }
 
-@media (max-width: 749px) {
-  .vc-profile { overflow: hidden; }
-  .vc-profile__section { margin-top: 2rem; }
-  .vc-profile__facts { width: 100%; }
-  .vc-profile__facts span { flex: 0 1 auto; }
-  .vc-notes { grid-auto-columns: minmax(112px, 42vw); }
-  .vc-profile__analytics { width: 100%; }
-  .vc-stat-card { width: 100%; }
-  .vc-meter { grid-template-columns: minmax(4.75rem, 1fr) minmax(3.5rem, 1.25fr) 2.35rem; }
-  .vc-profile__description { padding: 1rem; }
-}
-
-/* VC v4.2.4 — visual scent profile polish */
-.vc-profile {
-  --vc-ink: rgb(var(--color-foreground));
-  --vc-track: rgba(24, 22, 20, .09);
-  --vc-rose: #c9959c;
-  --vc-sand: #c9b38e;
-  --vc-sage: #9eac99;
-  --vc-bluegrey: #a8b2b8;
-  --vc-plum: #aa8f9f;
-}
-
-.vc-profile__section { margin-top: 2.25rem; }
-.vc-traits { display:grid; gap:.72rem; margin-top:1rem; max-width:46rem; }
+/* Anteile: ein einziger Farbton, Länge trägt die Aussage. */
+.vc-traits { display: grid; gap: 0.55rem; margin-top: var(--space-md); max-width: 46rem; }
 .vc-trait-meter,
 .vc-meter {
-  display:grid;
-  grid-template-columns:minmax(6rem, 9rem) minmax(7rem, 1fr) 3rem;
-  gap:.8rem;
-  align-items:center;
-  margin:0;
-  font-size:.8rem;
+  display: grid;
+  grid-template-columns: minmax(5rem, 7rem) minmax(4rem, 1fr) 2.75rem;
+  gap: var(--space-sm);
+  align-items: center;
+  margin: 0;
+  font-size: 0.8125rem;
 }
 .vc-trait-meter > span,
-.vc-meter > span { font-weight:500; }
+.vc-meter > span { min-width: 0; overflow-wrap: anywhere; }
 .vc-trait-meter strong,
-.vc-meter strong { font-weight:500; text-align:right; font-variant-numeric:tabular-nums; }
+.vc-meter strong {
+  font-weight: 400;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: rgb(var(--color-muted));
+}
 .vc-trait-meter__track,
 .vc-meter > div {
-  height:8px;
-  border-radius:999px;
-  background:var(--vc-track);
-  overflow:hidden;
+  height: 2px;
+  background-color: rgb(var(--color-line));
+  overflow: hidden;
 }
 .vc-trait-meter__track i,
 .vc-meter > div > i {
-  display:block;
-  width:var(--vc-pct, auto);
-  height:100%;
-  border-radius:inherit;
-  background:var(--vc-rose);
+  display: block;
+  width: var(--vc-pct, auto);
+  height: 100%;
+  background-color: rgb(var(--color-text));
 }
-.vc-trait-meter:nth-child(2) .vc-trait-meter__track i { background:var(--vc-sand); }
-.vc-trait-meter:nth-child(3) .vc-trait-meter__track i { background:var(--vc-plum); }
-.vc-trait-meter:nth-child(4) .vc-trait-meter__track i { background:var(--vc-sage); }
-.vc-trait-meter:nth-child(5) .vc-trait-meter__track i { background:var(--vc-bluegrey); }
 
-.vc-profile__analytics {
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:1.15rem;
-  margin-top:2.5rem;
+/* Duftnoten: die Zeichnungen stehen frei auf dem Seitenton, ohne Kreis und
+   ohne Kachel. Auf dem Telefon eine Bahn zum Wischen. */
+.vc-profile__notes-section { margin-top: var(--space-2xl); }
+.vc-notes__title {
+  margin-bottom: var(--space-md);
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: 1.25rem;
 }
-.vc-stat-card {
-  border:0;
-  border-top:1px solid rgb(var(--color-line));
-  padding:1.25rem 0 0;
+.vc-notes {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(5.5rem, 30%);
+  gap: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: var(--hair);
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  max-width: 100%;
 }
-.vc-stat-card:nth-child(1) .vc-meter:nth-of-type(2) i { background:#b7a37d; }
-.vc-stat-card:nth-child(1) .vc-meter:nth-of-type(3) i { background:#9aa9b7; }
-.vc-stat-card:nth-child(1) .vc-meter:nth-of-type(4) i { background:#a6b88c; }
-.vc-stat-card:nth-child(1) .vc-meter:nth-of-type(5) i { background:#d6bd7b; }
-.vc-stat-card:nth-child(2) .vc-meter i { background:#a9959f; }
-.vc-stat-card--style { grid-column:1 / -1; padding-top:1.4rem; }
-.vc-style-word { margin:.65rem 0 .3rem; }
+.vc-notes::-webkit-scrollbar { display: none; }
+.vc-note {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: var(--space-sm);
+  scroll-snap-align: start;
+  text-align: center;
+  min-width: 0;
+}
+.vc-note__art { color: rgb(var(--color-text)); }
+.vc-note-icon { width: 52px; height: 52px; }
+.vc-note p {
+  margin: 0;
+  font-size: 0.625rem;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  color: rgb(var(--color-muted));
+}
 
-.vc-profile__notes-section { margin-top:2.65rem; }
-.vc-notes { border:0; gap:.25rem; background:transparent; }
-.vc-note { min-height:140px; border:0; padding:.75rem .35rem; gap:.65rem; }
-.vc-note__art { width:66px; height:66px; background:rgba(24,22,20,.035); }
-.vc-note-icon { width:56px; height:56px; }
-.vc-note p { font-size:.68rem; letter-spacing:.09em; }
+.vc-profile__analytics { display: grid; gap: var(--space-xl); margin-top: var(--space-2xl); }
+.vc-stat-card { padding-top: var(--space-md); border-top: var(--hair); }
+.vc-stat-card .vc-meter { margin-top: 0.55rem; }
+.vc-style-text { margin-top: 0.55rem; color: rgb(var(--color-muted)); font-size: 0.875rem; line-height: 1.55; }
 
 .vc-profile__description {
-  margin-top:2.25rem;
-  padding:1.35rem 0 0;
-  border:0;
-  border-top:1px solid rgb(var(--color-line));
+  margin-top: var(--space-xl);
+  padding-top: var(--space-md);
+  border-top: var(--hair);
+}
+.vc-profile__description h3 {
+  margin: 0.4rem 0 0.4rem;
+  font-family: var(--font-heading-family);
+  font-size: 1.1875rem;
+  font-weight: var(--font-heading-weight);
+  line-height: 1.25;
+}
+.vc-profile__description > p:last-child {
+  margin: 0;
+  color: rgb(var(--color-muted));
+  line-height: 1.6;
+  max-width: 62ch;
 }
 
-@media (max-width: 749px) {
-  .vc-profile { padding-top:1.65rem; }
-  .vc-profile__section { margin-top:1.85rem; }
-  .vc-traits { gap:.8rem; }
-  .vc-trait-meter,
-  .vc-meter {
-    grid-template-columns:minmax(5.4rem, 7.2rem) minmax(5rem, 1fr) 2.8rem;
-    gap:.65rem;
-    font-size:.78rem;
+@media (min-width: 750px) {
+  .vc-profile { margin-top: var(--space-3xl); padding-top: var(--space-2xl); }
+  .vc-profile__head {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: var(--space-xl);
   }
-  .vc-trait-meter__track,
-  .vc-meter > div { height:7px; }
-  .vc-profile__analytics { grid-template-columns:1fr; gap:1.75rem; margin-top:2.15rem; }
-  .vc-stat-card--style { grid-column:auto; }
-  .vc-profile__notes-section { margin-top:2.15rem; }
-  .vc-section-title { margin-bottom:.65rem; }
-  .vc-section-title h3 { font-size:1.55rem; }
-  .vc-notes { grid-auto-columns:minmax(104px, 34vw); }
-  .vc-note { min-height:126px; }
-  .vc-note__art { width:60px; height:60px; }
-  .vc-note-icon { width:50px; height:50px; }
-  .vc-profile__description { margin-top:1.9rem; padding-top:1.1rem; }
+  .vc-profile__facts { text-align: right; padding-bottom: 0.35rem; }
+  .vc-profile__section { margin-top: var(--space-2xl); }
+  .vc-trait-meter,
+  .vc-meter { grid-template-columns: minmax(6rem, 9rem) minmax(7rem, 1fr) 3rem; font-size: 0.8125rem; }
+  /* Ab Tablet keine Bahn mehr, sondern ein umbrechendes Raster: Die
+     Duftnoten stehen in der schmalen Kaufspalte und dürfen dort nicht
+     seitlich herauslaufen. */
+  .vc-notes {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    grid-template-columns: repeat(auto-fill, minmax(4.75rem, 1fr));
+    gap: var(--space-lg) var(--space-md);
+    overflow-x: visible;
+    scroll-snap-type: none;
+  }
+  .vc-profile__analytics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2xl); }
+  .vc-stat-card--style { grid-column: 1 / -1; }
 }
 
-
-/* v4.2.5 — mobile polish */
-@media (max-width: 749px) {
-  .vc-profile__notes-section { margin-top: 1.9rem; }
-  .vc-profile__analytics { margin-top: 1.75rem; gap: 1.45rem; }
-  .vc-profile__description { margin-top: 1.55rem; padding-top: .95rem; }
-  .vc-profile__description h3 { font-size: 1.18rem; line-height: 1.25; }
-  .vc-profile__description > p:last-child { font-size: .92rem; line-height: 1.55; }
-}
-
-
-/* v4.2.7 — consolidated mobile product polish */
-@media (max-width: 749px) {
-  .product-block + .product-block { margin-top: 1.6rem; }
-  .product__price { margin-block: 1.15rem; }
-  .variant-options { margin-bottom: 1.15rem; }
-  .variant-option__label { min-height: 3rem; padding: .7rem 1rem; }
-  .product-form__actions { gap: .8rem; }
-  .vc-profile { margin-top: 2.4rem; padding-top: 1.4rem; }
-  .vc-profile__section { margin-top: 1.65rem; }
-  .vc-profile__notes-section { margin-top: 1.75rem; }
-  .vc-profile__analytics { margin-top: 1.55rem; gap: 1.25rem; }
-  .vc-profile__description { margin-top: 1.35rem; padding-top: .9rem; }
-  .product-recommendations { margin-top: 3.25rem; }
+@media (min-width: 990px) {
+  .vc-profile__analytics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .vc-stat-card--style { grid-column: auto; }
 }

@@ -1,31 +1,31 @@
 <section class="section">
   <div class="page-width">
-    <div style="display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap: var(--space-md);">
+    <div class="account-head">
       <h1 class="h3">{{ 'customer.account.title' | t }}</h1>
       <a class="link-underline" href="{{ routes.account_logout_url }}">Logout</a>
     </div>
 
-    <div class="grid grid--2" style="margin-top: var(--space-2xl);">
+    <div class="grid grid--2" class="mt-2xl">
       <div>
         <h2 class="h4">{{ 'customer.orders.title' | t }}</h2>
         {%- paginate customer.orders by 10 -%}
           {%- if customer.orders.size == 0 -%}
-            <p class="text-muted" style="margin-top: var(--space-md);">{{ 'customer.orders.none' | t }}</p>
+            <p class="text-muted mt-md">{{ 'customer.orders.none' | t }}</p>
           {%- else -%}
-            <table style="margin-top: var(--space-md);">
+            <table class="mt-md">
               <thead>
                 <tr>
-                  <th style="text-align:left;" class="meta meta--muted">{{ 'customer.orders.order_number' | t }}</th>
-                  <th style="text-align:left;" class="meta meta--muted">{{ 'customer.orders.date' | t }}</th>
-                  <th style="text-align:right;" class="meta meta--muted">{{ 'customer.orders.total' | t }}</th>
+                  <th class="meta meta--muted account-table__th">{{ 'customer.orders.order_number' | t }}</th>
+                  <th class="meta meta--muted account-table__th">{{ 'customer.orders.date' | t }}</th>
+                  <th class="meta meta--muted account-table__th account-table__th--end">{{ 'customer.orders.total' | t }}</th>
                 </tr>
               </thead>
               <tbody>
                 {%- for order in customer.orders -%}
                   <tr>
-                    <td style="padding-block:.5rem;"><a href="{{ order.customer_url }}">{{ order.name }}</a></td>
-                    <td style="padding-block:.5rem;">{{ order.created_at | date: '%d.%m.%Y' }}</td>
-                    <td style="padding-block:.5rem; text-align:right;">{{ order.total_price | money }}</td>
+                    <td class="account-table__td"><a href="{{ order.customer_url }}">{{ order.name }}</a></td>
+                    <td class="account-table__td">{{ order.created_at | date: '%d.%m.%Y' }}</td>
+                    <td class="account-table__td account-table__td--end">{{ order.total_price | money }}</td>
                   </tr>
                 {%- endfor -%}
               </tbody>
@@ -37,8 +37,8 @@
 
       <div>
         <h2 class="h4">{{ 'customer.account.details' | t }}</h2>
-        <div class="text-muted" style="margin-top: var(--space-md);">{{ customer.default_address | format_address }}</div>
-        <p style="margin-top: var(--space-md);">
+        <div class="text-muted mt-md">{{ customer.default_address | format_address }}</div>
+        <p class="mt-md">
           <a class="link-underline" href="{{ routes.account_addresses_url }}">{{ 'customer.account.view_addresses' | t }}</a>
         </p>
       </div>

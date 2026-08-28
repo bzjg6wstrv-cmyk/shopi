@@ -1,11 +1,13 @@
-/* Hero V2 – mobile first, Editorial.
+/* Hero V2 – redaktionelle Komposition.
 
-   Reihenfolge auf Mobile: Eyebrow, Schlagzeile, Unterzeile, Beratungs-CTA,
-   Scent-Code-Eingabe, danach erst das Bild. Das Bild ist bewusst das Erste,
-   was unterhalb der Falz abschneidet.
+   Mobile: Schlagzeile, Unterzeile, Beratungsweg, Code-Eingabe, danach erst
+   das Bild. Das Bild ist bewusst das Erste, was unterhalb der Falz
+   abschneidet.
 
-   Die Werte unter „Ab Tablet" entsprechen unverändert der vorherigen Fassung –
-   Desktop bleibt damit so, wie es war. Alles davor ist der Mobile-Stand. */
+   Ab 990 px: schmale Textspalte auf der linken Rasterkante, rechts ein
+   angeschnittenes Bild in voller Abschnittshöhe bis an den Bildschirmrand.
+   Die beiden Wege in den Shop stehen unter einer Haarlinie nebeneinander,
+   getrennt durch eine senkrechte Linie. */
 
 .hero2 { position: relative; overflow: hidden; }
 
@@ -15,17 +17,19 @@
   padding-block: 1.125rem 0;
 }
 
+.hero2__body { min-width: 0; }
+
 .hero2__eyebrow { color: rgb(var(--color-muted)); }
 .hero2 .eyebrow { margin-bottom: 0.5rem; }
 
 .hero2__title { margin-bottom: 0.625rem; }
 
-/* Kein Umbruch innerhalb eines Wortes: „SCENT." darf nie zu „SCEN / T." werden.
-   Die Überschrift wird zum Größenbezug (container), damit die Zeile ihre
-   Schriftgröße notfalls an der tatsächlich verfügbaren Spaltenbreite
+/* Kein Umbruch innerhalb eines Wortes: „SCENT." darf nie zu „SCEN / T."
+   werden. Die Überschrift wird zum Größenbezug (container), damit die Zeile
+   ihre Schriftgröße notfalls an der tatsächlich verfügbaren Spaltenbreite
    ausrichtet statt am Fenster. Der Deckel greift erst, wenn die Zeile sonst
-   nicht mehr passt – gemessen bleibt die Schriftgröße bei 320, 375, 390, 430,
-   750, 844, 896, 932, 1024, 1280 und 1600 px unverändert. */
+   nicht mehr passt – gemessen bleibt die Schriftgröße bei 320, 375, 390,
+   430, 750, 844, 896, 932, 1024, 1280 und 1600 px unverändert. */
 .hero2__title { container-type: inline-size; }
 
 .hero2__title .display__line {
@@ -39,25 +43,42 @@
 .hero2__text {
   max-width: 30ch;
   font-size: 0.9375rem;
-  line-height: 1.45;
+  line-height: 1.5;
   color: rgb(var(--color-muted));
 }
 
-/* ------------------------------------------------------- Beratungs-CTA --- */
-.hero2__actions { margin-top: 1.25rem; display: grid; gap: 0.6rem; }
+/* ------------------------------------------------------- Die zwei Wege --- */
+/* Unter einer kräftigeren Haarlinie stehen die beiden Einstiege. Sie sind
+   optisch klar getrennt, damit niemand die Beratung mit der Code-Eingabe
+   verwechselt. */
+.hero2__paths {
+  display: grid;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: var(--hair-strong);
+}
 
-/* Weg B: benennt, für wen der Beratungsbutton gedacht ist. Gleiche Typografie
-   wie die Beschriftung über der Code-Eingabe (Weg A) – kein neues Element,
-   nur eine Zuordnung. */
+.hero2__path { display: grid; align-content: start; gap: 0.55rem; min-width: 0; }
+
+.hero2__path + .hero2__path {
+  padding-top: var(--space-md);
+  border-top: var(--hair);
+}
+
+/* Benennt, für wen der Beratungsweg gedacht ist. Gleiche Typografie wie die
+   Beschriftung über der Code-Eingabe – kein neues Element, nur eine
+   Zuordnung. */
 .hero2__hint {
-  margin-bottom: -0.15rem;
   font-size: 0.625rem;
-  letter-spacing: 0.14em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  color: rgb(var(--color-muted));
 }
 
 /* Der primäre Weg in die Beratung. Durchgehende Fläche in der Textfarbe des
-   Farbstils – tiefes Schwarz, ausdrücklich kein WhatsApp-Grün. Die Klasse
-   hängt am Link, den snippets/whatsapp-link.liquid ausgibt. */
+   Farbstils – tiefes Schwarz, ausdrücklich kein WhatsApp-Grün. */
 .hero2__cta {
   display: flex;
   width: 100%;
@@ -69,40 +90,30 @@
   border: var(--border-width, 1px) solid rgb(var(--color-text, 20 18 16));
   border-radius: var(--button-radius, 0px);
   color: rgb(var(--color-background, 245 242 237));
-  font-size: 0.8125rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+}
+.hero2__cta:hover {
+  background-color: rgb(var(--color-text, 20 18 16) / 0.86);
+  border-color: rgb(var(--color-text, 20 18 16) / 0.86);
 }
 /* Das Symbol erbt die Schriftfarbe und ist damit ebenfalls hell. */
-.hero2__cta svg { color: inherit; }
-.hero2__cta:hover { opacity: 0.88; }
-.hero2__cta svg { width: 18px; height: 18px; flex: none; }
+.hero2__cta svg { color: inherit; width: 18px; height: 18px; flex: none; }
 
-/* Der sekundäre Button bleibt bewusst eine reine Kontur. */
-.hero2__actions .button--secondary {
-  width: 100%;
-  min-height: 3.25rem;
-  background-color: transparent;
-  color: rgb(var(--color-text));
-  border-color: rgb(var(--color-text));
-}
+.hero2__secondary { margin-top: var(--space-lg); }
 
 /* ------------------------------------------------- Scent-Code-Eingabe --- */
-/* Editorial statt Formularbox: eine feine Linie, Prefix und Eingabe auf einer
-   Grundlinie, „Weiter" als Textmarke. Keine Fläche, kein dicker Rahmen,
-   keine gerundeten Standard-Inputs. */
-.hero2__code { margin-top: 1.125rem; }
-
+/* Editorial statt Formularbox: eine feine Linie, Präfix und Eingabe auf
+   einer Grundlinie, „Weiter" als Textmarke. Keine Fläche, kein dicker
+   Rahmen, keine gerundeten Standard-Inputs. */
 .hero2__code .code-field__label {
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.35rem;
   font-size: 0.625rem;
-  letter-spacing: 0.14em;
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
   color: rgb(var(--color-muted));
 }
 
 .hero2__code .code-field__row {
   border: 0;
-  border-bottom: 1px solid rgb(var(--color-text) / 0.28);
+  border-bottom: var(--border-width) solid rgb(var(--color-text) / 0.28);
   border-radius: 0;
   background-color: transparent;
   align-items: baseline;
@@ -139,15 +150,14 @@
 .hero2__code .code-field__input::placeholder { opacity: 0.35; letter-spacing: 0.1em; }
 
 /* Die Schaltfläche rückt ans rechte Ende, der Wert bleibt links kompakt. */
-.hero2__code .code-field__submit { margin-left: auto; }
-
 .hero2__code .code-field__submit {
+  margin-left: auto;
   min-height: 3rem;
   padding: 0 0 0 var(--space-md);
   background-color: transparent;
   color: rgb(var(--color-text));
   font-size: 0.6875rem;
-  letter-spacing: 0.16em;
+  letter-spacing: calc(var(--meta-tracking) + 0.04em);
 }
 .hero2__code .code-field__submit:hover { opacity: 0.6; }
 .hero2__code .code-field__submit svg { width: 15px; height: 15px; }
@@ -157,61 +167,120 @@
 /* -------------------------------------------------------------- Bild --- */
 .hero2__media {
   position: relative;
-  margin-top: 1.75rem;
+  margin-top: 1.5rem;
   margin-inline: calc(var(--gutter) * -1);
+  overflow: hidden;
 }
-.hero2__media img,
-.hero2__media svg {
+.hero2__media-inner { height: 100%; }
+.hero2__media img {
   width: 100%;
-  height: auto;
+  height: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
 }
 
-/* Ohne hinterlegtes Bild rendert Shopify einen nahezu weißen Platzhalter im
-   Verhältnis 4:3 – auf Mobile rund 290 px Leerfläche direkt nach der
-   Scent-Code-Zeile. Sie entfällt, bis ein echtes Bild hinterlegt ist.
-   Der Abstand zum nächsten Abschnitt kommt dann aus dem Innenabstand unten. */
-@media (max-width: 749px) {
-  .hero2--no-image .hero2__media { display: none; }
-  .hero2--no-image .hero2__inner { padding-block: 1.125rem 2rem; }
-}
+/* Ohne hinterlegtes Bild rendert Shopify sonst einen nahezu weißen
+   Platzhalter als große Leerfläche. Der Abschnitt wird stattdessen rein
+   typografisch: eine Spalte, etwas breiter gesetzt, ohne leeren Block.
+   Das Bild-Markup entfällt in diesem Fall bereits in Liquid. */
+.hero2--no-image .hero2__inner { padding-block: 1.125rem 2rem; }
 
-/* Sehr schmale Geräte: der CTA muss über der Falz bleiben. */
+/* Sehr schmale Geräte: der Beratungsweg muss über der Falz bleiben. */
 @media (max-width: 359px) {
   .hero2__inner { padding-block: 0.875rem 0; }
-  .hero2__actions { margin-top: 1rem; }
+  .hero2__paths { margin-top: var(--space-md); }
   .hero2__text { font-size: 0.875rem; }
-  .hero2__code { margin-top: 1rem; }
 }
 
-/* Ab Tablet: zweispaltig, Text links, Bild rechts.
-   Diese Werte sind gegenüber der Vorversion unverändert. */
+/* ------------------------------------------------------------- Tablet --- */
 @media (min-width: 750px) {
   .hero2__inner {
-    grid-template-columns: 7fr 5fr;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
     align-items: center;
-    gap: clamp(2rem, 5vw, 4.5rem);
-    padding-block: clamp(3rem, 6vw, 6rem);
+    gap: clamp(2rem, 5vw, 4rem);
+    padding-block: clamp(3rem, 6vw, 5rem);
   }
   .hero2 .eyebrow { margin-bottom: var(--space-md); }
   .hero2__title { margin-bottom: var(--space-md); }
-  .hero2__text { max-width: 26ch; font-size: clamp(1rem, .95rem + .4vw, 1.25rem); }
-  .hero2__actions { margin-top: var(--space-xl); display: flex; gap: var(--space-md); }
-  .hero2__actions .button { width: auto; }
+  .hero2__text { max-width: 28ch; font-size: 1rem; }
   .hero2__cta { width: auto; min-height: 3.25rem; }
-  .hero2__actions .button--secondary { width: auto; min-height: 3.25rem; }
   .hero2__media { margin: 0; }
-  .hero2__media img,
-  .hero2__media svg { aspect-ratio: 3 / 4; }
-  .hero2__code { max-width: 24rem; margin-top: var(--space-xl); }
+  .hero2__media img { aspect-ratio: 3 / 4; }
+
+  /* Ohne Bild gibt es keine zweite Spalte – sonst bliebe rechts eine leere
+     Rasterfläche stehen. */
+  .hero2--no-image .hero2__inner {
+    grid-template-columns: minmax(0, 1fr);
+    padding-block: clamp(3rem, 6vw, 5rem);
+  }
+  .hero2--no-image .hero2__body { max-width: 44rem; }
 }
 
+/* ------------------------------------------------------------ Desktop --- */
+/* Asymmetrie: Die Textspalte bleibt schmal und sitzt auf der linken
+   Rasterkante, das Bild bekommt mehr Fläche und läuft nach rechts aus dem
+   Innenabstand heraus bis an den Bildschirmrand. Es füllt die volle Höhe des
+   Abschnitts und ist dadurch bewusst angeschnitten. */
 @media (min-width: 990px) {
-  .hero2__inner { min-height: 76vh; }
+  .hero2__inner {
+    grid-template-columns: minmax(0, 5.2fr) minmax(0, 6.8fr);
+    align-items: stretch;
+    gap: clamp(2.5rem, 5vw, 5.5rem);
+    padding-block: 0;
+    min-height: min(86vh, 44rem);
+  }
+
+  .hero2__body {
+    align-self: center;
+    padding-block: clamp(3rem, 5.5vw, 5.5rem);
+    max-width: 38rem;
+  }
+
+  /* Die Unterzeile steht in einer Zeile unter der Schlagzeile – der
+     Markenname wird dadurch nie umbrochen. */
+  .hero2__text { max-width: 48ch; }
+
+  /* Die Beratung bekommt etwas mehr Raum als die Code-Eingabe: Ihre
+     Beschriftung ist länger, und sie ist der Weg für alle, die uns noch
+     nicht kennen. */
+  .hero2__paths {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: 0;
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+  }
+  .hero2__path--advice { padding-right: var(--space-lg); }
+  .hero2__path + .hero2__path {
+    padding-top: 0;
+    padding-left: var(--space-lg);
+    border-top: 0;
+    border-left: var(--hair);
+  }
+  .hero2__cta {
+    width: 100%;
+    padding-inline: var(--space-md);
+    white-space: nowrap;
+  }
+
+  /* Das Bild verlässt den Innenabstand nach rechts. Bis 1440 px entspricht
+     das genau dem Bildschirmrand, darüber der Kante der Seitenbreite. */
+  .hero2__media {
+    margin: 0 calc(var(--gutter) * -1) 0 0;
+    align-self: stretch;
+  }
+  .hero2__media img { aspect-ratio: auto; height: 100%; }
+
+  /* Ohne Bild bleibt eine einzige, breiter gesetzte Textspalte. */
+  .hero2--no-image .hero2__inner {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+    padding-block: clamp(4rem, 8vw, 8rem);
+  }
+  .hero2--no-image .hero2__body { max-width: 52rem; }
+  .hero2--no-image .hero2__paths { max-width: 34rem; }
 }
 
-/* Sehr sanfte Drift des Flakons, per JS gesteuert. */
+/* Sehr sanfte Drift des Bildes, per JS gesteuert. */
 .hero2__media-inner {
   will-change: transform;
   transform: translate3d(0, var(--hero-drift, 0px), 0);

@@ -38,14 +38,14 @@
           </div>
         {%- endif -%}
 
-        <h1 class="h2" style="margin-top: var(--space-lg);">{{ product.title }}</h1>
+        <h1 class="h2 mt-lg">{{ product.title }}</h1>
 
         <div class="product__price">
           {% render 'product-price', variant: current_variant, product: product %}
         </div>
 
         {%- if product.description != blank -%}
-          <div class="rte measure" style="margin-top: var(--space-md);">{{ product.description }}</div>
+          <div class="rte measure mt-md">{{ product.description }}</div>
         {%- endif -%}
 
         <div class="picker__counter" aria-hidden="true">
@@ -55,15 +55,15 @@
         </div>
         <p class="visually-hidden" role="status" aria-live="polite" data-picker-counter></p>
 
-        <p class="product__note" style="margin-top: var(--space-md);">
+        <p class="product__note mt-md">
           {{ settings.tax_note }}
           {%- if settings.shipping_page != blank -%}
-            , <a href="{{ settings.shipping_page }}" style="text-decoration: underline;">{{ 'sections.cart.taxes_note' | t }}</a>
+            , <a class="link-inline" href="{{ settings.shipping_page }}">{{ 'sections.cart.taxes_note' | t }}</a>
           {%- endif -%}
         </p>
 
         {%- if section.settings.voucher_note != blank -%}
-          <div class="concentration-note" style="margin-top: var(--space-lg);">
+          <div class="concentration-note mt-lg">
             <div class="rte text-body-sm">{{ section.settings.voucher_note }}</div>
           </div>
         {%- endif -%}
@@ -117,7 +117,7 @@
             {%- endfor -%}
           </ol>
 
-          <div class="product-form__actions" style="margin-top: var(--space-lg);">
+          <div class="product-form__actions mt-lg">
             <button type="submit" class="button" data-discovery-submit disabled>
               {{ 'sections.discovery_set.add_to_cart' | t }}
             </button>

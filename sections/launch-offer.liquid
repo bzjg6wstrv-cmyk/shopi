@@ -1,8 +1,10 @@
 {{ 'section-launch-offer.css' | asset_url | stylesheet_tag }}
 {%- comment -%}
-  Zwei Zusagen zum Start, nebeneinander statt untereinander: Kennenlernvorteil
-  und Zufriedenheitsgarantie. Bewusst ohne Karte, Siegel oder Symbol – getrennt
-  wird nur durch eine Haarlinie, wie im übrigen Theme.
+  Zweiteiliges redaktionelles Band: Kennenlernvorteil und persönliche
+  Beratung stehen einander gegenüber. Kein Kasten, kein Siegel, kein Symbol –
+  getrennt wird durch Haarlinien, gewichtet durch unterschiedliche
+  Schriftgrößen. Bei genau zwei Zusagen ist das Band bewusst asymmetrisch
+  geteilt.
 
   Der Abschnitt rechnet bewusst keine Preise und keine Rabatte aus. Er zeigt
   ausschließlich die hier gepflegten Texte; der eigentliche Rabatt wird später
@@ -10,14 +12,14 @@
 {%- endcomment -%}
 <section class="section color-{{ section.settings.color_scheme }} color-scheme">
   <div class="page-width">
-    <div class="offer reveal">
+    <div class="offer{% if section.blocks.size == 2 %} offer--pair{% endif %} reveal">
       {%- for block in section.blocks -%}
         <div class="offer__item" {{ block.shopify_attributes }}>
           {%- if block.settings.eyebrow != blank -%}
             <span class="eyebrow">{{ block.settings.eyebrow | escape }}</span>
           {%- endif -%}
           {%- if block.settings.heading != blank -%}
-            <h2 class="h3 offer__heading">{{ block.settings.heading | escape | newline_to_br }}</h2>
+            <h2 class="offer__heading">{{ block.settings.heading | escape | newline_to_br }}</h2>
           {%- endif -%}
           {%- if block.settings.text != blank -%}
             <p class="offer__text">{{ block.settings.text | escape | newline_to_br }}</p>
@@ -27,17 +29,17 @@
           {%- endif -%}
         </div>
       {%- endfor -%}
-    </div>
 
-    {%- if section.settings.show_whatsapp -%}
-      <div class="offer__cta">
-        {% render 'whatsapp-link',
-          class: 'button button--whatsapp',
-          icon: true,
-          label: section.settings.whatsapp_label
-        %}
-      </div>
-    {%- endif -%}
+      {%- if section.settings.show_whatsapp -%}
+        <div class="offer__cta">
+          {% render 'whatsapp-link',
+            class: 'button offer__button',
+            icon: true,
+            label: section.settings.whatsapp_label
+          %}
+        </div>
+      {%- endif -%}
+    </div>
   </div>
 </section>
 

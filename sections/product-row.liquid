@@ -11,7 +11,7 @@
 <section class="section color-{{ section.settings.color_scheme }} color-scheme">
   <div class="page-width">
     <div class="row-head">
-      <div>
+      <div class="row-head__title">
         {%- if section.settings.eyebrow != blank -%}
           <span class="eyebrow">{{ section.settings.eyebrow | escape }}</span>
         {%- endif -%}
@@ -55,7 +55,14 @@
             </li>
           {%- endfor -%}
         </ul>
-        <div class="row-dots" data-row-dots aria-hidden="true"></div>
+        {%- comment -%}
+          Fortschritt als feine Linie statt als Punktreihe – ein sehr
+          zurückgenommener Hinweis darauf, wie weit die Reihe reicht.
+          Ohne JavaScript bleibt die Linie unsichtbar.
+        {%- endcomment -%}
+        <div class="row-progress" data-row-progress aria-hidden="true" hidden>
+          <span class="row-progress__bar" data-row-progress-bar></span>
+        </div>
       </div>
     {%- endif -%}
   </div>

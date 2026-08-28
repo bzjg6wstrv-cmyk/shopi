@@ -1,58 +1,105 @@
-/* Vorteil und Garantie zum Start.
-   Zwei Textblöcke, getrennt durch Haarlinien – keine Karte, kein Rahmen,
-   kein Schatten, kein Siegel. Auf Mobilgeräten untereinander, ab 990 px
-   nebeneinander mit senkrechter Trennlinie. */
+/* Vorteil und Beratung als zweiteiliges redaktionelles Band.
+
+   Kein Kasten, kein Rahmen, kein Siegel. Die beiden Zusagen sind nicht
+   gleich gewichtet: Die erste steht groß und trägt den Abschnitt, die zweite
+   antwortet darauf in ruhigerem Schriftgrad. Getrennt wird ausschließlich
+   durch Haarlinien. */
 .offer {
   display: grid;
-  border-block: var(--border-width) solid rgb(var(--color-line));
+  border-block: var(--hair);
 }
 
-.offer__item { padding-block: var(--space-md); }
-.offer__item + .offer__item {
-  border-top: var(--border-width) solid rgb(var(--color-line));
-}
+.offer__item { padding-block: var(--space-lg); }
+.offer__item + .offer__item { border-top: var(--hair); }
 
 .offer .eyebrow { margin-bottom: var(--space-xs); }
 
 .offer__heading {
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: clamp(1.375rem, 1.1rem + 1.2vw, 2rem);
+  line-height: 1.12;
   /* Die Überschriften stehen in Versalien – etwas Sperrung hält sie lesbar. */
-  letter-spacing: .015em;
+  letter-spacing: 0.015em;
   margin-bottom: var(--space-sm);
+  text-wrap: balance;
 }
 
 .offer__text {
   color: rgb(var(--color-text));
-  max-width: 46ch;
-  font-size: clamp(.9375rem, .9rem + .2vw, 1.0625rem);
-  line-height: 1.5;
+  max-width: 44ch;
+  font-size: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
+  line-height: 1.55;
 }
 
 .offer__detail {
   margin-top: var(--space-sm);
-  font-size: .8125rem;
+  font-size: 0.8125rem;
   line-height: 1.5;
   color: rgb(var(--color-muted));
-  max-width: 46ch;
+  max-width: 44ch;
 }
 
-.offer__cta { margin-top: var(--space-md); }
+.offer__cta { padding-block: 0 var(--space-lg); }
+.offer__button { min-height: 3.25rem; }
+@media (max-width: 599px) { .offer__button { display: flex; width: 100%; } }
 
-@media (min-width: 990px) {
-  .offer { grid-template-columns: 1fr 1fr; }
-  .offer__item {
-    padding-block: var(--space-2xl);
-    padding-inline-end: clamp(2rem, 4vw, 4rem);
+/* Zwei Zusagen: Die erste bekommt mehr Fläche und einen deutlich größeren
+   Schriftgrad, die zweite tritt zurück. Genau diese Ungleichheit hält das
+   Band davon ab, wie zwei gleiche Kacheln zu wirken. */
+@media (min-width: 750px) {
+  .offer--pair {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    column-gap: clamp(2rem, 5vw, 4.5rem);
   }
-  .offer__item + .offer__item {
+  .offer--pair .offer__item { padding-block: clamp(2rem, 4vw, 3.5rem); }
+  .offer--pair .offer__item + .offer__item {
     border-top: 0;
-    border-left: var(--border-width) solid rgb(var(--color-line));
-    padding-inline: clamp(2rem, 4vw, 4rem) 0;
+    border-left: var(--hair);
+    padding-left: clamp(2rem, 5vw, 4.5rem);
   }
-  .offer__cta { margin-top: var(--space-xl); }
+
+  /* Die tragende Zusage steht über beide Zeilen des Bandes – dadurch
+     schließt die rechte Spalte dicht an ihren Beratungsweg an und es
+     entsteht dort keine zufällige Lücke. */
+  .offer--pair .offer__item:first-child { grid-row: 1 / span 2; }
+  .offer--pair .offer__item:first-child .offer__heading {
+    font-size: clamp(1.75rem, 1rem + 2.6vw, 3rem);
+    letter-spacing: 0.005em;
+    max-width: 18ch;
+  }
+  .offer--pair .offer__item:first-child .offer__text {
+    font-size: clamp(1rem, 0.95rem + 0.35vw, 1.1875rem);
+  }
+  .offer--pair .offer__item + .offer__item .offer__heading {
+    font-size: clamp(1.0625rem, 0.95rem + 0.5vw, 1.3125rem);
+  }
+  .offer--pair .offer__item + .offer__item .offer__text {
+    font-size: 0.9375rem;
+    color: rgb(var(--color-muted));
+  }
+
+  /* Der Beratungsweg gehört zur rechten Zusage und sitzt deshalb in deren
+     Spalte, nicht mittig unter dem Abschnitt. Die senkrechte Haarlinie läuft
+     durch bis unter die Schaltfläche. */
+  .offer--pair .offer__item + .offer__item { padding-bottom: var(--space-lg); }
+  .offer--pair .offer__cta {
+    grid-column: 2;
+    border-left: var(--hair);
+    padding-left: clamp(2rem, 5vw, 4.5rem);
+    padding-bottom: clamp(2rem, 4vw, 3.5rem);
+  }
 }
 
-/* v4.2.11 Mobile: etwas engere Innenabstaende, Haarlinien unveraendert. */
-@media (max-width: 749px) {
-  .offer__item { padding-block: var(--space-sm); }
-  .offer__cta { margin-top: var(--space-sm); }
+/* Drei Zusagen bleiben eine schlichte Zeilenfolge – die typografische
+   Gegenüberstellung greift nur beim Paar. */
+@media (min-width: 990px) {
+  .offer:not(.offer--pair) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .offer:not(.offer--pair) .offer__item { padding-block: var(--space-2xl); padding-right: var(--space-xl); }
+  .offer:not(.offer--pair) .offer__item + .offer__item {
+    border-top: 0;
+    border-left: var(--hair);
+    padding-left: var(--space-xl);
+  }
+  .offer:not(.offer--pair) .offer__cta { grid-column: 1 / -1; padding-bottom: var(--space-2xl); }
 }

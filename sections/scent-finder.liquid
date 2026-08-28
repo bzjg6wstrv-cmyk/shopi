@@ -22,13 +22,13 @@
 <section class="section color-{{ section.settings.color_scheme }} color-scheme">
   <div class="page-width">
     <div class="finder">
-      <div style="margin-bottom: var(--space-2xl);">
+      <div class="mb-2xl">
         {%- if section.settings.eyebrow != blank -%}
           <span class="eyebrow">{{ section.settings.eyebrow | escape }}</span>
         {%- endif -%}
         <h1 class="h2">{{ section.settings.heading | escape }}</h1>
         {%- if section.settings.text != blank -%}
-          <div class="rte text-lead measure" style="margin-top: var(--space-md);">{{ section.settings.text }}</div>
+          <div class="rte text-lead measure" class="mt-md">{{ section.settings.text }}</div>
         {%- endif -%}
       </div>
 

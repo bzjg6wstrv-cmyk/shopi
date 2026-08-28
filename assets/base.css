@@ -4,6 +4,16 @@
            6 Header · 7 Footer · 8 Produktkarte · 9 Hilfsklassen · 10 A11y
    Farben, Schriften, Radius und Seitenbreite kommen aus den Theme Settings
    (siehe snippets/css-variables.liquid). Hier steht kein fester Markenwert.
+
+   Gestaltungsregeln dieser Fassung:
+   · Struktur entsteht aus Haarlinie und Weißraum, nicht aus Karten, Rahmen,
+     Schatten oder gefüllten Flächen.
+   · Es gibt genau eine Linienstärke und genau eine Akzentfarbe. Der Akzent
+     markiert Zustände, er dekoriert nicht.
+   · Kompositionen sind asymmetrisch: Inhalte sitzen auf festen Spalten,
+     nicht in der Mitte.
+   · Bewegung liegt zwischen 160 und 350 ms und betrifft nur transform und
+     opacity.
    ========================================================================== */
 
 /* 1 Reset ---------------------------------------------------------------- */
@@ -49,6 +59,16 @@ summary::-webkit-details-marker { display: none; }
   /* Vertikaler Rhythmus zwischen Abschnitten */
   --section-space: clamp(3.5rem, 7vw, 8rem);
   --section-space-tight: clamp(2.5rem, 4vw, 4.5rem);
+
+  /* Haarlinie – das tragende Strukturelement dieses Themes. Es gibt genau
+     eine Linienstärke; Abgrenzung entsteht über Weißraum, nicht über Kanten
+     oder Schatten. */
+  --hair: var(--border-width) solid rgb(var(--color-line));
+  --hair-strong: var(--border-width) solid rgb(var(--color-text) / 0.28);
+
+  /* Redaktionelles Raster: Die Inhalte sitzen nicht mittig, sondern auf
+     festen Spalten. Daraus entsteht die asymmetrische Komposition. */
+  --col: minmax(0, 1fr);
 
   /* Bewegung */
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -108,11 +128,14 @@ h1, h2, h3, h4, .h1, .h2, .h3, .h4 {
   text-wrap: balance;
 }
 
+/* Ruhigere Stufen als zuvor: Die Schlagzeile im Hero bleibt der einzige
+   große Auftritt, Abschnittsüberschriften treten bewusst zurück. Dadurch
+   entsteht Hierarchie über Größe statt über Auszeichnung. */
 .h1, h1, .h2, h2, .h3, h3, .h4, h4 { font-size: calc(var(--_fs) * var(--heading-scale, 1)); }
-.h1, h1 { --_fs: clamp(2.25rem, 1.4rem + 3.4vw, 4.25rem); }
-.h2, h2 { --_fs: clamp(1.75rem, 1.2rem + 2.1vw, 3rem); }
-.h3, h3 { --_fs: clamp(1.375rem, 1.1rem + 1.1vw, 2rem); }
-.h4, h4 { --_fs: clamp(1.125rem, 1rem + 0.5vw, 1.375rem); }
+.h1, h1 { --_fs: clamp(2rem, 1.3rem + 2.8vw, 3.5rem); }
+.h2, h2 { --_fs: clamp(1.5rem, 1.15rem + 1.4vw, 2.25rem); }
+.h3, h3 { --_fs: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem); }
+.h4, h4 { --_fs: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem); }
 
 p { text-wrap: pretty; }
 
@@ -136,11 +159,40 @@ p { text-wrap: pretty; }
 
 .eyebrow {
   display: block;
-  margin-bottom: var(--space-md);
-  font-size: 0.6875rem;
+  margin-bottom: var(--space-sm);
+  font-size: 0.625rem;
+  line-height: 1.4;
   text-transform: uppercase;
-  letter-spacing: var(--meta-tracking);
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
   color: rgb(var(--color-muted));
+}
+
+/* Redaktioneller Abschnittskopf: Überschrift links auf einer Haarlinie, ein
+   kurzer Beitext rechts. Bewusst nicht zentriert – und bewusst nicht in
+   jedem Abschnitt eingesetzt, damit die Startseite nicht in jeder Zeile
+   dieselbe Komposition wiederholt. */
+.sec-head {
+  display: grid;
+  gap: var(--space-xs);
+  padding-top: var(--space-md);
+  border-top: var(--hair);
+  margin-bottom: var(--space-lg);
+}
+.sec-head__title { margin: 0; }
+.sec-head__aside {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgb(var(--color-muted));
+  max-width: 46ch;
+}
+@media (min-width: 990px) {
+  .sec-head {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+    align-items: baseline;
+    gap: var(--space-2xl);
+    margin-bottom: var(--space-xl);
+  }
+  .sec-head__aside { text-align: right; }
 }
 
 .rte > * + * { margin-top: 1em; }
@@ -202,9 +254,26 @@ p { text-wrap: pretty; }
   .grid--products { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
-/* Haarlinien statt Karten */
-.rule { border: 0; border-top: var(--border-width) solid rgb(var(--color-line)); }
+/* Haarlinien statt Karten. Die Linie ist das einzige Trennmittel dieses
+   Themes – sie ersetzt Rahmen, Kacheln und Schatten. */
+.rule { border: 0; border-top: var(--hair); }
 .rule--accent { border-top-color: rgb(var(--color-accent)); }
+.rule--strong { border-top: var(--hair-strong); }
+
+.hairline-top { border-top: var(--hair); }
+.hairline-bottom { border-bottom: var(--hair); }
+
+/* Redaktionelles Grundraster. Abschnitte setzen ihre Inhalte auf feste
+   Spalten dieses Rasters – daraus entsteht die asymmetrische Komposition,
+   ohne dass jeder Abschnitt ein eigenes Raster erfindet. */
+.grid--editorial { display: grid; gap: var(--space-lg); }
+@media (min-width: 990px) {
+  .grid--editorial {
+    grid-template-columns: repeat(12, var(--col));
+    column-gap: var(--space-xl);
+    row-gap: var(--space-2xl);
+  }
+}
 
 .color-scheme {
   background-color: rgb(var(--color-background));
@@ -212,13 +281,17 @@ p { text-wrap: pretty; }
 }
 
 /* 5 Buttons & Formulare -------------------------------------------------- */
+/* Drei Register, mehr gibt es nicht: eine gefüllte Fläche für den einen
+   Hauptweg eines Abschnitts, eine Kontur für die Nebenhandlung, eine
+   Textmarke für alles Weitere. Keine Pillen, keine Schatten, keine
+   Verläufe. */
 .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-xs);
-  min-height: 3rem;
-  padding: var(--button-padding) calc(var(--button-padding) * 1.75);
+  min-height: 3.25rem;
+  padding: var(--button-padding) calc(var(--button-padding) * 2);
   /* Fallback-Werte in var(): Fehlt eine Farbvariable, wäre rgb(var(--x))
      ungültig und die Fläche transparent – der Button sähe aus wie ein
      Textlink. Die Werte entsprechen dem Standard-Farbstil. */
@@ -226,25 +299,31 @@ p { text-wrap: pretty; }
   border-radius: var(--button-radius, 0px);
   background-color: rgb(var(--color-button, 20 18 16));
   color: rgb(var(--color-button-label, 245 242 237));
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: var(--meta-tracking);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: calc(var(--meta-tracking) + 0.04em);
   text-transform: var(--button-transform);
   text-align: center;
-  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease), opacity var(--dur) var(--ease);
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 
-.button:hover { opacity: 0.86; }
+/* Die Fläche wird leicht aufgehellt statt die ganze Schaltfläche
+   auszublenden – die Beschriftung behält ihren vollen Kontrast. */
+.button:hover {
+  background-color: rgb(var(--color-button, 20 18 16) / 0.86);
+  border-color: rgb(var(--color-button, 20 18 16) / 0.86);
+}
 
 .button--secondary {
   background-color: transparent;
   color: rgb(var(--color-text));
-  border-color: rgb(var(--color-text));
+  border-color: rgb(var(--color-text) / 0.32);
 }
 .button--secondary:hover {
-  background-color: rgb(var(--color-text));
-  color: rgb(var(--color-background));
-  opacity: 1;
+  background-color: transparent;
+  border-color: rgb(var(--color-text));
+  color: rgb(var(--color-text));
 }
 
 .button--quiet {
@@ -254,27 +333,83 @@ p { text-wrap: pretty; }
   padding-inline: 0;
   min-height: auto;
 }
+.button--quiet:hover { background: none; border-color: transparent; color: rgb(var(--color-muted)); }
 
-/* Textlink mit Unterstreichung als Markenelement */
-.link-underline {
-  display: inline-block;
-  padding-bottom: 2px;
-  border-bottom: var(--border-width) solid currentColor;
-  font-size: 0.8125rem;
-  letter-spacing: var(--meta-tracking);
-  text-transform: uppercase;
-  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+/* Volle Breite – auf Mobile der Regelfall für den Hauptweg. */
+.button--block { display: flex; width: 100%; }
+
+/* Auf Touch gibt es keinen Zeigezustand – die Rückmeldung kommt beim
+   Antippen und ist sofort sichtbar. */
+@media (hover: none) {
+  .button:active,
+  .link-underline:active,
+  .card__quick-add-button:active,
+  .inline-field__submit:active,
+  .search-panel__submit:active,
+  .code-field__submit:active { opacity: 0.72; }
 }
-.link-underline:hover { border-bottom-color: rgb(var(--color-accent)); }
 
 .button[disabled],
 .button[aria-disabled='true'] { opacity: 0.45; cursor: not-allowed; }
+.button[disabled]:hover,
+.button[aria-disabled='true']:hover {
+  background-color: rgb(var(--color-button, 20 18 16));
+  border-color: rgb(var(--color-button, 20 18 16));
+}
 
+/* Textmarke. Die ruhende Linie liegt zurückgenommen unter der Zeile, beim
+   Zeigen läuft eine zweite Linie in voller Deckung von links ein. Das ist
+   der einzige Zierschritt, den sich dieses Theme leistet. */
+.link-underline {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 4px;
+  border-bottom: 0;
+  font-size: 0.75rem;
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.link-underline::before,
+.link-underline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* Die Linie hängt an der Schrift, nicht am Kasten: Auf Touch wächst der
+     Kasten auf 44 px, die Linie bleibt trotzdem direkt unter dem Wort. */
+  bottom: var(--ul-bottom, 0px);
+  height: var(--border-width);
+  background-color: currentColor;
+}
+.link-underline::before { opacity: 0.28; }
+.link-underline::after {
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur) var(--ease);
+}
+.link-underline:hover::after,
+.link-underline:focus-visible::after { transform: scaleX(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .link-underline::after { transition: none; }
+}
+
+/* Auf Touch braucht jede Textmarke eine Fläche von mindestens 44 px. */
+@media (pointer: coarse) {
+  .link-underline {
+    padding-block: 0.8rem;
+    --ul-bottom: calc(0.8rem - 4px);
+  }
+}
+
+/* Formulare: eine Grundlinie, kein Kasten. Auswahl- und Textfelder folgen
+   demselben Muster, damit Formulare nie wie ein fremdes Modul wirken. */
 .field { display: flex; flex-direction: column; gap: var(--space-2xs); }
 
 .field__label {
-  font-size: 0.75rem;
-  letter-spacing: var(--meta-tracking);
+  font-size: 0.6875rem;
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
   text-transform: uppercase;
   color: rgb(var(--color-muted));
 }
@@ -284,19 +419,28 @@ p { text-wrap: pretty; }
 .field textarea {
   width: 100%;
   min-height: 3rem;
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-xs) 0;
   background-color: transparent;
-  border: var(--border-width) solid rgb(var(--color-line));
-  border-radius: var(--input-radius);
+  border: 0;
+  border-bottom: var(--border-width) solid rgb(var(--color-line));
+  border-radius: 0;
   color: rgb(var(--color-text));
   transition: border-color var(--dur) var(--ease);
 }
 
+.field select { padding-right: var(--space-lg); }
+.field textarea { min-height: 6rem; resize: vertical; }
+
 .field__input:hover,
 .field select:hover,
-.field textarea:hover { border-color: rgb(var(--color-muted)); }
+.field textarea:hover { border-bottom-color: rgb(var(--color-muted)); }
 
-.field__input::placeholder { color: rgb(var(--color-muted)); opacity: 1; }
+.field__input:focus,
+.field select:focus,
+.field textarea:focus { border-bottom-color: rgb(var(--color-text)); }
+
+.field__input::placeholder,
+.field textarea::placeholder { color: rgb(var(--color-muted)); opacity: 1; }
 
 .field__error {
   font-size: 0.8125rem;
@@ -307,14 +451,59 @@ p { text-wrap: pretty; }
 
 .form-status { font-size: 0.9375rem; }
 
+/* Eingabezeile: Feld und Absenden teilen sich eine Grundlinie. Wird für
+   Newsletter, Suche und alle kurzen Formulare verwendet. */
+.inline-field {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-md);
+  border-bottom: var(--border-width) solid rgb(var(--color-text) / 0.28);
+  transition: border-color var(--dur) var(--ease);
+}
+.inline-field:focus-within { border-bottom-color: rgb(var(--color-text)); }
+.inline-field .field__input,
+.inline-field input {
+  flex: 1;
+  min-width: 0;
+  min-height: 3rem;
+  padding: var(--space-xs) 0;
+  border: 0;
+  background-color: transparent;
+}
+.inline-field .field__input:hover,
+.inline-field input:hover { border-bottom-color: transparent; }
+.inline-field__submit {
+  flex: none;
+  min-height: 3rem;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: rgb(var(--color-text));
+  font-size: 0.6875rem;
+  letter-spacing: calc(var(--meta-tracking) + 0.04em);
+  text-transform: uppercase;
+  transition: opacity var(--dur) var(--ease);
+}
+.inline-field__submit:hover { opacity: 0.6; }
+
 /* 6 Header --------------------------------------------------------------- */
+/* Der Kopfbereich ist eine Zeile, keine Fläche: Haarlinie statt Schatten,
+   flächiger Hintergrund im Farbstil des Abschnitts, Wortmarke mittig
+   zwischen Navigation und Handlungen.
+
+   Verdichtung beim Scrollen (ab 990 px): Die Leiste bekommt oben einen
+   Reserveraum von --header-reserve. Beim Scrollen rückt die klebende Leiste
+   um genau diesen Betrag nach oben, der Reserveraum verschwindet aus dem
+   Blick. Die Leiste wird dadurch sichtbar flacher, ohne dass sich die Höhe
+   im Textfluss ändert – der Seiteninhalt springt nicht. Ausgeblendet wird
+   der Kopf nie. */
 .header {
   position: sticky;
   top: 0;
   z-index: var(--z-header);
   background-color: rgb(var(--color-background));
-  border-bottom: var(--border-width) solid rgb(var(--color-line));
-  transition: transform var(--dur) var(--ease);
+  border-bottom: var(--hair);
+  transition: top var(--dur) var(--ease);
 }
 
 .header__inner {
@@ -324,12 +513,9 @@ p { text-wrap: pretty; }
   gap: var(--space-md);
   min-height: 3.5rem;
 }
-@media (min-width: 990px) { .header__inner { min-height: 5.25rem; } }
 
-.header__nav { display: none; }
-@media (min-width: 990px) {
-  .header__nav { display: flex; align-items: center; gap: var(--space-xl); }
-}
+.header__lead { display: flex; align-items: center; gap: var(--space-lg); min-width: 0; }
+.header__lead .header__menu-toggle { margin-left: -0.75rem; }
 
 .header__brand { justify-self: center; }
 
@@ -337,19 +523,37 @@ p { text-wrap: pretty; }
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--space-xs);
+  gap: var(--space-2xs);
+}
+.header__actions .header__icon:last-child { margin-right: -0.75rem; }
+
+.header__nav { display: none; }
+
+@media (min-width: 990px) {
+  :root { --header-reserve: 1.375rem; }
+
+  .header__inner {
+    min-height: 3.75rem;
+    padding-top: var(--header-reserve);
+    transition: min-height var(--dur) var(--ease);
+  }
+  .header.is-compact { top: calc(var(--header-reserve) * -1); }
+
+  .header__nav { display: flex; align-items: center; }
+  .header__nav > ul { display: flex; align-items: center; gap: var(--space-xl); }
 }
 
 .wordmark {
   display: inline-block;
   font-family: var(--font-heading-family);
-  font-size: clamp(1rem, 0.9rem + 0.6vw, 1.375rem);
+  font-size: clamp(1.0625rem, 0.95rem + 0.55vw, 1.375rem);
   letter-spacing: var(--wordmark-tracking);
   text-transform: uppercase;
   line-height: 1;
   white-space: nowrap;
 }
 
+/* Symbole: eine Größe, eine Strichstärke, eine Tippfläche. */
 .header__icon {
   display: inline-flex;
   align-items: center;
@@ -357,126 +561,225 @@ p { text-wrap: pretty; }
   width: 2.75rem;
   height: 2.75rem;
   position: relative;
+  color: rgb(var(--color-text));
+  transition: color var(--dur) var(--ease);
 }
+.header__icon:hover { color: rgb(var(--color-muted)); }
+.header__icon svg { width: 19px; height: 19px; }
 
-.header__icon svg { width: 20px; height: 20px; }
+.header__icon--desktop { display: none; }
+@media (min-width: 990px) { .header__icon--desktop { display: inline-flex; } }
 
+.header__menu-toggle { display: inline-flex; }
+@media (min-width: 990px) { .header__menu-toggle { display: none; } }
+
+/* Der Zähler ist eine Ziffer, kein Etikett: keine Fläche, keine Kapsel. */
 .cart-count {
   position: absolute;
-  top: 0.4rem;
-  right: 0.3rem;
-  min-width: 1.1rem;
-  height: 1.1rem;
-  padding-inline: 0.2rem;
+  top: 0.5rem;
+  right: 0.35rem;
+  min-width: 0.9rem;
   display: grid;
   place-items: center;
-  border-radius: 999px;
-  background-color: rgb(var(--color-text));
-  color: rgb(var(--color-background));
   font-size: 0.625rem;
   line-height: 1;
   font-variant-numeric: tabular-nums;
+  color: rgb(var(--color-text));
+}
+.cart-count::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -0.3rem;
+  width: 3px;
+  height: 3px;
+  transform: translateX(-50%);
+  background-color: rgb(var(--color-accent));
 }
 .cart-count[hidden] { display: none; }
 
-/* Hauptnavigation */
+/* Hauptnavigation – dieselbe Unterstreichung wie bei jeder Textmarke. */
+.nav__item { position: relative; }
+.nav__item > details > summary { list-style: none; }
+
 .nav__link {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   padding-block: 0.5rem;
   font-size: 0.75rem;
-  letter-spacing: var(--meta-tracking);
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
   text-transform: uppercase;
-  border-bottom: var(--border-width) solid transparent;
-  transition: border-color var(--dur) var(--ease);
+  white-space: nowrap;
 }
-.nav__link:hover,
-.nav__item[open] > summary .nav__link { border-bottom-color: rgb(var(--color-text)); }
+.nav__link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.15rem;
+  height: var(--border-width);
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur) var(--ease);
+}
+.nav__link:hover::after,
+.nav__link:focus-visible::after,
+.nav__item[open] > summary .nav__link::after { transform: scaleX(1); }
+.nav__link svg { transition: transform var(--dur) var(--ease); }
+.nav__item[open] > summary .nav__link svg { transform: rotate(180deg); }
 
-.nav__item { position: relative; }
-
+/* Aufklappmenü: eine Fläche im Seitenton, oben von der Haarlinie des
+   Kopfbereichs gehalten – kein schwebendes Kärtchen. */
 .mega {
   position: absolute;
   top: 100%;
-  left: 0;
+  left: calc(var(--space-lg) * -1);
   z-index: var(--z-header);
-  min-width: 16rem;
-  padding: var(--space-lg);
+  min-width: 17rem;
+  padding: var(--space-xl) var(--space-lg);
   background-color: rgb(var(--color-background));
-  border: var(--border-width) solid rgb(var(--color-line));
+  border: 0;
+  border-bottom: var(--hair);
+  box-shadow: 0 1px 0 rgb(var(--color-line));
 }
 
 .mega--wide {
   left: 50%;
   transform: translateX(-50%);
-  width: min(64rem, calc(100vw - 4rem));
+  width: min(66rem, calc(100vw - 4rem));
   display: grid;
-  grid-template-columns: 1fr 1fr 1.2fr;
-  gap: var(--space-2xl);
-  padding: var(--space-2xl);
+  grid-template-columns: 1fr 1fr 1.15fr;
+  gap: var(--space-3xl);
+  padding: var(--space-2xl) var(--space-xl) var(--space-3xl);
 }
 
 .mega__title {
   margin-bottom: var(--space-md);
   padding-bottom: var(--space-xs);
-  border-bottom: var(--border-width) solid rgb(var(--color-line));
+  border-bottom: var(--hair);
+  color: rgb(var(--color-muted));
 }
 
-.mega__list > li + li { margin-top: 0.6rem; }
-.mega__list a { font-size: 0.9375rem; transition: color var(--dur) var(--ease); }
+.mega__list > li + li { margin-top: 0.55rem; }
+.mega__list a {
+  font-size: 0.9375rem;
+  transition: color var(--dur) var(--ease), padding-left var(--dur) var(--ease);
+}
 .mega__list a:hover { color: rgb(var(--color-muted)); }
 
+.mega__list--split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--space-lg);
+}
+.mega__list--split > li + li { margin-top: 0; }
+.mega__list--split a { display: block; padding-block: 0.3rem; }
+
 .mega__feature { display: block; }
-.mega__feature img { width: 100%; height: auto; object-fit: cover; aspect-ratio: 4 / 3; }
+.mega__feature img { width: 100%; height: auto; object-fit: cover; aspect-ratio: 4 / 5; }
+
+.mega__wa { display: grid; align-content: start; gap: var(--space-sm); }
+.mega__wa-text { font-size: 0.9375rem; color: rgb(var(--color-muted)); max-width: 26ch; }
+.mega__wa .button { justify-self: start; }
+.mega__wa-note { font-size: 0.75rem; color: rgb(var(--color-muted)); }
 
 /* 7 Footer --------------------------------------------------------------- */
-.footer { border-top: var(--border-width) solid rgb(var(--color-line)); }
-.footer__top { display: grid; gap: var(--space-2xl); padding-block: var(--space-3xl); }
-@media (min-width: 990px) {
-  .footer__top { grid-template-columns: 1.4fr repeat(3, 1fr); gap: var(--space-3xl); }
+/* Mobile zuerst: Die Verweisspalten stehen nebeneinander statt untereinander,
+   der Markenblock darüber. Der Fußbereich bleibt dadurch auf dem Telefon
+   kurz, ohne dass ein einziger Verweis wegfällt. */
+.footer { border-top: var(--hair); }
+
+.footer__top {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-xl) var(--space-lg);
+  padding-block: var(--space-xl);
 }
-.footer__heading { margin-bottom: var(--space-md); }
-.footer__list > li + li { margin-top: 0.55rem; }
-.footer__list a { font-size: 0.9375rem; }
+
+/* Markenblock und Newsletter brauchen die volle Breite, die Menüs nicht. */
+.footer__block--brand,
+.footer__block--newsletter { grid-column: 1 / -1; }
+
+.footer__wordmark { font-size: 1.125rem; }
+.footer__brand-text {
+  margin-top: var(--space-sm);
+  max-width: 32ch;
+  font-size: 0.875rem;
+  color: rgb(var(--color-muted));
+}
+.footer__note { margin-top: var(--space-md); }
+.footer__fineprint { font-size: 0.75rem; color: rgb(var(--color-muted)); }
+
+.footer__heading { margin-bottom: var(--space-sm); color: rgb(var(--color-muted)); }
+.footer__list > li + li { margin-top: 0.4rem; }
+.footer__list a {
+  display: inline-block;
+  padding-block: 0.15rem;
+  font-size: 0.875rem;
+  transition: color var(--dur) var(--ease);
+}
 .footer__list a:hover { color: rgb(var(--color-muted)); }
+
+.footer__newsletter { margin-top: var(--space-md); }
+.footer__newsletter .footer__fineprint { margin-top: var(--space-sm); }
 
 .footer__bottom {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-md);
-  padding-block: var(--space-lg);
-  border-top: var(--border-width) solid rgb(var(--color-line));
+  gap: var(--space-sm) var(--space-md);
+  padding-block: var(--space-md);
+  border-top: var(--hair);
 }
 
-/* v4.2.11 Mobile: Der Fußbereich stapelt auf dem Telefon vier Blöcke
-   untereinander – mit 48 px Abstand dazwischen und 64 px oben und unten kam
-   er allein auf 272 px reinen Leerraum. Die Werte gelten nur bis 749 px;
-   Tippflächen und Schriftgrößen bleiben unverändert. */
-@media (max-width: 749px) {
-  .footer__top { gap: var(--space-xl); padding-block: var(--space-xl); }
-  .footer__bottom { padding-block: var(--space-md); }
+.payment-icons { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+.payment-icons svg { width: 34px; height: 22px; }
+
+.social-list { display: flex; flex-wrap: wrap; gap: var(--space-md); margin-top: var(--space-lg); }
+.social-list a {
+  font-size: 0.75rem;
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+  transition: color var(--dur) var(--ease);
+}
+.social-list a:hover { color: rgb(var(--color-text)); }
+
+/* Sehr schmale Geräte: eine Spalte, sonst brechen die Verweise um. */
+@media (max-width: 359px) {
+  .footer__top { grid-template-columns: minmax(0, 1fr); gap: var(--space-lg); }
 }
 
-.payment-icons { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
-.payment-icons svg { width: 38px; height: 24px; }
-
-.social-list { display: flex; gap: var(--space-md); }
-.social-list a { font-size: 0.8125rem; letter-spacing: var(--meta-tracking); text-transform: uppercase; }
+@media (min-width: 750px) {
+  .footer__top {
+    grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr));
+    gap: var(--space-2xl);
+    padding-block: var(--space-3xl);
+  }
+  .footer__block--brand { grid-column: auto; }
+  .footer__block--newsletter { grid-column: auto; }
+  .footer__bottom { padding-block: var(--space-lg); }
+}
 
 /* 8 Produktkarte --------------------------------------------------------- */
+/* Das Bild trägt die Karte. Darunter steht in ruhiger Reihenfolge: Name,
+   Charakter, Ausführung, Preis. Kein Rahmen, keine Kachel, kein Schatten –
+   die Karte ist nur ein Bild mit einer Bildunterschrift. */
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
   height: 100%;
 }
 
 .card__media {
   position: relative;
   overflow: hidden;
+  margin-bottom: var(--space-md);
   background-color: rgb(var(--color-line) / 0.35);
   border-radius: var(--card-radius);
 }
@@ -494,32 +797,70 @@ p { text-wrap: pretty; }
 .card__media--tall { aspect-ratio: 2 / 3; }
 
 .card__image--secondary { position: absolute; inset: 0; opacity: 0; }
-.card:hover .card__image--secondary { opacity: 1; }
-.card:hover .card__image--primary { opacity: 0; }
 
+/* Hochwertige Zustände auf Zeigegeräten: ein sehr langsamer Zoom, der
+   Bildwechsel als Überblendung, der Name unterstrichen. Auf Touch passiert
+   nichts davon. */
+@media (hover: hover) {
+  .card:hover .card__image--secondary { opacity: 1; }
+  .card:hover .card__image--primary { opacity: 0; }
+  .card:hover .card__media img { transform: scale(1.025); }
+  .card:hover .card__title a {
+    text-decoration: underline;
+    text-decoration-thickness: var(--border-width);
+    text-underline-offset: 0.18em;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card:hover .card__media img { transform: none; }
+}
+
+/* Auszeichnung ohne Fläche: kleine Versalien direkt auf dem Bild wären
+   unsicher lesbar, deshalb steht sie auf dem Seitenton. */
 .card__badge {
   position: absolute;
-  top: var(--space-sm);
-  left: var(--space-sm);
-  padding: 0.3rem 0.55rem;
+  top: 0;
+  left: 0;
+  padding: 0.35rem 0.6rem;
   background-color: rgb(var(--color-background));
   color: rgb(var(--color-text));
   font-size: 0.625rem;
+  line-height: 1;
   text-transform: uppercase;
-  letter-spacing: var(--meta-tracking);
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
 }
 
-.card__title { font-family: var(--font-heading-family); font-size: 1.125rem; line-height: 1.2; }
+.card__content { display: grid; gap: 0.3rem; align-content: start; }
 
+.card__title {
+  font-family: var(--font-heading-family);
+  font-size: 1.0625rem;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+}
 .card__title a::after { content: ''; position: absolute; inset: 0; z-index: 1; }
-.card { position: relative; }
 
-.card__family { color: rgb(var(--color-muted)); font-size: 0.875rem; }
+.card__family {
+  color: rgb(var(--color-muted));
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+/* Die Ausführung steht in derselben Auszeichnung wie alle Detailangaben. */
 .card__meta { color: rgb(var(--color-muted)); }
-.card__price { font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
+
+.card__price {
+  margin-top: 0.2rem;
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
 .card__unit-price { font-size: 0.75rem; color: rgb(var(--color-muted)); }
 
-.price--on-sale .price__regular { text-decoration: line-through; color: rgb(var(--color-muted)); margin-right: 0.4em; }
+.price--on-sale .price__regular {
+  text-decoration: line-through;
+  color: rgb(var(--color-muted));
+  margin-right: 0.4em;
+}
 
 /* 9 Hilfsklassen --------------------------------------------------------- */
 .hidden,
@@ -529,6 +870,27 @@ p { text-wrap: pretty; }
 .text-muted { color: rgb(var(--color-muted)); }
 .uppercase { text-transform: uppercase; }
 .full-bleed-media { width: 100%; height: 100%; object-fit: cover; }
+
+/* Kleingedrucktes: Steuerhinweise, Versandhinweise, Rechtszeilen. */
+.text-fine { font-size: 0.75rem; line-height: 1.5; color: rgb(var(--color-muted)); }
+
+/* Verweis mitten im Fließtext. */
+.link-inline { text-decoration: underline; text-underline-offset: 0.15em; }
+
+/* Eine Reihe gleichrangiger Handlungen. */
+.actions-row { display: flex; flex-wrap: wrap; gap: var(--space-md); }
+
+/* Abstandshilfen. Sie ersetzen die früheren Inline-Styles an Stellen, an
+   denen ein eigenes Bauteil zu viel wäre. */
+.mt-sm { margin-top: var(--space-sm); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.mt-xl { margin-top: var(--space-xl); }
+.mt-2xl { margin-top: var(--space-2xl); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+.mb-xl { margin-bottom: var(--space-xl); }
+.mb-2xl { margin-bottom: var(--space-2xl); }
 
 .demo-flag {
   display: inline-block;
@@ -540,18 +902,60 @@ p { text-wrap: pretty; }
   color: rgb(var(--color-muted));
 }
 
-/* Einblendung – nur wenn in den Theme Settings aktiviert */
+/* Einblendung – nur wenn in den Theme Settings aktiviert.
+
+   Die Regel hängt an html:not(.no-js): Ohne JavaScript bleibt die Klasse
+   .no-js stehen, der Ausgangszustand opacity: 0 greift dann gar nicht erst
+   und alle Inhalte sind sofort sichtbar. Vorher war ein Aufbau ohne
+   JavaScript vollständig unsichtbar. */
 .reveal { opacity: 1; }
-.animations-on .reveal {
+html:not(.no-js) .animations-on .reveal {
   opacity: 0;
-  transform: translateY(12px);
+  transform: translateY(10px);
   transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease);
 }
-.animations-on .reveal.is-visible { opacity: 1; transform: none; }
+html:not(.no-js) .animations-on .reveal.is-visible { opacity: 1; transform: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .animations-on .reveal { opacity: 1; transform: none; }
+  html:not(.no-js) .animations-on .reveal { opacity: 1; transform: none; }
 }
+
+/* Bausteine, die vorher als Inline-Styles im Markup standen. Sie sind hier
+   benannt, damit sie sich an einer Stelle pflegen lassen. */
+.header__brand-heading { margin: 0; }
+.mega__title--plain { margin-top: var(--space-md); border: 0; padding: 0; }
+
+.cart-drawer__view { display: block; margin-top: var(--space-md); text-align: center; }
+
+.cart-page__items { max-width: 46rem; }
+.cart-page__summary { max-width: 46rem; margin-top: var(--space-2xl); }
+
+.article__cover { margin-block: var(--space-xl); }
+
+.password__wordmark { font-size: 1.5rem; }
+.password__text { margin: var(--space-xl) auto 0; }
+
+.code-page__image { aspect-ratio: 4 / 5; object-fit: cover; }
+.code-inline__label { margin-bottom: var(--space-xs); }
+
+.facet__price-actions { display: flex; gap: var(--space-sm); margin-top: var(--space-md); }
+
+/* Kundenkonto */
+.account-panel { max-width: 34rem; }
+.account-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+.account-block { margin-top: var(--space-2xl); max-width: 34rem; }
+.account-row { padding-block: var(--space-lg); border-top: var(--hair); }
+.account-total { margin-top: var(--space-xl); max-width: 24rem; margin-left: auto; }
+.account-table__th { text-align: left; padding-bottom: var(--space-xs); border-bottom: var(--hair); }
+.account-table__th--end { text-align: right; }
+.account-table__td { padding-block: var(--space-sm); border-bottom: var(--hair); }
+.account-table__td--end { text-align: right; font-variant-numeric: tabular-nums; }
 
 /* 10 Accessibility ------------------------------------------------------- */
 .visually-hidden {
@@ -646,35 +1050,46 @@ body.is-locked { overflow: hidden; }
 }
 .drawer__close svg { width: 16px; height: 16px; }
 
-/* Touch-Targets: mindestens 44 px auf Mobilgeräten */
+/* Touch-Targets: mindestens 44 px auf Mobilgeräten.
+   Ausgenommen sind Verweise, deren Fläche ohnehin größer ist – etwa der
+   Produktname auf der Karte, der über ein Überlagerungsfeld die gesamte
+   Karte anklickbar macht. */
 @media (pointer: coarse) {
   a.nav__link,
   .footer__list a,
-  .mega__list a { min-height: 44px; display: flex; align-items: center; }
+  .mega__list a,
+  .header__brand > a,
+  .header__brand-heading > a { min-height: 44px; display: flex; align-items: center; }
+  .header__brand > a,
+  .header__brand-heading > a { justify-content: center; }
 }
 
-/* 11 Header-Erweiterungen ------------------------------------------------ */
+/* 11 Ankündigungsleiste und mobiles Menü --------------------------------- */
+/* Eine sehr feine Zeile über dem Kopfbereich. Sie ist zurückgenommen
+   gesetzt, damit sie dem Hero nicht die Aufmerksamkeit nimmt. */
 .announcement {
-  border-bottom: var(--border-width) solid rgb(var(--color-line));
+  border-bottom: var(--hair);
   text-align: center;
 }
-.announcement__inner { padding-block: 0.6rem; }
-.announcement__text { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: var(--meta-tracking); }
-.announcement__text a { border-bottom: var(--border-width) solid currentColor; }
-
-/* Mobile: flacher und feiner, damit die Leiste dem Hero nicht Konkurrenz
-   macht. Höchstens zwei Zeilen auf kleinen Displays. */
-@media (max-width: 749px) {
-  .announcement__inner { padding-block: 0.35rem; }
-  .announcement__text {
-    font-size: 0.625rem;
-    line-height: 1.3;
-    letter-spacing: 0.1em;
-  }
+.announcement__inner { padding-block: 0.55rem; }
+.announcement__text {
+  font-size: 0.625rem;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: calc(var(--meta-tracking) + 0.04em);
+  color: rgb(var(--color-muted));
 }
+.announcement__text a {
+  color: rgb(var(--color-text));
+  border-bottom: var(--border-width) solid rgb(var(--color-text) / 0.3);
+  transition: border-color var(--dur) var(--ease);
+}
+.announcement__text a:hover { border-bottom-color: rgb(var(--color-text)); }
 
-.header__menu-toggle { display: inline-flex; }
-@media (min-width: 990px) { .header__menu-toggle { display: none; } }
+@media (max-width: 749px) {
+  .announcement__inner { padding-block: 0.4rem; }
+  .announcement__text { letter-spacing: 0.1em; }
+}
 
 /* Mobile-Navigation */
 .menu-drawer__search { padding: var(--space-lg); border-bottom: var(--border-width) solid rgb(var(--color-line)); }
@@ -721,18 +1136,74 @@ body.is-locked { overflow: hidden; }
   transform: translateY(-100%);
 }
 
-.search-panel__form { display: flex; align-items: center; gap: var(--space-md); }
+/* Suchpanel: eine Kopfzeile, darunter eine einzige Eingabezeile auf einer
+   Haarlinie. Dieselbe Bauform wie die Scent-Code-Eingabe im Hero. */
+.search-panel { padding-block: var(--space-lg) var(--space-xl); }
+.search-panel__inner { display: grid; }
+
+.search-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.search-panel__form {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-md);
+  border-bottom: var(--border-width) solid rgb(var(--color-text) / 0.28);
+  transition: border-color var(--dur) var(--ease);
+}
+.search-panel__form:focus-within { border-bottom-color: rgb(var(--color-text)); }
+
 .search-panel__input {
   flex: 1;
+  min-width: 0;
   min-height: 3.25rem;
-  padding: 0 0 var(--space-sm);
+  padding: 0 0 var(--space-xs);
   border: 0;
-  border-bottom: var(--border-width) solid rgb(var(--color-line));
   background: none;
+  color: rgb(var(--color-text));
   font-family: var(--font-heading-family);
   font-size: clamp(1.25rem, 1rem + 1.4vw, 2rem);
+  line-height: 1.2;
 }
-.search-panel__input:focus { outline: none; border-bottom-color: rgb(var(--color-accent)); }
+.search-panel__input:focus { outline: none; }
+.search-panel__input::placeholder { color: rgb(var(--color-muted)); opacity: 1; }
+.search-panel__input::-webkit-search-cancel-button { -webkit-appearance: none; }
+
+.search-panel__submit {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0 0 var(--space-xs);
+  color: rgb(var(--color-text));
+  font-size: 0.6875rem;
+  letter-spacing: calc(var(--meta-tracking) + 0.04em);
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: opacity var(--dur) var(--ease);
+}
+.search-panel__submit:hover { opacity: 0.6; }
+.search-panel__submit svg { width: 15px; height: 15px; }
+
+.search-panel__hint {
+  margin-top: var(--space-sm);
+  font-size: 0.75rem;
+  color: rgb(var(--color-muted));
+}
+.search-panel__results:not(:empty) { margin-top: var(--space-xl); }
+
+@media (max-width: 599px) {
+  /* Beschriftung weicht, das Zeichen bleibt – die Tippfläche bleibt groß
+     und die Eingabe bekommt die volle Breite. */
+  .search-panel__submit span { display: none; }
+  .search-panel__submit { min-width: 2.75rem; justify-content: flex-end; }
+}
 
 .predictive__group + .predictive__group { margin-top: var(--space-xl); }
 .predictive__heading {
@@ -753,12 +1224,6 @@ body.is-locked { overflow: hidden; }
 .js-hidden { display: none; }
 .no-js .js-hidden { display: block; }
 .no-js .js-only { display: none !important; }
-
-.header__lead { display: flex; align-items: center; gap: var(--space-md); }
-.header__lead .header__menu-toggle { margin-left: -0.75rem; }
-.header__actions .header__icon:last-child { margin-right: -0.75rem; }
-.header__nav > ul { display: flex; align-items: center; gap: var(--space-xl); }
-.nav__item > details > summary { list-style: none; }
 
 /* 12 Warenkorb ----------------------------------------------------------- */
 .cart-items { display: grid; gap: var(--space-lg); }
@@ -785,23 +1250,30 @@ body.is-locked { overflow: hidden; }
   margin-top: var(--space-sm);
 }
 
+/* Mengenwahl: eine Grundlinie, kein Kasten – wie alle Eingaben im Theme. */
 .quantity {
   display: inline-flex;
   align-items: center;
-  border: var(--border-width) solid rgb(var(--color-line));
-  border-radius: var(--input-radius);
+  border: 0;
+  border-bottom: var(--border-width) solid rgb(var(--color-line));
+  border-radius: 0;
+  transition: border-color var(--dur) var(--ease);
 }
+.quantity:focus-within { border-bottom-color: rgb(var(--color-text)); }
 .quantity button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  color: rgb(var(--color-muted));
+  transition: color var(--dur) var(--ease);
 }
+.quantity button:hover { color: rgb(var(--color-text)); }
 .quantity button svg { width: 12px; height: 12px; }
 .quantity input {
   width: 2.5rem;
-  height: 2.5rem;
+  height: 2.75rem;
   border: 0;
   background: none;
   text-align: center;
@@ -836,20 +1308,105 @@ body.is-locked { overflow: hidden; }
 .cart-footer .button { width: 100%; margin-top: var(--space-md); }
 .cart-note { margin-top: var(--space-md); }
 
-/* 13 Produktseite (Basis, wird in Ausbaustufe 2 erweitert) ---------------- */
-.product { display: grid; gap: var(--space-xl); }
-@media (min-width: 990px) {
-  .product { grid-template-columns: 7fr 5fr; gap: clamp(2rem, 5vw, 5rem); align-items: start; }
-  .product__info { position: sticky; top: 7rem; }
-}
-.product__media { display: grid; gap: var(--space-sm); }
-.product__media img { width: 100%; height: auto; }
-.product__title { margin-bottom: var(--space-xs); }
-.product__meta { color: rgb(var(--color-muted)); }
-.product__price { margin-block: var(--space-lg); font-size: 1.25rem; }
+/* 13 Produktseite -------------------------------------------------------- */
+/* Mobile zuerst: Die Galerie ist eine waagerechte Bahn, die bis an beide
+   Bildschirmkanten läuft und einrastet – ein Bild pro Blick. Direkt darunter
+   stehen Name, Angabe, Preis, Ausführung und Kaufen. Die Kaufentscheidung
+   ist damit ohne Scrollen erreichbar.
 
-.variant-options { display: grid; gap: var(--space-xs); margin-bottom: var(--space-lg); }
-.variant-option { position: relative; }
+   Ab 990 px stehen die Bilder untereinander, die Kaufspalte bleibt beim
+   Scrollen stehen. */
+.product { display: grid; gap: var(--space-xl); }
+.product,
+.product > *,
+.product__gallery,
+.product__info,
+.product-form,
+.product-form form,
+.product-form__actions,
+.variant-options,
+.variant-option,
+.variant-option__label { min-width: 0; max-width: 100%; }
+
+.product__gallery { min-width: 0; }
+
+.product__media {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 100%;
+  gap: var(--space-xs);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  /* Bis an beide Bildschirmkanten – ohne die Seite zu verbreitern. */
+  width: calc(100% + (var(--gutter) * 2));
+  margin-inline: calc(var(--gutter) * -1);
+  padding-inline: var(--gutter);
+  scroll-padding-inline: var(--gutter);
+  box-sizing: border-box;
+}
+.product__media::-webkit-scrollbar { display: none; }
+.product__media > * { scroll-snap-align: start; scroll-snap-stop: always; min-width: 0; }
+.product__media img,
+.product__media svg,
+.product__media .full-bleed-media {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  /* Großzügig, aber gedeckelt: Preis, Ausführung und Kaufen sollen auf dem
+     Telefon ohne langes Scrollen erreichbar bleiben. */
+  aspect-ratio: 5 / 6;
+  max-height: 56vh;
+  object-fit: cover;
+}
+
+.product__progress { margin-top: var(--space-md); }
+
+/* Sehr niedrige Geräte: Das Bild gibt etwas Höhe ab, damit der Preis ohne
+   Scrollen sichtbar bleibt. */
+@media (max-height: 700px) {
+  .product__media img,
+  .product__media svg,
+  .product__media .full-bleed-media { max-height: 50vh; }
+  .product__price { margin-block: var(--space-md); }
+}
+
+.product__title { margin-bottom: var(--space-2xs); }
+.product__meta { color: rgb(var(--color-muted)); font-size: 0.9375rem; }
+.product__variant-line { margin-top: var(--space-xs); color: rgb(var(--color-muted)); }
+
+.product__price {
+  margin-block: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: var(--hair);
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ausführung: Zeilen auf Haarlinien statt gerahmter Kacheln. Die gewählte
+   Zeile ist an der kräftigeren Linie und der vollen Textfarbe erkennbar. */
+.variant-options {
+  display: grid;
+  /* Ein Fieldset bringt einen eigenen Rahmen, eigene Innenabstände und einen
+     Mindestwert für die Breite mit. Alles zurücksetzen, sonst steht um die
+     Ausführungen der graue Standardkasten des Browsers. */
+  margin: 0 0 var(--space-lg);
+  padding: 0;
+  border: 0;
+  border-top: var(--hair);
+  min-inline-size: 0;
+}
+.variant-options legend {
+  float: left;
+  width: 100%;
+  padding: var(--space-xs) 0;
+  font-size: 0.6875rem;
+  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+}
+.variant-option { position: relative; clear: both; }
 .variant-option input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; cursor: pointer; }
 .variant-option__label {
   display: flex;
@@ -857,25 +1414,49 @@ body.is-locked { overflow: hidden; }
   justify-content: space-between;
   gap: var(--space-md);
   min-height: 3.25rem;
-  padding: var(--space-sm) var(--space-md);
-  border: var(--border-width) solid rgb(var(--color-line));
-  border-radius: var(--input-radius);
-  transition: border-color var(--dur) var(--ease);
+  padding: var(--space-sm) 0;
+  border-bottom: var(--hair);
+  color: rgb(var(--color-muted));
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
-.variant-option input:checked + .variant-option__label { border-color: rgb(var(--color-text)); }
+.variant-option input:checked + .variant-option__label {
+  border-bottom-color: rgb(var(--color-text));
+  color: rgb(var(--color-text));
+}
 .variant-option input:focus-visible + .variant-option__label {
   outline: var(--focus-width) solid rgb(var(--color-accent));
   outline-offset: var(--focus-offset);
 }
-.variant-option input:disabled + .variant-option__label { opacity: .45; text-decoration: line-through; }
-.variant-option__price { font-variant-numeric: tabular-nums; }
+.variant-option input:disabled + .variant-option__label { opacity: 0.45; text-decoration: line-through; }
+.variant-option__price { font-variant-numeric: tabular-nums; flex: none; }
 
-.product-form__actions { display: grid; gap: var(--space-md); }
-.product-form__actions .button { width: 100%; }
-.product__note { font-size: .75rem; color: rgb(var(--color-muted)); }
+.product-form__actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-md);
+}
+.product-form__actions .quantity { justify-self: start; max-width: 100%; }
+.product-form__actions .button {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.product__note { font-size: 0.75rem; color: rgb(var(--color-muted)); }
+.product__tax { margin-top: var(--space-md); }
+.product__title,
+.product__meta,
+.product__price,
+.product__note { max-width: 100%; overflow-wrap: anywhere; }
+
+.product__blocks { margin-top: var(--space-2xl); }
+
+/* Aufklappbereiche: nur Haarlinien, keine Kästen. */
 .product__accordion { margin-top: var(--space-2xl); }
-.product__accordion details { border-top: var(--border-width) solid rgb(var(--color-line)); }
-.product__accordion details:last-of-type { border-bottom: var(--border-width) solid rgb(var(--color-line)); }
+.product__accordion details { border-top: var(--hair); }
+.product__accordion details:last-of-type { border-bottom: var(--hair); }
 .product__accordion summary {
   display: flex;
   align-items: center;
@@ -889,43 +1470,144 @@ body.is-locked { overflow: hidden; }
 .product__accordion details[open] summary svg { transform: rotate(180deg); }
 .product__accordion .rte { padding-bottom: var(--space-lg); }
 
-/* Sticky Add-to-Cart auf Mobilgeräten */
+@media (min-width: 750px) {
+  /* Ab Tablet stehen die Bilder untereinander – die Bahn wird zur Spalte. */
+  .product__media {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    gap: var(--space-sm);
+    overflow-x: visible;
+    width: 100%;
+    margin-inline: 0;
+    padding-inline: 0;
+    scroll-snap-type: none;
+  }
+  .product__media img,
+  .product__media svg,
+  .product__media .full-bleed-media { aspect-ratio: auto; max-height: none; }
+  .product__progress { display: none; }
+}
+
+@media (min-width: 990px) {
+  .product {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: start;
+  }
+  .product__info { position: sticky; top: 7rem; }
+}
+
+/* Sticky Add-to-Cart auf Mobilgeräten. Bleibt unverändert erhalten. */
 .sticky-atc {
   position: fixed;
   left: 0; right: 0; bottom: 0;
-  z-index: var(--z-header);
+  z-index: var(--z-sticky-bar, 50);
   display: flex;
   align-items: center;
   gap: var(--space-md);
   padding: var(--space-sm) var(--gutter);
+  padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom, 0px));
   background-color: rgb(var(--color-background));
-  border-top: var(--border-width) solid rgb(var(--color-line));
+  border-top: var(--hair);
   transform: translateY(100%);
   transition: transform var(--dur) var(--ease);
 }
 .sticky-atc.is-visible { transform: none; }
 .sticky-atc__info { flex: 1; min-width: 0; }
-.sticky-atc__title { font-size: .875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sticky-atc__price { font-size: .8125rem; color: rgb(var(--color-muted)); }
-.sticky-atc .button { flex: none; min-height: 2.75rem; }
+.sticky-atc__title { font-size: 0.875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sticky-atc__price { font-size: 0.8125rem; color: rgb(var(--color-muted)); font-variant-numeric: tabular-nums; }
+.sticky-atc .button { flex: none; min-height: 2.75rem; padding-inline: var(--space-lg); }
 @media (min-width: 990px) { .sticky-atc { display: none; } }
 
-/* 14 Collection (Basis) -------------------------------------------------- */
-.collection-head { display: grid; gap: var(--space-md); margin-bottom: var(--space-2xl); }
+/* 14 Kollektion, Suche, leere Zustände ----------------------------------- */
+/* Der Seitenkopf folgt derselben Regel wie auf der Startseite: Titel links
+   auf einer Haarlinie, Beitext rechts – nicht zentriert. */
+.collection-head {
+  display: grid;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-lg);
+  border-bottom: var(--hair);
+  margin-bottom: var(--space-lg);
+}
+.collection-head > .h2,
+.collection-head > h1 { margin: 0; }
+
+@media (min-width: 990px) {
+  .collection-head {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+    align-items: end;
+    gap: var(--space-2xl);
+    margin-bottom: var(--space-xl);
+  }
+}
+
 .collection-toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-md);
-  padding-block: var(--space-md);
-  border-top: var(--border-width) solid rgb(var(--color-line));
-  border-bottom: var(--border-width) solid rgb(var(--color-line));
+  gap: var(--space-sm) var(--space-md);
+  padding-bottom: var(--space-md);
+  border-bottom: var(--hair);
   margin-bottom: var(--space-xl);
 }
-.pagination { display: flex; justify-content: center; gap: var(--space-md); margin-top: var(--space-3xl); }
-.pagination a, .pagination span { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
-.pagination [aria-current] { border-bottom: var(--border-width) solid rgb(var(--color-text)); }
+.collection-toolbar__sort { min-width: 0; }
+.collection-toolbar__sort select { min-height: 2.75rem; }
+
+/* Leerer Zustand für Kundinnen und Kunden: eine ruhige Aussage auf einer
+   Haarlinie, kein gestrichelter Kasten. Der gestrichelte Hinweis bleibt
+   ausschließlich den Meldungen für den Theme-Editor vorbehalten. */
+.empty-state {
+  padding-top: var(--space-lg);
+  border-top: var(--hair-strong);
+  max-width: 46rem;
+}
+.empty-state__title { margin-bottom: var(--space-sm); }
+.empty-state__text { color: rgb(var(--color-muted)); max-width: 46ch; }
+.empty-state__actions { margin-top: var(--space-lg); display: flex; flex-wrap: wrap; gap: var(--space-md); }
+@media (max-width: 599px) { .empty-state__actions .button { display: flex; width: 100%; } }
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding-top: var(--space-lg);
+  border-top: var(--hair);
+  margin-top: var(--space-3xl);
+}
+.pagination a,
+.pagination span {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  color: rgb(var(--color-muted));
+  transition: color var(--dur) var(--ease);
+}
+.pagination a:hover { color: rgb(var(--color-text)); }
+.pagination [aria-current] {
+  color: rgb(var(--color-text));
+  border-bottom: var(--border-width) solid rgb(var(--color-text));
+}
+
+/* Seite nicht gefunden – eine ruhige typografische Seite. */
+.error-page { max-width: 34rem; }
+.error-page__text { margin-top: var(--space-md); color: rgb(var(--color-muted)); }
+.error-page__actions { margin-top: var(--space-xl); display: flex; flex-wrap: wrap; gap: var(--space-md); }
+@media (max-width: 599px) { .error-page__actions .button { display: flex; width: 100%; } }
+
+/* Formulare mit mehreren Feldern */
+.form-grid { display: grid; gap: var(--space-lg); max-width: 36rem; margin-top: var(--space-xl); }
+.form-grid__wide { grid-column: 1 / -1; }
+.form-grid .button { justify-self: start; min-width: 12rem; }
+@media (min-width: 600px) {
+  .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-lg); }
+}
+@media (max-width: 599px) { .form-grid .button { width: 100%; } }
 
 /* ==========================================================================
    V2 — Editorial-Schärfung, Scent Code, Sticky-Leisten
@@ -959,8 +1641,11 @@ body.is-locked { overflow: hidden; }
 .display--lines { display: block; }
 .display__line { display: block; }
 
+/* Auf großen Bildschirmen bleibt die Schlagzeile der einzige große
+   Auftritt – aber sie füllt den Bildschirm nicht aus. Die Handlungswege
+   darunter bleiben dadurch bei 1280 und 1440 px über der Falz. */
 @media (min-width: 990px) {
-  .display { font-size: clamp(4rem, 7.5vw, 8.5rem); }
+  .display { font-size: clamp(3.5rem, 6.4vw, 7.5rem); }
 }
 
 /* 16 Scent-Code-Feld ----------------------------------------------------- */
@@ -1169,47 +1854,64 @@ body.is-typing .sticky-atc { transform: translateY(110%); }
 .header__logo-svg svg [stroke]:not([stroke='none']) { stroke: currentColor; }
 
 /* 21 Quick Add auf der Produktkarte -------------------------------------- */
-.card__quick-add { position: absolute; right: var(--space-sm); bottom: var(--space-sm); z-index: 2; }
+/* Auf Touch: ein kleines Feld in der Bildecke, dauerhaft erreichbar.
+   Auf Zeigegeräten: eine beschriftete Leiste, die beim Überfahren von unten
+   in das Bild einfährt – bewegt wird nur transform. */
+.card__quick-add {
+  position: absolute;
+  right: var(--space-xs);
+  bottom: var(--space-xs);
+  z-index: 2;
+}
+.card__quick-add-label { display: none; }
 .card__quick-add-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
   width: 2.75rem;
   height: 2.75rem;
   border: var(--border-width) solid rgb(var(--color-text));
   border-radius: var(--button-radius);
   background-color: rgb(var(--color-background));
   color: rgb(var(--color-text));
-  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease), opacity var(--dur) var(--ease);
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur) var(--ease);
 }
-.card__quick-add-button svg { width: 16px; height: 16px; }
-.card__quick-add-button:hover { background-color: rgb(var(--color-text)); color: rgb(var(--color-background)); }
-.card__quick-add-button[data-state='added'] { background-color: rgb(var(--color-text)); color: rgb(var(--color-background)); }
+.card__quick-add-button svg { width: 16px; height: 16px; flex: none; }
+.card__quick-add-button[data-state='added'] {
+  background-color: rgb(var(--color-text));
+  color: rgb(var(--color-background));
+}
 
-/* Auf Zeigegeräten erst beim Überfahren, auf Touch dauerhaft sichtbar. */
 @media (hover: hover) and (min-width: 750px) {
-  .card__quick-add { opacity: 0; transition: opacity var(--dur) var(--ease); }
-  .card:hover .card__quick-add,
-  .card__quick-add:focus-within { opacity: 1; }
+  .card__quick-add {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2.875rem;
+    overflow: hidden;
+  }
+  .card__quick-add-label { display: inline; }
+  .card__quick-add-button {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-top: var(--hair);
+    border-radius: 0;
+    font-size: 0.625rem;
+    letter-spacing: calc(var(--meta-tracking) + 0.04em);
+    text-transform: uppercase;
+    transform: translateY(101%);
+  }
+  .card:hover .card__quick-add-button,
+  .card__quick-add-button:focus-visible { transform: none; }
+  .card__quick-add-button:hover {
+    background-color: rgb(var(--color-text));
+    color: rgb(var(--color-background));
+  }
 }
 
-/* 22 Kopfbereich V2 ------------------------------------------------------ */
-.header__icon--desktop { display: none; }
-@media (min-width: 990px) { .header__icon--desktop { display: inline-flex; } }
-
-.mega__list--split {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 var(--space-lg);
-}
-.mega__list--split > li + li { margin-top: 0; }
-.mega__list--split a { display: block; padding-block: .3rem; }
-
-.mega__wa { display: grid; align-content: start; gap: var(--space-sm); }
-.mega__wa-text { font-size: .9375rem; color: rgb(var(--color-muted)); max-width: 26ch; }
-.mega__wa .button { justify-self: start; }
-.mega__wa-note { font-size: .75rem; color: rgb(var(--color-muted)); }
-
+/* 22 Mobiles Menü, Suchpanel, Sofortsuche ------------------------------- */
 /* Mobiles Menü */
 .menu-drawer__top {
   display: grid;
@@ -1349,48 +2051,16 @@ button.predictive__code[disabled] { opacity: .6; cursor: default; }
   .menu-drawer__secondary { grid-template-columns: 1fr; }
 }
 
-/* VC v4.2.1 — Mobile overflow hardening ----------------------------------
-   Product pages must never widen the document. Horizontal movement is only
-   allowed inside components that are intentionally swipeable. */
+/* Waagerechte Bewegung ist nur innerhalb der Bauteile erlaubt, die
+   ausdrücklich zum Wischen gedacht sind – die Seite selbst verbreitert sich
+   nie. */
 html,
 body { max-width: 100%; overflow-x: clip; }
 
-.page-width,
-.product,
-.product > *,
-.product__media,
-.product__info,
-.product-form,
-.product-form form,
-.product-form__actions,
-.variant-options,
-.variant-option,
-.variant-option__label { min-width: 0; max-width: 100%; }
-
-.product__media { overflow: hidden; }
-.product__media img,
-.product__media svg,
-.product__media .full-bleed-media {
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-}
-
-.product-form__actions .button {
-  max-width: 100%;
-  min-width: 0;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-
-@media (max-width: 749px) {
-  .product-form__actions { grid-template-columns: minmax(0, 1fr); }
-  .product-form__actions .quantity { justify-self: start; max-width: 100%; }
-  .product__title,
-  .product__meta,
-  .product__price,
-  .product__note { max-width: 100%; overflow-wrap: anywhere; }
-}
+/* Nur die Mindestbreite zurücksetzen. Ein max-width: 100 % an dieser Stelle
+   würde die Seitenbreite aus den Theme Settings überschreiben – der Inhalt
+   liefe dann auf großen Bildschirmen bis an beide Ränder. */
+.page-width { min-width: 0; }
 
 
 /* V4.2.2 — Cart drawer mobile hardening ----------------------------------
@@ -1402,7 +2072,9 @@ body { max-width: 100%; overflow-x: clip; }
   max-height: 100dvh;
   background: rgb(var(--color-background));
   color: rgb(var(--color-text));
-  box-shadow: -18px 0 48px rgb(20 18 16 / .18);
+  /* Abgrenzung übernimmt der Abdunkler und eine Haarlinie an der Kante –
+     kein weicher Schlagschatten. */
+  box-shadow: -1px 0 0 rgb(var(--color-line));
   overflow: hidden;
   isolation: isolate;
 }
@@ -1439,7 +2111,7 @@ body { max-width: 100%; overflow-x: clip; }
   padding: 1rem 1.25rem calc(1rem + env(safe-area-inset-bottom));
   background: inherit;
   border-top: 1px solid rgb(var(--color-line));
-  box-shadow: 0 -10px 30px rgb(20 18 16 / .05);
+  box-shadow: none;
 }
 
 #CartDrawer .cart-items { gap: 1rem; }
@@ -1532,7 +2204,7 @@ body { max-width: 100%; overflow-x: clip; }
   background-color: rgb(245 242 237) !important;
   color: rgb(20 18 16) !important;
   opacity: 1 !important;
-  box-shadow: -16px 0 44px rgb(20 18 16 / .20) !important;
+  box-shadow: -1px 0 0 rgb(var(--color-line)) !important;
   isolation: isolate !important;
   contain: layout paint;
 }
@@ -1630,7 +2302,7 @@ body { max-width: 100%; overflow-x: clip; }
   overflow: hidden !important;
   background-color: rgb(245 242 237) !important;
   color: rgb(20 18 16) !important;
-  box-shadow: 16px 0 44px rgb(20 18 16 / .18) !important;
+  box-shadow: 1px 0 0 rgb(var(--color-line)) !important;
   isolation: isolate !important;
   contain: layout paint;
   transform: translateX(-100%) !important;
@@ -1792,7 +2464,7 @@ body { max-width: 100%; overflow-x: clip; }
   background-color: rgb(var(--color-background, 245 242 237)) !important;
   color: rgb(var(--color-text, 20 18 16)) !important;
   opacity: 1 !important;
-  box-shadow: 0 16px 44px rgb(20 18 16 / .18) !important;
+  box-shadow: 0 1px 0 rgb(var(--color-line)) !important;
   isolation: isolate !important;
   transform: translateY(-100%) !important;
   visibility: hidden !important;
@@ -1818,18 +2490,14 @@ body { max-width: 100%; overflow-x: clip; }
   pointer-events: none;
 }
 
-#SearchDrawer .drawer__body {
+#SearchDrawer .search-panel {
   position: relative;
   z-index: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  max-height: 92dvh;
   background-color: rgb(var(--color-background, 245 242 237)) !important;
   opacity: 1 !important;
 }
 
-@media (max-width: 749px) {
-  /* Auf dem Telefon greifbarer Schließen-Button und Platz für die Tastatur. */
-  #SearchDrawer .drawer__body { padding-block: var(--space-lg) !important; }
-  .search-panel__form { flex-wrap: wrap; }
-  .search-panel__input { flex: 1 1 100%; font-size: 1.25rem; }
-  /* Absenden links, Schließen rechts – beide gut erreichbar. */
-  .search-panel__form .button--quiet { flex: 0 0 auto; margin-right: auto; }
-}
+

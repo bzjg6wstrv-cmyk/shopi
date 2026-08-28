@@ -65,7 +65,9 @@
     if (!target) return;
     if (typeof target.scrollIntoView === 'function') {
       var behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-      target.scrollIntoView({ block: 'nearest', behavior: behavior });
+      /* inline zusaetzlich, damit der Wechsel auch in der waagerechten
+         Galerie auf dem Telefon das richtige Bild heranholt. */
+      target.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: behavior });
     }
   }
 
@@ -108,9 +110,18 @@
     window.history.replaceState({}, '', url.toString());
   });
 
-  /* Sticky Add-to-Cart erscheint, sobald der Hauptbutton aus dem Blick ist. */
+  /* Sticky Add-to-Cart erscheint, sobald der Hauptbutton nach oben aus dem
+     Blick gescrollt ist.
+
+     Bewusst ohne IntersectionObserver: Der Beobachter meldet sich nur, wenn
+     eine Schwelle ueberschritten wird. Beim Laden liegt der Kaufbutton
+     unterhalb des Bildschirms, beim Weiterscrollen wandert er darueber
+     hinaus – in beiden Faellen schneidet er den Bildschirm nie, es gab also
+     genau eine Meldung mit „nicht sichtbar, aber noch unterhalb". Die Leiste
+     blieb dadurch dauerhaft verborgen. Gemessen wird stattdessen bei jedem
+     Scrollen ein einzelnes Rechteck; das ist guenstig und immer richtig. */
   var sticky = document.querySelector('[data-sticky-atc]');
-  if (sticky && addButton && 'IntersectionObserver' in window) {
+  if (sticky && addButton) {
     var stickyAdd = sticky.querySelector('[data-sticky-add]');
     if (stickyAdd) {
       stickyAdd.addEventListener('click', function () {
@@ -119,16 +130,17 @@
       });
     }
 
-    var observer = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          var show = !entry.isIntersecting && entry.boundingClientRect.top < 0;
-          sticky.classList.toggle('is-visible', show);
-          sticky.setAttribute('aria-hidden', show ? 'false' : 'true');
-        });
-      },
-      { threshold: 0 }
-    );
-    observer.observe(addButton);
+    var stickyPruefen = function () {
+      var show = addButton.getBoundingClientRect().bottom <= 0;
+      sticky.classList.toggle('is-visible', show);
+      sticky.setAttribute('aria-hidden', show ? 'false' : 'true');
+    };
+
+    window.addEventListener('scroll', stickyPruefen, { passive: true });
+    window.addEventListener('resize', stickyPruefen);
+    window.addEventListener('orientationchange', stickyPruefen);
+    window.addEventListener('load', stickyPruefen);
+    window.addEventListener('pageshow', stickyPruefen);
+    stickyPruefen();
   }
 })();

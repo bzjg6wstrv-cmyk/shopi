@@ -2,43 +2,49 @@
 {%- comment -%}
   Newsletter – bewusst als ruhiger Abschnitt im Seitenfluss.
   Kein Pop-up, keine Verzögerung, keine Rabattversprechen.
+
+  Der Abschnitt ist absichtlich flach gehalten: links die Anrede, rechts
+  eine einzige Eingabezeile auf einer Haarlinie. Kein Formularkasten und
+  keine große Fläche vor dem Fußbereich.
 {%- endcomment -%}
 <section class="section section--tight color-{{ section.settings.color_scheme }} color-scheme">
-  <div class="page-width page-width--narrow">
-    <div class="measure">
-      {%- if section.settings.eyebrow != blank -%}
-        <span class="eyebrow">{{ section.settings.eyebrow | escape }}</span>
-      {%- endif -%}
-      <h2 class="h3">{{ section.settings.heading | escape }}</h2>
-      {%- if section.settings.text != blank -%}
-        <p class="text-muted" style="margin-top: var(--space-sm);">{{ section.settings.text | escape }}</p>
-      {%- endif -%}
-
-      {%- form 'customer', class: 'newsletter__form', id: 'NewsletterSection' -%}
-        <input type="hidden" name="contact[tags]" value="newsletter">
-        <div class="field">
-          <label class="visually-hidden" for="NewsletterSectionEmail">{{ 'general.newsletter.label' | t }}</label>
-          <input
-            class="field__input"
-            id="NewsletterSectionEmail"
-            type="email"
-            name="contact[email]"
-            placeholder="{{ 'general.newsletter.placeholder' | t }}"
-            autocomplete="email"
-            required
-          >
-        </div>
-        <button type="submit" class="button">{{ 'general.newsletter.submit' | t }}</button>
-        {%- if form.errors -%}
-          <p class="field__error">{{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}</p>
-        {%- elsif form.posted_successfully? -%}
-          <p class="form-status">{{ 'general.newsletter.success' | t }}</p>
+  <div class="page-width">
+    <div class="newsletter reveal">
+      <div class="newsletter__intro">
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="eyebrow">{{ section.settings.eyebrow | escape }}</span>
         {%- endif -%}
-      {%- endform -%}
+        <h2 class="h3 newsletter__title">{{ section.settings.heading | escape }}</h2>
+        {%- if section.settings.text != blank -%}
+          <p class="newsletter__text">{{ section.settings.text | escape }}</p>
+        {%- endif -%}
+      </div>
 
-      <p class="text-muted" style="font-size: .75rem; margin-top: var(--space-sm);">
-        {{ 'general.newsletter.privacy_note' | t }}
-      </p>
+      <div class="newsletter__action">
+        {%- form 'customer', class: 'newsletter__form', id: 'NewsletterSection' -%}
+          <input type="hidden" name="contact[tags]" value="newsletter">
+          <div class="inline-field">
+            <label class="visually-hidden" for="NewsletterSectionEmail">{{ 'general.newsletter.label' | t }}</label>
+            <input
+              class="field__input"
+              id="NewsletterSectionEmail"
+              type="email"
+              name="contact[email]"
+              placeholder="{{ 'general.newsletter.placeholder' | t }}"
+              autocomplete="email"
+              required
+            >
+            <button type="submit" class="inline-field__submit">{{ 'general.newsletter.submit' | t }}</button>
+          </div>
+          {%- if form.errors -%}
+            <p class="field__error newsletter__status">{{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}</p>
+          {%- elsif form.posted_successfully? -%}
+            <p class="form-status newsletter__status">{{ 'general.newsletter.success' | t }}</p>
+          {%- endif -%}
+        {%- endform -%}
+
+        <p class="newsletter__note">{{ 'general.newsletter.privacy_note' | t }}</p>
+      </div>
     </div>
   </div>
 </section>

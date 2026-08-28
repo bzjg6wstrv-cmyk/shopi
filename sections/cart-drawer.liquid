@@ -47,7 +47,7 @@
             <div class="shipping-bar__track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ progress }}">
               <div class="shipping-bar__fill" style="width: {{ progress }}%;"></div>
             </div>
-            <p class="text-muted" style="font-size: .6875rem;">{{ 'sections.cart.free_shipping_disclaimer' | t }}</p>
+            <p class="text-fine">{{ 'sections.cart.free_shipping_disclaimer' | t }}</p>
           </div>
         {%- endif -%}
 
@@ -172,17 +172,17 @@
             {%- endfor -%}
           {%- endif -%}
 
-          <p class="text-muted" style="font-size: .75rem;">
+          <p class="text-fine">
             {{ settings.tax_note }}
             {%- if settings.shipping_page != blank -%}
-              , <a href="{{ settings.shipping_page }}" style="text-decoration: underline;">{{ 'sections.cart.taxes_note' | t }}</a>
+              , <a class="link-inline" href="{{ settings.shipping_page }}">{{ 'sections.cart.taxes_note' | t }}</a>
             {%- else -%}
               . {{ 'sections.cart.taxes_note' | t }}
             {%- endif -%}
           </p>
 
           <button type="submit" name="checkout" class="button">{{ 'sections.cart.checkout' | t }}</button>
-          <a class="link-underline" style="display:block;margin-top:var(--space-md);text-align:center;" href="{{ routes.cart_url }}">
+          <a class="link-underline cart-drawer__view" href="{{ routes.cart_url }}">
             {{ 'sections.cart.view_cart' | t }}
           </a>
         </form>

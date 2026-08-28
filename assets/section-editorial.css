@@ -32,30 +32,111 @@
 }
 .promise__label { margin-top: var(--space-xs); color: rgb(var(--color-muted)); font-size: .9375rem; }
 
-/* Feature-Abschnitt: Bild und Text, bewusst asymmetrisch */
+/* Feature-Abschnitt – zwei ausdrücklich verschiedene Kompositionen.
+   „spec" ist produktnah und präzise, „statement" markenorientiert und
+   großflächig. Sie teilen sich nur die Bausteine, nicht das Layout. */
 .feature { display: grid; gap: var(--space-xl); align-items: center; }
+.feature__media img,
+.feature__media svg { width: 100%; height: auto; }
+.feature__media--tall img,
+.feature__media--tall svg { aspect-ratio: 4 / 5; object-fit: cover; }
+.feature__media--wide img,
+.feature__media--wide svg { aspect-ratio: 4 / 3; object-fit: cover; }
+.feature__body > * + * { margin-top: var(--space-md); }
+.feature__text { line-height: 1.6; max-width: 40ch; }
+.feature__price { margin-top: var(--space-lg); }
+.feature__note { margin-top: var(--space-lg); }
+.feature__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md) var(--space-xl);
+  margin-top: var(--space-xl);
+}
+
 @media (min-width: 990px) {
   .feature { gap: clamp(2rem, 6vw, 6rem); grid-template-columns: 7fr 5fr; }
   .feature--reverse { grid-template-columns: 5fr 7fr; }
   .feature--reverse .feature__media { order: 2; }
   .feature--narrow-media { grid-template-columns: 5fr 6fr; }
 }
-.feature__media img { width: 100%; height: auto; }
-.feature__media--tall img { aspect-ratio: 4 / 5; object-fit: cover; }
-.feature__media--wide img { aspect-ratio: 4 / 3; object-fit: cover; }
-.feature__body > * + * { margin-top: var(--space-md); }
-.feature__actions { display: flex; flex-wrap: wrap; gap: var(--space-md); margin-top: var(--space-xl); }
 
+/* Angabenliste: Bezeichnung links, Wert rechtsbündig – eine exakte
+   Aufstellung, keine Aufzählung mit Punkten. */
 .feature__points { margin-top: var(--space-lg); }
 .feature__points li {
-  padding-block: var(--space-sm);
-  border-top: var(--border-width) solid rgb(var(--color-line));
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--space-md);
   align-items: baseline;
+  padding-block: var(--space-sm);
+  border-top: var(--hair);
 }
-.feature__points li:last-child { border-bottom: var(--border-width) solid rgb(var(--color-line)); }
-.feature__points .meta { flex: none; min-width: 6rem; color: rgb(var(--color-muted)); }
+.feature__points li:last-child { border-bottom: var(--hair); }
+.feature__points .meta { color: rgb(var(--color-muted)); }
+.feature__points li > span:last-child {
+  font-size: 0.9375rem;
+  text-align: right;
+}
+
+/* --------------------------------------------------- Komposition „spec" --- */
+/* Hochformatiges Bild, daneben eine ruhige Textspalte, die oben mit dem
+   Bild abschließt statt mittig zu sitzen. */
+@media (min-width: 990px) {
+  .feature--spec {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    align-items: start;
+    gap: clamp(2.5rem, 5vw, 5rem);
+  }
+  .feature--spec.feature--reverse { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
+  .feature--spec .feature__media img,
+  .feature--spec .feature__media svg { aspect-ratio: 4 / 5; object-fit: cover; }
+  .feature--spec .feature__body { padding-top: var(--space-xs); }
+  .feature--spec .feature__text { font-size: 1.0625rem; }
+}
+
+/* ---------------------------------------------- Komposition „statement" --- */
+/* Breites Bild, das rechts aus dem Innenabstand läuft; links eine schmale
+   Textspalte auf einer Haarlinie, unten ausgerichtet. Bewusst ohne
+   Angabenliste und ohne gefüllte Schaltfläche. */
+.feature--statement .feature__media {
+  margin-inline: calc(var(--gutter) * -1);
+}
+.feature--statement .feature__media img,
+.feature--statement .feature__media svg { aspect-ratio: 3 / 2; object-fit: cover; }
+.feature--statement .feature__body {
+  padding-top: var(--space-md);
+  border-top: var(--hair);
+}
+.feature--statement .feature__text {
+  font-size: clamp(1rem, 0.95rem + 0.35vw, 1.1875rem);
+  max-width: 44ch;
+  color: rgb(var(--color-muted));
+}
+
+@media (min-width: 750px) {
+  .feature--statement .feature__media { margin-inline: 0; }
+}
+
+@media (min-width: 990px) {
+  .feature--statement {
+    grid-template-columns: minmax(0, 4.5fr) minmax(0, 7.5fr);
+    align-items: end;
+    gap: clamp(2.5rem, 5vw, 5rem);
+  }
+  /* Bildseite und Bildformat setzt diese Komposition selbst. */
+  .feature--statement .feature__media {
+    order: 2;
+    margin-right: calc(var(--gutter) * -1);
+  }
+  .feature--statement .feature__media img,
+  .feature--statement .feature__media svg { aspect-ratio: 5 / 4; }
+  .feature--statement .feature__body { padding-bottom: clamp(1.5rem, 3vw, 3rem); }
+  .feature--statement .feature__body .h2,
+  .feature--statement .feature__body h2 {
+    font-size: clamp(2rem, 1.1rem + 2.6vw, 3.25rem);
+  }
+}
 
 /* Duftfinder-Teaser: die drei Fragen als Vorschau, nicht als Formular */
 .finder-teaser { display: grid; gap: var(--space-xl); }
@@ -77,14 +158,45 @@
 }
 .finder-steps__answers { margin-top: var(--space-xs); color: rgb(var(--color-muted)); font-size: .9375rem; }
 
-/* Newsletter – zurückhaltend, kein Pop-up */
-.newsletter__form { display: flex; flex-wrap: wrap; gap: var(--space-md); margin-top: var(--space-lg); }
-.newsletter__form .field { flex: 1 1 16rem; }
+/* Newsletter – zurückhaltend, kein Pop-up und keine große Fläche.
+   Links die Anrede, rechts eine einzige Eingabezeile auf einer Haarlinie. */
+.newsletter {
+  display: grid;
+  gap: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: var(--hair);
+}
+.newsletter__title { margin-bottom: var(--space-xs); }
+.newsletter__text { color: rgb(var(--color-muted)); font-size: 0.9375rem; max-width: 40ch; }
+.newsletter__form { margin: 0; }
+.newsletter__status { margin-top: var(--space-sm); }
+.newsletter__note { margin-top: var(--space-sm); font-size: 0.75rem; color: rgb(var(--color-muted)); }
 
+@media (min-width: 750px) {
+  .newsletter {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
+    align-items: end;
+    gap: var(--space-2xl);
+  }
+}
+
+/* Hinweis ausschließlich für den Theme-Editor: Er soll sich sichtbar vom
+   übrigen Entwurf abheben, damit niemand ihn für Gestaltung hält. */
 .note-placeholder {
   padding: var(--space-lg);
   border: var(--border-width) dashed rgb(var(--color-muted));
+  color: rgb(var(--color-muted));
+  font-size: 0.875rem;
 }
+
+/* Kontaktseite: Firmenangaben unter dem Formular */
+.contact-company { margin-top: var(--space-2xl); padding-top: var(--space-lg); border-top: var(--hair); }
+.contact-company__list { margin-top: var(--space-sm); }
+.contact-company__note { margin-top: var(--space-md); }
+
+/* Suchseite: die Eingabezeile bleibt schmal, die Trefferzahl ruhig. */
+.search-page__form { max-width: 40rem; }
+.results-count { margin-bottom: var(--space-lg); color: rgb(var(--color-muted)); }
 
 /* v4.2.11 Mobile: Der Abstand zwischen Bild und Text sowie die Zeilen der
    Merkmalsliste (Konzentration / Groesse / Charakter) waren auf dem Telefon
@@ -95,8 +207,7 @@
   .feature { gap: var(--space-lg); }
   .feature__points { margin-top: var(--space-md); }
   .feature__points li { padding-block: var(--space-xs); gap: var(--space-sm); }
-  .feature__points .meta { min-width: 5.5rem; }
   .feature__actions { margin-top: var(--space-lg); }
-
-  .newsletter__form { margin-top: var(--space-md); gap: var(--space-sm); }
+  .feature__price,
+  .feature__note { margin-top: var(--space-md); }
 }

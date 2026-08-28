@@ -2,21 +2,19 @@
   <div class="page-width">
     <div class="footer__top">
       {%- for block in section.blocks -%}
-        <div {{ block.shopify_attributes }}>
+        <div class="footer__block footer__block--{{ block.type }}" {{ block.shopify_attributes }}>
           {%- case block.type -%}
             {%- when 'brand' -%}
-              <p class="wordmark" style="font-size: 1.125rem;">{{ settings.wordmark | escape }}</p>
+              <p class="wordmark footer__wordmark">{{ settings.wordmark | escape }}</p>
               {%- if block.settings.text != blank -%}
-                <div class="rte text-body-sm text-muted measure-narrow" style="margin-top: var(--space-md);">
-                  {{ block.settings.text }}
-                </div>
+                <div class="rte footer__brand-text">{{ block.settings.text }}</div>
               {%- endif -%}
               {%- assign has_social = false -%}
               {%- if settings.social_instagram != blank or settings.social_tiktok != blank or settings.social_facebook != blank or settings.social_pinterest != blank or settings.social_youtube != blank -%}
                 {%- assign has_social = true -%}
               {%- endif -%}
               {%- if has_social -%}
-                <nav class="social-list" aria-label="{{ 'general.social.follow_us' | t }}" style="margin-top: var(--space-lg);">
+                <nav class="social-list" aria-label="{{ 'general.social.follow_us' | t }}">
                   {%- if settings.social_instagram != blank -%}<a href="{{ settings.social_instagram }}" rel="noopener" target="_blank">{{ 'general.social.instagram' | t }}</a>{%- endif -%}
                   {%- if settings.social_tiktok != blank -%}<a href="{{ settings.social_tiktok }}" rel="noopener" target="_blank">{{ 'general.social.tiktok' | t }}</a>{%- endif -%}
                   {%- if settings.social_facebook != blank -%}<a href="{{ settings.social_facebook }}" rel="noopener" target="_blank">{{ 'general.social.facebook' | t }}</a>{%- endif -%}
@@ -58,16 +56,16 @@
                 <li>{{ settings.contact_phone }}</li>
                 <li>{{ settings.contact_hours }}</li>
               </ul>
-              <p class="demo-flag" style="margin-top: var(--space-md);">{{ 'general.demo_notice' | t }}</p>
+              <p class="demo-flag footer__note">{{ 'general.demo_notice' | t }}</p>
 
             {%- when 'newsletter' -%}
               <p class="footer__heading meta meta--muted">{{ 'sections.footer.newsletter_title' | t }}</p>
               {%- if block.settings.text != blank -%}
                 <p class="text-body-sm text-muted measure-narrow">{{ block.settings.text | escape }}</p>
               {%- endif -%}
-              {%- form 'customer', class: 'stack', id: 'FooterNewsletter' -%}
+              {%- form 'customer', class: 'footer__newsletter', id: 'FooterNewsletter' -%}
                 <input type="hidden" name="contact[tags]" value="newsletter">
-                <div class="field">
+                <div class="inline-field">
                   <label class="visually-hidden" for="FooterNewsletterEmail">{{ 'general.newsletter.label' | t }}</label>
                   <input
                     class="field__input"
@@ -78,14 +76,14 @@
                     autocomplete="email"
                     required
                   >
+                  <button type="submit" class="inline-field__submit">{{ 'general.newsletter.submit' | t }}</button>
                 </div>
-                <button type="submit" class="button button--secondary">{{ 'general.newsletter.submit' | t }}</button>
                 {%- if form.errors -%}
-                  <p class="field__error">{{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}</p>
+                  <p class="field__error footer__note">{{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}</p>
                 {%- elsif form.posted_successfully? -%}
-                  <p class="form-status">{{ 'general.newsletter.success' | t }}</p>
+                  <p class="form-status footer__note">{{ 'general.newsletter.success' | t }}</p>
                 {%- endif -%}
-                <p class="text-muted" style="font-size: .75rem;">{{ 'general.newsletter.privacy_note' | t }}</p>
+                <p class="footer__fineprint">{{ 'general.newsletter.privacy_note' | t }}</p>
               {%- endform -%}
           {%- endcase -%}
         </div>
@@ -93,7 +91,7 @@
     </div>
 
     <div class="footer__bottom">
-      <p class="text-muted" style="font-size: .75rem;">
+      <p class="footer__fineprint">
         &copy; {{ 'now' | date: '%Y' }} {{ settings.wordmark | escape }}. {{ 'sections.footer.copyright' | t }}
         {%- if section.settings.show_legal_note %} {{ 'sections.footer.legal_note' | t }}{% endif -%}
       </p>

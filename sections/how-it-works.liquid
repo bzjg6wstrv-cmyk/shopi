@@ -2,12 +2,18 @@
 {%- comment -%}
   Ablauf in drei Schritten. Bewusst als nummerierte Zeilenliste mit feinen
   Trennlinien – keine Karten, keine Rahmen, keine Symbole je Schritt.
-  Ziffer links, Titel und Beschreibung rechts.
+  Ziffer links, Titel und Beschreibung rechts. Der Beratungsweg steht am
+  Ende der Liste auf derselben Textkante wie die Titel.
 {%- endcomment -%}
 <section class="section color-{{ section.settings.color_scheme }} color-scheme">
   <div class="page-width">
     {%- if section.settings.heading != blank -%}
-      <h2 class="h2 steps__heading">{{ section.settings.heading | escape }}</h2>
+      <div class="sec-head">
+        <h2 class="h2 sec-head__title">{{ section.settings.heading | escape }}</h2>
+        {%- if section.settings.intro != blank -%}
+          <p class="sec-head__aside">{{ section.settings.intro | escape }}</p>
+        {%- endif -%}
+      </div>
     {%- endif -%}
 
     <ol class="steps reveal">
@@ -24,7 +30,7 @@
 
     {%- if section.settings.show_whatsapp -%}
       <div class="steps__cta">
-        {% render 'whatsapp-link', class: 'button button--whatsapp', icon: true %}
+        {% render 'whatsapp-link', class: 'button steps__button', icon: true %}
       </div>
     {%- endif -%}
   </div>
@@ -53,6 +59,13 @@
       "id": "heading",
       "label": "Überschrift",
       "default": "So funktioniert's"
+    },
+    {
+      "type": "text",
+      "id": "intro",
+      "label": "Beitext rechts neben der Überschrift",
+      "info": "Ein kurzer Satz. Leer lassen blendet ihn aus.",
+      "default": "Von der Beratung bis zur Bestellung in drei Schritten."
     },
     {
       "type": "checkbox",

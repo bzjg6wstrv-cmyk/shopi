@@ -4,18 +4,18 @@
     {%- assign order_date = order.created_at | date: '%d.%m.%Y' -%}
     <p class="text-muted">{{ 'customer.order.date_html' | t: date: order_date }}</p>
 
-    <table style="margin-top: var(--space-2xl);">
+    <table class="mt-2xl">
       <thead>
         <tr>
-          <th style="text-align:left;" class="meta meta--muted">{{ 'customer.order.product' | t }}</th>
-          <th style="text-align:right;" class="meta meta--muted">{{ 'customer.order.quantity' | t }}</th>
-          <th style="text-align:right;" class="meta meta--muted">{{ 'customer.order.total' | t }}</th>
+          <th class="meta meta--muted account-table__th">{{ 'customer.order.product' | t }}</th>
+          <th class="meta meta--muted account-table__th account-table__th--end">{{ 'customer.order.quantity' | t }}</th>
+          <th class="meta meta--muted account-table__th account-table__th--end">{{ 'customer.order.total' | t }}</th>
         </tr>
       </thead>
       <tbody>
         {%- for line_item in order.line_items -%}
           <tr>
-            <td style="padding-block:.6rem;">
+            <td class="account-table__td">
               {{ line_item.title }}
               {%- for property in line_item.properties -%}
                 {%- assign first_char = property.first | slice: 0 -%}
@@ -24,32 +24,32 @@
                 {%- endif -%}
               {%- endfor -%}
             </td>
-            <td style="padding-block:.6rem; text-align:right;">{{ line_item.quantity }}</td>
-            <td style="padding-block:.6rem; text-align:right;">{{ line_item.final_line_price | money }}</td>
+            <td class="account-table__td account-table__td--end">{{ line_item.quantity }}</td>
+            <td class="account-table__td account-table__td--end">{{ line_item.final_line_price | money }}</td>
           </tr>
         {%- endfor -%}
       </tbody>
     </table>
 
-    <div style="margin-top: var(--space-xl); max-width: 24rem; margin-left: auto;">
+    <div class="account-total">
       <div class="cart-footer__row"><span>{{ 'customer.order.subtotal' | t }}</span><span>{{ order.line_items_subtotal_price | money }}</span></div>
       <div class="cart-footer__row"><span>{{ 'customer.order.shipping' | t }}</span><span>{{ order.shipping_price | money }}</span></div>
       <div class="cart-footer__row"><span>{{ 'customer.order.tax' | t }}</span><span>{{ order.tax_price | money }}</span></div>
       <div class="cart-footer__row"><strong>{{ 'customer.order.total' | t }}</strong><strong>{{ order.total_price | money }}</strong></div>
     </div>
 
-    <div class="grid grid--2" style="margin-top: var(--space-2xl);">
+    <div class="grid grid--2" class="mt-2xl">
       <div>
         <h2 class="h4">{{ 'customer.order.billing_address' | t }}</h2>
-        <div class="text-muted" style="margin-top: var(--space-sm);">{{ order.billing_address | format_address }}</div>
+        <div class="text-muted" class="mt-sm">{{ order.billing_address | format_address }}</div>
       </div>
       <div>
         <h2 class="h4">{{ 'customer.order.shipping_address' | t }}</h2>
-        <div class="text-muted" style="margin-top: var(--space-sm);">{{ order.shipping_address | format_address }}</div>
+        <div class="text-muted" class="mt-sm">{{ order.shipping_address | format_address }}</div>
       </div>
     </div>
 
-    <p style="margin-top: var(--space-2xl);">
+    <p class="mt-2xl">
       <a class="link-underline" href="{{ routes.account_url }}">{{ 'customer.account.return' | t }}</a>
     </p>
   </div>

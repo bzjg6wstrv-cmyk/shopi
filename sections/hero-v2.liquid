@@ -1,12 +1,23 @@
 {{ 'section-hero-v2.css' | asset_url | stylesheet_tag }}
 {%- comment -%}
-  Hero V2. Zwei Besuchertypen in einem Blick:
-  wer uns nicht kennt, bekommt die Beratung; wer schon einen Code hat,
-  bekommt das Eingabefeld – ohne einen weiteren Seitenaufruf.
+  Hero V2 – redaktionelle Komposition.
+
+  Aufbau: Links eine schmale Textspalte auf fester Rasterkante, rechts ein
+  angeschnittenes Bild, das bis an den rechten Bildschirmrand läuft. Die
+  beiden Wege in den Shop stehen unter einer Haarlinie nebeneinander und
+  sind dadurch klar unterscheidbar:
+    Weg A – Beratung per WhatsApp, für alle ohne Code
+    Weg B – Scent-Code-Eingabe, für alle, die bereits beraten wurden
+
+  Auf dem Telefon steht die Schlagzeile zuerst, direkt danach der
+  Beratungsweg und die Code-Eingabe. Das Bild folgt erst darunter.
+
+  Ohne hinterlegtes Bild wird der Abschnitt bewusst rein typografisch – es
+  erscheint kein heller Platzhalter als leere Fläche.
 {%- endcomment -%}
 <section class="hero2{% if section.settings.image == blank %} hero2--no-image{% endif %} color-{{ section.settings.color_scheme }} color-scheme">
   <div class="page-width hero2__inner">
-    <div>
+    <div class="hero2__body">
       {%- if section.settings.eyebrow != blank -%}
         <span class="eyebrow hero2__eyebrow reveal">{{ section.settings.eyebrow | escape }}</span>
       {%- endif -%}
@@ -27,51 +38,57 @@
         <p class="hero2__text reveal" data-reveal-delay="3">{{ section.settings.text | escape }}</p>
       {%- endif -%}
 
-      <div class="hero2__actions reveal" data-reveal-delay="4">
-        {%- if section.settings.show_whatsapp and section.settings.whatsapp_hint != blank -%}
-          <span class="hero2__hint meta meta--muted">{{ section.settings.whatsapp_hint | escape }}</span>
-        {%- endif -%}
+      <div class="hero2__paths reveal" data-reveal-delay="4">
         {%- if section.settings.show_whatsapp -%}
-          {% render 'whatsapp-link', class: 'button button--whatsapp hero2__cta', icon: true %}
+          <div class="hero2__path hero2__path--advice">
+            {%- if section.settings.whatsapp_hint != blank -%}
+              <span class="hero2__hint">{{ section.settings.whatsapp_hint | escape }}</span>
+            {%- endif -%}
+            {% render 'whatsapp-link', class: 'button hero2__cta', icon: true %}
+          </div>
         {%- endif -%}
-        {%- if section.settings.secondary_label != blank and section.settings.secondary_link != blank -%}
-          <a class="button button--secondary" href="{{ section.settings.secondary_link }}">
-            {{ section.settings.secondary_label | escape }}
-          </a>
+
+        {%- if section.settings.show_code_field -%}
+          <div class="hero2__path hero2__path--code">
+            <div class="hero2__code">
+              {% render 'scent-code-field',
+                id: 'HeroScentCode',
+                size: 'inline',
+                label: section.settings.code_label
+              %}
+            </div>
+          </div>
         {%- endif -%}
       </div>
 
-      {%- if section.settings.show_code_field -%}
-        <div class="hero2__code reveal" data-reveal-delay="4">
-          {% render 'scent-code-field',
-            id: 'HeroScentCode',
-            size: 'inline',
-            label: section.settings.code_label
-          %}
-        </div>
+      {%- if section.settings.secondary_label != blank and section.settings.secondary_link != blank -%}
+        <p class="hero2__secondary reveal" data-reveal-delay="4">
+          <a class="link-underline" href="{{ section.settings.secondary_link }}">
+            {{ section.settings.secondary_label | escape }}
+          </a>
+        </p>
       {%- endif -%}
     </div>
 
-    <div class="hero2__media">
-      <div class="hero2__media-inner" data-hero-drift>
-        {%- if section.settings.image != blank -%}
+    {%- if section.settings.image != blank -%}
+      <div class="hero2__media">
+        <div class="hero2__media-inner" data-hero-drift>
           <img
-            src="{{ section.settings.image | image_url: width: 1200 }}"
+            src="{{ section.settings.image | image_url: width: 1400 }}"
             srcset="{{ section.settings.image | image_url: width: 600 }} 600w,
                     {{ section.settings.image | image_url: width: 900 }} 900w,
-                    {{ section.settings.image | image_url: width: 1200 }} 1200w"
-            sizes="(min-width: 750px) 40vw, 100vw"
+                    {{ section.settings.image | image_url: width: 1400 }} 1400w,
+                    {{ section.settings.image | image_url: width: 1800 }} 1800w"
+            sizes="(min-width: 990px) 52vw, 100vw"
             alt="{{ section.settings.image.alt | escape }}"
             width="{{ section.settings.image.width }}"
             height="{{ section.settings.image.height }}"
             loading="eager"
             fetchpriority="high"
           >
-        {%- else -%}
-          {{ 'product-1' | placeholder_svg_tag: 'full-bleed-media' }}
-        {%- endif -%}
+        </div>
       </div>
-    </div>
+    {%- endif -%}
   </div>
 </section>
 
@@ -114,7 +131,8 @@
     {
       "type": "image_picker",
       "id": "image",
-      "label": "Bild"
+      "label": "Bild",
+      "info": "Hochformat, mindestens 1400 px breit. Ohne Bild wird der Hero bewusst rein typografisch dargestellt – es erscheint kein Platzhalter."
     },
     {
       "type": "header",

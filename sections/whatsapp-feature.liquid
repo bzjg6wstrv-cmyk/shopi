@@ -1,8 +1,13 @@
 {{ 'section-scent-code.css' | asset_url | stylesheet_tag }}
 {%- comment -%}
-  „Dein Duft ist nicht dabei?" – der Übergang vom öffentlichen Sortiment
-  in die persönliche Beratung. Vollflächig und im dunklen Schema, damit
-  der Abschnitt den Rhythmus der Startseite bricht.
+  „Dein Duft ist nicht dabei?" – der Übergang vom öffentlichen Sortiment in
+  die persönliche Beratung.
+
+  Komposition: vollflächiges Bild, der Text sitzt unten links auf der
+  Rasterkante, nicht mittig. Die Lesbarkeit kommt aus einem nach unten
+  zunehmenden Verlauf, nicht aus einer Box über dem Bild. Die Antwortzeit
+  steht auf dem Desktop rechts unten auf derselben Grundlinie – das hält die
+  Komposition asymmetrisch und ohne zusätzliche Fläche.
 {%- endcomment -%}
 <section class="wa-feature color-{{ section.settings.color_scheme }} color-scheme">
   <div class="wa-feature__media">
@@ -22,9 +27,7 @@
     {%- else -%}
       {{ 'lifestyle-2' | placeholder_svg_tag: 'full-bleed-media' }}
     {%- endif -%}
-    {%- if section.settings.scrim > 0 -%}
-      <div class="wa-feature__scrim" style="background-color: rgb(var(--color-background) / {{ section.settings.scrim | divided_by: 100.0 }});"></div>
-    {%- endif -%}
+    <div class="wa-feature__scrim"{% if section.settings.scrim > 0 %} style="background-color: rgb(var(--color-background) / {{ section.settings.scrim | divided_by: 100.0 }});"{% endif %}></div>
   </div>
 
   <div class="wa-feature__content page-width">
@@ -40,18 +43,18 @@
       {%- endif -%}
 
       <div class="wa-feature__actions">
-        {% render 'whatsapp-link', class: 'button button--whatsapp', icon: true, label: section.settings.button_label %}
+        {% render 'whatsapp-link', class: 'button wa-feature__cta', icon: true, label: section.settings.button_label %}
         {%- if section.settings.secondary_label != blank and section.settings.secondary_link != blank -%}
-          <a class="button button--secondary" href="{{ section.settings.secondary_link }}">
+          <a class="link-underline wa-feature__alt" href="{{ section.settings.secondary_link }}">
             {{ section.settings.secondary_label | escape }}
           </a>
         {%- endif -%}
       </div>
-
-      {%- if settings.whatsapp_response_time != blank -%}
-        <p class="wa-feature__note">{{ settings.whatsapp_response_time | escape }}</p>
-      {%- endif -%}
     </div>
+
+    {%- if settings.whatsapp_response_time != blank -%}
+      <p class="wa-feature__note reveal">{{ settings.whatsapp_response_time | escape }}</p>
+    {%- endif -%}
   </div>
 </section>
 

@@ -35,7 +35,15 @@
 <section class="section">
   <div class="page-width">
     <div class="product">
-      <div class="product__media">
+      {%- comment -%}
+        Galerie. Auf dem Telefon eine waagerechte Bahn mit Einrasten und
+        einer feinen Fortschrittslinie – dieselbe Bedienung wie in der
+        Bestseller-Reihe. Ab Tablet stehen die Bilder untereinander.
+        Die Bilder behalten ihre data-media-id: Der Variantenwechsel
+        scrollt weiterhin das passende Bild in den Blick.
+      {%- endcomment -%}
+      <div class="product__gallery" data-product-row>
+      <div class="product__media" data-row-track>
         {%- if product.media.size > 0 -%}
           {%- for media in product.media -%}
             <img
@@ -55,6 +63,10 @@
           {{ 'product-1' | placeholder_svg_tag: 'full-bleed-media' }}
         {%- endif -%}
       </div>
+        <div class="row-progress product__progress" data-row-progress aria-hidden="true" hidden>
+          <span class="row-progress__bar" data-row-progress-bar></span>
+        </div>
+      </div>
 
       <div class="product__info">
         <h1 class="product__title h2">{{ product.title }}</h1>
@@ -69,7 +81,7 @@
 
         {%- capture current_variant_line -%}{% render 'variant-facts', variant: current_variant, mode: 'line' %}{%- endcapture -%}
         {%- assign current_variant_line = current_variant_line | strip -%}
-        <p class="meta meta--muted" style="margin-top: var(--space-xs);" data-variant-meta{% if current_variant_line == blank %} hidden{% endif %}>
+        <p class="meta meta--muted product__variant-line" data-variant-meta{% if current_variant_line == blank %} hidden{% endif %}>
           {{ current_variant_line }}
         </p>
 
@@ -155,16 +167,16 @@
           {%- endform -%}
         </div>
 
-        <p class="product__note" style="margin-top: var(--space-md);">
+        <p class="product__note product__tax">
           {{ settings.tax_note }}
           {%- if settings.shipping_page != blank -%}
-            , <a href="{{ settings.shipping_page }}" style="text-decoration: underline;">{{ 'sections.cart.taxes_note' | t }}</a>
+            , <a class="product__tax-link" href="{{ settings.shipping_page }}">{{ 'sections.cart.taxes_note' | t }}</a>
           {%- endif -%}
         </p>
 
         {% render 'vc-scent-profile', product: product %}
 
-        <div style="margin-top: var(--space-2xl);">
+        <div class="product__blocks">
           {%- for block in section.blocks -%}
             {%- case block.type -%}
 
@@ -204,15 +216,30 @@
                 {%- if character != blank or intensity != blank -%}
                   <div class="product-block" {{ block.shopify_attributes }}>
                     <h2 class="h4">{{ 'products.product.character' | t }}</h2>
-                    <div class="trait-list">
-                      {%- for trait in character -%}<span class="trait">{{ trait | escape }}</span>{%- endfor -%}
+                    {%- comment -%}
+                      Angaben statt Pillen: Bezeichnung links, Wert rechts,
+                      getrennt durch Haarlinien.
+                    {%- endcomment -%}
+                    <dl class="spec-list">
+                      {%- if character != blank -%}
+                        <div class="spec-list__row">
+                          <dt class="meta meta--muted">{{ 'products.product.character' | t }}</dt>
+                          <dd>{{ character | join: ' · ' }}</dd>
+                        </div>
+                      {%- endif -%}
                       {%- if intensity != blank -%}
-                        <span class="trait">{{ 'products.product.intensity' | t }}: {{ intensity | escape }}</span>
+                        <div class="spec-list__row">
+                          <dt class="meta meta--muted">{{ 'products.product.intensity' | t }}</dt>
+                          <dd>{{ intensity | escape }}</dd>
+                        </div>
                       {%- endif -%}
                       {%- if gender != blank -%}
-                        <span class="trait">{{ gender | escape }}</span>
+                        <div class="spec-list__row">
+                          <dt class="meta meta--muted">{{ 'products.product.wearer' | t }}</dt>
+                          <dd>{{ gender | escape }}</dd>
+                        </div>
                       {%- endif -%}
-                    </div>
+                    </dl>
                   </div>
                 {%- endif -%}
 
@@ -220,20 +247,20 @@
                 {%- if seasons != blank or occasions != blank -%}
                   <div class="product-block" {{ block.shopify_attributes }}>
                     <h2 class="h4">{{ 'products.product.when_to_wear' | t }}</h2>
-                    <div class="wear-grid">
+                    <dl class="spec-list">
                       {%- if seasons != blank -%}
-                        <div class="wear-grid__item">
-                          <p class="meta meta--muted">{{ 'products.product.season' | t }}</p>
-                          <p>{{ seasons | join: ' · ' }}</p>
+                        <div class="spec-list__row">
+                          <dt class="meta meta--muted">{{ 'products.product.season' | t }}</dt>
+                          <dd>{{ seasons | join: ' · ' }}</dd>
                         </div>
                       {%- endif -%}
                       {%- if occasions != blank -%}
-                        <div class="wear-grid__item">
-                          <p class="meta meta--muted">{{ 'products.product.occasion' | t }}</p>
-                          <p>{{ occasions | join: ' · ' }}</p>
+                        <div class="spec-list__row">
+                          <dt class="meta meta--muted">{{ 'products.product.occasion' | t }}</dt>
+                          <dd>{{ occasions | join: ' · ' }}</dd>
                         </div>
                       {%- endif -%}
-                    </div>
+                    </dl>
                   </div>
                 {%- endif -%}
 
@@ -242,7 +269,7 @@
                   <div class="product-block" {{ block.shopify_attributes }}>
                     <div class="concentration-note">
                       <h2 class="h4">{{ block.settings.heading | escape }}</h2>
-                      <div class="rte text-body-sm" style="margin-top: var(--space-sm);">{{ block.settings.text }}</div>
+                      <div class="rte text-body-sm concentration-note__text">{{ block.settings.text }}</div>
                     </div>
                   </div>
                 {%- endif -%}
@@ -356,7 +383,7 @@
                   {%- assign wa_context = 'sections.whatsapp.context_product' | t | replace: '__CODE__', product_code -%}
                   <div class="product-block" {{ block.shopify_attributes }}>
                     <div class="addon">
-                      <div style="grid-column: 1 / 3;">
+                      <div class="addon__body">
                         <p class="addon__title">{{ block.settings.heading | escape }}</p>
                         <p class="addon__text">{{ block.settings.text | escape }}</p>
                       </div>
@@ -412,7 +439,13 @@
           assign vd_unit = vd_unit | append: variant.unit_price_measurement.reference_unit
         endif
       -%}
-      {{ variant.id | json }}: {
+      {%- comment -%}
+        Der Schlüssel muss in Anführungszeichen stehen: variant.id ist eine
+        Zahl, `| json` hätte daraus einen unquotierten Objektschlüssel
+        gemacht – das Ergebnis war kein gültiges JSON und der komplette
+        Variantendatensatz wurde im Browser verworfen.
+      {%- endcomment -%}
+      "{{ variant.id }}": {
         "price": {{ variant.price | money | json }},
         "compare": {{ vd_compare | json }},
         "onSale": {{ vd_on_sale | json }},
@@ -427,6 +460,7 @@
   }
 </script>
 <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'product-card-swipe.js' | asset_url }}" defer="defer"></script>
 {%- if is_scent_code_product %}
   {%- comment -%}
     Nur auf dem zentralen Scent-Code-Produkt: liest ?code= aus der Adresszeile,
