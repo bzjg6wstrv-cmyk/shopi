@@ -1,11 +1,17 @@
 <footer class="footer color-{{ section.settings.color_scheme }} color-scheme">
   <div class="page-width">
+    {%- comment -%}
+      Markenpräsenz: Die Wortmarke steht am Kopf des Fußbereichs im
+      Display-Register über die volle Breite. Auf dem Telefon bleibt sie
+      klein, damit der Fußbereich kompakt bleibt.
+    {%- endcomment -%}
+    <p class="footer__brandline reveal reveal--mask"><span>{{ settings.wordmark | escape }}</span></p>
+
     <div class="footer__top">
       {%- for block in section.blocks -%}
         <div class="footer__block footer__block--{{ block.type }}" {{ block.shopify_attributes }}>
           {%- case block.type -%}
             {%- when 'brand' -%}
-              <p class="wordmark footer__wordmark">{{ settings.wordmark | escape }}</p>
               {%- if block.settings.text != blank -%}
                 <div class="rte footer__brand-text">{{ block.settings.text }}</div>
               {%- endif -%}

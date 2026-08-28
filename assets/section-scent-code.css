@@ -1,170 +1,263 @@
 /* Abschnitte rund um Beratung und Scent Code. */
 
-/* Vollflächiger Beratungsabschnitt.
-   Bild über die volle Breite, Text unten links auf der Rasterkante. Die
-   Lesbarkeit entsteht aus einem nach unten zunehmenden Verlauf – keine
-   Fläche, kein Kasten, kein Schatten. */
-.wa-feature { position: relative; display: grid; isolation: isolate; }
-.wa-feature__media { grid-area: 1 / 1; position: relative; }
-.wa-feature__media img,
-.wa-feature__media svg {
-  width: 100%;
-  height: 100%;
-  min-height: 21rem;
-  object-fit: cover;
-}
-@media (min-width: 750px) { .wa-feature__media img, .wa-feature__media svg { min-height: 30rem; } }
-@media (min-width: 990px) { .wa-feature__media img, .wa-feature__media svg { min-height: 36rem; } }
+/* ==========================================================================
+   DUFTBERATUNG — der Premium-Moment
 
-/* Die Flächendeckung kommt aus dem Theme-Editor (inline background-color),
-   der Verlauf darüber sorgt dafür, dass der Text unten sicher lesbar ist
-   und das Bild oben offen bleibt. */
-.wa-feature__scrim {
+   Vollflächiges Bild, dunkler Farbstil, große Höhe. Der Text sitzt unten
+   links, die Antwortzeit unten rechts auf derselben Grundlinie. Lesbarkeit
+   kommt aus einem Verlauf, nicht aus einer Fläche über dem Bild.
+   ========================================================================== */
+.wa {
+  position: relative;
+  display: grid;
+  isolation: isolate;
+  min-height: min(78svh, 40rem);
+}
+.wa__media { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+.wa__media img,
+.wa__media svg { width: 100%; height: 100%; object-fit: cover; }
+
+.wa__scrim {
   position: absolute;
   inset: 0;
-  background-image: linear-gradient(
-    to top,
-    rgb(var(--color-background) / 0.7) 0%,
-    rgb(var(--color-background) / 0.3) 42%,
-    rgb(var(--color-background) / 0) 76%
-  );
+  background-image:
+    linear-gradient(to top,
+      rgb(var(--color-background) / calc(var(--scrim, 0.45) + 0.42)) 0%,
+      rgb(var(--color-background) / calc(var(--scrim, 0.45) + 0.2)) 38%,
+      rgb(var(--color-background) / calc(var(--scrim, 0.45) * 0.5)) 72%,
+      rgb(var(--color-background) / calc(var(--scrim, 0.45) * 0.1)) 100%),
+    linear-gradient(to right,
+      rgb(var(--color-background) / calc(var(--scrim, 0.45) * 0.7)) 0%,
+      rgb(var(--color-background) / 0) 70%);
 }
 
-.wa-feature__content {
-  grid-area: 1 / 1;
+.wa__content {
   position: relative;
   z-index: 1;
   display: grid;
   align-content: end;
+  gap: var(--space-lg);
+  padding-block: var(--sect-lg) var(--sect-sm);
+}
+
+/* Der Beratungsabschnitt läuft im dunklen Farbstil – dort trägt Champagner
+   ausreichend Kontrast. */
+.wa__eyebrow { color: rgb(var(--color-muted)); }
+.color-scheme-3 .wa__eyebrow,
+.color-scheme-4 .wa__eyebrow { color: rgb(var(--color-accent)); }
+
+/* Die Überschrift läuft im Display-Register, aber eine Stufe unter dem Hero:
+   Der Hero bleibt der lauteste Auftritt der Seite. */
+.wa__title .reveal--mask { display: block; }
+.wa__title .reveal--mask > span { display: block; }
+.wa__title {
+  margin-bottom: var(--space-md);
+  font-size: clamp(2.25rem, 9vw, 4rem);
+  text-transform: none;
+  letter-spacing: calc(var(--display-tracking, -0.03em) + var(--display-extra-tracking, 0em));
+  max-width: 16ch;
+}
+
+.wa__text {
+  font-size: clamp(1rem, 0.95rem + 0.4vw, 1.25rem);
+  line-height: 1.5;
+  max-width: 42ch;
+  color: rgb(var(--color-text) / 0.84);
+}
+
+.wa__actions {
+  margin-top: var(--space-xl);
+  display: grid;
   gap: var(--space-md);
-  padding-block: var(--space-xl);
+  max-width: 26rem;
 }
-.wa-feature__inner { max-width: 34rem; }
-.wa-feature__title { margin-bottom: var(--space-sm); }
-.wa-feature__text {
-  font-size: clamp(0.9375rem, 0.9rem + 0.35vw, 1.125rem);
-  line-height: 1.55;
-  max-width: 40ch;
-}
+.wa__alt { justify-self: start; }
 
-/* Ein durchgehender Hauptweg, daneben höchstens eine Textmarke – bewusst
-   keine zwei gleichwertigen Schaltflächen. */
-.wa-feature__actions {
-  margin-top: var(--space-lg);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-md) var(--space-xl);
-}
-.wa-feature__cta { min-height: 3.25rem; }
-@media (max-width: 599px) { .wa-feature__cta { display: flex; width: 100%; } }
+.wa__note { color: rgb(var(--color-text) / 0.6); }
 
-.wa-feature__note {
-  font-size: 0.6875rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.02em);
-  text-transform: uppercase;
-  color: rgb(var(--color-muted));
-}
-
-/* Ab Tablet steht die Antwortzeit rechts unten auf der Grundlinie des
-   Textblocks – die Komposition bleibt dadurch asymmetrisch. */
 @media (min-width: 750px) {
-  .wa-feature__content {
+  .wa { min-height: min(84svh, 48rem); }
+  .wa__content {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: end;
     gap: var(--space-2xl);
-    padding-block: clamp(2.5rem, 5vw, 4.5rem);
+    padding-block: var(--sect-xl) var(--sect-md);
   }
-  .wa-feature__note { padding-bottom: 0.35rem; text-align: right; }
+  .wa__note { padding-bottom: 0.4rem; text-align: right; }
+  .wa__actions { max-width: 30rem; }
 }
 
-/* Ablauf: nummerierte Zeilen statt Karten.
-   Zwei Spalten je Schritt – Ziffer links, Titel und Beschreibung rechts in
-   einem gemeinsamen Textblock. Getrennt wird nur durch eine Haarlinie:
-   keine Karten, keine Rahmen, keine Schatten, keine Symbole. */
-.steps { counter-reset: vc-step; }
+@media (min-width: 990px) {
+  .wa__title { font-size: clamp(3rem, 6.5vw, 5.5rem); }
+  .wa__body { max-width: 46rem; }
+}
+
+/* ==========================================================================
+   ABLAUF — drei sehr große Ziffern
+
+   Mobil: Ziffer links, Text rechts, getrennt durch waagerechte Haarlinien.
+   Ab 990 px: drei Spalten nebeneinander, senkrechte Haarlinien dazwischen,
+   die Ziffer steht groß über dem Titel. Keine Karten, keine Symbole.
+   ========================================================================== */
+.steps { display: grid; }
 
 .steps__item {
-  counter-increment: vc-step;
   display: grid;
-  grid-template-columns: 2.25rem minmax(0, 1fr);
-  gap: var(--space-sm);
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: start;
-  padding-block: var(--space-md);
-  border-top: var(--border-width) solid rgb(var(--color-line));
+  gap: var(--space-lg);
+  padding-block: var(--space-lg);
+  border-top: var(--hair);
 }
-.steps__item:last-child { border-bottom: var(--border-width) solid rgb(var(--color-line)); }
+.steps__item:last-child { border-bottom: var(--hair); }
 
-/* Kleine, ruhige Ziffer. Die Zeilenhöhe entspricht der des Titels, dadurch
-   stehen Ziffer und Titel ohne zusätzlichen Versatz auf einer Linie. */
 .steps__number {
-  font-family: var(--font-heading-family);
-  font-size: .75rem;
-  line-height: 1.85;
-  letter-spacing: .12em;
-  font-variant-numeric: tabular-nums;
-  color: rgb(var(--color-muted));
+  font-size: clamp(2rem, 9vw, 3.25rem);
+  line-height: 0.8;
+  min-width: 2.1em;
 }
-.steps__number::before { content: '0' counter(vc-step); }
 
-.steps__title {
-  font-size: 1.0625rem;
-  line-height: 1.3;
-}
+.steps__title { margin-bottom: var(--space-xs); }
 .steps__text {
-  margin-top: .15rem;
-  font-size: .875rem;
-  line-height: 1.5;
+  font-size: 0.9375rem;
+  line-height: 1.55;
   color: rgb(var(--color-muted));
-  max-width: 42ch;
+  max-width: 44ch;
   /* Verhindert einzelne Wörter am Zeilenende, etwa bei „VENT CELESTE Code". */
   text-wrap: pretty;
 }
 
-/* Der Beratungsweg schließt die Liste ab und sitzt auf derselben Textkante
-   wie die Titel – nicht als frei stehende Schaltfläche unter dem Abschnitt. */
-.steps__cta {
-  margin-top: var(--space-lg);
-  padding-left: calc(2.25rem + var(--space-sm));
-}
-.steps__button { min-height: 3.25rem; }
-@media (max-width: 599px) {
-  .steps__cta { padding-left: 0; }
-  .steps__button { display: flex; width: 100%; }
-}
+/* Der Beratungsweg schließt die Liste ab und sitzt auf der Textkante der
+   Titel – nicht als frei stehende Schaltfläche unter dem Abschnitt. */
+.steps__cta { margin-top: var(--space-xl); }
+.steps__button { max-width: 24rem; }
 
 @media (min-width: 990px) {
+  .steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: var(--hair);
+  }
   .steps__item {
-    grid-template-columns: 3.5rem minmax(0, 1fr);
-    gap: var(--space-md);
-    padding-block: var(--space-lg);
+    display: block;
+    padding: var(--space-2xl) var(--space-xl) var(--space-2xl) 0;
+    border-top: 0;
   }
-  /* Auf breiten Schirmen stehen Titel und Beschreibung nebeneinander –
-     dieselbe Editorial-Aufteilung wie bisher. */
-  .steps__body {
-    display: grid;
-    grid-template-columns: 17rem minmax(0, 1fr);
-    gap: var(--space-lg);
-    align-items: baseline;
+  .steps__item:last-child { border-bottom: 0; }
+  .steps__item + .steps__item {
+    border-left: var(--hair);
+    padding-left: var(--space-2xl);
   }
-  .steps__number { font-size: .8125rem; line-height: 2; }
-  .steps__title { font-size: 1.25rem; }
-  /* Auf breiten Schirmen passt jede Beschreibung in eine Zeile. */
-  .steps__text { margin-top: 0; font-size: .9375rem; max-width: 52ch; }
-  .steps__cta {
-    margin-top: var(--space-xl);
-    padding-left: calc(3.5rem + var(--space-md));
+  .steps__number {
+    display: block;
+    margin-bottom: var(--space-xl);
+    font-size: clamp(3.5rem, 6vw, 5.5rem);
   }
+  .steps__text { font-size: 1rem; }
+  .steps__cta { margin-top: var(--space-2xl); }
 }
 
-/* Code-Abschnitt auf der Startseite */
-.code-section { text-align: center; }
-.code-section__inner { max-width: 32rem; margin-inline: auto; }
+/* Vier oder fünf Schritte bleiben eine Zeilenfolge – drei Spalten wären
+   dann zu eng. */
+@media (min-width: 990px) {
+  .steps:has(> :nth-child(4)) { grid-template-columns: minmax(0, 1fr); border-top: 0; }
+  .steps:has(> :nth-child(4)) .steps__item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--space-2xl);
+    padding: var(--space-lg) 0;
+    border-top: var(--hair);
+    border-left: 0;
+  }
+  .steps:has(> :nth-child(4)) .steps__item:last-child { border-bottom: var(--hair); }
+  .steps:has(> :nth-child(4)) .steps__number { margin-bottom: 0; }
+}
+
+/* ==========================================================================
+   SCENT CODE — als Auftritt, nicht als Formular
+
+   Links die Erklärung, rechts das Feld im Markenzeichen-Grad: Präfix klein
+   und gesperrt, Ziffern sehr groß auf einer Grundlinie. Kein Kasten, keine
+   Fläche, kein gerundetes Standard-Eingabefeld.
+   ========================================================================== */
+.code-section__inner { display: grid; gap: var(--space-2xl); }
 .code-section__title { margin-bottom: var(--space-sm); }
-.code-section__text { color: rgb(var(--color-muted)); margin-bottom: var(--space-xl); }
-.code-section .code-field { text-align: left; }
-.code-section__alt { margin-top: var(--space-lg); font-size: .875rem; }
-.code-section__alt a { border-bottom: var(--border-width) solid currentColor; }
+.code-section__text { color: rgb(var(--color-muted)); max-width: 40ch; }
+.code-section__alt { margin-top: var(--space-lg); font-size: 0.875rem; }
+
+.code-field--monument .code-field__label {
+  display: block;
+  margin-bottom: var(--space-sm);
+  font-size: 0.625rem;
+  letter-spacing: calc(var(--meta-tracking) + 0.06em);
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+}
+.code-field--monument .code-field__row {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  border: 0;
+  border-bottom: var(--border-width) solid rgb(var(--color-text) / 0.35);
+  border-radius: 0;
+  background-color: transparent;
+  box-shadow: none;
+  transition: border-color var(--dur) var(--ease);
+}
+.code-field--monument .code-field__row:focus-within { box-shadow: none; border-bottom-color: rgb(var(--color-text)); }
+.code-field--monument .code-field__row.is-valid { border-bottom-color: rgb(var(--color-accent)); }
+
+.code-field--monument .code-field__prefix {
+  padding: 0;
+  font-family: var(--font-display-family, var(--font-heading-family));
+  font-size: clamp(1.125rem, 3vw, 1.75rem);
+  letter-spacing: 0.16em;
+  color: rgb(var(--color-muted));
+  transform: translateY(-0.55em);
+}
+.color-scheme-3 .code-field--monument .code-field__prefix,
+.color-scheme-4 .code-field--monument .code-field__prefix { color: rgb(var(--color-accent)); }
+
+.code-field--monument .code-field__input {
+  flex: 0 0 auto;
+  width: 3.4ch;
+  min-height: 3.5rem;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  font-family: var(--font-display-family, var(--font-heading-family));
+  font-size: clamp(3rem, 13vw, 6rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: rgb(var(--color-text));
+}
+.code-field--monument .code-field__input:focus { outline: none; }
+.code-field--monument .code-field__input::placeholder { color: rgb(var(--color-text) / 0.16); }
+
+.code-field--monument .code-field__submit {
+  margin-left: auto;
+  align-self: center;
+  min-height: 3rem;
+  padding: 0 0 0 var(--space-md);
+  background-color: transparent;
+  border: 0;
+  color: rgb(var(--color-text));
+  font-size: 0.6875rem;
+  letter-spacing: calc(var(--meta-tracking) + 0.06em);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.code-field--monument .code-field__submit svg { width: 16px; height: 16px; transition: transform var(--dur) var(--ease); }
+.code-field--monument .code-field__submit:hover svg { transform: translateX(4px); }
+.code-field--monument .code-field__status { margin-top: var(--space-sm); font-size: 0.8125rem; }
+
+@media (min-width: 990px) {
+  .code-section__inner {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: center;
+    gap: clamp(3rem, 7vw, 7rem);
+  }
+}
 
 /* Generischer Bestellweg */
 .code-order { display: grid; gap: var(--space-2xl); }
@@ -186,12 +279,9 @@
 .code-order__field { max-width: 22rem; margin-bottom: var(--space-xl); }
 .code-order__note { margin-top: var(--space-lg); font-size: .8125rem; color: rgb(var(--color-muted)); }
 
-/* v4.2.11 Mobile: engere Abstaende in den drei Schritten und im dunklen
-   Beratungsabschnitt. Schriftgroessen, Farben und Haarlinien bleiben. */
 @media (max-width: 749px) {
-  .steps__item { padding-block: var(--space-sm); }
-  .steps__cta { margin-top: var(--space-md); }
-
+  .steps__item { padding-block: var(--space-md); gap: var(--space-md); }
+  .steps__cta { margin-top: var(--space-lg); }
 }
 
 /* Code-Eingabe innerhalb der Standard-Produktseite. Nur für das zentrale

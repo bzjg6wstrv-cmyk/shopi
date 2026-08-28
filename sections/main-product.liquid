@@ -69,7 +69,42 @@
       </div>
 
       <div class="product__info">
-        <h1 class="product__title h2">{{ product.title }}</h1>
+        {%- comment -%}
+          Der Produktname ist bei VENT CELESTE der Scent Code – er läuft
+          deshalb im Display-Register und trägt die Seite. Steht im Metafeld
+          ein Code, wird er als Markenzeichen gesetzt (Präfix in Champagner,
+          Ziffern groß); sonst bleibt es der Titel aus Shopify.
+        {%- endcomment -%}
+        {%- liquid
+          assign code_value = product.metafields.custom.scent_code.value | strip | upcase
+          if code_value == blank
+            comment
+              Kein Metafeld gepflegt: Trägt der Titel selbst den Code – etwa
+              „VC-026" –, wird er übernommen. Alles andere bleibt Titel.
+            endcomment
+            assign code_value = product.title | strip | upcase
+          endif
+          assign code_prefix = settings.scent_code_prefix | default: 'VC'
+          assign code_digits = ''
+          if code_value != blank
+            assign code_rest = code_value | remove_first: code_prefix | remove_first: '-' | remove_first: ' ' | strip
+            assign code_check = code_rest | remove: '0' | remove: '1' | remove: '2' | remove: '3' | remove: '4' | remove: '5' | remove: '6' | remove: '7' | remove: '8' | remove: '9'
+            assign code_check_len = code_check | size
+            if code_check_len == 0 and code_rest != blank
+              assign code_digits = code_rest
+            endif
+          endif
+        -%}
+        {%- if code_digits != blank -%}
+          <h1 class="product__title">
+            <span class="code-mark code-mark--xl">
+              <span class="code-mark__prefix">{{ code_prefix }}-</span><span class="code-mark__digits">{{ code_digits }}</span>
+            </span>
+            <span class="visually-hidden">{{ product.title }}</span>
+          </h1>
+        {%- else -%}
+          <h1 class="product__title product__title--text">{{ product.title }}</h1>
+        {%- endif -%}
 
         {%- if families != blank or character != blank -%}
           <p class="product__meta">

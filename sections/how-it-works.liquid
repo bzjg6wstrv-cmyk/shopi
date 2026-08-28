@@ -1,14 +1,16 @@
 {{ 'section-scent-code.css' | asset_url | stylesheet_tag }}
 {%- comment -%}
-  Ablauf in drei Schritten. Bewusst als nummerierte Zeilenliste mit feinen
-  Trennlinien – keine Karten, keine Rahmen, keine Symbole je Schritt.
-  Ziffer links, Titel und Beschreibung rechts. Der Beratungsweg steht am
-  Ende der Liste auf derselben Textkante wie die Titel.
+  Der Ablauf in drei Schritten.
+
+  Keine Karten, keine Symbole, keine Kacheln: drei sehr große Ziffern, unter
+  jeder ein kurzer Titel und ein Satz. Auf dem Desktop stehen sie
+  nebeneinander und werden durch senkrechte Haarlinien geteilt, auf dem
+  Telefon untereinander mit der Ziffer links neben dem Text.
 {%- endcomment -%}
 <section class="section color-{{ section.settings.color_scheme }} color-scheme">
   <div class="page-width">
     {%- if section.settings.heading != blank -%}
-      <div class="sec-head">
+      <div class="sec-head sec-head--no-index">
         <h2 class="h2 sec-head__title">{{ section.settings.heading | escape }}</h2>
         {%- if section.settings.intro != blank -%}
           <p class="sec-head__aside">{{ section.settings.intro | escape }}</p>
@@ -16,12 +18,12 @@
       </div>
     {%- endif -%}
 
-    <ol class="steps reveal">
+    <ol class="steps reveal reveal--stagger">
       {%- for block in section.blocks -%}
         <li class="steps__item" {{ block.shopify_attributes }}>
-          <span class="steps__number" aria-hidden="true"></span>
+          <span class="steps__number figure-index" aria-hidden="true">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
           <div class="steps__body">
-            <h3 class="steps__title">{{ block.settings.title | escape }}</h3>
+            <h3 class="steps__title h3">{{ block.settings.title | escape }}</h3>
             <p class="steps__text">{{ block.settings.text | escape }}</p>
           </div>
         </li>
@@ -30,7 +32,7 @@
 
     {%- if section.settings.show_whatsapp -%}
       <div class="steps__cta">
-        {% render 'whatsapp-link', class: 'button steps__button', icon: true %}
+        {% render 'whatsapp-link', class: 'action-link action-link--inline steps__button', arrow: true %}
       </div>
     {%- endif -%}
   </div>

@@ -138,6 +138,54 @@
   }
 }
 
+/* ---------------------------------------------- Komposition „monument" ---
+   Ein einzelner Wert wird zum Gestaltungselement: sehr groß, sehr
+   zurückgenommen, hinter der Komposition. Das Bild sitzt versetzt darüber,
+   der Text liegt auf der linken Rasterkante. Kein Verlauf, kein Schatten –
+   die Wirkung kommt allein aus dem Größenverhältnis. */
+.feature--monument {
+  position: relative;
+  isolation: isolate;
+  /* Die große Zahl wird an der Abschnittskante beschnitten – bewusst, und
+     damit sie nicht in den Nachbarabschnitt läuft. */
+  overflow: hidden;
+}
+/* Die Zahl steht hinter der Textspalte, nicht hinter dem Bild: Dort bliebe
+   sie verdeckt. Bei 7 % Deckung wirkt sie wie eine Prägung im Papier. */
+.feature__figure {
+  position: absolute;
+  z-index: -1;
+  top: -0.14em;
+  left: -0.05em;
+  font-family: var(--font-display-family, var(--font-heading-family));
+  font-weight: var(--font-display-weight, var(--font-heading-weight));
+  font-size: clamp(7rem, 34vw, 22rem);
+  line-height: 0.78;
+  letter-spacing: -0.05em;
+  color: rgb(var(--color-text) / 0.07);
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+}
+
+.feature--monument .feature__media { position: relative; }
+.feature--monument .feature__media img,
+.feature--monument .feature__media svg { aspect-ratio: var(--ratio-portrait); object-fit: cover; }
+
+@media (min-width: 990px) {
+  .feature--monument {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: center;
+    gap: clamp(3rem, 7vw, 7rem);
+  }
+  .feature--monument.feature--reverse { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+  .feature--monument .feature__body { padding-block: var(--space-2xl); }
+  .feature--monument .feature__body .h2,
+  .feature--monument .feature__body h2 { font-size: clamp(2rem, 1.2rem + 2.4vw, 3.25rem); }
+  .feature--monument .feature__text { font-size: 1.0625rem; max-width: 44ch; }
+  .feature__figure { top: -0.18em; font-size: clamp(9rem, 21vw, 21rem); }
+}
+
 /* Duftfinder-Teaser: die drei Fragen als Vorschau, nicht als Formular */
 .finder-teaser { display: grid; gap: var(--space-xl); }
 @media (min-width: 990px) { .finder-teaser { grid-template-columns: 5fr 7fr; gap: clamp(2rem, 6vw, 6rem); } }

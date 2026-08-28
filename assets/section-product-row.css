@@ -2,20 +2,26 @@
    Keine Slider-Library: Momentum-Scrolling, Wischen und Tastaturbedienung
    kommen vom Browser. Ohne JavaScript bleibt die Reihe voll benutzbar. */
 
-/* Abschnittskopf auf einer Haarlinie: Titel links, Ziel und Steuerung rechts
-   auf derselben Grundlinie. */
+/* Abschnittskopf: Kennziffer links, Titel darunter, Ziel und Steuerung
+   rechts auf der Grundlinie. Dieselbe Bauform wie der Abschnittskopf des
+   Themes, nur mit Steuerung. */
 .row-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-md);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-sm) var(--space-md);
   padding-top: var(--space-md);
   border-top: var(--hair);
   margin-bottom: var(--space-lg);
 }
 .row-head__title { min-width: 0; }
-.row-head__actions { display: flex; align-items: center; gap: var(--space-lg); }
+.row-head__title .h2 { margin-top: 0.15rem; }
+.row-head__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  justify-self: end;
+}
 
 /* Die Pfeile sind reine Zeichen ohne Rahmen – nichts an dieser Reihe soll
    nach einem eingebundenen Slider aussehen. */
@@ -33,9 +39,13 @@
   transition: color var(--dur) var(--ease), opacity var(--dur) var(--ease);
 }
 .row-arrow:hover { color: rgb(var(--color-text)); }
+.row-arrow:hover svg { transform: translateX(3px); }
+.row-arrow--prev:hover svg { transform: rotate(180deg) translateX(3px); }
 .row-arrow[disabled] { opacity: .25; cursor: default; }
 .row-arrow[disabled]:hover { color: rgb(var(--color-muted)); }
-.row-arrow svg { width: 17px; height: 17px; }
+.row-arrow[disabled]:hover svg { transform: none; }
+.row-arrow--prev[disabled]:hover svg { transform: rotate(180deg); }
+.row-arrow svg { width: 17px; height: 17px; transition: transform var(--dur) var(--ease); }
 .row-arrow--prev svg { transform: rotate(180deg); }
 
 /* Breite der Vorschau auf die nächste Karte – der Wisch-Hinweis. */

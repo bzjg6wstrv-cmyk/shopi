@@ -510,6 +510,27 @@
     }, 60);
   });
 
+  /* ------------------------------------------- Höhe des Kopfbereichs melden */
+  /* Der Hero soll genau bis zur Falz reichen. Wie hoch der Kopfbereich
+     tatsaechlich ist, haengt von der Laenge der Ankuendigung und vom Geraet
+     ab – deshalb wird sie gemessen und als --header-block bereitgestellt,
+     statt sie im Stylesheet zu schaetzen. Ohne JavaScript greift der
+     Ersatzwert aus dem Stylesheet. */
+  var kopfMessen = function () {
+    var hoehe = 0;
+    var leiste = document.querySelector('.announcement');
+    var kopf = document.querySelector('.header');
+    if (leiste) hoehe += leiste.getBoundingClientRect().height;
+    if (kopf) hoehe += kopf.getBoundingClientRect().height;
+    if (hoehe > 0) {
+      document.documentElement.style.setProperty('--header-block', Math.round(hoehe) + 'px');
+    }
+  };
+  kopfMessen();
+  window.addEventListener('resize', kopfMessen);
+  window.addEventListener('orientationchange', kopfMessen);
+  window.addEventListener('load', kopfMessen);
+
   /* --------------------------------------------- Kopfbereich beim Scrollen */
   /* Ab 990 px raeumt der Kopf beim Scrollen seinen oberen Reserveraum aus dem
      Blick. Verschoben wird nur der Klebeabstand der Leiste – die Hoehe im
@@ -554,8 +575,11 @@
         var viewport = window.innerHeight || 1;
         /* -1 … 1 über den sichtbaren Bereich, gedeckelt auf 24 px */
         var relative = (rect.top + rect.height / 2 - viewport / 2) / viewport;
-        var offset = Math.max(-1, Math.min(1, relative)) * -24;
-        drift.style.setProperty('--hero-drift', offset.toFixed(1) + 'px');
+        var begrenzt = Math.max(-1, Math.min(1, relative));
+        /* Hoehe und Skalierung sind bewusst klein gehalten: Das Bild soll
+           atmen, nicht wandern. Gedeckelt auf 34 px und 2,5 %. */
+        drift.style.setProperty('--hero-drift', (begrenzt * -34).toFixed(1) + 'px');
+        drift.style.setProperty('--hero-zoom', (1.025 - Math.abs(begrenzt) * 0.025).toFixed(4));
         driftTicking = false;
       });
     };

@@ -22,6 +22,21 @@
   if settings.button_uppercase
     assign button_transform = 'uppercase'
   endif
+
+  comment
+    Display-Register: Die ganz großen Schlagzeilen laufen entweder in der
+    Sans oder in der Serif – beide sind bereits geladen, es kommt keine
+    dritte Schrift hinzu. Die Sans bekommt eine engere Laufweite und ein
+    höheres Gewicht, sonst wirkt Versalsatz in diesem Grad zu dünn.
+  endcomment
+  assign display_font = heading_font
+  assign display_extra_tracking = '0em'
+  assign display_weight = heading_font.weight
+  if settings.display_font == 'sans'
+    assign display_font = body_font
+    assign display_extra_tracking = '-0.015em'
+    assign display_weight = body_font.weight
+  endif
 -%}
 {{ body_font | font_face: font_display: 'swap' }}
 {{ body_font_bold | font_face: font_display: 'swap' }}
@@ -29,61 +44,95 @@
 {{ heading_font | font_face: font_display: 'swap' }}
 
 
+{%- comment -%}
+  Vier Farbstile, dieselbe Familie wie bisher – aber deutlich kontrastreicher
+  eingestellt. Die gedämpften Töne waren gegenüber Ivory zu schwach: Beitexte
+  lagen unter 4,5:1. Sie sind jetzt dunkler und leicht kühler, Ivory wirkt
+  dadurch wärmer statt beige. Die Akzentfarbe ist reines Champagner und
+  erscheint ausschließlich in Zuständen und feinen Marken.
+{%- endcomment -%}
 :root,
 .color-scheme,
 .color-scheme-1,
 .color-scheme-ivory {
   --color-background: 245 242 237;
-  --color-text: 20 18 16;
-  --color-muted: 140 131 117;
-  --color-line: 220 213 202;
-  --color-accent: 195 172 130;
-  --color-button: 20 18 16;
+  --color-text: 18 16 14;
+  --color-muted: 116 108 96;
+  --color-line: 214 206 194;
+  --color-accent: 176 148 102;
+  --color-button: 18 16 14;
   --color-button-label: 245 242 237;
 }
 .color-scheme-2,
 .color-scheme-ivory-deep {
-  --color-background: 235 230 222;
-  --color-text: 20 18 16;
-  --color-muted: 126 117 104;
-  --color-line: 210 202 189;
-  --color-accent: 183 156 108;
-  --color-button: 20 18 16;
-  --color-button-label: 235 230 222;
+  --color-background: 233 228 219;
+  --color-text: 18 16 14;
+  --color-muted: 108 100 89;
+  --color-line: 203 194 180;
+  --color-accent: 166 138 92;
+  --color-button: 18 16 14;
+  --color-button-label: 233 228 219;
 }
 .color-scheme-3,
 .color-scheme-ink {
-  --color-background: 20 18 16;
-  --color-text: 241 237 230;
-  --color-muted: 162 152 137;
-  --color-line: 51 46 40;
-  --color-accent: 195 172 130;
-  --color-button: 241 237 230;
-  --color-button-label: 20 18 16;
+  --color-background: 15 14 12;
+  --color-text: 244 241 235;
+  --color-muted: 168 158 143;
+  --color-line: 48 44 38;
+  --color-accent: 201 178 134;
+  --color-button: 244 241 235;
+  --color-button-label: 15 14 12;
 }
 .color-scheme-4,
 .color-scheme-stone {
-  --color-background: 140 131 117;
-  --color-text: 251 249 245;
-  --color-muted: 227 220 209;
-  --color-line: 158 149 135;
-  --color-accent: 240 227 204;
-  --color-button: 251 249 245;
-  --color-button-label: 58 52 44;
+  --color-background: 124 115 102;
+  --color-text: 252 250 247;
+  --color-muted: 232 226 216;
+  --color-line: 145 136 122;
+  --color-accent: 242 229 205;
+  --color-button: 252 250 247;
+  --color-button-label: 46 41 35;
 }
+
+{%- comment -%}
+  Klarer Kontrast zwischen zwei hellen Abschnitten: Die Linienfarbe wird
+  etwas dunkler, damit Haarlinien auf Ivory sichtbar bleiben.
+{%- endcomment -%}
+{%- if settings.section_contrast == 'crisp' -%}
+.color-scheme-1 { --color-line: 205 196 182; }
+.color-scheme-2 { --color-line: 193 183 168; }
+{%- endif -%}
 
 
 .color-scheme { background-color: rgb(var(--color-background)); color: rgb(var(--color-text)); }
 
 :root {
+  {%- comment -%}
+    Die Schriftfamilien werden nur ausgegeben, wenn sie sich auch auflösen
+    lassen. Eine leere Familie ergäbe „font-family: , ;" – eine ungültige
+    Angabe, die den gesamten Aufruf verwirft. So greift stattdessen sauber
+    der Ersatzwert im Stylesheet.
+  {%- endcomment -%}
+  {%- if body_font.family != blank -%}
   --font-body-family: {{ body_font.family }}, {{ body_font.fallback_families }};
-  --font-body-style: {{ body_font.style }};
-  --font-body-weight: {{ body_font.weight }};
+  {%- endif %}
+  --font-body-style: {{ body_font.style | default: 'normal' }};
+  --font-body-weight: {{ body_font.weight | default: 400 }};
   --body-scale: {{ settings.body_scale | divided_by: 100.0 }};
 
+  {%- if heading_font.family != blank %}
   --font-heading-family: {{ heading_font.family }}, {{ heading_font.fallback_families }};
-  --font-heading-style: {{ heading_font.style }};
-  --font-heading-weight: {{ heading_font.weight }};
+  {%- endif %}
+  --font-heading-style: {{ heading_font.style | default: 'normal' }};
+  --font-heading-weight: {{ heading_font.weight | default: 400 }};
+
+  /* Display-Register – siehe Einstellung „Charakter der Schlagzeilen". */
+  {%- if display_font.family != blank %}
+  --font-display-family: {{ display_font.family }}, {{ display_font.fallback_families }};
+  {%- endif %}
+  --font-display-style: {{ display_font.style | default: 'normal' }};
+  --font-display-weight: {{ display_weight | default: 400 }};
+  --display-extra-tracking: {{ display_extra_tracking }};
 
   --heading-scale: {{ settings.heading_scale | divided_by: 100.0 }};
   --heading-tracking: {{ settings.heading_tracking | divided_by: 100.0 }}em;

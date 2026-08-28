@@ -1,22 +1,24 @@
 {{ 'section-scent-code.css' | asset_url | stylesheet_tag }}
 {%- comment -%}
-  Scent-Code-Eingabe als eigener Abschnitt auf der Startseite.
-  Für Kunden, die bereits beraten wurden und nur noch bestellen wollen.
+  Scent-Code-Eingabe als eigener Abschnitt.
+
+  Der Code ist das Alleinstellungsmerkmal der Marke – deshalb ist dieser
+  Abschnitt kein Formular, sondern ein Auftritt: das Präfix und die Ziffern
+  stehen sehr groß auf einer Grundlinie, links daneben die Erklärung. Ohne
+  JavaScript bleibt es ein gewöhnliches Suchformular.
 {%- endcomment -%}
-<section class="section section--tight code-section color-{{ section.settings.color_scheme }} color-scheme">
-  <div class="page-width">
-    <div class="code-section__inner reveal">
+<section class="section code-section color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width code-section__inner">
+    <div class="code-section__intro reveal">
       {%- if section.settings.eyebrow != blank -%}
         <span class="eyebrow">{{ section.settings.eyebrow | escape }}</span>
       {%- endif -%}
       {%- if section.settings.heading != blank -%}
-        <h2 class="code-section__title h3">{{ section.settings.heading | escape }}</h2>
+        <h2 class="code-section__title h2">{{ section.settings.heading | escape }}</h2>
       {%- endif -%}
       {%- if section.settings.text != blank -%}
         <p class="code-section__text">{{ section.settings.text | escape }}</p>
       {%- endif -%}
-
-      {% render 'scent-code-field', id: 'SectionScentCode', size: 'large' %}
 
       {%- if settings.whatsapp_enabled -%}
         <p class="code-section__alt">
@@ -24,6 +26,10 @@
           {% render 'whatsapp-link', class: 'link-underline', label: section.settings.whatsapp_label %}
         </p>
       {%- endif -%}
+    </div>
+
+    <div class="code-section__field reveal" data-reveal-delay="2">
+      {% render 'scent-code-field', id: 'SectionScentCode', size: 'monument' %}
     </div>
   </div>
 </section>

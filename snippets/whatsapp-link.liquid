@@ -8,6 +8,8 @@
     label   – Beschriftung (Standard: aus den Locales)
     icon    – true, um das Sprechblasen-Symbol voranzustellen
     as      – 'link' (Standard) gibt <a> aus, 'url' nur die URL als Text
+    arrow   – true, um einen Pfeil hinter die Beschriftung zu setzen
+              (für das .action-link-Register)
 
   Es wird bewusst kein WhatsApp-Widget und kein Meta-Skript eingebunden:
   Erst der Klick des Kunden stellt eine Verbindung zu Meta her.
@@ -55,6 +57,7 @@
     >
       {%- if icon -%}{% render 'icon', name: 'whatsapp' %}{%- endif -%}
       <span>{{ wa_label }}</span>
+      {%- if arrow -%}{% render 'icon', name: 'arrow' %}{%- endif -%}
     </a>
   {%- endif -%}
 {%- endif -%}

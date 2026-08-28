@@ -12,6 +12,10 @@
                   Innenabstand herausläuft, daneben eine schmale Textspalte
                   auf einer Haarlinie, größerer Schriftgrad, kein
                   Angabenblock, kein gefüllter Button.
+    „monument"  – ein einzelner Wert wird selbst zum Gestaltungselement.
+                  Die Angabe aus dem Feld „Große Zahl" steht sehr groß und
+                  sehr zurückgenommen hinter der Komposition, das Bild sitzt
+                  versetzt darüber.
 
   Preise stammen bei Bedarf aus einem echten Shopify-Produkt.
 {%- endcomment -%}
@@ -22,9 +26,12 @@
     assign feature_variant = linked_product.selected_or_first_available_variant
   endif
 -%}
-<section class="section color-{{ section.settings.color_scheme }} color-scheme">
+<section class="section section--lg color-{{ section.settings.color_scheme }} color-scheme">
   <div class="page-width">
     <div class="feature feature--{{ section.settings.layout | default: 'spec' }}{% if section.settings.media_position == 'right' %} feature--reverse{% endif %}{% if section.settings.media_shape == 'tall' %} feature--narrow-media{% endif %} reveal">
+      {%- if section.settings.layout == 'monument' and section.settings.figure != blank -%}
+        <span class="feature__figure" aria-hidden="true">{{ section.settings.figure | escape }}</span>
+      {%- endif -%}
       <div class="feature__media feature__media--{{ section.settings.media_shape }}">
         {%- if section.settings.image != blank -%}
           <img
@@ -126,10 +133,17 @@
       "label": "Komposition",
       "options": [
         { "value": "spec", "label": "Produktnah – Bild hochformatig, Angaben rechts" },
-        { "value": "statement", "label": "Markenauftritt – breites Bild, schmale Textspalte" }
+        { "value": "statement", "label": "Markenauftritt – breites Bild, schmale Textspalte" },
+        { "value": "monument", "label": "Monument – große Zahl als Gestaltungselement" }
       ],
       "default": "spec",
       "info": "Der Markenauftritt setzt Bildseite und Bildformat selbst; Position und Format unten wirken dann nicht."
+    },
+    {
+      "type": "text",
+      "id": "figure",
+      "label": "Große Zahl",
+      "info": "Nur für die Komposition Monument. Kurz halten, zum Beispiel 30 %."
     },
     {
       "type": "image_picker",

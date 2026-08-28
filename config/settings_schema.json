@@ -78,6 +78,23 @@
         "id": "brand_accent",
         "label": "Akzent",
         "default": "#C3AC82"
+      },
+      {
+        "type": "select",
+        "id": "section_contrast",
+        "label": "Kontrast der Ivory-Flächen",
+        "info": "Bestimmt, wie deutlich sich helle Abschnitte voneinander absetzen.",
+        "options": [
+          {
+            "value": "soft",
+            "label": "Weich"
+          },
+          {
+            "value": "crisp",
+            "label": "Klar (empfohlen)"
+          }
+        ],
+        "default": "crisp"
       }
     ]
   },
@@ -93,6 +110,23 @@
         "id": "font_heading",
         "label": "Schrift Überschriften",
         "default": "playfair_display_n4"
+      },
+      {
+        "type": "select",
+        "id": "display_font",
+        "label": "Charakter der Schlagzeilen",
+        "info": "Bestimmt, welche der beiden Schriften die ganz großen Schlagzeilen setzt. „Sans\" wirkt modisch und gegenwärtig, „Serif\" klassisch-redaktionell. Es wird keine zusätzliche Schrift geladen.",
+        "options": [
+          {
+            "value": "sans",
+            "label": "Sans – modern, modisch"
+          },
+          {
+            "value": "serif",
+            "label": "Serif – klassisch, redaktionell"
+          }
+        ],
+        "default": "sans"
       },
       {
         "type": "range",

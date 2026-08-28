@@ -1,25 +1,70 @@
 {{ 'section-hero-v2.css' | asset_url | stylesheet_tag }}
 {%- comment -%}
-  Hero V2 – redaktionelle Komposition.
+  Hero. Der stärkste Bereich der Seite.
 
-  Aufbau: Links eine schmale Textspalte auf fester Rasterkante, rechts ein
-  angeschnittenes Bild, das bis an den rechten Bildschirmrand läuft. Die
-  beiden Wege in den Shop stehen unter einer Haarlinie nebeneinander und
-  sind dadurch klar unterscheidbar:
+  Zwei Kompositionen, umschaltbar im Theme-Editor:
+
+    „overlay"  – vollflächiges Bild, die Schlagzeile liegt darüber. Der
+                 Standard und der eigentliche Markenauftritt.
+    „split"    – Textspalte links, angeschnittenes Bild rechts. Die ruhigere
+                 Fassung für Bilder, auf denen Text schlecht steht.
+
+  Unter beiden liegt die Einstiegsleiste: zwei gleichwertige Wege, durch eine
+  Linie getrennt, ohne eine einzige gefüllte Schaltfläche.
+
     Weg A – Beratung per WhatsApp, für alle ohne Code
     Weg B – Scent-Code-Eingabe, für alle, die bereits beraten wurden
 
-  Auf dem Telefon steht die Schlagzeile zuerst, direkt danach der
-  Beratungsweg und die Code-Eingabe. Das Bild folgt erst darunter.
+  Ohne hinterlegtes Bild wird der Abschnitt rein typografisch. Es erscheint
+  nie ein heller Shopify-Platzhalter als leere Fläche.
 
-  Ohne hinterlegtes Bild wird der Abschnitt bewusst rein typografisch – es
-  erscheint kein heller Platzhalter als leere Fläche.
+  Die Klassen heißen weiterhin hero2*: theme.js misst .hero2, um die
+  schwebende Beratungsleiste erst nach dem Hero einzublenden.
 {%- endcomment -%}
-<section class="hero2{% if section.settings.image == blank %} hero2--no-image{% endif %} color-{{ section.settings.color_scheme }} color-scheme">
-  <div class="page-width hero2__inner">
-    <div class="hero2__body">
+{%- liquid
+  assign hero_layout = section.settings.hero_layout | default: 'overlay'
+  assign has_image = false
+  if section.settings.image != blank
+    assign has_image = true
+  endif
+  if has_image == false
+    assign hero_layout = 'type'
+  endif
+  assign hero_scheme = section.settings.color_scheme
+  if hero_layout == 'overlay'
+    assign hero_scheme = section.settings.overlay_scheme | default: 'scheme-3'
+  endif
+-%}
+<section class="hero2 hero2--{{ hero_layout }} color-{{ hero_scheme }} color-scheme">
+  {%- if has_image -%}
+    <div class="hero2__media" aria-hidden="{% if hero_layout == 'overlay' %}true{% else %}false{% endif %}">
+      <div class="hero2__media-inner" data-hero-drift>
+        <img
+          src="{{ section.settings.image | image_url: width: 1800 }}"
+          srcset="{{ section.settings.image | image_url: width: 600 }} 600w,
+                  {{ section.settings.image | image_url: width: 900 }} 900w,
+                  {{ section.settings.image | image_url: width: 1400 }} 1400w,
+                  {{ section.settings.image | image_url: width: 1800 }} 1800w,
+                  {{ section.settings.image | image_url: width: 2400 }} 2400w"
+          sizes="{% if hero_layout == 'overlay' %}100vw{% else %}(min-width: 990px) 56vw, 100vw{% endif %}"
+          alt="{{ section.settings.image.alt | escape }}"
+          width="{{ section.settings.image.width }}"
+          height="{{ section.settings.image.height }}"
+          loading="eager"
+          fetchpriority="high"
+          style="object-position: {{ section.settings.image_position }};"
+        >
+      </div>
+      {%- if hero_layout == 'overlay' -%}
+        <div class="hero2__scrim" style="--scrim: {{ section.settings.scrim | divided_by: 100.0 }};"></div>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  <div class="hero2__inner page-width">
+    <div class="hero2__head reveal">
       {%- if section.settings.eyebrow != blank -%}
-        <span class="eyebrow hero2__eyebrow reveal">{{ section.settings.eyebrow | escape }}</span>
+        <span class="eyebrow hero2__eyebrow">{{ section.settings.eyebrow | escape }}</span>
       {%- endif -%}
 
       {%- if section.settings.heading != blank -%}
@@ -28,68 +73,55 @@
           {%- for line in heading_lines -%}
             {%- assign line_text = line | strip -%}
             {%- if line_text != blank -%}
-              <span class="display__line reveal" data-reveal-delay="{{ forloop.index0 }}">{{ line_text }}</span>
+              <span class="display__mask display__line"><span>{{ line_text }}</span></span>
             {%- endif -%}
           {%- endfor -%}
         </h1>
       {%- endif -%}
 
       {%- if section.settings.text != blank -%}
-        <p class="hero2__text reveal" data-reveal-delay="3">{{ section.settings.text | escape }}</p>
-      {%- endif -%}
-
-      <div class="hero2__paths reveal" data-reveal-delay="4">
-        {%- if section.settings.show_whatsapp -%}
-          <div class="hero2__path hero2__path--advice">
-            {%- if section.settings.whatsapp_hint != blank -%}
-              <span class="hero2__hint">{{ section.settings.whatsapp_hint | escape }}</span>
-            {%- endif -%}
-            {% render 'whatsapp-link', class: 'button hero2__cta', icon: true %}
-          </div>
-        {%- endif -%}
-
-        {%- if section.settings.show_code_field -%}
-          <div class="hero2__path hero2__path--code">
-            <div class="hero2__code">
-              {% render 'scent-code-field',
-                id: 'HeroScentCode',
-                size: 'inline',
-                label: section.settings.code_label
-              %}
-            </div>
-          </div>
-        {%- endif -%}
-      </div>
-
-      {%- if section.settings.secondary_label != blank and section.settings.secondary_link != blank -%}
-        <p class="hero2__secondary reveal" data-reveal-delay="4">
-          <a class="link-underline" href="{{ section.settings.secondary_link }}">
-            {{ section.settings.secondary_label | escape }}
-          </a>
-        </p>
+        <p class="hero2__lede">{{ section.settings.text | escape }}</p>
       {%- endif -%}
     </div>
-
-    {%- if section.settings.image != blank -%}
-      <div class="hero2__media">
-        <div class="hero2__media-inner" data-hero-drift>
-          <img
-            src="{{ section.settings.image | image_url: width: 1400 }}"
-            srcset="{{ section.settings.image | image_url: width: 600 }} 600w,
-                    {{ section.settings.image | image_url: width: 900 }} 900w,
-                    {{ section.settings.image | image_url: width: 1400 }} 1400w,
-                    {{ section.settings.image | image_url: width: 1800 }} 1800w"
-            sizes="(min-width: 990px) 52vw, 100vw"
-            alt="{{ section.settings.image.alt | escape }}"
-            width="{{ section.settings.image.width }}"
-            height="{{ section.settings.image.height }}"
-            loading="eager"
-            fetchpriority="high"
-          >
-        </div>
-      </div>
-    {%- endif -%}
   </div>
+
+  {%- comment -%}
+    Einstiegsleiste. Beide Wege sind gleich gebaut: eine kleine Zuordnung
+    darüber, darunter die Handlung. Getrennt durch eine Linie.
+  {%- endcomment -%}
+  <div class="hero2__ledger reveal" data-reveal-delay="4">
+    <div class="page-width hero2__ledger-inner">
+      {%- if section.settings.show_whatsapp -%}
+        <div class="hero2__path hero2__path--advice">
+          <span class="micro hero2__path-label">
+            {{ section.settings.whatsapp_hint | default: 'Noch keinen Code?' | escape }}
+          </span>
+          {%- assign wa_label = section.settings.whatsapp_label -%}
+          {% render 'whatsapp-link', class: 'hero2__cta action-link action-link--lg', label: wa_label, arrow: true %}
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.show_code_field -%}
+        <div class="hero2__path hero2__path--code">
+          <span class="micro hero2__path-label">
+            {{ section.settings.code_label | default: 'Code schon erhalten?' | escape }}
+          </span>
+          <div class="hero2__code">
+            {% render 'scent-code-field', id: 'HeroScentCode', size: 'hero' %}
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- if section.settings.secondary_label != blank and section.settings.secondary_link != blank -%}
+    <div class="page-width hero2__secondary">
+      <a class="action-link" href="{{ section.settings.secondary_link }}">
+        <span>{{ section.settings.secondary_label | escape }}</span>
+        {% render 'icon', name: 'arrow' %}
+      </a>
+    </div>
+  {%- endif -%}
 </section>
 
 {% schema %}
@@ -99,15 +131,81 @@
   "settings": [
     {
       "type": "select",
-      "id": "color_scheme",
-      "label": "Farbstil",
+      "id": "hero_layout",
+      "label": "Komposition",
       "options": [
-        { "value": "scheme-1", "label": "Ivory" },
-        { "value": "scheme-2", "label": "Ivory dunkel" },
-        { "value": "scheme-3", "label": "Schwarz" },
-        { "value": "scheme-4", "label": "Taupe" }
+        {
+          "value": "overlay",
+          "label": "Bild vollflächig, Schlagzeile darüber"
+        },
+        {
+          "value": "split",
+          "label": "Schlagzeile links, Bild rechts angeschnitten"
+        }
       ],
-      "default": "scheme-1"
+      "default": "overlay",
+      "info": "Ohne hinterlegtes Bild wird der Hero automatisch rein typografisch."
+    },
+    {
+      "type": "header",
+      "content": "Bild"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Bild",
+      "info": "Mindestens 2400 px breit. Für die vollflächige Komposition ein ruhiges Motiv wählen, damit die Schlagzeile lesbar bleibt."
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Bildausschnitt",
+      "options": [
+        {
+          "value": "center",
+          "label": "Mitte"
+        },
+        {
+          "value": "top",
+          "label": "Oben"
+        },
+        {
+          "value": "bottom",
+          "label": "Unten"
+        },
+        {
+          "value": "left",
+          "label": "Links"
+        },
+        {
+          "value": "right",
+          "label": "Rechts"
+        },
+        {
+          "value": "25% 50%",
+          "label": "Links versetzt"
+        },
+        {
+          "value": "75% 50%",
+          "label": "Rechts versetzt"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "scrim",
+      "min": 0,
+      "max": 85,
+      "step": 5,
+      "unit": "%",
+      "label": "Abdunklung des Bildes",
+      "default": 45,
+      "info": "Gilt nur für die vollflächige Komposition."
+    },
+    {
+      "type": "header",
+      "content": "Text"
     },
     {
       "type": "text",
@@ -120,7 +218,7 @@
       "id": "heading",
       "label": "Schlagzeile",
       "default": "FIND\nYOUR\nSCENT.",
-      "info": "Eine Zeile pro Umbruch. Die Zeilen blenden nacheinander ein."
+      "info": "Eine Zeile pro Umbruch. Die Zeilen fahren nacheinander von unten ein."
     },
     {
       "type": "text",
@@ -129,53 +227,100 @@
       "default": "Dein Lieblingsduft. Dein VENT CELESTE Scent Code."
     },
     {
-      "type": "image_picker",
-      "id": "image",
-      "label": "Bild",
-      "info": "Hochformat, mindestens 1400 px breit. Ohne Bild wird der Hero bewusst rein typografisch dargestellt – es erscheint kein Platzhalter."
+      "type": "header",
+      "content": "Farbstile"
+    },
+    {
+      "type": "select",
+      "id": "overlay_scheme",
+      "label": "Farbstil über dem Bild",
+      "options": [
+        {
+          "value": "scheme-3",
+          "label": "Schwarz – helle Schrift auf dem Bild"
+        },
+        {
+          "value": "scheme-1",
+          "label": "Ivory – dunkle Schrift auf hellem Bild"
+        },
+        {
+          "value": "scheme-4",
+          "label": "Taupe"
+        }
+      ],
+      "default": "scheme-3"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Farbstil ohne vollflächiges Bild",
+      "options": [
+        {
+          "value": "scheme-1",
+          "label": "Ivory"
+        },
+        {
+          "value": "scheme-2",
+          "label": "Ivory dunkel"
+        },
+        {
+          "value": "scheme-3",
+          "label": "Schwarz"
+        },
+        {
+          "value": "scheme-4",
+          "label": "Taupe"
+        }
+      ],
+      "default": "scheme-1"
     },
     {
       "type": "header",
-      "content": "Aktionen"
-    },
-    {
-      "type": "text",
-      "id": "whatsapp_hint",
-      "label": "Kleine Zeile über dem Beratungsbutton",
-      "info": "Weg B – für alle ohne Code. Leer lassen blendet die Zeile aus.",
-      "default": "Noch keinen Code?"
+      "content": "Einstiegsleiste"
     },
     {
       "type": "checkbox",
       "id": "show_whatsapp",
-      "label": "WhatsApp-Beratung anbieten",
+      "label": "Beratung per WhatsApp anbieten",
       "default": true
     },
     {
       "type": "text",
-      "id": "secondary_label",
-      "label": "Sekundärer Button"
+      "id": "whatsapp_hint",
+      "label": "Zuordnung über der Beratung",
+      "default": "Noch keinen Code?"
     },
     {
-      "type": "url",
-      "id": "secondary_link",
-      "label": "Link sekundärer Button"
-    },
-    {
-      "type": "header",
-      "content": "Scent Code"
+      "type": "text",
+      "id": "whatsapp_label",
+      "label": "Beschriftung der Beratung",
+      "default": "Duftberatung starten"
     },
     {
       "type": "checkbox",
       "id": "show_code_field",
-      "label": "Code-Eingabe im Hero anzeigen",
+      "label": "Scent-Code-Eingabe anbieten",
       "default": true
     },
     {
       "type": "text",
       "id": "code_label",
-      "label": "Beschriftung",
-      "default": "Schon beraten? Scent Code eingeben"
+      "label": "Zuordnung über der Code-Eingabe",
+      "default": "Code schon erhalten?"
+    },
+    {
+      "type": "header",
+      "content": "Zusätzlicher Verweis"
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "Beschriftung"
+    },
+    {
+      "type": "url",
+      "id": "secondary_link",
+      "label": "Ziel"
     }
   ],
   "presets": [

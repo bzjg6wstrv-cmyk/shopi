@@ -40,7 +40,7 @@
   background-color: rgb(var(--color-line) / .3);
 }
 .finder__option input:focus-visible + .finder__option-label {
-  outline: var(--focus-width) solid rgb(var(--color-accent));
+  outline: var(--focus-width) solid rgb(var(--color-text));
   outline-offset: var(--focus-offset);
 }
 

@@ -43,8 +43,12 @@ summary { cursor: pointer; list-style: none; }
 summary::-webkit-details-marker { display: none; }
 
 /* 2 Tokens --------------------------------------------------------------- */
+/* Das gesamte Theme rechnet mit dieser Liste. Kein Abschnitt erfindet eigene
+   Abstände, Größen oder Zeiten. */
 :root {
-  /* Abstände – 8-px-System */
+  /* --- Raum -------------------------------------------------------------
+     8-px-System. Die Werte darüber hinaus sind bewusst grob gestuft: Große
+     Sprünge erzeugen Rhythmus, kleine Sprünge erzeugen Matsch. */
   --space-2xs: 0.25rem;
   --space-xs: 0.5rem;
   --space-sm: 0.75rem;
@@ -56,28 +60,59 @@ summary::-webkit-details-marker { display: none; }
   --space-4xl: 6rem;
   --space-5xl: 8rem;
 
-  /* Vertikaler Rhythmus zwischen Abschnitten */
-  --section-space: clamp(3.5rem, 7vw, 8rem);
-  --section-space-tight: clamp(2.5rem, 4vw, 4.5rem);
+  /* --- Abschnittsrhythmus -----------------------------------------------
+     Fünf Dichten statt einer. Erst dadurch bekommt die Startseite beim
+     Scrollen einen Takt: laute Bereiche atmen, ruhige Bereiche verdichten. */
+  --sect-xs: clamp(1.75rem, 4vw, 3rem);
+  --sect-sm: clamp(2.5rem, 5vw, 4.5rem);
+  --sect-md: clamp(3.5rem, 7vw, 7rem);
+  --sect-lg: clamp(4.5rem, 9vw, 9.5rem);
+  --sect-xl: clamp(6rem, 12vw, 13rem);
 
-  /* Haarlinie – das tragende Strukturelement dieses Themes. Es gibt genau
-     eine Linienstärke; Abgrenzung entsteht über Weißraum, nicht über Kanten
-     oder Schatten. */
+  /* Rückwärtskompatible Namen – ältere Abschnitte greifen darauf zu. */
+  --section-space: var(--sect-md);
+  --section-space-tight: var(--sect-sm);
+
+  /* --- Breiten -----------------------------------------------------------
+     Drei Stufen. „page" ist der Regelfall aus den Theme Settings, „wide"
+     nutzt große Bildschirme für Bild- und Editorial-Momente, „text" hält
+     Fließtext lesbar, egal wie breit der Container ist. */
+  --w-page: var(--page-width, 1440px);
+  --w-wide: 1760px;
+  --w-text: 34em;
+  --w-text-narrow: 26em;
+
+  /* --- Linien ------------------------------------------------------------
+     Genau eine Stärke. Abgrenzung entsteht über Weißraum und Fläche,
+     nicht über Kanten oder Schatten. */
   --hair: var(--border-width) solid rgb(var(--color-line));
-  --hair-strong: var(--border-width) solid rgb(var(--color-text) / 0.28);
+  --hair-strong: var(--border-width) solid rgb(var(--color-text) / 0.3);
+  --hair-accent: var(--border-width) solid rgb(var(--color-accent));
 
-  /* Redaktionelles Raster: Die Inhalte sitzen nicht mittig, sondern auf
-     festen Spalten. Daraus entsteht die asymmetrische Komposition. */
+  /* --- Raster ------------------------------------------------------------ */
   --col: minmax(0, 1fr);
+  --grid-gap: clamp(1rem, 2.5vw, 2rem);
 
-  /* Bewegung */
+  /* --- Bildformate -------------------------------------------------------
+     Vier feste Verhältnisse. Nicht jeder Abschnitt erfindet ein eigenes. */
+  --ratio-portrait: 3 / 4;
+  --ratio-tall: 2 / 3;
+  --ratio-square: 1 / 1;
+  --ratio-wide: 16 / 10;
+  --ratio-cinema: 21 / 9;
+
+  /* --- Bewegung ----------------------------------------------------------
+     Eine Kurve, vier Dauern. Alles zwischen 160 und 800 ms. */
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --dur-fast: 160ms;
-  --dur: 240ms;
-  --dur-slow: 420ms;
+  --dur: 260ms;
+  --dur-slow: 480ms;
+  --dur-reveal: 720ms;
 
-  /* Ebenen */
+  /* --- Ebenen ------------------------------------------------------------ */
   --z-header: 40;
+  --z-sticky-bar: 50;
   --z-overlay: 60;
   --z-drawer: 70;
   --z-skip: 100;
@@ -86,18 +121,20 @@ summary::-webkit-details-marker { display: none; }
   --focus-offset: 3px;
 }
 
-/* Auf Telefonen standen zwischen zwei Abschnitten 2 x 56 px Leerraum. Der
-   Rhythmus wird dort enger gefasst; ab 750 px bleibt jeder Wert unverändert,
-   Tablet und Desktop sind von dieser Regel nicht betroffen. */
+/* Auf Telefonen wird der Rhythmus enger gefasst – die Stufen bleiben
+   erhalten, sie liegen nur dichter beieinander. */
 @media (max-width: 749px) {
   :root {
-    --section-space: 2.5rem;
-    --section-space-tight: 1.75rem;
+    --sect-xs: 1.5rem;
+    --sect-sm: 2rem;
+    --sect-md: 2.75rem;
+    --sect-lg: 3.5rem;
+    --sect-xl: 4.5rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root { --dur-fast: 1ms; --dur: 1ms; --dur-slow: 1ms; }
+  :root { --dur-fast: 1ms; --dur: 1ms; --dur-slow: 1ms; --dur-reveal: 1ms; }
   *, *::before, *::after {
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
@@ -107,8 +144,18 @@ summary::-webkit-details-marker { display: none; }
 }
 
 /* 3 Typografie ----------------------------------------------------------- */
+/* Drei Register, klar getrennt:
+
+     Display  – der Markenauftritt. Sehr groß, versal, eng gesetzt.
+     Serif    – Produktnamen, redaktionelle Überschriften, Zitate.
+     Sans     – Fließtext, Navigation, Preise, Formulare, Auszeichnungen.
+
+   Welche Schrift das Display-Register bedient, entscheidet die Einstellung
+   „Charakter der Schlagzeilen": die Sans wirkt modisch und gegenwärtig, die
+   Serif klassisch-redaktionell. Beide Familien kommen aus dem vorhandenen
+   Shopify-Schriftwähler – es wird keine zusätzliche Schrift geladen. */
 body {
-  font-family: var(--font-body-family);
+  font-family: var(--font-body-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif);
   font-weight: var(--font-body-weight);
   font-style: var(--font-body-style);
   font-size: calc(1.0625rem * var(--body-scale, 1));
@@ -119,34 +166,38 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-h1, h2, h3, h4, .h1, .h2, .h3, .h4 {
-  font-family: var(--font-heading-family);
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4 {
+  font-family: var(--font-heading-family, Georgia, 'Times New Roman', serif);
   font-weight: var(--font-heading-weight);
   font-style: var(--font-heading-style);
   letter-spacing: var(--heading-tracking);
-  line-height: 1.12;
+  line-height: 1.08;
   text-wrap: balance;
 }
 
-/* Ruhigere Stufen als zuvor: Die Schlagzeile im Hero bleibt der einzige
-   große Auftritt, Abschnittsüberschriften treten bewusst zurück. Dadurch
-   entsteht Hierarchie über Größe statt über Auszeichnung. */
+/* Größensprünge statt Größenstufen. Zwischen h1 und h4 liegt Faktor vier –
+   dadurch entsteht Hierarchie, ohne dass irgendwo ausgezeichnet werden muss. */
 .h1, h1, .h2, h2, .h3, h3, .h4, h4 { font-size: calc(var(--_fs) * var(--heading-scale, 1)); }
-.h1, h1 { --_fs: clamp(2rem, 1.3rem + 2.8vw, 3.5rem); }
-.h2, h2 { --_fs: clamp(1.5rem, 1.15rem + 1.4vw, 2.25rem); }
-.h3, h3 { --_fs: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem); }
-.h4, h4 { --_fs: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem); }
+.h1, h1 { --_fs: clamp(2.25rem, 1.35rem + 3.8vw, 4.5rem); letter-spacing: calc(var(--heading-tracking) - 0.01em); }
+.h2, h2 { --_fs: clamp(1.625rem, 1.1rem + 2.2vw, 2.875rem); }
+.h3, h3 { --_fs: clamp(1.25rem, 1.05rem + 0.9vw, 1.75rem); line-height: 1.15; }
+.h4, h4 { --_fs: clamp(1.0625rem, 1rem + 0.35vw, 1.3125rem); line-height: 1.25; }
 
 p { text-wrap: pretty; }
 
-.text-lead {
-  font-size: clamp(1.0625rem, 1rem + 0.4vw, 1.3125rem);
-  line-height: 1.55;
+/* Vorspann unter einer Schlagzeile. Bewusst größer als Fließtext. */
+.lede {
+  font-size: clamp(1.0625rem, 0.98rem + 0.5vw, 1.375rem);
+  line-height: 1.5;
+  max-width: 40ch;
 }
-
+.text-lead { font-size: clamp(1.0625rem, 1rem + 0.4vw, 1.3125rem); line-height: 1.55; }
 .text-body-sm { font-size: 0.9375rem; }
 
-/* Detailtypografie – der eigentliche Träger der Wertigkeit */
+/* Auszeichnungstypografie – der eigentliche Träger der Wertigkeit.
+   Sehr klein, weit gesperrt, versal. Sie kommt überall dort zum Einsatz, wo
+   sonst ein Symbol oder eine Kapsel stünde. */
 .meta {
   font-size: 0.6875rem;
   line-height: 1.4;
@@ -154,8 +205,16 @@ p { text-wrap: pretty; }
   letter-spacing: var(--meta-tracking);
   font-weight: 500;
 }
-
 .meta--muted { color: rgb(var(--color-muted)); }
+
+.micro {
+  display: block;
+  font-size: 0.625rem;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: calc(var(--meta-tracking) + 0.06em);
+  color: rgb(var(--color-muted));
+}
 
 .eyebrow {
   display: block;
@@ -163,20 +222,26 @@ p { text-wrap: pretty; }
   font-size: 0.625rem;
   line-height: 1.4;
   text-transform: uppercase;
-  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  letter-spacing: calc(var(--meta-tracking) + 0.06em);
   color: rgb(var(--color-muted));
 }
 
-/* Redaktioneller Abschnittskopf: Überschrift links auf einer Haarlinie, ein
-   kurzer Beitext rechts. Bewusst nicht zentriert – und bewusst nicht in
-   jedem Abschnitt eingesetzt, damit die Startseite nicht in jeder Zeile
-   dieselbe Komposition wiederholt. */
+/* Der Abschnittskopf des Themes: eine Kennziffer auf der linken Rasterkante,
+   die Überschrift daneben, ein kurzer Beitext rechts. Bewusst nie zentriert –
+   und bewusst nicht in jedem Abschnitt, damit die Startseite nicht in jeder
+   Zeile dieselbe Komposition wiederholt. */
 .sec-head {
   display: grid;
   gap: var(--space-xs);
   padding-top: var(--space-md);
   border-top: var(--hair);
   margin-bottom: var(--space-lg);
+}
+.sec-head__index {
+  font-size: 0.625rem;
+  letter-spacing: calc(var(--meta-tracking) + 0.06em);
+  color: rgb(var(--color-muted));
+  font-variant-numeric: tabular-nums;
 }
 .sec-head__title { margin: 0; }
 .sec-head__aside {
@@ -187,12 +252,14 @@ p { text-wrap: pretty; }
 }
 @media (min-width: 990px) {
   .sec-head {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+    grid-template-columns: 4rem minmax(0, 1fr) minmax(0, 22rem);
     align-items: baseline;
-    gap: var(--space-2xl);
-    margin-bottom: var(--space-xl);
+    column-gap: var(--space-2xl);
+    margin-bottom: var(--space-2xl);
   }
+  .sec-head__index { grid-row: 1; }
   .sec-head__aside { text-align: right; }
+  .sec-head--no-index { grid-template-columns: minmax(0, 1fr) minmax(0, 22rem); }
 }
 
 .rte > * + * { margin-top: 1em; }
@@ -202,26 +269,45 @@ p { text-wrap: pretty; }
 .rte li + li { margin-top: 0.35em; }
 
 /* Textlänge begrenzen – nie mehr als ~68 Zeichen pro Zeile */
-.measure { max-width: 34em; }
-.measure-narrow { max-width: 26em; }
+.measure { max-width: var(--w-text); }
+.measure-narrow { max-width: var(--w-text-narrow); }
 
 /* 4 Layout --------------------------------------------------------------- */
+/* Drei Containerstufen und ein durchgehendes 12-Spalten-Raster. Abschnitte
+   setzen ihre Inhalte auf benannte Spalten, statt eigene Raster zu bauen. */
+:root { --gutter: 1.25rem; }
+@media (min-width: 750px) { :root { --gutter: 2.5rem; } }
+@media (min-width: 1200px) { :root { --gutter: 4rem; } }
+@media (min-width: 1600px) { :root { --gutter: 5rem; } }
+
 .page-width {
   width: 100%;
-  max-width: var(--page-width);
+  max-width: var(--w-page);
   margin-inline: auto;
   padding-inline: var(--gutter);
 }
 
-.page-width--narrow { max-width: min(var(--page-width), 62rem); }
+/* Für Bild- und Editorial-Momente: nutzt große Bildschirme wirklich aus. */
+.page-wide {
+  width: 100%;
+  max-width: var(--w-wide);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* Ohne jede Begrenzung – für vollflächige Bilder und dunkle Bänder. */
+.page-full { width: 100%; padding-inline: var(--gutter); }
+
+.page-width--narrow { max-width: min(var(--w-page), 62rem); }
 .page-width--flush { padding-inline: 0; }
 
-:root { --gutter: 1.25rem; }
-@media (min-width: 750px) { :root { --gutter: 2.5rem; } }
-@media (min-width: 1200px) { :root { --gutter: 3.5rem; } }
-
-.section { padding-block: var(--section-space); }
-.section--tight { padding-block: var(--section-space-tight); }
+/* Abschnittsdichten. „section" bleibt der Regelfall. */
+.section { padding-block: var(--sect-md); }
+.section--xs { padding-block: var(--sect-xs); }
+.section--sm { padding-block: var(--sect-sm); }
+.section--tight { padding-block: var(--sect-sm); }
+.section--lg { padding-block: var(--sect-lg); }
+.section--xl { padding-block: var(--sect-xl); }
 .section--flush-top { padding-block-start: 0; }
 .section--flush-bottom { padding-block-end: 0; }
 
@@ -243,48 +329,61 @@ p { text-wrap: pretty; }
   .grid--6-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+/* Zwölf Spalten. Abschnitte greifen über .col-* auf Bereiche zu. */
+.grid--editorial { display: grid; gap: var(--grid-gap); }
+@media (min-width: 990px) {
+  .grid--editorial {
+    grid-template-columns: repeat(12, var(--col));
+    column-gap: var(--grid-gap);
+    row-gap: var(--space-2xl);
+  }
+  .col-1-4 { grid-column: 1 / span 4; }
+  .col-1-5 { grid-column: 1 / span 5; }
+  .col-1-6 { grid-column: 1 / span 6; }
+  .col-1-7 { grid-column: 1 / span 7; }
+  .col-2-5 { grid-column: 2 / span 5; }
+  .col-5-8 { grid-column: 5 / span 8; }
+  .col-6-7 { grid-column: 6 / span 7; }
+  .col-7-6 { grid-column: 7 / span 6; }
+  .col-8-5 { grid-column: 8 / span 5; }
+  .col-9-4 { grid-column: 9 / span 4; }
+}
+
 .grid--products {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-lg) var(--space-md);
+  gap: var(--space-2xl) var(--space-md);
 }
 @media (min-width: 750px) {
-  .grid--products { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2xl) var(--space-lg); }
+  .grid--products { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3xl) var(--space-lg); }
 }
 @media (min-width: 1200px) {
   .grid--products { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
-/* Haarlinien statt Karten. Die Linie ist das einzige Trennmittel dieses
-   Themes – sie ersetzt Rahmen, Kacheln und Schatten. */
+/* Haarlinien statt Karten. */
 .rule { border: 0; border-top: var(--hair); }
 .rule--accent { border-top-color: rgb(var(--color-accent)); }
 .rule--strong { border-top: var(--hair-strong); }
-
 .hairline-top { border-top: var(--hair); }
 .hairline-bottom { border-bottom: var(--hair); }
-
-/* Redaktionelles Grundraster. Abschnitte setzen ihre Inhalte auf feste
-   Spalten dieses Rasters – daraus entsteht die asymmetrische Komposition,
-   ohne dass jeder Abschnitt ein eigenes Raster erfindet. */
-.grid--editorial { display: grid; gap: var(--space-lg); }
-@media (min-width: 990px) {
-  .grid--editorial {
-    grid-template-columns: repeat(12, var(--col));
-    column-gap: var(--space-xl);
-    row-gap: var(--space-2xl);
-  }
-}
 
 .color-scheme {
   background-color: rgb(var(--color-background));
   color: rgb(var(--color-text));
 }
 
-/* 5 Buttons & Formulare -------------------------------------------------- */
-/* Drei Register, mehr gibt es nicht: eine gefüllte Fläche für den einen
-   Hauptweg eines Abschnitts, eine Kontur für die Nebenhandlung, eine
-   Textmarke für alles Weitere. Keine Pillen, keine Schatten, keine
-   Verläufe. */
+/* 5 Interaktion: Schaltflächen, Verweise, Formulare ---------------------- */
+/* Vier Register mit klarer Rangfolge. Sie werden nie gemischt: Pro Abschnitt
+   gibt es höchstens eine gefüllte Fläche.
+
+     .button            Hauptweg. Gefüllte Fläche in der Textfarbe.
+     .button--secondary Nebenhandlung. Kontur, keine Fläche.
+     .action-link       Redaktionelle Handlung. Text mit Pfeil, Linie darunter.
+     .link-underline    Verweis. Text mit einlaufender Unterstreichung.
+
+   Alle Zustände laufen über transform, opacity und Farbe – nie über Schatten,
+   Leuchten oder Größensprünge. */
+
 .button {
   display: inline-flex;
   align-items: center;
@@ -295,14 +394,14 @@ p { text-wrap: pretty; }
   /* Fallback-Werte in var(): Fehlt eine Farbvariable, wäre rgb(var(--x))
      ungültig und die Fläche transparent – der Button sähe aus wie ein
      Textlink. Die Werte entsprechen dem Standard-Farbstil. */
-  border: var(--border-width) solid rgb(var(--color-button, 20 18 16));
+  border: var(--border-width) solid rgb(var(--color-button, 18 16 14));
   border-radius: var(--button-radius, 0px);
-  background-color: rgb(var(--color-button, 20 18 16));
+  background-color: rgb(var(--color-button, 18 16 14));
   color: rgb(var(--color-button-label, 245 242 237));
   font-size: 0.75rem;
   font-weight: 500;
   line-height: 1.2;
-  letter-spacing: calc(var(--meta-tracking) + 0.04em);
+  letter-spacing: calc(var(--meta-tracking) + 0.06em);
   text-transform: var(--button-transform);
   text-align: center;
   transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
@@ -311,8 +410,8 @@ p { text-wrap: pretty; }
 /* Die Fläche wird leicht aufgehellt statt die ganze Schaltfläche
    auszublenden – die Beschriftung behält ihren vollen Kontrast. */
 .button:hover {
-  background-color: rgb(var(--color-button, 20 18 16) / 0.86);
-  border-color: rgb(var(--color-button, 20 18 16) / 0.86);
+  background-color: rgb(var(--color-button, 18 16 14) / 0.86);
+  border-color: rgb(var(--color-button, 18 16 14) / 0.86);
 }
 
 .button--secondary {
@@ -338,35 +437,80 @@ p { text-wrap: pretty; }
 /* Volle Breite – auf Mobile der Regelfall für den Hauptweg. */
 .button--block { display: flex; width: 100%; }
 
-/* Auf Touch gibt es keinen Zeigezustand – die Rückmeldung kommt beim
-   Antippen und ist sofort sichtbar. */
-@media (hover: none) {
-  .button:active,
-  .link-underline:active,
-  .card__quick-add-button:active,
-  .inline-field__submit:active,
-  .search-panel__submit:active,
-  .code-field__submit:active { opacity: 0.72; }
-}
-
 .button[disabled],
 .button[aria-disabled='true'] { opacity: 0.45; cursor: not-allowed; }
 .button[disabled]:hover,
 .button[aria-disabled='true']:hover {
-  background-color: rgb(var(--color-button, 20 18 16));
-  border-color: rgb(var(--color-button, 20 18 16));
+  background-color: rgb(var(--color-button, 18 16 14));
+  border-color: rgb(var(--color-button, 18 16 14));
 }
 
-/* Textmarke. Die ruhende Linie liegt zurückgenommen unter der Zeile, beim
-   Zeigen läuft eine zweite Linie in voller Deckung von links ein. Das ist
-   der einzige Zierschritt, den sich dieses Theme leistet. */
+.button svg { width: 18px; height: 18px; flex: none; }
+.button--whatsapp { gap: 0.55rem; }
+
+/* --- Handlungsverweis mit Pfeil ---------------------------------------
+   Das Arbeitspferd dieses Themes. Kein Kasten, keine Fläche: eine Zeile
+   Text, eine Linie darunter, ein Pfeil, der beim Zeigen nach rechts rückt.
+   Die Linie läuft dabei in voller Deckung von links ein. */
+.action-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  width: 100%;
+  min-height: 2.75rem;
+  padding-bottom: 0.55rem;
+  color: rgb(var(--color-text));
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  letter-spacing: calc(var(--meta-tracking) + 0.04em);
+  text-transform: uppercase;
+}
+.action-link::before,
+.action-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--border-width);
+  background-color: currentColor;
+}
+.action-link::before { opacity: 0.24; }
+.action-link::after {
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+.action-link:hover::after,
+.action-link:focus-visible::after { transform: scaleX(1); }
+
+.action-link svg,
+.action-link .icon-arrow { width: 17px; height: 17px; flex: none; }
+.action-link::after,
+.action-link svg { transition: transform var(--dur-slow) var(--ease-out); }
+.action-link:hover svg { transform: translateX(5px); }
+
+/* Der große Grad – für den Hauptweg im Hero und in Vollflächen-Abschnitten. */
+.action-link--lg {
+  min-height: 3rem;
+  font-size: clamp(0.875rem, 0.82rem + 0.3vw, 1.0625rem);
+  padding-bottom: 0.7rem;
+}
+.action-link--lg svg { width: 20px; height: 20px; }
+
+/* In einer Reihe nebeneinander statt über die volle Breite. */
+.action-link--inline { width: auto; }
+
+/* --- Verweis ----------------------------------------------------------- */
 .link-underline {
   position: relative;
   display: inline-block;
   padding-bottom: 4px;
   border-bottom: 0;
   font-size: 0.75rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  letter-spacing: calc(var(--meta-tracking) + 0.04em);
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -392,7 +536,9 @@ p { text-wrap: pretty; }
 .link-underline:focus-visible::after { transform: scaleX(1); }
 
 @media (prefers-reduced-motion: reduce) {
-  .link-underline::after { transition: none; }
+  .link-underline::after,
+  .action-link::after,
+  .action-link svg { transition: none; }
 }
 
 /* Auf Touch braucht jede Textmarke eine Fläche von mindestens 44 px. */
@@ -403,13 +549,26 @@ p { text-wrap: pretty; }
   }
 }
 
-/* Formulare: eine Grundlinie, kein Kasten. Auswahl- und Textfelder folgen
-   demselben Muster, damit Formulare nie wie ein fremdes Modul wirken. */
+/* Auf Touch gibt es keinen Zeigezustand – die Rückmeldung kommt beim
+   Antippen und ist sofort sichtbar. */
+@media (hover: none) {
+  .button:active,
+  .link-underline:active,
+  .action-link:active,
+  .card__quick-add-button:active,
+  .inline-field__submit:active,
+  .search-panel__submit:active,
+  .code-field__submit:active { opacity: 0.72; }
+}
+
+/* --- Formulare ---------------------------------------------------------
+   Eine Grundlinie, kein Kasten. Auswahl- und Textfelder folgen demselben
+   Muster, damit Formulare nie wie ein fremdes Modul wirken. */
 .field { display: flex; flex-direction: column; gap: var(--space-2xs); }
 
 .field__label {
   font-size: 0.6875rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  letter-spacing: calc(var(--meta-tracking) + 0.04em);
   text-transform: uppercase;
   color: rgb(var(--color-muted));
 }
@@ -474,17 +633,22 @@ p { text-wrap: pretty; }
 .inline-field input:hover { border-bottom-color: transparent; }
 .inline-field__submit {
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   min-height: 3rem;
   padding: 0;
   background: none;
   border: 0;
   color: rgb(var(--color-text));
   font-size: 0.6875rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.04em);
+  letter-spacing: calc(var(--meta-tracking) + 0.06em);
   text-transform: uppercase;
   transition: opacity var(--dur) var(--ease);
 }
 .inline-field__submit:hover { opacity: 0.6; }
+.inline-field__submit svg { width: 15px; height: 15px; transition: transform var(--dur) var(--ease); }
+.inline-field__submit:hover svg { transform: translateX(4px); }
 
 /* 6 Header --------------------------------------------------------------- */
 /* Der Kopfbereich ist eine Zeile, keine Fläche: Haarlinie statt Schatten,
@@ -533,20 +697,20 @@ p { text-wrap: pretty; }
   :root { --header-reserve: 1.375rem; }
 
   .header__inner {
-    min-height: 3.75rem;
+    min-height: 4.25rem;
     padding-top: var(--header-reserve);
     transition: min-height var(--dur) var(--ease);
   }
   .header.is-compact { top: calc(var(--header-reserve) * -1); }
 
   .header__nav { display: flex; align-items: center; }
-  .header__nav > ul { display: flex; align-items: center; gap: var(--space-xl); }
+  .header__nav > ul { display: flex; align-items: center; gap: clamp(1.5rem, 2.4vw, 2.75rem); }
 }
 
 .wordmark {
   display: inline-block;
   font-family: var(--font-heading-family);
-  font-size: clamp(1.0625rem, 0.95rem + 0.55vw, 1.375rem);
+  font-size: clamp(1.0625rem, 0.9rem + 0.9vw, 1.75rem);
   letter-spacing: var(--wordmark-tracking);
   text-transform: uppercase;
   line-height: 1;
@@ -608,8 +772,8 @@ p { text-wrap: pretty; }
   align-items: center;
   gap: 0.35rem;
   padding-block: 0.5rem;
-  font-size: 0.75rem;
-  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  font-size: 0.6875rem;
+  letter-spacing: calc(var(--meta-tracking) + 0.08em);
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -692,6 +856,31 @@ p { text-wrap: pretty; }
    kurz, ohne dass ein einziger Verweis wegfällt. */
 .footer { border-top: var(--hair); }
 
+/* Die Wortmarke als Markenpräsenz am Kopf des Fußbereichs. Sehr weit
+   gesperrt, im Display-Register, auf großen Bildschirmen über die volle
+   Breite verteilt. */
+.footer__brandline > span { display: block; }
+.footer__brandline {
+  font-family: var(--font-display-family, var(--font-heading-family));
+  font-weight: var(--font-display-weight, var(--font-heading-weight));
+  font-size: clamp(1.5rem, 7vw, 3rem);
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding-block: var(--space-xl) var(--space-lg);
+  border-bottom: var(--hair);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (min-width: 990px) {
+  .footer__brandline {
+    font-size: clamp(3rem, 6vw, 6rem);
+    letter-spacing: 0.1em;
+    padding-block: var(--space-2xl) var(--space-xl);
+  }
+}
+
 .footer__top {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -703,7 +892,6 @@ p { text-wrap: pretty; }
 .footer__block--brand,
 .footer__block--newsletter { grid-column: 1 / -1; }
 
-.footer__wordmark { font-size: 1.125rem; }
 .footer__brand-text {
   margin-top: var(--space-sm);
   max-width: 32ch;
@@ -766,9 +954,12 @@ p { text-wrap: pretty; }
 }
 
 /* 8 Produktkarte --------------------------------------------------------- */
-/* Das Bild trägt die Karte. Darunter steht in ruhiger Reihenfolge: Name,
-   Charakter, Ausführung, Preis. Kein Rahmen, keine Kachel, kein Schatten –
-   die Karte ist nur ein Bild mit einer Bildunterschrift. */
+/* Editorial Tile statt Shopify-Kachel: Das Bild trägt die Karte, darunter
+   steht eine Bildunterschrift. Kein Rahmen, kein Rundung, keine Fläche unter
+   dem Text – die Karte ist ein Bild mit Angaben, nicht ein Kasten mit Inhalt.
+
+   Der Name läuft im Display-Register: Bei VENT CELESTE ist der Produktname
+   der Scent Code, und der ist das Markenzeichen. */
 .card {
   position: relative;
   display: flex;
@@ -780,7 +971,9 @@ p { text-wrap: pretty; }
   position: relative;
   overflow: hidden;
   margin-bottom: var(--space-md);
-  background-color: rgb(var(--color-line) / 0.35);
+  /* Sehr leichter warmer Grund – nur damit freigestellte Motive nicht im
+     Nichts schweben. Keine graue Kachel. */
+  background-color: rgb(var(--color-line) / 0.3);
   border-radius: var(--card-radius);
 }
 
@@ -789,54 +982,74 @@ p { text-wrap: pretty; }
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease);
+  transition: opacity var(--dur-slow) var(--ease), transform var(--dur-reveal) var(--ease-out);
 }
 
-.card__media--portrait { aspect-ratio: 3 / 4; }
-.card__media--square { aspect-ratio: 1 / 1; }
-.card__media--tall { aspect-ratio: 2 / 3; }
+.card__media--portrait { aspect-ratio: var(--ratio-portrait); }
+.card__media--square { aspect-ratio: var(--ratio-square); }
+.card__media--tall { aspect-ratio: var(--ratio-tall); }
 
 .card__image--secondary { position: absolute; inset: 0; opacity: 0; }
 
-/* Hochwertige Zustände auf Zeigegeräten: ein sehr langsamer Zoom, der
-   Bildwechsel als Überblendung, der Name unterstrichen. Auf Touch passiert
-   nichts davon. */
+/* Zustände auf Zeigegeräten: ein sehr langsamer Zoom, der Bildwechsel als
+   Überblendung, der Name unterstrichen. Auf Touch passiert nichts davon. */
 @media (hover: hover) {
   .card:hover .card__image--secondary { opacity: 1; }
   .card:hover .card__image--primary { opacity: 0; }
-  .card:hover .card__media img { transform: scale(1.025); }
-  .card:hover .card__title a {
-    text-decoration: underline;
-    text-decoration-thickness: var(--border-width);
-    text-underline-offset: 0.18em;
-  }
+  .card:hover .card__media img { transform: scale(1.035); }
+  .card:hover .card__title { color: rgb(var(--color-text)); }
+  .card:hover .card__title::after { transform: scaleX(1); }
 }
 @media (prefers-reduced-motion: reduce) {
   .card:hover .card__media img { transform: none; }
 }
 
-/* Auszeichnung ohne Fläche: kleine Versalien direkt auf dem Bild wären
-   unsicher lesbar, deshalb steht sie auf dem Seitenton. */
+/* Auszeichnung: kleine Versalien auf dem Seitenton, oben links bündig mit
+   der Bildkante. Keine Kapsel, keine Farbe. */
 .card__badge {
   position: absolute;
   top: 0;
   left: 0;
-  padding: 0.35rem 0.6rem;
+  padding: 0.4rem 0.65rem;
   background-color: rgb(var(--color-background));
   color: rgb(var(--color-text));
-  font-size: 0.625rem;
+  font-size: 0.5625rem;
   line-height: 1;
   text-transform: uppercase;
-  letter-spacing: calc(var(--meta-tracking) + 0.02em);
+  letter-spacing: calc(var(--meta-tracking) + 0.06em);
 }
 
-.card__content { display: grid; gap: 0.3rem; align-content: start; }
+.card__content {
+  display: grid;
+  gap: 0.25rem;
+  align-content: start;
+  padding-top: var(--space-sm);
+  border-top: var(--hair);
+}
 
+/* Der Name im Display-Register – der Scent Code ist das Markenzeichen. */
 .card__title {
-  font-family: var(--font-heading-family);
-  font-size: 1.0625rem;
-  line-height: 1.25;
-  letter-spacing: 0.01em;
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-display-family, var(--font-heading-family));
+  font-weight: var(--font-display-weight, var(--font-heading-weight));
+  font-size: clamp(1.0625rem, 1rem + 0.5vw, 1.375rem);
+  line-height: 1.1;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.card__title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: var(--border-width);
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur) var(--ease);
 }
 .card__title a::after { content: ''; position: absolute; inset: 0; z-index: 1; }
 
@@ -846,11 +1059,11 @@ p { text-wrap: pretty; }
   line-height: 1.4;
 }
 
-/* Die Ausführung steht in derselben Auszeichnung wie alle Detailangaben. */
-.card__meta { color: rgb(var(--color-muted)); }
+/* Die Ausführung in derselben Auszeichnung wie alle Detailangaben. */
+.card__meta { color: rgb(var(--color-muted)); font-size: 0.625rem; letter-spacing: calc(var(--meta-tracking) + 0.04em); }
 
 .card__price {
-  margin-top: 0.2rem;
+  margin-top: 0.35rem;
   font-size: 0.9375rem;
   font-variant-numeric: tabular-nums;
 }
@@ -902,22 +1115,59 @@ p { text-wrap: pretty; }
   color: rgb(var(--color-muted));
 }
 
-/* Einblendung – nur wenn in den Theme Settings aktiviert.
+/* --- Einblendungen ------------------------------------------------------
+   Ein System, drei Stufen:
 
-   Die Regel hängt an html:not(.no-js): Ohne JavaScript bleibt die Klasse
-   .no-js stehen, der Ausgangszustand opacity: 0 greift dann gar nicht erst
-   und alle Inhalte sind sofort sichtbar. Vorher war ein Aufbau ohne
-   JavaScript vollständig unsichtbar. */
+     .reveal            Block fährt leicht herauf und blendet ein.
+     .reveal--mask      Inhalt fährt hinter einer Kante hervor (nur transform).
+     .reveal--stagger   Kinder folgen versetzt, 70 ms je Element.
+
+   Die Regeln hängen an html:not(.no-js): Ohne JavaScript bleibt die Klasse
+   .no-js stehen, der Ausgangszustand greift dann gar nicht erst und alle
+   Inhalte sind sofort sichtbar. */
 .reveal { opacity: 1; }
+
 html:not(.no-js) .animations-on .reveal {
   opacity: 0;
-  transform: translateY(10px);
-  transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease);
+  transform: translateY(14px);
+  transition: opacity var(--dur-reveal) var(--ease-out), transform var(--dur-reveal) var(--ease-out);
 }
 html:not(.no-js) .animations-on .reveal.is-visible { opacity: 1; transform: none; }
 
+/* Maskenaufdeckung: Der Inhalt sitzt in einem Fenster und fährt herein.
+   Bewegt wird ausschließlich transform, die Kante bleibt hart. */
+html:not(.no-js) .animations-on .reveal--mask {
+  opacity: 1;
+  transform: none;
+  overflow: hidden;
+}
+html:not(.no-js) .animations-on .reveal--mask > * {
+  transform: translateY(103%);
+  transition: transform var(--dur-reveal) var(--ease-out);
+}
+html:not(.no-js) .animations-on .reveal--mask.is-visible > * { transform: none; }
+
+/* Versatz für Gruppen – die Kinder folgen einander. */
+html:not(.no-js) .animations-on .reveal--stagger > * {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity var(--dur-reveal) var(--ease-out), transform var(--dur-reveal) var(--ease-out);
+}
+html:not(.no-js) .animations-on .reveal--stagger.is-visible > * { opacity: 1; transform: none; }
+html:not(.no-js) .animations-on .reveal--stagger.is-visible > *:nth-child(2) { transition-delay: 70ms; }
+html:not(.no-js) .animations-on .reveal--stagger.is-visible > *:nth-child(3) { transition-delay: 140ms; }
+html:not(.no-js) .animations-on .reveal--stagger.is-visible > *:nth-child(4) { transition-delay: 210ms; }
+html:not(.no-js) .animations-on .reveal--stagger.is-visible > *:nth-child(5) { transition-delay: 280ms; }
+html:not(.no-js) .animations-on .reveal--stagger.is-visible > *:nth-child(n + 6) { transition-delay: 350ms; }
+
 @media (prefers-reduced-motion: reduce) {
-  html:not(.no-js) .animations-on .reveal { opacity: 1; transform: none; }
+  html:not(.no-js) .animations-on .reveal,
+  html:not(.no-js) .animations-on .reveal--mask > *,
+  html:not(.no-js) .animations-on .reveal--stagger > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 /* Bausteine, die vorher als Inline-Styles im Markup standen. Sie sind hier
@@ -982,7 +1232,9 @@ html:not(.no-js) .animations-on .reveal.is-visible { opacity: 1; transform: none
 .skip-link:focus { transform: translateY(0); }
 
 :where(a, button, summary, input, select, textarea, [tabindex]):focus-visible {
-  outline: var(--focus-width) solid rgb(var(--color-accent));
+  /* Der Fokusrahmen läuft in der Textfarbe: Champagner erreicht auf Ivory
+     nur 2,6:1 und verfehlt damit die geforderten 3:1 für Bedienelemente. */
+  outline: var(--focus-width) solid rgb(var(--color-text));
   outline-offset: var(--focus-offset);
   border-radius: 1px;
 }
@@ -1373,6 +1625,13 @@ body.is-locked { overflow: hidden; }
 }
 
 .product__title { margin-bottom: var(--space-2xs); }
+/* Fällt der Scent Code aus dem Metafeld weg, bleibt der Titel als
+   redaktionelle Überschrift stehen. */
+.product__title--text {
+  font-family: var(--font-heading-family, Georgia, serif);
+  font-size: clamp(1.625rem, 1.1rem + 2.2vw, 2.875rem);
+  line-height: 1.08;
+}
 .product__meta { color: rgb(var(--color-muted)); font-size: 0.9375rem; }
 .product__variant-line { margin-top: var(--space-xs); color: rgb(var(--color-muted)); }
 
@@ -1424,7 +1683,9 @@ body.is-locked { overflow: hidden; }
   color: rgb(var(--color-text));
 }
 .variant-option input:focus-visible + .variant-option__label {
-  outline: var(--focus-width) solid rgb(var(--color-accent));
+  /* Der Fokusrahmen läuft in der Textfarbe: Champagner erreicht auf Ivory
+     nur 2,6:1 und verfehlt damit die geforderten 3:1 für Bedienelemente. */
+  outline: var(--focus-width) solid rgb(var(--color-text));
   outline-offset: var(--focus-offset);
 }
 .variant-option input:disabled + .variant-option__label { opacity: 0.45; text-decoration: line-through; }
@@ -1613,39 +1874,100 @@ body.is-locked { overflow: hidden; }
    V2 — Editorial-Schärfung, Scent Code, Sticky-Leisten
    ========================================================================== */
 
-/* 15 Display-Typografie -------------------------------------------------- */
+/* 15 Display-Typografie und Markenzeichen -------------------------------- */
+/* Das Display-Register ist der Markenauftritt: sehr groß, versal, eng
+   gesetzt, mit einer Zeilenhöhe unter 1. Es kommt nur an wenigen Stellen vor –
+   Hero, Beratungsmoment, Extrait, Fußbereich. Überall sonst gilt die
+   Überschriftenskala. */
 .display {
-  font-family: var(--font-heading-family);
-  font-weight: var(--font-heading-weight);
-  font-size: clamp(3rem, 13vw, 8.5rem);
-  line-height: var(--display-leading, 0.92);
-  letter-spacing: var(--display-tracking, -0.03em);
+  font-family: var(--font-display-family, var(--font-heading-family));
+  font-weight: var(--font-display-weight, var(--font-heading-weight));
+  font-style: var(--font-display-style, normal);
+  font-size: clamp(3rem, 15vw, 9rem);
+  line-height: var(--display-leading, 0.9);
+  letter-spacing: calc(var(--display-tracking, -0.03em) + var(--display-extra-tracking, 0em));
   text-transform: uppercase;
   text-wrap: balance;
 }
 
-/* Mobile: kompakter und enger gesetzt, damit die Schlagzeile das
-   Markenelement bleibt, ohne den Handlungsweg nach unten zu drücken.
-   Ab 750 px gilt wieder der Wert oben. */
+/* Mobile: kompakter gesetzt, damit die Schlagzeile das Markenelement bleibt,
+   ohne den Handlungsweg nach unten zu drücken. */
 @media (max-width: 749px) {
   .display {
-    /* Etwas kleiner als zuvor (10vw → 9vw): bei 390 px sind das 35 statt
-       39 px. „SCENT." misst in Playfair Display 3,37 em – damit belegt es
-       noch 34 % der Spalte statt 35 %, und selbst eine deutlich breiter
-       laufende Schrift kann die Zeile nicht mehr sprengen. */
-    font-size: clamp(2rem, 9vw, 2.75rem);
-    line-height: calc(var(--display-leading, 0.92) - 0.08);
-    letter-spacing: calc(var(--display-tracking, -0.03em) - 0.005em);
+    font-size: clamp(2.875rem, 17vw, 5rem);
+    line-height: calc(var(--display-leading, 0.9) - 0.02);
   }
 }
+
+@media (min-width: 990px) {
+  .display { font-size: clamp(4.5rem, 10vw, 12rem); }
+}
+
 .display--lines { display: block; }
 .display__line { display: block; }
 
-/* Auf großen Bildschirmen bleibt die Schlagzeile der einzige große
-   Auftritt – aber sie füllt den Bildschirm nicht aus. Die Handlungswege
-   darunter bleiben dadurch bei 1280 und 1440 px über der Falz. */
-@media (min-width: 990px) {
-  .display { font-size: clamp(3.5rem, 6.4vw, 7.5rem); }
+/* Zeilenweises Aufdecken: Jede Zeile sitzt in einem Fenster und fährt von
+   unten herein. Bewegt wird ausschließlich transform. */
+.display__mask { display: block; overflow: hidden; }
+html:not(.no-js) .animations-on .display__mask > span {
+  display: block;
+  transform: translateY(105%);
+  transition: transform var(--dur-reveal) var(--ease-out);
+}
+html:not(.no-js) .animations-on .reveal.is-visible .display__mask > span,
+html:not(.no-js) .animations-on .display__mask.is-visible > span { transform: none; }
+html:not(.no-js) .animations-on .display__mask:nth-of-type(2) > span { transition-delay: 90ms; }
+html:not(.no-js) .animations-on .display__mask:nth-of-type(3) > span { transition-delay: 180ms; }
+html:not(.no-js) .animations-on .display__mask:nth-of-type(4) > span { transition-delay: 270ms; }
+@media (prefers-reduced-motion: reduce) {
+  html:not(.no-js) .animations-on .display__mask > span { transform: none; }
+}
+
+/* --- Das Scent-Code-Monument -------------------------------------------
+   Das wiederkehrende Markenzeichen des Shops. Der Präfix steht in
+   Champagner und in einem kleineren Grad, die Ziffern tragen die Zeile.
+   Es erscheint im Hero, auf der Produktseite, in den Suchergebnissen und im
+   Warenkorb – immer gleich gebaut, nur in unterschiedlichen Graden. */
+.code-mark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.04em;
+  font-family: var(--font-display-family, var(--font-heading-family));
+  font-weight: var(--font-display-weight, var(--font-heading-weight));
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums lining-nums;
+  white-space: nowrap;
+}
+/* Der Präfix steht in der gedämpften Textfarbe, nicht in Champagner: Auf
+   Ivory erreicht Champagner nur 2,6:1 und wäre als Schrift zu schwach. Auf
+   dunklen Farbstilen, wo der Ton kräftig genug steht, kommt er zurück. */
+.code-mark__prefix {
+  font-size: 0.52em;
+  letter-spacing: 0.16em;
+  color: rgb(var(--color-muted));
+  transform: translateY(-0.06em);
+}
+.color-scheme-3 .code-mark__prefix,
+.color-scheme-ink .code-mark__prefix { color: rgb(var(--color-accent)); }
+.code-mark__digits { font-size: 1em; }
+.code-mark--xl { font-size: clamp(2.5rem, 9vw, 5rem); }
+.code-mark--lg { font-size: clamp(1.75rem, 5vw, 2.75rem); }
+.code-mark--md { font-size: 1.375rem; }
+.code-mark--sm { font-size: 1rem; }
+
+/* --- Kennziffer eines Abschnitts ---------------------------------------
+   Sehr große, sehr zurückgenommene Ziffer als Gliederung. Sie ist reine
+   Auszeichnung und wird beim Vorlesen übersprungen. */
+.figure-index {
+  font-family: var(--font-display-family, var(--font-heading-family));
+  font-weight: var(--font-display-weight, var(--font-heading-weight));
+  font-size: clamp(2.5rem, 8vw, 5.5rem);
+  line-height: 0.8;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: rgb(var(--color-text) / 0.14);
+  user-select: none;
 }
 
 /* 16 Scent-Code-Feld ----------------------------------------------------- */
@@ -1837,15 +2159,11 @@ body.has-sticky-atc .whatsapp-bar { display: none; }
    Fokus einmal in einem Eingabefeld war. */
 body.is-typing .sticky-atc { transform: translateY(110%); }
 
-/* 18 WhatsApp-Buttons ---------------------------------------------------- */
-.button svg { width: 18px; height: 18px; flex: none; }
-.button--whatsapp { gap: .55rem; }
-
 /* 19 Gestaffeltes Einblenden --------------------------------------------- */
-.animations-on .reveal[data-reveal-delay='1'] { transition-delay: 60ms; }
-.animations-on .reveal[data-reveal-delay='2'] { transition-delay: 120ms; }
-.animations-on .reveal[data-reveal-delay='3'] { transition-delay: 180ms; }
-.animations-on .reveal[data-reveal-delay='4'] { transition-delay: 240ms; }
+html:not(.no-js) .animations-on .reveal[data-reveal-delay='1'] { transition-delay: 70ms; }
+html:not(.no-js) .animations-on .reveal[data-reveal-delay='2'] { transition-delay: 140ms; }
+html:not(.no-js) .animations-on .reveal[data-reveal-delay='3'] { transition-delay: 210ms; }
+html:not(.no-js) .animations-on .reveal[data-reveal-delay='4'] { transition-delay: 280ms; }
 
 /* 20 Logo als Inline-SVG ------------------------------------------------- */
 .header__logo-svg { display: block; }
@@ -1853,10 +2171,10 @@ body.is-typing .sticky-atc { transform: translateY(110%); }
 .header__logo-svg svg [fill]:not([fill='none']) { fill: currentColor; }
 .header__logo-svg svg [stroke]:not([stroke='none']) { stroke: currentColor; }
 
-/* 21 Quick Add auf der Produktkarte -------------------------------------- */
+/* 21 Quick Add ----------------------------------------------------------- */
 /* Auf Touch: ein kleines Feld in der Bildecke, dauerhaft erreichbar.
-   Auf Zeigegeräten: eine beschriftete Leiste, die beim Überfahren von unten
-   in das Bild einfährt – bewegt wird nur transform. */
+   Auf Zeigegeräten: eine beschriftete Leiste, die hinter einer Maske aus dem
+   unteren Bildrand hervorfährt. Bewegt wird ausschließlich transform. */
 .card__quick-add {
   position: absolute;
   right: var(--space-xs);
@@ -1868,16 +2186,16 @@ body.is-typing .sticky-atc { transform: translateY(110%); }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.55rem;
   width: 2.75rem;
   height: 2.75rem;
   border: var(--border-width) solid rgb(var(--color-text));
   border-radius: var(--button-radius);
   background-color: rgb(var(--color-background));
   color: rgb(var(--color-text));
-  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur) var(--ease);
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur-slow) var(--ease-out);
 }
-.card__quick-add-button svg { width: 16px; height: 16px; flex: none; }
+.card__quick-add-button svg { width: 15px; height: 15px; flex: none; }
 .card__quick-add-button[data-state='added'] {
   background-color: rgb(var(--color-text));
   color: rgb(var(--color-background));
@@ -1888,7 +2206,7 @@ body.is-typing .sticky-atc { transform: translateY(110%); }
     left: 0;
     right: 0;
     bottom: 0;
-    height: 2.875rem;
+    height: 3rem;
     overflow: hidden;
   }
   .card__quick-add-label { display: inline; }
@@ -1896,10 +2214,9 @@ body.is-typing .sticky-atc { transform: translateY(110%); }
     width: 100%;
     height: 100%;
     border: 0;
-    border-top: var(--hair);
     border-radius: 0;
-    font-size: 0.625rem;
-    letter-spacing: calc(var(--meta-tracking) + 0.04em);
+    font-size: 0.5625rem;
+    letter-spacing: calc(var(--meta-tracking) + 0.08em);
     text-transform: uppercase;
     transform: translateY(101%);
   }

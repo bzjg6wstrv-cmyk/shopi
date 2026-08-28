@@ -59,7 +59,9 @@
     "conc_extrait_percent": "30",
     "sections": {},
     "cart_cross_sell_product": "discovery-set",
-    "brand_accent": "#C3AC82"
+    "brand_accent": "#C3AC82",
+    "display_font": "sans",
+    "section_contrast": "crisp"
   },
   "presets": {
     "VENT CELESTE": {
@@ -122,7 +124,9 @@
       "conc_extrait_percent": "30",
       "sections": {},
       "cart_cross_sell_product": "discovery-set",
-      "brand_accent": "#C3AC82"
+      "brand_accent": "#C3AC82",
+      "display_font": "sans",
+      "section_contrast": "crisp"
     }
   }
 }

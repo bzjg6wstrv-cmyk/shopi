@@ -1,51 +1,57 @@
 {{ 'section-scent-code.css' | asset_url | stylesheet_tag }}
 {%- comment -%}
-  „Dein Duft ist nicht dabei?" – der Übergang vom öffentlichen Sortiment in
-  die persönliche Beratung.
+  Duftberatung – der Premium-Moment der Startseite.
 
-  Komposition: vollflächiges Bild, der Text sitzt unten links auf der
-  Rasterkante, nicht mittig. Die Lesbarkeit kommt aus einem nach unten
-  zunehmenden Verlauf, nicht aus einer Box über dem Bild. Die Antwortzeit
-  steht auf dem Desktop rechts unten auf derselben Grundlinie – das hält die
-  Komposition asymmetrisch und ohne zusätzliche Fläche.
+  Vollflächiges Bild über die ganze Fensterbreite, dunkler Farbstil, sehr
+  hohe Fläche. Der Text sitzt unten links auf der Rasterkante, rechts unten
+  steht die Antwortzeit auf derselben Grundlinie. Der Weg in die Beratung ist
+  eine Textmarke mit Pfeil, keine gefüllte Schaltfläche – die Beratung soll
+  wie ein Service wirken, nicht wie eine Werbefläche.
 {%- endcomment -%}
-<section class="wa-feature color-{{ section.settings.color_scheme }} color-scheme">
-  <div class="wa-feature__media">
+<section class="wa color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="wa__media">
     {%- if section.settings.image != blank -%}
       <img
-        src="{{ section.settings.image | image_url: width: 2000 }}"
+        src="{{ section.settings.image | image_url: width: 2400 }}"
         srcset="{{ section.settings.image | image_url: width: 750 }} 750w,
                 {{ section.settings.image | image_url: width: 1100 }} 1100w,
                 {{ section.settings.image | image_url: width: 1600 }} 1600w,
-                {{ section.settings.image | image_url: width: 2000 }} 2000w"
+                {{ section.settings.image | image_url: width: 2400 }} 2400w"
         sizes="100vw"
         alt="{{ section.settings.image.alt | escape }}"
         width="{{ section.settings.image.width }}"
         height="{{ section.settings.image.height }}"
         loading="lazy"
+        style="object-position: {{ section.settings.image_position | default: 'center' }};"
       >
     {%- else -%}
       {{ 'lifestyle-2' | placeholder_svg_tag: 'full-bleed-media' }}
     {%- endif -%}
-    <div class="wa-feature__scrim"{% if section.settings.scrim > 0 %} style="background-color: rgb(var(--color-background) / {{ section.settings.scrim | divided_by: 100.0 }});"{% endif %}></div>
+    <div class="wa__scrim" style="--scrim: {{ section.settings.scrim | divided_by: 100.0 }};"></div>
   </div>
 
-  <div class="wa-feature__content page-width">
-    <div class="wa-feature__inner reveal">
+  <div class="wa__content page-width">
+    <div class="wa__body reveal">
       {%- if section.settings.eyebrow != blank -%}
-        <span class="eyebrow">{{ section.settings.eyebrow | escape }}</span>
+        <span class="eyebrow wa__eyebrow">{{ section.settings.eyebrow | escape }}</span>
       {%- endif -%}
       {%- if section.settings.heading != blank -%}
-        <h2 class="wa-feature__title h1">{{ section.settings.heading | escape }}</h2>
+        <h2 class="wa__title display">
+          <span class="reveal reveal--mask"><span>{{ section.settings.heading | escape }}</span></span>
+        </h2>
       {%- endif -%}
       {%- if section.settings.text != blank -%}
-        <div class="wa-feature__text rte">{{ section.settings.text }}</div>
+        <div class="wa__text rte">{{ section.settings.text }}</div>
       {%- endif -%}
 
-      <div class="wa-feature__actions">
-        {% render 'whatsapp-link', class: 'button wa-feature__cta', icon: true, label: section.settings.button_label %}
+      <div class="wa__actions">
+        {% render 'whatsapp-link',
+          class: 'action-link action-link--lg wa__cta',
+          label: section.settings.button_label,
+          arrow: true
+        %}
         {%- if section.settings.secondary_label != blank and section.settings.secondary_link != blank -%}
-          <a class="link-underline wa-feature__alt" href="{{ section.settings.secondary_link }}">
+          <a class="link-underline wa__alt" href="{{ section.settings.secondary_link }}">
             {{ section.settings.secondary_label | escape }}
           </a>
         {%- endif -%}
@@ -53,7 +59,7 @@
     </div>
 
     {%- if settings.whatsapp_response_time != blank -%}
-      <p class="wa-feature__note reveal">{{ settings.whatsapp_response_time | escape }}</p>
+      <p class="micro wa__note reveal">{{ settings.whatsapp_response_time | escape }}</p>
     {%- endif -%}
   </div>
 </section>
@@ -79,6 +85,19 @@
       "type": "image_picker",
       "id": "image",
       "label": "Bild"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Bildausschnitt",
+      "options": [
+        { "value": "center", "label": "Mitte" },
+        { "value": "top", "label": "Oben" },
+        { "value": "bottom", "label": "Unten" },
+        { "value": "left", "label": "Links" },
+        { "value": "right", "label": "Rechts" }
+      ],
+      "default": "center"
     },
     {
       "type": "range",

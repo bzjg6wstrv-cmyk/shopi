@@ -161,7 +161,7 @@
       ],
       "settings": {
         "color_scheme": "scheme-1",
-        "media_position": "left",
+        "media_position": "right",
         "media_shape": "tall",
         "eyebrow": "Die Hauptlinie",
         "heading": "30 % Extrait",
@@ -169,7 +169,8 @@
         "show_price": false,
         "primary_label": "Extrait ansehen",
         "primary_link": "/collections/extrait",
-        "layout": "spec"
+        "layout": "monument",
+        "figure": "30 %"
       }
     },
     "travel": {
@@ -271,7 +272,7 @@
         "o2"
       ],
       "settings": {
-        "color_scheme": "scheme-2",
+        "color_scheme": "scheme-3",
         "show_whatsapp": true,
         "whatsapp_label": "Duftberatung starten"
       }
@@ -279,11 +280,11 @@
   },
   "order": [
     "hero",
+    "most_wanted",
     "profiles",
     "how",
-    "most_wanted",
-    "offer",
     "extrait",
+    "offer",
     "brand",
     "newsletter",
     "discovery",
