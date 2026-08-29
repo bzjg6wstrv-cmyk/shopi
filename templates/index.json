@@ -234,10 +234,10 @@
         "o1": {
           "type": "claim",
           "settings": {
-            "eyebrow": "Willkommen bei VENT CELESTE",
-            "heading": "20 % auf deinen ersten Duftkauf",
-            "text": "Auf deine erste Bestellung.",
-            "detail": "Für deine erste Bestellung mit bis zu 3 Düften."
+            "eyebrow": "Willkommensvorteil",
+            "heading": "20 % auf deine\nerste Bestellung",
+            "text": "Dein Neukundenrabatt wird automatisch im Checkout angewendet.",
+            "detail": "Einmalig für deine erste Bestellung."
           }
         }
       },
@@ -247,7 +247,8 @@
       "settings": {
         "color_scheme": "scheme-2",
         "show_whatsapp": false,
-        "whatsapp_label": "Duftberatung starten"
+        "whatsapp_label": "Duftberatung starten",
+        "accent": true
       }
     },
     "trust": {
@@ -289,11 +290,11 @@
   "order": [
     "hero",
     "most_wanted",
+    "offer",
     "trust",
     "profiles",
     "how",
     "extrait",
-    "offer",
     "newsletter",
     "discovery",
     "code",

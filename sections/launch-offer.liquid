@@ -12,7 +12,7 @@
 {%- endcomment -%}
 <section class="section section--lg offer-band color-{{ section.settings.color_scheme }} color-scheme">
   <div class="page-width">
-    <div class="offer{% if section.blocks.size == 2 %} offer--pair{% elsif section.blocks.size == 1 %} offer--solo{% endif %} reveal">
+    <div class="offer{% if section.blocks.size == 2 %} offer--pair{% elsif section.blocks.size == 1 %} offer--solo{% endif %}{% if section.settings.accent %} offer--akzent{% endif %} reveal">
       {%- for block in section.blocks -%}
         <div class="offer__item" {{ block.shopify_attributes }}>
           {%- if block.settings.eyebrow != blank -%}
@@ -60,6 +60,13 @@
         { "value": "scheme-4", "label": "Taupe" }
       ],
       "default": "scheme-2"
+    },
+    {
+      "type": "checkbox",
+      "id": "accent",
+      "label": "Vorteil farblich hervorheben",
+      "default": true,
+      "info": "Setzt Vortext und Überschrift in einen gedeckten Bordeaux-Ton. So ist der Preisvorteil auf den ersten Blick von der Konzentrationsangabe „30 % Extrait\" zu unterscheiden. Der Hintergrund des Abschnitts bleibt unverändert."
     },
     {
       "type": "checkbox",

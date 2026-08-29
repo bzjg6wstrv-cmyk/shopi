@@ -56,11 +56,58 @@
    Zusage braucht darüber keinen zweiten Innenabstand mehr, sonst summieren
    sich beide zu einer Lücke von über 100 px vor der Überschrift. */
 @media (max-width: 749px) {
-  .offer__item:first-child { padding-top: 0; }
+  /* Ohne Akzentlinie braucht die erste Zusage oben keinen Innenabstand –
+     der Abschnittsrahmen trägt die Luft. Mit Linie schon, sonst klebte der
+     Vortext daran. */
+  .offer:not(.offer--akzent) .offer__item:first-child { padding-top: 0; }
+  .offer--akzent .offer__item:first-child { padding-top: var(--space-md); }
   .offer__cta { padding-bottom: 0; }
 }
 .offer__button { min-height: 3.25rem; }
 @media (max-width: 599px) { .offer__button { display: flex; width: 100%; } }
+
+/* --------------------------------------------------- Akzent Bordeaux ---
+   Der Preisvorteil und die Konzentrationsangabe „30 % Extrait" sahen sich
+   zu ähnlich: zweimal eine große Prozentzahl in derselben Schrift und
+   derselben Farbe. Der Vorteil bekommt deshalb als einziger Abschnitt der
+   Seite eine eigene Akzentfarbe.
+
+   #7A3E3A ist ein tiefes, gedecktes Bordeaux – kein Signalrot. Auf dem
+   warmen Beige der Fläche erreicht es 6,6:1 und ist damit auch als
+   Fließtext zulässig; es liegt farblich in derselben warmen Familie wie
+   Ivory, Beige und Champagner und fällt nicht heraus.
+
+   Getragen wird der Akzent von Vortext und Überschrift. Alles andere bleibt
+   dunkel. Keine Fläche, kein Verlauf, kein Rahmen, keine Plakette – der
+   Abschnitt bleibt eine redaktionelle Seite, kein Rabattschild. */
+.offer--akzent {
+  --offer-akzent: 122 62 58;
+}
+
+.offer--akzent .eyebrow,
+.offer--akzent .offer__heading {
+  color: rgb(var(--offer-akzent));
+}
+
+/* Eine sehr feine Linie in derselben Farbe schließt den Vorteil nach oben
+   ab. Sie ersetzt keinen Rahmen – sie markiert nur den Anfang. */
+.offer--akzent .offer__item:first-child {
+  border-top: var(--border-width) solid rgb(var(--offer-akzent) / 0.45);
+  padding-top: var(--space-lg);
+}
+
+/* Auf dunklen Farbstilen trüge das Bordeaux zu wenig Kontrast. Dort führt
+   der Akzent des Farbstils. */
+.color-scheme-3 .offer--akzent .eyebrow,
+.color-scheme-3 .offer--akzent .offer__heading,
+.color-scheme-4 .offer--akzent .eyebrow,
+.color-scheme-4 .offer--akzent .offer__heading {
+  color: rgb(var(--color-accent));
+}
+.color-scheme-3 .offer--akzent .offer__item:first-child,
+.color-scheme-4 .offer--akzent .offer__item:first-child {
+  border-top-color: rgb(var(--color-accent) / 0.45);
+}
 
 /* Eine einzelne Zusage. Der Abschnitt zeigt dann nur noch den Erstkauf-
    Vorteil – die persönliche Beratung ist auf der Seite bereits ausführlich

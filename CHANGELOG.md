@@ -1,3 +1,69 @@
+# v6.6 – Willkommensvorteil
+
+Drei Dateien. Position, Text und Farbe des Rabattbereichs – sonst nichts.
+
+## 1 · Reihenfolge
+
+Hero · Bestseller · **20 % Willkommensvorteil** · 100 % zufrieden ·
+Duftberatung · So funktioniert's · 30 % Extrait · Newsletter.
+
+Damit steht die Kaufabsicht direkt neben ihren beiden Argumenten: erst der
+Preisvorteil, dann die Geld-zurück-Sicherheit. Geändert wurde ausschließlich
+die Reihenfolge in `templates/index.json`.
+
+## 2 · Bordeaux statt zweimal Prozent
+
+Der Preisvorteil und die Konzentrationsangabe sahen sich zu ähnlich: zweimal
+eine große Prozentzahl in derselben Schrift und derselben Farbe. Der Vorteil
+bekommt deshalb als einziger Abschnitt der Seite eine eigene Akzentfarbe.
+
+**#7A3E3A** – ein tiefes, gedecktes Bordeaux. Auf dem warmen Beige der
+Fläche erreicht es **6,6:1** und ist damit auch als Fließtext zulässig; es
+liegt farblich in derselben warmen Familie wie Ivory, Beige und Champagner
+und fällt nicht heraus.
+
+Getragen wird der Akzent von Vortext und Überschrift, dazu eine sehr feine
+Linie darüber. Fließtext und Kleingedrucktes bleiben schwarz. Keine Fläche,
+kein Verlauf, kein Rahmen, keine Plakette, keine Rundung.
+
+Auf dunklen Farbstilen trüge das Bordeaux zu wenig Kontrast – dort führt
+weiterhin der Akzent des Farbstils.
+
+Steuerbar über den neuen Schalter „Vorteil farblich hervorheben" im
+Theme-Editor, voreingestellt an.
+
+## 3 · Text
+
+    WILLKOMMENSVORTEIL
+    20 % auf deine
+    erste Bestellung
+    Dein Neukundenrabatt wird automatisch im Checkout angewendet.
+    Einmalig für deine erste Bestellung.
+
+Kein Rabattcode, kein Kopierfeld, keine Eingabe. Die Überschrift steht wie
+alle Überschriften des Themes in gemischter Schreibweise – der Unterschied
+zum Extrait-Abschnitt kommt aus der Farbe, nicht aus Versalien.
+
+## 4 · Keine Rabattlogik im Theme
+
+Das Theme stellt nirgends fest, ob jemand Neukunde ist: kein JavaScript,
+kein `localStorage`, keine Cookies, keine Liquid-Abfrage. Es nennt
+ausschließlich den Satz aus dem Text. Die Berechtigung steuert Shopify.
+
+## Prüfungen
+
+390, 393, 430 und 1440 px: Überschrift auf zwei Zeilen ohne schlechten
+Umbruch, Abschnitt 312 px hoch auf dem Telefon. Kein waagerechter Überlauf
+auf fünf Seitentypen über elf Breiten, keine Überlappungen, kein
+abgeschnittener Text. Kein `render`, `include` oder `section` in einem
+`{% liquid %}`-Block. 27 JSON-Dateien, 37 Schemas, 13 JS-Dateien fehlerfrei.
+Theme Check 40 Verstöße, ausschließlich die drei bekannten Stilarten.
+
+Keine JavaScript-Datei angefasst. Code-Normalisierung, Cart-API-Bestellweg,
+Kaufweg und Suche liefern unverändert dieselben Ergebnisse.
+
+---
+
 # v6.5 – Conversion-Polish
 
 Kein Redesign. Acht gezielte Eingriffe auf v6.4.
