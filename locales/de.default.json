@@ -71,7 +71,8 @@
       "copied": "Link kopiert"
     },
     "continue_shopping": "Weiter stöbern",
-    "demo_notice": "DEMO-INHALT – vor dem Livegang ersetzen"
+    "demo_notice": "DEMO-INHALT – vor dem Livegang ersetzen",
+    "discover_scents": "Düfte entdecken"
   },
   "products": {
     "product": {
@@ -171,7 +172,7 @@
     "cart": {
       "title": "Warenkorb",
       "empty": "Dein Warenkorb ist leer.",
-      "empty_help": "Bei über 100 Duftprofilen ist das Discovery Set ein guter Anfang.",
+      "empty_help": "Entdecke unsere Bestseller oder finde deinen persönlichen Scent Code.",
       "subtotal": "Zwischensumme",
       "checkout": "Zur Kasse",
       "view_cart": "Warenkorb ansehen",

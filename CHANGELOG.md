@@ -1,3 +1,86 @@
+# v6.9 – Finaler Polish
+
+Sieben Dateien. Kein Redesign: Hero, Header, Bestseller, 20-%-Fläche,
+Garantie, schwarze Beratung und „So funktioniert's" bleiben unangetastet.
+
+## Reihenfolge
+
+Bereits in v6.8 richtig, hier nur nachgewiesen. Gemessen an den
+Y-Positionen auf der gerenderten Startseite bei 390 px:
+
+    Announcement 0 · Header 33 · Hero 90 · Bestseller 959 ·
+    20 % 1633 · Garantie 1883 · Duftberatung 2202 ·
+    So funktioniert's 2740 · 30 % Extrait 3134 · Footer 3944
+
+Kein Abschnitt entfernt, keine Reihenfolge geändert.
+
+## 30 % Extrait auf dem Telefon
+
+Nur Abstände und Bildgröße, kein Inhalt. Gemessen bei 390 px:
+
+    Flakon        240 × 320  →  208 × 277   (−13 %)
+    Text → Bild        32 px →  24 px       (−25 %)
+    Bild → Fakten      44 px →  24 px       (−45 %)
+    Faktenzeile        41 px →  37 px       (−10 %)
+    Fakten → CTA       40 px →  32 px       (−20 %)
+    Abschnitt         900 px → 810 px       (−10 %)
+
+Die Fakten werden über den Zeilenabstand enger gesetzt, nicht über den
+Schriftgrad – 15 px bleiben 15 px. Ab 990 px ist alles unverändert:
+812 px Höhe, Flakon 384 × 480.
+
+## 24/7 in der Beratung
+
+„Antwort meist innerhalb von 24 Stunden" wird zu „24/7 erreichbar ·
+schnelle persönliche Antwort". Der WhatsApp-Link darüber bleibt, wie er
+war.
+
+## Suchfeld ohne Beschnitt
+
+Der Platzhalter „Scent Code, Duftfamilie oder Note" war auf dem Telefon
+zu lang – 301 px Text in 273 px Feld bei 390 px. Er lautet jetzt „Code,
+Duftnote oder Familie" und passt bei 390, 393, 430 und 1440 px in jedes
+Feld. Die Lade selbst wurde nicht umgebaut, nur der Höchstwert ihrer
+Schriftgröße von 1.55rem auf 1.45rem gesenkt: bei fester Ladenbreite
+stand der Platzhalter sonst auch auf dem Schreibtisch 2 px über.
+Die Suchlogik ist unberührt.
+
+## Leerer Warenkorb
+
+Der Satz „Bei über 100 Duftprofilen ist das Discovery Set ein guter
+Anfang." ist entfernt – die letzte veraltete Duftprofil-Angabe im Theme.
+Stattdessen zwei Wege:
+
+    Dein Warenkorb ist leer.
+    Entdecke unsere Bestseller oder finde deinen persönlichen Scent Code.
+    [ DÜFTE ENTDECKEN → ]
+    Duftberatung starten →
+
+Das Ziel der Schaltfläche kommt aus den Section-Einstellungen; fehlt es,
+greift Shopifys Route für alle Produkte. Die gibt es in jedem Shop, ein
+404 kann hier nicht entstehen. Gleiches gilt für die Warenkorb-Seite.
+
+## Gefüllter Warenkorb
+
+Bei einem persönlichen Scent Code steht jetzt der Code vorn:
+
+    VC-250
+    Extrait · 30 ml · 30 %
+
+statt „VENT CELESTE Scent Code" groß und dem Code klein darunter. Die
+Angabenzeile stammt aus dem vorhandenen Baustein `variant-facts`, also
+aus derselben Quelle wie auf jeder Produktkarte. Gelesen wird nur die
+bereits vorhandene Line-Item-Property; sie wird weder angelegt noch
+geändert noch entfernt. Öffentliche Produkte wie VC-049 sehen aus wie
+vorher.
+
+## Unverändert
+
+Scent-Code-System und -Normalisierung, Cart API, `_vc_code`, Mengen,
+Entfernen, Checkout, Suche, Bestseller-Slider, 20-%-Fläche, Garantie,
+Produktseiten, Footer-Inhalte. Keine JavaScript-Datei angefasst. Die
+Menge aller Verweise ist gegenüber v6.8 identisch – kein neuer Link.
+
 # v6.8 – Hero verständlich, Extrait redaktionell, Wortmarke
 
 Sechs Dateien. Kein Redesign: Farbwelt, Aufbau, Typografierichtung und

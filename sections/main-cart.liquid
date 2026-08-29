@@ -6,7 +6,17 @@
       <div class="stack">
         <p class="text-lead">{{ 'sections.cart.empty' | t }}</p>
         <p class="text-muted measure-narrow">{{ 'sections.cart.empty_help' | t }}</p>
-        <p><a class="button" href="{{ routes.all_products_collection_url }}">{{ 'general.continue_shopping' | t }}</a></p>
+        {%- comment -%}
+          Dieselben zwei Wege wie in der Warenkorb-Lade. Die Route für alle
+          Produkte liefert Shopify, sie kann nicht ins Leere zeigen.
+        {%- endcomment -%}
+        <div class="cart-empty__actions">
+          <a class="button cart-empty__button" href="{{ routes.all_products_collection_url }}">
+            {{ 'general.discover_scents' | t }}
+            {% render 'icon', name: 'arrow' %}
+          </a>
+          {% render 'whatsapp-link', class: 'link-underline cart-empty__beratung', arrow: true %}
+        </div>
       </div>
     {%- else -%}
       <form action="{{ routes.cart_url }}" method="post" novalidate data-no-ajax>

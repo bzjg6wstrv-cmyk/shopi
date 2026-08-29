@@ -2653,6 +2653,42 @@ button.predictive__code[disabled] { opacity: .6; cursor: default; }
 }
 .cart-item__code dd { font-family: var(--font-heading-family); letter-spacing: .1em; }
 
+/* Der Scent Code als Überschrift der Position. Er steht in der Auszeichnungs-
+   schrift mit ruhiger Sperrung – erkennbar als Kennung, nicht als Fließtext.
+   Die Größe bleibt die der übrigen Positionstitel; hervorgehoben wird durch
+   Form, nicht durch Fläche. */
+.cart-item__title--code {
+  font-family: var(--font-heading-family);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+/* Leerer Warenkorb: zwei Wege untereinander, der zweite deutlich leiser. */
+.cart-empty__actions {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+.cart-empty__button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-height: 3.25rem;
+  padding-inline: var(--space-lg);
+}
+.cart-empty__button svg { width: 16px; height: 16px; flex: none; }
+/* Der zweite Weg als leiser Textlink. Der Pfeil braucht eine feste Größe:
+   ohne sie hat das SVG kein eigenes Maß und läuft auf volle Spaltenbreite
+   auf – .link-underline setzt anders als .action-link keine Maße. */
+.cart-empty__beratung {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: .8125rem;
+}
+.cart-empty__beratung svg { width: 15px; height: 15px; flex: none; }
+
 /* 24 Ruhige Zeile -------------------------------------------------------- */
 .quiet-row {
   display: flex;
@@ -3103,7 +3139,10 @@ body { max-width: 100%; overflow-x: clip; }
   border: 0 !important;
   background: transparent !important;
   font-family: var(--font-heading-family);
-  font-size: clamp(1.15rem, 5vw, 1.55rem);
+  /* Obergrenze auf 1.45rem: Die Lade hat eine feste Breite, deshalb wächst
+     das Feld ab einer gewissen Ansichtsbreite nicht mehr mit. Bei 1.55rem
+     stand der Platzhalter 2 px über der Feldbreite und wurde beschnitten. */
+  font-size: clamp(1.15rem, 5vw, 1.45rem);
   line-height: 1.2;
   color: inherit;
   text-align: left;

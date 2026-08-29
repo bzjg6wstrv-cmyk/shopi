@@ -364,7 +364,7 @@
         "type": "text",
         "id": "whatsapp_response_time",
         "label": "Hinweis zur Antwortzeit",
-        "default": "Antwort meist innerhalb von 24 Stunden",
+        "default": "24/7 erreichbar · schnelle persönliche Antwort",
         "info": "Leer lassen, wenn keine Zeit zugesagt werden soll."
       },
       {
@@ -616,7 +616,7 @@
         "type": "text",
         "id": "search_placeholder",
         "label": "Platzhaltertext",
-        "default": "Scent Code, Duftfamilie oder Note"
+        "default": "Code, Duftnote oder Familie"
       }
     ]
   },

@@ -212,7 +212,10 @@
 .feature--spec .feature__media img {
   width: 100%;
   height: auto;
-  max-width: 15rem;
+  /* 13rem statt 15rem: der Flakon wird auf dem Telefon rund 13 % kleiner
+     (240 → 208 px breit, 320 → 277 px hoch) und bleibt dabei klar erkennbar.
+     Ab 990 px hebt der Zweispalter diesen Wert ohnehin auf. */
+  max-width: 13rem;
   aspect-ratio: var(--ratio-portrait);
   object-fit: contain;
   margin-inline: auto;
@@ -250,11 +253,24 @@
   .feature--spec .feature__body > h2,
   .feature--spec .feature__body > .h2 { order: 2; }
   .feature--spec .feature__text { order: 3; }
-  .feature--spec .feature__media { order: 4; margin-block: var(--space-xs); }
+  .feature--spec .feature__media { order: 4; }
   .feature--spec .feature__price { order: 5; }
-  .feature--spec .feature__points { order: 6; margin-top: var(--space-sm); }
+  .feature--spec .feature__points { order: 6; }
   .feature--spec .feature__note { order: 7; }
-  .feature--spec .feature__actions { order: 8; margin-top: var(--space-md); }
+  .feature--spec .feature__actions { order: 8; }
+
+  /* Punkt 11 · Der Abschnitt wird auf dem Telefon dichter gesetzt, ohne dass
+     ein Inhalt entfällt oder eine Schriftgröße nachgibt. Die Zusatzabstände
+     über den Zeilenabstand des Rasters hinaus fallen weg; die Schaltfläche
+     behält bewusst etwas mehr Luft, damit sie als Abschluss gelesen wird und
+     nicht an den Fakten klebt. Die Fakten werden über den Zeilenabstand
+     enger gesetzt – der Schriftgrad von 15 px bleibt unangetastet. */
+  .feature--spec .feature__media { margin-block: 0; }
+  .feature--spec .feature__text { margin-bottom: 0; }
+  .feature--spec .feature__points { margin-top: 0; }
+  .feature--spec .feature__points li { padding-block: 0.5rem; }
+  .feature--spec .feature__points li > span:last-child { line-height: 1.35; }
+  .feature--spec .feature__actions { margin-top: 0.5rem; }
 }
 
 /* Duftfinder-Teaser: die drei Fragen als Vorschau, nicht als Formular */

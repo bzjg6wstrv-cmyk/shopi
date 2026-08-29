@@ -14,12 +14,26 @@
     <div class="drawer__body">
       {%- if cart.item_count == 0 -%}
         <div class="stack">
+          {%- comment -%}
+            Der leere Warenkorb führt jetzt weiter, statt nur festzustellen,
+            dass nichts drin ist: erst in die Düfte, daneben in die Beratung.
+            Das Ziel der Schaltfläche kommt aus den Section-Einstellungen; ist
+            dort nichts gepflegt, greift die Alle-Produkte-Route von Shopify.
+            Die existiert in jedem Shop – so kann hier kein 404 entstehen.
+          {%- endcomment -%}
+          {%- assign empty_href = section.settings.empty_link -%}
+          {%- if empty_href == blank -%}
+            {%- assign empty_href = routes.all_products_collection_url -%}
+          {%- endif -%}
           <p class="h4">{{ 'sections.cart.empty' | t }}</p>
           <p class="text-muted measure-narrow">{{ 'sections.cart.empty_help' | t }}</p>
-          {%- if section.settings.empty_link != blank -%}
-            <a class="button" href="{{ section.settings.empty_link }}">{{ section.settings.empty_label | escape }}</a>
-          {%- endif -%}
-          <a class="link-underline" href="{{ routes.all_products_collection_url }}">{{ 'general.continue_shopping' | t }}</a>
+          <div class="cart-empty__actions">
+            <a class="button cart-empty__button" href="{{ empty_href }}">
+              {{ section.settings.empty_label | default: 'Düfte entdecken' | escape }}
+              {% render 'icon', name: 'arrow' %}
+            </a>
+            {% render 'whatsapp-link', class: 'link-underline cart-empty__beratung', arrow: true %}
+          </div>
         </div>
       {%- else -%}
         {%- if settings.free_shipping_enabled -%}
@@ -67,11 +81,41 @@
               </a>
 
               <div>
-                <p class="cart-item__title"><a href="{{ item.url }}">{{ item.product.title }}</a></p>
+                {%- comment -%}
+                  Bei einem persönlichen Scent Code ist der Code die Identität
+                  der Position – nicht der generische Produktname. Deshalb
+                  steht er hier vorn, darunter die Ausführung. Gelesen wird
+                  nur die bereits vorhandene Line-Item-Property; sie wird
+                  weder angelegt noch verändert noch entfernt. Ohne Code
+                  bleibt alles wie bisher.
+                {%- endcomment -%}
+                {%- assign code_label = 'sections.scent_code.code_in_order' | t -%}
+                {%- assign line_code = '' -%}
+                {%- for property in item.properties -%}
+                  {%- assign first_char = property.first | slice: 0 -%}
+                  {%- if property.last != blank and first_char != '_' and property.first contains code_label -%}
+                    {%- assign line_code = property.last -%}
+                  {%- endif -%}
+                {%- endfor -%}
 
-                {%- unless item.product.has_only_default_variant -%}
-                  <p class="cart-item__variant">{{ item.variant.title }}</p>
-                {%- endunless -%}
+                {%- if line_code != blank -%}
+                  <p class="cart-item__title cart-item__title--code">
+                    <a href="{{ item.url }}">{{ line_code | escape }}</a>
+                  </p>
+                  {%- capture line_facts -%}{% render 'variant-facts', variant: item.variant, mode: 'line' %}{%- endcapture -%}
+                  {%- assign line_facts = line_facts | strip -%}
+                  {%- if line_facts != blank -%}
+                    <p class="cart-item__variant">{{ line_facts }}</p>
+                  {%- else -%}
+                    <p class="cart-item__variant">{{ item.product.title }}</p>
+                  {%- endif -%}
+                {%- else -%}
+                  <p class="cart-item__title"><a href="{{ item.url }}">{{ item.product.title }}</a></p>
+
+                  {%- unless item.product.has_only_default_variant -%}
+                    <p class="cart-item__variant">{{ item.variant.title }}</p>
+                  {%- endunless -%}
+                {%- endif -%}
 
                 {%- if item.unit_price_measurement -%}
                   <p class="cart-item__variant">
@@ -81,26 +125,36 @@
                   </p>
                 {%- endif -%}
 
+                {%- comment -%}
+                  Steht der Code bereits als Überschrift, wird er hier nicht
+                  ein zweites Mal aufgeführt. Alle übrigen Eigenschaften
+                  erscheinen unverändert.
+                {%- endcomment -%}
                 {%- assign visible_properties = false -%}
                 {%- for property in item.properties -%}
                   {%- assign first_char = property.first | slice: 0 -%}
                   {%- if property.last != blank and first_char != '_' -%}
-                    {%- assign visible_properties = true -%}
+                    {%- assign is_code = false -%}
+                    {%- if property.first contains code_label -%}{%- assign is_code = true -%}{%- endif -%}
+                    {%- unless is_code and line_code != blank -%}
+                      {%- assign visible_properties = true -%}
+                    {%- endunless -%}
                   {%- endif -%}
                 {%- endfor -%}
 
                 {%- if visible_properties -%}
-                  {%- assign code_label = 'sections.scent_code.code_in_order' | t -%}
                   <dl class="cart-item__properties">
                     {%- for property in item.properties -%}
                       {%- assign first_char = property.first | slice: 0 -%}
                       {%- if property.last != blank and first_char != '_' -%}
                         {%- assign is_code = false -%}
                         {%- if property.first contains code_label -%}{%- assign is_code = true -%}{%- endif -%}
-                        <div{% if is_code %} class="cart-item__code"{% endif %}>
-                          <dt>{{ property.first | escape }}:</dt>
-                          <dd>{{ property.last | escape }}</dd>
-                        </div>
+                        {%- unless is_code and line_code != blank -%}
+                          <div>
+                            <dt>{{ property.first | escape }}:</dt>
+                            <dd>{{ property.last | escape }}</dd>
+                          </div>
+                        {%- endunless -%}
                       {%- endif -%}
                     {%- endfor -%}
                   </dl>
@@ -219,7 +273,7 @@
       "type": "text",
       "id": "empty_label",
       "label": "Button im leeren Warenkorb",
-      "default": "Discovery Set ansehen"
+      "default": "Düfte entdecken"
     },
     {
       "type": "url",
