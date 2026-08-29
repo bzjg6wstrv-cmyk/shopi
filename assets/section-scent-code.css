@@ -13,6 +13,15 @@
   isolation: isolate;
   min-height: min(78svh, 40rem);
 }
+/* Ohne eigenes Bild braucht der Abschnitt keine Bildhöhe. Vorher blieb die
+   erzwungene Mindesthöhe stehen und der Text klebte am unteren Rand einer
+   großen leeren schwarzen Fläche. Jetzt ist die Höhe der Inhalt selbst. */
+.wa--ohne-bild { min-height: 0; }
+.wa--ohne-bild .wa__content {
+  align-content: center;
+  padding-block: var(--sect-md);
+}
+
 .wa__media { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
 .wa__media img,
 .wa__media svg { width: 100%; height: 100%; object-fit: cover; }
@@ -89,6 +98,8 @@
 
 @media (min-width: 750px) {
   .wa { min-height: min(84svh, 48rem); }
+  .wa--ohne-bild { min-height: 0; }
+  .wa--ohne-bild .wa__content { padding-block: var(--sect-lg); }
   .wa__content {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: end;

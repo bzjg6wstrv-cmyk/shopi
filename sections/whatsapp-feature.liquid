@@ -8,9 +8,17 @@
   eine Textmarke mit Pfeil, keine gefüllte Schaltfläche – die Beratung soll
   wie ein Service wirken, nicht wie eine Werbefläche.
 {%- endcomment -%}
-<section class="wa color-{{ section.settings.color_scheme }} color-scheme">
+{%- comment -%}
+  Ohne eigenes Bild bleibt die Fläche leer und damit ruhig. Der frühere
+  Shopify-Platzhalter „lifestyle-2" zeichnete eine Strichgrafik aus Taschen,
+  Schuhen, Brillen und Kameras in den Beratungsbereich – Mode-Objekte, die
+  mit VENT CELESTE nichts zu tun haben und den Abschnitt wie eine fremde
+  Vorlage aussehen ließen. Er ist ersatzlos entfernt: Lieber Schwarz,
+  Typografie und Weißraum als ein Motiv, das nur Fläche füllt.
+{%- endcomment -%}
+<section class="wa{% if section.settings.image == blank %} wa--ohne-bild{% endif %} color-{{ section.settings.color_scheme }} color-scheme">
+  {%- if section.settings.image != blank -%}
   <div class="wa__media">
-    {%- if section.settings.image != blank -%}
       <img
         src="{{ section.settings.image | image_url: width: 2400 }}"
         srcset="{{ section.settings.image | image_url: width: 750 }} 750w,
@@ -24,11 +32,9 @@
         loading="lazy"
         style="object-position: {{ section.settings.image_position | default: 'center' }};"
       >
-    {%- else -%}
-      {{ 'lifestyle-2' | placeholder_svg_tag: 'full-bleed-media' }}
-    {%- endif -%}
     <div class="wa__scrim" style="--scrim: {{ section.settings.scrim | divided_by: 100.0 }};"></div>
   </div>
+  {%- endif -%}
 
   <div class="wa__content page-width">
     <div class="wa__body reveal">

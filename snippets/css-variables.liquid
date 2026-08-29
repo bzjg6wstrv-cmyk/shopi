@@ -48,11 +48,14 @@
   Das Farbsystem hat vier Stufen. Aus ihrem Wechsel entsteht der Rhythmus
   beim Scrollen – nicht aus Rahmen oder Kacheln.
 
-    1  Hauptfläche      #F7F3EC   sehr helles warmes Ivory. Es liegt so nah
-                                  am Hintergrund der Produktfotos, dass die
-                                  Bilder ohne sichtbare Kante in die Seite
-                                  übergehen.
-    2  Redaktionell     #EFE8DB   eine Stufe tiefer, warmes Beige. Für
+    1  Hauptfläche      #F7F2E8   sehr helles warmes Ivory. Der Ton ist an
+                                  der ausgelieferten Produktfotografie
+                                  gemessen (deren Grund liegt bei #E7DAC8
+                                  bis #E4D5C3) und eine Spur wärmer gefasst
+                                  als zuvor, damit die Bilder ohne sichtbare
+                                  Kante in die Seite übergehen. Es bleibt
+                                  warmes Weiß, kein Beige: 94 % Helligkeit.
+    2  Redaktionell     #EEE6D8   rund 10 % tiefer, warmes Beige. Für
                                   Bereiche, die sich bewusst absetzen sollen
                                   (Kennenlernvorteil, Fußbereich).
     3  Kontrast         #0B0B0A   tiefes Schwarz. Sparsam und dafür stark –
@@ -60,49 +63,68 @@
     4  Stein            #9A9185   für seltene Sonderflächen.
 
   Zwei Töne begleiten alle Stufen:
-    Sand      #EAE2D5  Grundfläche unter freigestellten Motiven
+    Sand      #E9E0D0  Grundfläche unter freigestellten Motiven
     Champagne #B5A080  Akzent – nur als Linie oder auf dunklem Grund
 
   Zur Lesbarkeit: Warm Grey erreicht auf Ivory nur 2,8:1, Champagne 2,3:1.
   Auf hellen Flächen läuft gedämpfter Text deshalb in einem dunkleren
   Warmgrau; Champagne erscheint dort ausschließlich als Linie.
 {%- endcomment -%}
-:root,
+{%- comment -%}
+  Die Hauptfläche steht bewusst in ZWEI Regeln statt in einer gemeinsamen
+  Selektorliste mit :root. In CSS verwirft ein einziger Fehler in einer
+  Selektorliste die komplette Regel – die helle Grundfläche fiele dann auf
+  das Weiß des Browsers zurück, während die dunklen Stufen (eigene Regeln)
+  weiterlaufen. Genau dieses Bild – schwarze Bereiche richtig, helle Flächen
+  reinweiß – war im Live-Shop zu sehen. Zwei Regeln plus der feste Rückfall
+  in base.css schließen das aus.
+{%- endcomment -%}
+:root {
+  --color-background: 247 242 232;
+  --color-text: 11 11 10;
+  --color-muted: 108 101 90;
+  --color-line: 227 217 199;
+  --color-accent: 181 160 128;
+  --color-stone: 154 145 133;
+  --color-sand: 233 224 208;
+  --color-button: 11 11 10;
+  --color-button-label: 247 242 232;
+}
 .color-scheme,
 .color-scheme-1,
 .color-scheme-ivory {
-  --color-background: 247 243 236;
+  --color-background: 247 242 232;
   --color-text: 11 11 10;
   --color-muted: 108 101 90;
-  --color-line: 226 217 202;
+  --color-line: 227 217 199;
   --color-accent: 181 160 128;
   --color-stone: 154 145 133;
-  --color-sand: 234 226 213;
+  --color-sand: 233 224 208;
   --color-button: 11 11 10;
-  --color-button-label: 247 243 236;
+  --color-button-label: 247 242 232;
 }
 .color-scheme-2,
 .color-scheme-ivory-deep {
-  --color-background: 239 232 219;
+  --color-background: 238 230 216;
   --color-text: 11 11 10;
   --color-muted: 102 95 84;
-  --color-line: 218 208 190;
+  --color-line: 216 205 185;
   --color-accent: 168 147 114;
   --color-stone: 154 145 133;
-  --color-sand: 234 226 213;
+  --color-sand: 233 224 208;
   --color-button: 11 11 10;
-  --color-button-label: 247 243 236;
+  --color-button-label: 247 242 232;
 }
 .color-scheme-3,
 .color-scheme-ink {
   --color-background: 11 11 10;
-  --color-text: 247 243 236;
+  --color-text: 247 242 232;
   --color-muted: 158 149 136;
   --color-line: 42 40 36;
   --color-accent: 181 160 128;
   --color-stone: 154 145 133;
-  --color-sand: 234 226 213;
-  --color-button: 247 243 236;
+  --color-sand: 233 224 208;
+  --color-button: 247 242 232;
   --color-button-label: 11 11 10;
 }
 {%- comment -%}
@@ -118,9 +140,9 @@
   --color-line: 133 125 113;
   --color-accent: 11 11 10;
   --color-stone: 154 145 133;
-  --color-sand: 234 226 213;
+  --color-sand: 233 224 208;
   --color-button: 11 11 10;
-  --color-button-label: 247 243 236;
+  --color-button-label: 247 242 232;
 }
 
 {%- comment -%}

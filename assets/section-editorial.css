@@ -1,3 +1,12 @@
+/* Der Abschnittsrahmen wird nach Breite gesetzt, nicht pauschal: Auf dem
+   Telefon reicht die mittlere Dichte – zwei Abschnitte mit demselben
+   Seitenton hintereinander standen sonst mit 120 px Leerraum zwischen sich.
+   Ab Tablet bekommt der Abschnitt wieder die große Dichte. */
+.feature-section { padding-block: var(--sect-md); }
+@media (min-width: 750px) {
+  .feature-section { padding-block: var(--sect-lg); }
+}
+
 /* Gemeinsame Editorial-Bausteine: Markenversprechen, Feature-Abschnitte,
    Duftfinder-Teaser. Bewusst ohne Karten, Schatten und Verläufe.          */
 
@@ -138,63 +147,17 @@
   }
 }
 
-/* ---------------------------------------------- Komposition „monument" ---
-   Ein einzelner Wert wird zum Gestaltungselement: sehr groß, sehr
-   zurückgenommen, hinter der Komposition. Das Bild sitzt versetzt darüber,
-   der Text liegt auf der linken Rasterkante. Kein Verlauf, kein Schatten –
-   die Wirkung kommt allein aus dem Größenverhältnis. */
-.feature--monument {
-  position: relative;
-  isolation: isolate;
-}
-/* Die Zahl steht hinter der Textspalte, nicht hinter dem Bild: Dort bliebe
-   sie verdeckt. Bei 7 % Deckung wirkt sie wie eine Prägung im Papier.
+/* Ohne Bild läuft der Abschnitt einspaltig. Der Text bekommt dann eine
+   Lesebreite statt der halben Seite – sonst zieht eine einzelne Zeile über
+   1400 px und die Komposition kippt.
 
-   Sie sitzt bündig an der oberen linken Kante des Abschnitts und wird
-   niemals beschnitten – weder oben noch seitlich. Die Größe ist so gewählt,
-   dass die Angabe auch bei 320 px vollständig in die Spalte passt. */
-.feature__figure {
-  position: absolute;
-  z-index: -1;
-  top: 0;
-  left: 0;
-  max-width: 100%;
-  font-family: var(--font-display-family, var(--font-heading-family));
-  font-weight: var(--font-display-weight, var(--font-heading-weight));
-  font-size: clamp(4rem, 24vw, 9rem);
-  /* Zeilenhöhe 1: Bei kleineren Werten ragt die Oberkante der Ziffern über
-     den Kasten hinaus und würde am Abschnittsrand abgeschnitten. */
-  line-height: 1;
-  letter-spacing: -0.04em;
-  color: rgb(var(--color-text) / 0.07);
-  white-space: nowrap;
-  overflow: hidden;
-  user-select: none;
-  pointer-events: none;
-}
-
-.feature--monument .feature__body {
-  position: relative;
-  isolation: isolate;
-  padding-top: var(--space-lg);
-}
-.feature--monument .feature__media { position: relative; }
-.feature--monument .feature__media img,
-.feature--monument .feature__media svg { aspect-ratio: var(--ratio-portrait); object-fit: cover; }
-
-@media (min-width: 990px) {
-  .feature--monument {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    align-items: center;
-    gap: clamp(3rem, 7vw, 7rem);
-  }
-  .feature--monument.feature--reverse { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
-  .feature--monument .feature__body { padding-block: var(--space-2xl); }
-  .feature--monument .feature__body .h2,
-  .feature--monument .feature__body h2 { font-size: clamp(2rem, 1.2rem + 2.4vw, 3.25rem); }
-  .feature--monument .feature__text { font-size: 1.0625rem; max-width: 44ch; }
-  .feature__figure { font-size: clamp(8rem, 17vw, 17rem); }
-}
+   Die frühere Komposition „Monument" ist entfallen. Eine sehr große Zahl
+   hinter dem Textblock war auf dem Telefon nicht sicher von der Überschrift
+   zu trennen: Beide standen an derselben oberen Kante und überlagerten
+   sich. Der Wert steht jetzt dort, wo er hingehört – in der Überschrift und
+   in den Angaben darunter. */
+.feature--ohne-bild { grid-template-columns: minmax(0, 1fr); }
+.feature--ohne-bild .feature__body { max-width: 48rem; }
 
 /* Duftfinder-Teaser: die drei Fragen als Vorschau, nicht als Formular */
 .finder-teaser { display: grid; gap: var(--space-xl); }

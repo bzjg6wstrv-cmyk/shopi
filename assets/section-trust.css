@@ -1,0 +1,79 @@
+/* Vertrauenszeile.
+
+   Ein Versprechen, ein Satz dazu, darunter vier kurze Angaben. Bewusst
+   typografisch: keine Symbole, keine Kacheln, keine farbigen Plaketten.
+   Getrennt wird durch Haarlinien, gewichtet durch Schriftgrad. */
+.trust {
+  display: grid;
+  gap: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: var(--hair);
+}
+
+.trust__heading {
+  font-family: var(--font-heading-family, Georgia, serif);
+  font-weight: var(--font-heading-weight);
+  font-size: clamp(1.5rem, 1.15rem + 1.6vw, 2.25rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  max-width: 22ch;
+}
+
+.trust__text {
+  color: rgb(var(--color-muted));
+  font-size: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
+  line-height: 1.55;
+  max-width: 46ch;
+}
+
+.trust__link {
+  justify-self: start;
+  font-size: 0.75rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+  text-decoration: underline;
+  text-underline-offset: 0.4em;
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+}
+.trust__link:hover { color: rgb(var(--color-text)); }
+
+/* Die Angaben stehen auf dem Telefon untereinander, jede auf einer
+   Haarlinie. Kein Kasten – die Linie allein ordnet. Ab 600 px verteilen sie
+   sich selbst auf die Breite, egal ob es drei oder vier sind. */
+.trust__points {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-md) var(--space-lg);
+  margin-top: var(--space-xs);
+}
+@media (min-width: 600px) {
+  .trust__points { grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
+}
+.trust__point {
+  padding-top: var(--space-sm);
+  border-top: var(--hair);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+}
+
+@media (min-width: 750px) {
+  .trust {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: clamp(2rem, 5vw, 4.5rem);
+    align-items: start;
+    padding-top: var(--space-xl);
+  }
+  .trust__heading { grid-row: 1 / span 2; align-self: center; }
+  .trust__points {
+    grid-column: 1 / -1;
+    gap: var(--space-lg);
+    margin-top: var(--space-md);
+  }
+}

@@ -10,7 +10,7 @@
    antwortet darauf in ruhigerem Schriftgrad. */
 .offer { display: grid; }
 
-.offer__item { padding-block: var(--space-xl); }
+.offer__item { padding-block: var(--space-lg); }
 .offer__item + .offer__item { border-top: var(--hair); }
 
 .offer .eyebrow { margin-bottom: var(--space-sm); }
@@ -32,7 +32,7 @@
    als die Beratungsspalte darunter. Ohne diesen Unterschied lesen sich die
    beiden Blöcke wie zwei gleichrangige Kacheln. */
 .offer--pair .offer__item:first-child .offer__heading {
-  font-size: clamp(2.125rem, 1.3rem + 3.2vw, 2.75rem);
+  font-size: clamp(2rem, 1.25rem + 2.9vw, 2.75rem);
 }
 
 .offer__text {
@@ -50,7 +50,15 @@
   max-width: 44ch;
 }
 
-.offer__cta { padding-block: 0 var(--space-xl); }
+.offer__cta { padding-block: 0 var(--space-lg); }
+
+/* Auf dem Telefon trägt der Abschnittsrahmen die Luft nach außen. Die erste
+   Zusage braucht darüber keinen zweiten Innenabstand mehr, sonst summieren
+   sich beide zu einer Lücke von über 100 px vor der Überschrift. */
+@media (max-width: 749px) {
+  .offer__item:first-child { padding-top: 0; }
+  .offer__cta { padding-bottom: 0; }
+}
 .offer__button { min-height: 3.25rem; }
 @media (max-width: 599px) { .offer__button { display: flex; width: 100%; } }
 

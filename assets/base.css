@@ -21,7 +21,14 @@
 *::before,
 *::after { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; }
+/* Fester Rückfall für die Grundfläche. Er greift nur, wenn die
+   Token-Regeln aus snippets/css-variables.liquid gar nicht ankommen –
+   dann steht die Seite trotzdem auf warmem Ivory und nicht auf dem
+   Reinweiß des Browsers. */
+html {
+  -webkit-text-size-adjust: 100%;
+  background-color: rgb(247 242 232);
+}
 
 body,
 h1, h2, h3, h4, h5, h6,
@@ -122,14 +129,18 @@ summary::-webkit-details-marker { display: none; }
 }
 
 /* Auf Telefonen wird der Rhythmus enger gefasst – die Stufen bleiben
-   erhalten, sie liegen nur dichter beieinander. */
+   erhalten, sie liegen nur dichter beieinander.
+
+   Die Werte sind gegenüber der Vorfassung um rund 15 % gestrafft. Zwei
+   Abschnitte mit demselben Seitenton standen sonst mit über 130 px leerer
+   Fläche zwischen sich; das las sich nicht als Ruhe, sondern als Lücke. */
 @media (max-width: 749px) {
   :root {
-    --sect-xs: 1.5rem;
-    --sect-sm: 2rem;
-    --sect-md: 2.75rem;
-    --sect-lg: 3.5rem;
-    --sect-xl: 4.5rem;
+    --sect-xs: 1.25rem;
+    --sect-sm: 1.75rem;
+    --sect-md: 2.375rem;
+    --sect-lg: 3rem;
+    --sect-xl: 3.75rem;
   }
 }
 
@@ -160,8 +171,8 @@ body {
   font-style: var(--font-body-style);
   font-size: calc(1.0625rem * var(--body-scale, 1));
   line-height: 1.6;
-  color: rgb(var(--color-text));
-  background-color: rgb(var(--color-background));
+  color: rgb(var(--color-text, 11 11 10));
+  background-color: rgb(var(--color-background, 247 242 232));
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -374,9 +385,12 @@ p { text-wrap: pretty; }
 .hairline-top { border-top: var(--hair); }
 .hairline-bottom { border-bottom: var(--hair); }
 
+/* Jede Fläche mit Farbstil streicht sich selbst. Die Rückfallwerte in den
+   var()-Aufrufen sind Absicht: Fehlt der Token, steht die Fläche auf Ivory
+   mit schwarzer Schrift – nie auf Reinweiß und nie ohne Farbe. */
 .color-scheme {
-  background-color: rgb(var(--color-background));
-  color: rgb(var(--color-text));
+  background-color: rgb(var(--color-background, 247 242 232));
+  color: rgb(var(--color-text, 11 11 10));
 }
 
 /* 5 Interaktion: Schaltflächen, Verweise, Formulare ---------------------- */
@@ -404,7 +418,7 @@ p { text-wrap: pretty; }
   border: var(--border-width) solid rgb(var(--color-button, 18 16 14));
   border-radius: var(--button-radius, 0px);
   background-color: rgb(var(--color-button, 18 16 14));
-  color: rgb(var(--color-button-label, 247 243 236));
+  color: rgb(var(--color-button-label, 247 242 232));
   font-size: 0.75rem;
   font-weight: 500;
   line-height: 1.2;
@@ -466,7 +480,9 @@ p { text-wrap: pretty; }
   justify-content: space-between;
   gap: var(--space-md);
   width: 100%;
-  min-height: 2.75rem;
+  /* Die ganze Zeile ist die Schaltfläche, nicht nur der Text: volle Breite,
+     bequeme Höhe, Linie und Pfeil gehören mit dazu. */
+  min-height: 3rem;
   padding-bottom: 0.55rem;
   color: rgb(var(--color-text));
   font-size: 0.8125rem;
@@ -499,9 +515,10 @@ p { text-wrap: pretty; }
 .action-link svg { transition: transform var(--dur-slow) var(--ease-out); }
 .action-link:hover svg { transform: translateX(5px); }
 
-/* Der große Grad – für den Hauptweg im Hero und in Vollflächen-Abschnitten. */
+/* Der große Grad – für den Hauptweg im Hero und in Vollflächen-Abschnitten.
+   52 px auf dem Telefon: bequem zu treffen, ohne wie ein Knopf zu wirken. */
 .action-link--lg {
-  min-height: 3rem;
+  min-height: 3.25rem;
   font-size: clamp(0.875rem, 0.82rem + 0.3vw, 1.0625rem);
   padding-bottom: 0.7rem;
 }
@@ -547,6 +564,11 @@ p { text-wrap: pretty; }
   .action-link::after,
   .action-link svg { transition: none; }
 }
+
+/* Die Rückmeldung beim Tippen ist bewusst leise: Die Zeile wird kurz
+   blasser, es springt nichts und es füllt sich keine Fläche. */
+.action-link { transition: opacity var(--dur-fast) var(--ease); }
+.action-link:active { opacity: 0.62; }
 
 /* Auf Touch braucht jede Textmarke eine Fläche von mindestens 44 px. */
 @media (pointer: coarse) {
@@ -688,7 +710,28 @@ p { text-wrap: pretty; }
 .header__lead { display: flex; align-items: center; gap: var(--space-lg); min-width: 0; }
 .header__lead .header__menu-toggle { margin-left: -0.75rem; }
 
-.header__brand { justify-self: center; }
+.header__brand { justify-self: center; min-width: 0; }
+
+/* Der Kopf ist eine Waage: links der Menüknopf, rechts Suche und Warenkorb,
+   in der Mitte die Marke. Die Bedienelemente geben nicht nach (siehe
+   .header__icon), also muss die Marke sich der Breite anpassen – sonst
+   schiebt sie sich auf dem Telefon über den Menüknopf.
+
+   Unter 390 px steht die Wortmarke allein. Das Signet ist dort nicht
+   verloren: Es trägt den Fußbereich in großer Form und steht über der
+   Navigation im mobilen Menü. */
+@media (max-width: 749px) {
+  .header__inner { gap: var(--space-sm); }
+  .header .brand-lockup { gap: 0.5em; }
+  .header .brand-mark { --mark-size: 20px; }
+  .header .wordmark {
+    font-size: clamp(0.9375rem, 0.7rem + 0.9vw, 1.125rem);
+    letter-spacing: 0.14em;
+  }
+}
+@media (max-width: 389px) {
+  .header .brand-lockup .brand-mark { display: none; }
+}
 
 .header__actions {
   display: flex;
@@ -725,10 +768,15 @@ p { text-wrap: pretty; }
 }
 
 /* Symbole: eine Größe, eine Strichstärke, eine Tippfläche. */
+/* „flex: none" ist hier keine Kosmetik: Ohne die Zeile gibt der Menüknopf
+   nach, sobald die Wortmarke daneben breiter wird – auf 320 px schrumpfte er
+   auf 12 px und war praktisch nicht mehr zu treffen. Die Bedienelemente
+   behalten ihre 44 px, die Wortmarke gibt stattdessen nach. */
 .header__icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: none;
   width: 2.75rem;
   height: 2.75rem;
   position: relative;
@@ -2224,7 +2272,7 @@ html:not(.no-js) .animations-on .display__mask:nth-of-type(4) > span { transitio
   grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
   align-items: center;
   background-color: rgb(var(--color-text, 11 11 10));
-  color: rgb(var(--color-background, 247 243 236));
+  color: rgb(var(--color-background, 247 242 232));
 }
 
 .whatsapp-bar__link {
@@ -2329,6 +2377,7 @@ img.brand-mark { object-fit: contain; }
   display: inline-flex;
   align-items: center;
   gap: 0.6em;
+  min-width: 0;
   color: rgb(var(--color-text));
 }
 .brand-lockup .wordmark { display: inline-block; }
@@ -2724,7 +2773,7 @@ body { max-width: 100%; overflow-x: clip; }
   margin: 0 !important;
   padding: 0 !important;
   overflow: hidden !important;
-  background-color: rgb(247 243 236) !important;
+  background-color: rgb(247 242 232) !important;
   color: rgb(11 11 10) !important;
   opacity: 1 !important;
   box-shadow: -1px 0 0 rgb(var(--color-line)) !important;
@@ -2737,7 +2786,7 @@ body { max-width: 100%; overflow-x: clip; }
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: rgb(247 243 236);
+  background: rgb(247 242 232);
   pointer-events: none;
 }
 
@@ -2745,7 +2794,7 @@ body { max-width: 100%; overflow-x: clip; }
 #CartDrawer .drawer__header,
 #CartDrawer .drawer__body,
 #CartDrawer .drawer__footer {
-  background-color: rgb(247 243 236) !important;
+  background-color: rgb(247 242 232) !important;
   opacity: 1 !important;
 }
 
@@ -2823,7 +2872,7 @@ body { max-width: 100%; overflow-x: clip; }
   margin: 0 !important;
   padding: 0 !important;
   overflow: hidden !important;
-  background-color: rgb(247 243 236) !important;
+  background-color: rgb(247 242 232) !important;
   color: rgb(11 11 10) !important;
   box-shadow: 1px 0 0 rgb(var(--color-line)) !important;
   isolation: isolate !important;
@@ -2842,14 +2891,14 @@ body { max-width: 100%; overflow-x: clip; }
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: rgb(247 243 236);
+  background: rgb(247 242 232);
   pointer-events: none;
 }
 
 #MenuDrawer .drawer__header,
 #MenuDrawer .menu-drawer__top,
 #MenuDrawer .drawer__body {
-  background-color: rgb(247 243 236) !important;
+  background-color: rgb(247 242 232) !important;
   opacity: 1 !important;
 }
 
@@ -2984,7 +3033,7 @@ body { max-width: 100%; overflow-x: clip; }
   width: 100% !important;
   max-height: 92dvh !important;
   margin: 0 !important;
-  background-color: rgb(var(--color-background, 247 243 236)) !important;
+  background-color: rgb(var(--color-background, 247 242 232)) !important;
   color: rgb(var(--color-text, 11 11 10)) !important;
   opacity: 1 !important;
   box-shadow: 0 1px 0 rgb(var(--color-line)) !important;
@@ -3009,7 +3058,7 @@ body { max-width: 100%; overflow-x: clip; }
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: rgb(var(--color-background, 247 243 236));
+  background: rgb(var(--color-background, 247 242 232));
   pointer-events: none;
 }
 
@@ -3019,7 +3068,7 @@ body { max-width: 100%; overflow-x: clip; }
   overflow-y: auto;
   overscroll-behavior: contain;
   max-height: 92dvh;
-  background-color: rgb(var(--color-background, 247 243 236)) !important;
+  background-color: rgb(var(--color-background, 247 242 232)) !important;
   opacity: 1 !important;
 }
 

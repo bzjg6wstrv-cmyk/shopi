@@ -169,8 +169,7 @@
         "show_price": false,
         "primary_label": "Extrait ansehen",
         "primary_link": "/collections/extrait",
-        "layout": "monument",
-        "figure": "30 %"
+        "layout": "spec"
       }
     },
     "travel": {
@@ -234,7 +233,8 @@
         "primary_label": "Mehr über die Marke",
         "primary_link": "/pages/ueber-uns",
         "layout": "statement"
-      }
+      },
+      "disabled": true
     },
     "newsletter": {
       "type": "newsletter",
@@ -276,6 +276,41 @@
         "show_whatsapp": true,
         "whatsapp_label": "Duftberatung starten"
       }
+    },
+    "trust": {
+      "type": "trust-line",
+      "blocks": {
+        "t1": {
+          "type": "point",
+          "settings": {
+            "text": "30 % Extrait"
+          }
+        },
+        "t2": {
+          "type": "point",
+          "settings": {
+            "text": "Persönliche Duftberatung"
+          }
+        },
+        "t4": {
+          "type": "point",
+          "settings": {
+            "text": "Sichere Zahlung"
+          }
+        }
+      },
+      "block_order": [
+        "t1",
+        "t2",
+        "t4"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "heading": "100 % zufrieden oder Geld zurück.",
+        "text": "Du sollst deinen Duft lieben. Wenn nicht, erstatten wir dir den Kaufpreis.",
+        "link_label": "Rückgabe und Widerruf",
+        "link": ""
+      }
     }
   },
   "order": [
@@ -285,7 +320,7 @@
     "how",
     "extrait",
     "offer",
-    "brand",
+    "trust",
     "newsletter",
     "discovery",
     "code",

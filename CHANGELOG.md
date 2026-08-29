@@ -1,3 +1,102 @@
+# v6.3 – Premium-Finishing, Logo und Mobile
+
+Kein Redesign. Neun gezielte Eingriffe auf Grundlage der Live-Screenshots.
+
+## 1 · Warum die Seite reinweiß war
+
+Aus den Screenshots gemessen: Die hellen Flächen im Live-Shop lagen bei
+exakt `#FFFFFF`, die schwarze Fläche dagegen pixelgenau bei `#0B0B0A`. Es
+fiel also genau die eine CSS-Regel aus, die `:root`, `.color-scheme` und
+`.color-scheme-1` gemeinsam trug – in CSS verwirft ein einziger Fehler in
+einer Selektorliste die komplette Regel, während die dunklen Stufen als
+eigene Regeln weiterliefen. Die Grundfläche fiel damit auf das Weiß des
+Browsers zurück.
+
+Drei Absicherungen, damit das nicht wiederkommen kann:
+
+* Die Hauptfläche steht jetzt in **zwei** getrennten Regeln (`:root` und
+  `.color-scheme, .color-scheme-1, .color-scheme-ivory`).
+* `html` trägt einen festen Ivory-Grund als letzten Rückfall.
+* `body` und `.color-scheme` haben einen Rückfallwert im `var()`-Aufruf.
+
+## 2 · Farbton an der Fotografie gemessen
+
+Der Grund der gelieferten Produktfotos liegt zwischen `#E7DAC8` und
+`#E4D5C3`. Die Hauptfläche geht deshalb von `#F7F3EC` auf **`#F7F2E8`** –
+eine Spur wärmer, weiterhin 94 % Helligkeit und damit warmes Weiß, kein
+Beige. Stufe 2 folgt auf **`#EEE6D8`** (rund 10 % tiefer). Kontraste: Text
+auf Ivory 17,65:1, gedämpfter Text 5,16:1, Text auf Beige 15,89:1.
+
+## 3 · Logo
+
+Aus der gelieferten Datei sind zwei freigestellte Assets geschnitten:
+`vc-signet.png` (Monogramm) und `vc-logo.png` (Monogramm mit Wortmarke).
+Das Signet ist als Theme-Rückfall hinterlegt – ohne Upload steht die Marke
+sofort richtig da. Es läuft als Maske und übernimmt die Textfarbe des
+Abschnitts: tief schwarz auf Ivory, elfenbein auf Schwarz.
+
+Im Kopf steht es ab 390 px neben der Wortmarke, darunter tritt es zugunsten
+der Bedienbarkeit zurück. Im Fußbereich steht es in großer Form.
+
+Zwei Fehler, die dabei auffielen und behoben sind: Der Menüknopf gab nach,
+sobald die Wortmarke breiter wurde – auf 320 px war er nur noch 12 px breit.
+Er hat jetzt `flex: none` und behält seine 44 px; die Wortmarke passt sich
+stattdessen an.
+
+## 4 · Fremde Strichgrafik entfernt
+
+Der Beratungsbereich und der Editorial-Abschnitt zeigten ohne eigenes Bild
+Shopifys Platzhalter `lifestyle-2` bzw. `lifestyle-1` – Strichgrafiken aus
+Taschen, Schuhen, Brillen und Kameras. Beide sind ersatzlos entfernt. Ohne
+Bild gibt es keinen Bildplatz mehr: Der Beratungsbereich verliert seine
+erzwungene Bildhöhe, der Editorial-Abschnitt läuft einspaltig.
+
+## 5 · 30-%-Extrait repariert
+
+Die Komposition „Monument" ist entfallen. Eine sehr große Zahl hinter dem
+Textblock war auf dem Telefon nicht sicher von der Überschrift zu trennen.
+Die Hierarchie ist jetzt: Eyebrow „Die Hauptlinie", Überschrift
+„30 % Extrait", kurzer Text, kompakte Angaben auf Haarlinien.
+
+## 6 · „Über uns" von der Startseite
+
+Der große Markenblock ist aus der Startseite genommen (der Abschnitt bleibt
+deaktiviert erhalten und ist im Theme-Editor wieder einschaltbar). Die Seite
+und der Fußbereich-Link bleiben unberührt.
+
+## 7 · Vertrauenszeile
+
+Neuer Abschnitt „Vertrauenszeile": Versprechen, ein Satz, drei kurze
+Angaben auf Haarlinien. Keine Symbole, keine Kacheln, keine Plaketten. Ist
+kein Ziel gepflegt, verlinkt „Rückgabe und Widerruf" automatisch die
+Rückgabe-Richtlinie des Shops.
+
+## 8 · CTA-Zeilen
+
+Die ganze Zeile ist die Schaltfläche: volle Breite, 48 px im Grundgrad,
+52 px im großen Grad. Gemessen trifft ein Tipp am linken Rand, in der Mitte
+und am rechten Rand dieselbe Verknüpfung. Die Rückmeldung beim Tippen ist
+eine leise Aufhellung, kein Farbwechsel.
+
+## 9 · Mobile Abstände
+
+Die Abschnittsstufen auf dem Telefon sind um rund 15 % gestrafft, der
+Editorial-Abschnitt nutzt dort die mittlere Dichte, und der 20-%-Bereich
+verliert seinen doppelten Innenabstand. Die größte Lücke zwischen zwei
+gleichfarbigen Abschnitten geht von 134 px auf 110 px, die Startseite von
+5901 px auf **4602 px** (−22 %).
+
+## Prüfungen
+
+Theme Check 34 Verstöße gegen 36 der Basis, keine neue Art. 27 JSON-Dateien,
+37 Section-Schemas, 13 JS-Dateien fehlerfrei. Sweep über 11 Breiten und
+6 Seitentypen ohne waagerechten Überlauf; Überlappungsprüfung bei 390, 393,
+430 und 1440 px ohne Befund; Tippflächen ab 44 px. Die Treiber für
+Code-Normalisierung, Cart-API-Bestellweg und Kaufweg liefern vor und nach
+den Änderungen identische Ergebnisse.
+
+---
+
 # v6.2 – Eine Art-Direction für Fotos und Seite
 
 Die Produktfotos und die Seite sollen als ein System gelesen werden. Sechs
