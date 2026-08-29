@@ -3334,3 +3334,41 @@ body { max-width: 100%; overflow-x: clip; }
   .legal-document__facts strong { text-align: right; }
   .footer__withdrawal-link { width: 100%; }
 }
+
+/* --- Editor-Hinweis zu fehlenden Rechtsseiten ---------------------------
+   Wird ausschliesslich unter request.design_mode ausgegeben. */
+.legal-status {
+  margin: var(--space-xl) 0;
+  padding: 1rem 1.25rem;
+  border: var(--border-width) dashed rgb(var(--color-text));
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+
+.legal-status__title {
+  margin: 0 0 0.5rem;
+  font-size: 0.625rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+}
+
+.legal-status p {
+  margin: 0 0 0.5rem;
+}
+
+.legal-status__list {
+  margin: 0 0 0.75rem;
+  padding-left: 1.1rem;
+}
+
+.legal-status code {
+  padding: 0.05rem 0.3rem;
+  border: var(--border-width) solid rgb(var(--color-muted));
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+}
+
+.legal-status__note {
+  margin: 0;
+  color: rgb(var(--color-muted));
+}

@@ -45,6 +45,7 @@ Beides ist behoben: Beide Bereiche fragen jetzt dieselbe Stelle
 | 6 | Unter den **echten** Firmendaten in Fußbereich und Kontaktseite stand fest „DEMO-INHALT“ | behoben – abschaltbar über `show_demo_notice`, standardmäßig aus |
 | 7 | Impressum ohne Erklärung zur Verbraucherschlichtung (§ 36 VSBG) | behoben |
 | 8 | **Keine Produktsicherheitsangaben nach GPSR** (VO (EU) 2023/988, gilt seit 13.12.2024) | behoben – neuer Produktblock „Produktsicherheit (GPSR)“ |
+| 9 | Fehlende Rechtsseiten scheiterten **stumm** – im Editor war nur eine Lücke zu sehen, nicht der Grund | behoben – Hinweiskasten im Theme-Editor (`snippets/legal-status.liquid`) |
 
 ---
 
@@ -71,6 +72,11 @@ Menüpunkt weggelassen. Lege unter *Verkaufskanäle → Onlineshop → Seiten* a
 
 Der Seiteninhalt bleibt **leer** – der Text kommt aus der Theme-Vorlage. Wichtig ist
 nur, rechts unter *Theme-Vorlage* die passende Vorlage auszuwählen.
+
+**Kontrolle:** Öffne danach den Theme-Editor. Fehlt noch ein Pflichtdokument, steht im
+Fußbereich ein Kasten „Rechtliches unvollständig“, der genau benennt, welcher Handle
+fehlt. Verschwindet der Kasten, sind alle vier Pflichtdokumente verlinkt. Im Shop
+selbst ist dieser Kasten nie sichtbar.
 
 ### 3.2 Menü prüfen
 

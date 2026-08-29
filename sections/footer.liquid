@@ -132,6 +132,8 @@
       {%- endfor -%}
     </div>
 
+    {% render 'legal-status' %}
+
     {%- if settings.withdrawal_url != blank -%}
       <div class="footer__withdrawal">
         <a class="footer__withdrawal-link" href="{{ settings.withdrawal_url }}">Vertrag widerrufen</a>
