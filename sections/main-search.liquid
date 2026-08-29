@@ -106,7 +106,7 @@
 {{ 'section-search-results.css' | asset_url | stylesheet_tag }}
 
 {%- paginate search.results by 24 -%}
-  <section class="section">
+  <section class="section search-page">
     <div class="page-width">
       <div class="search-head">
         {%- if search.performed -%}

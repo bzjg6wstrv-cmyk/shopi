@@ -33,13 +33,19 @@
               {%- endif -%}
 
             {%- when 'menu' -%}
-              <p class="footer__heading meta meta--muted">{{ block.settings.title | escape }}</p>
+              {%- comment -%}
+                Die Einträge werden zuerst gesammelt und erst danach
+                ausgegeben. Bleibt die Spalte leer – etwa weil im
+                Adminbereich noch keine Rechtstexte gepflegt sind –, entfällt
+                auch ihre Überschrift. Vorher stand dort ein Titel über einer
+                leeren Liste. Die Prüfungen darunter sind unverändert.
+              {%- endcomment -%}
               {%- assign footer_title = block.settings.title | downcase | strip -%}
+              {%- capture footer_eintraege -%}
 
               {%- if footer_title == 'service' -%}
                 {%- assign contact_page = pages['contact'] -%}
                 {%- assign faq_page = pages['faq'] -%}
-                <ul class="footer__list">
                   {%- if contact_page != blank -%}
                     <li><a href="{{ contact_page.url }}">Kontakt</a></li>
                   {%- endif -%}
@@ -47,11 +53,9 @@
                     <li><a href="{{ faq_page.url }}">FAQ</a></li>
                   {%- endif -%}
                   <li><a href="{{ routes.root_url }}#duftberatung">Duftberatung</a></li>
-                </ul>
 
               {%- elsif footer_title == 'rechtliches' -%}
                 {%- assign impressum_page = pages['impressum'] -%}
-                <ul class="footer__list">
                   {%- if shop.legal_notice != blank -%}
                     <li><a href="{{ shop.legal_notice.url }}">Impressum</a></li>
                   {%- elsif impressum_page != blank -%}
@@ -66,10 +70,8 @@
                   {%- if shop.terms_of_service != blank -%}
                     <li><a href="{{ shop.terms_of_service.url }}">AGB</a></li>
                   {%- endif -%}
-                </ul>
 
               {%- elsif block.settings.menu != blank and block.settings.menu.links.size > 0 -%}
-                <ul class="footer__list">
                   {%- for link in block.settings.menu.links -%}
                     {%- assign broken_resource = false -%}
                     {%- if link.type == 'page_link' or link.type == 'product_link' or link.type == 'collection_link' or link.type == 'blog_link' or link.type == 'article_link' -%}
@@ -79,7 +81,12 @@
                       <li><a href="{{ link.url }}">{{ link.title | escape }}</a></li>
                     {%- endunless -%}
                   {%- endfor -%}
-                </ul>
+              {%- endif -%}
+              {%- endcapture -%}
+              {%- assign footer_eintraege = footer_eintraege | strip -%}
+              {%- if footer_eintraege != blank -%}
+                <p class="footer__heading meta meta--muted">{{ block.settings.title | escape }}</p>
+                <ul class="footer__list">{{ footer_eintraege }}</ul>
               {%- endif -%}
 
             {%- when 'contact' -%}

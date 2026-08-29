@@ -198,6 +198,13 @@
               <span aria-hidden="true">→</span>
             </button>
             <p class="predictive__code-error" data-scent-code-add-error role="status" aria-live="polite" hidden></p>
+            {%- comment -%}
+              Vertrauenszeile direkt unter dem Kaufweg. Reiner Text, keine
+              Symbole. Sie steht NACH der Schaltfläche und dem Fehlerfeld –
+              beide bleiben unverändert, samt data-Attributen und dem daran
+              hängenden Cart-API-Weg.
+            {%- endcomment -%}
+            <p class="vc-code-card__trust">{{ 'sections.scent_code.trust_line' | t }}</p>
           </div>
         {%- else -%}
           <a class="vc-code-card__action" href="{{ result_url }}">

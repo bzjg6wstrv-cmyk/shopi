@@ -1,3 +1,89 @@
+# v6.5 – Conversion-Polish
+
+Kein Redesign. Acht gezielte Eingriffe auf v6.4.
+
+## 1 · Reihenfolge der Startseite
+
+Hero · Bestseller · **Garantie** · Duftberatung (schwarz) · So funktioniert's ·
+30 % Extrait · 20 % Erstkauf · Newsletter. Geändert wurde ausschließlich die
+Reihenfolge in `templates/index.json`; keine Sektion wurde neu gebaut.
+
+## 2 · Zufriedenheitsgarantie
+
+Der Block steht jetzt an dritter Stelle und bekommt dafür Gewicht: mittlere
+Abschnittsdichte statt kleiner, Überschrift eine Stufe größer (28 → 44 px auf
+dem Schreibtisch), Fließtext von 15 auf 16 px, mehr Abstand über der Leiste.
+Farben, Rahmen und Flächen bleiben unverändert.
+
+Die drei Angaben stehen als Leiste in drei gleich breiten Spalten – auch auf
+dem Telefon –, getrennt durch senkrechte Haarlinien.
+
+## 3 · Bestseller
+
+`Schnell hinzufügen` geht von gedämpft (5,2:1) auf 82 % Textfarbe (11:1):
+klar lesbar, eine Spur unter dem Preis, damit die Rangfolge auf der Karte
+erhalten bleibt. Abstände neu abgestimmt – Code → Ausführung 4 px,
+Ausführung → Preis 13 px, Preis → Kaufweg 16 px. Bild, Format, Vorschau auf
+die nächste Karte (12 %) und Wischverhalten unverändert.
+
+## 4 · Ziffern in „So funktioniert's"
+
+`.figure-index` von 26 % auf 34 % Deckung: 1,81:1 → 2,25:1. Weiterhin weit
+unter Überschrift (17,7:1) und gedämpftem Text (5,2:1).
+
+## 5 · 30 % Extrait
+
+Unverändert.
+
+## 6 · 20-%-Bereich
+
+Unverändert – weiterhin nur der Erstkauf-Vorteil.
+
+## 7 · Scent-Code-Ergebnisseite
+
+* Kopf enger: Abstand unter der Trennlinie von 24 auf 16 px.
+* Bild etwas größer, mittig, mit Luft nach unten statt negativer Ränder –
+  es liest sich als eigene Bildfläche über dem linksbündigen Textblock.
+* Zwischen Preis und „Dein persönlicher Scent Code" steht jetzt eine
+  Haarlinie; der Satz läuft auf 42 Zeichen Lesemaß mit 1,6 Durchschuss.
+* **Kaufweg als gefüllte Schaltfläche**: schwarz, elfenbeinfarbene Schrift,
+  volle Breite, 56 px hoch. Kein Radius, kein Schatten, kein Verlauf.
+* Neue Vertrauenszeile darunter: „30 % Extrait · Frisch abgefüllt · 100 %
+  zufrieden oder Geld zurück". Reiner Text, keine Symbole.
+* Die Seite bekommt Fußraum, damit der Fußbereich nicht unmittelbar an die
+  Schaltfläche stößt.
+
+Verändert wurde ausschließlich das Aussehen. Das `<button>`-Element, seine
+sechs `data-`Attribute (`data-scent-code-add`, `data-code`,
+`data-variant-id`, `data-product-handle`, `data-error-text`,
+`data-busy-text`) und das Fehlerfeld sind unberührt; die Vertrauenszeile
+steht dahinter. Keine einzige JavaScript-Datei wurde angefasst.
+
+## 8 · Fußbereich
+
+Eine Spalte ohne Einträge entfällt jetzt samt Überschrift – vorher stand
+„Rechtliches" über einer leeren Liste, solange im Adminbereich keine
+Rechtstexte gepflegt waren. Die vorhandenen Einzelprüfungen für Impressum,
+Datenschutz, Widerruf und AGB sind unverändert; es entstehen keine
+404-Verweise. Das Seitenende ist enger gefasst: Spalten und Schlusszeile
+zusammen 18 px kompakter. Wortmarke und Signet bleiben auf der Größe aus
+v6.4.
+
+## Prüfungen
+
+390, 393, 430 und 1440 px: kein waagerechter Überlauf auf sechs Seitentypen
+über elf Breiten, keine Überlappungen, kein ungewollt abgeschnittener Text,
+Tippflächen ab 44 px. Kein `render`, `include` oder `section` innerhalb eines
+`{% liquid %}`-Blocks – der Prüfpunkt, an dem v6.3.1 gescheitert war.
+27 JSON-Dateien, 37 Section-Schemas, 13 JS-Dateien fehlerfrei. Theme Check
+40 Verstöße, ausschließlich die drei bekannten Stilarten.
+
+Kaufweg gemessen: POST an `/cart/add.js`, Scent Code korrekt, Varianten-ID
+als Zahl, Warenkorb-Lade öffnet, Dreifachklick ergibt eine Position.
+Code-Normalisierung, Bestellweg und Suche unverändert.
+
+---
+
 # v6.4 – Finales Mobile-Polishing
 
 Grundlage ist die laufende Fassung aus dem Shop, nicht mein v6.3.1. Die ließ

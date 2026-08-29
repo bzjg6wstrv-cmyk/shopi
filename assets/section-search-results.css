@@ -4,16 +4,21 @@
    Eingabe im Kopfbereich jederzeit erreichbar bleibt. */
 .search-head {
   display: grid;
-  gap: var(--space-sm);
-  padding-bottom: var(--space-md);
+  gap: var(--space-xs);
+  padding-bottom: var(--space-sm);
   border-bottom: var(--hair);
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-md);
 }
 .search-head__eyebrow { margin-bottom: 0; }
 .search-head__title { margin: 0; overflow-wrap: anywhere; }
 @media (min-width: 990px) {
-  .search-head { padding-bottom: var(--space-lg); margin-bottom: var(--space-xl); }
+  .search-head { padding-bottom: var(--space-md); margin-bottom: var(--space-lg); }
 }
+
+/* Die Ergebnisseite ist kurz. Ohne zusätzlichen Fußraum stößt der
+   Fußbereich unmittelbar an die Schaltfläche – der Seitenschluss wirkt
+   dadurch abgeschnitten statt ruhig. */
+.search-page { padding-bottom: var(--sect-xl); }
 
 /* VENT CELESTE – kompakte, einheitliche direkte Scent-Code-Ergebnisse. */
 .vc-code-result {
@@ -27,6 +32,7 @@
   line-height: 1.3;
   letter-spacing: .16em;
   text-transform: uppercase;
+  color: rgb(var(--color-muted));
 }
 
 .vc-code-card {
@@ -113,38 +119,66 @@
 
 .vc-code-card__personal-text {
   margin: 0;
-  max-width: 31rem;
-  font-size: .95rem;
-  line-height: 1.55;
-  color: rgb(var(--color-text) / .72);
+  /* Lesemaß statt Pixelbreite: rund 42 Zeichen je Zeile lesen sich ruhig,
+     ohne dass der Satz auf großen Bildschirmen auseinanderläuft. */
+  max-width: 42ch;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgb(var(--color-text) / .78);
 }
 
 .vc-code-card__action-wrap { width: 100%; }
 
+/* Der Hauptweg der Seite. Auf der Ergebnisseite ist er die einzige
+   Handlung und bekommt deshalb als einziges Element eine gefüllte Fläche:
+   schwarz, elfenbeinfarbene Schrift, volle Breite. Kein Radius, kein
+   Schatten, kein Verlauf – die Wirkung kommt aus der Fläche selbst.
+
+   Verändert wird ausschließlich das Aussehen. Das Element, seine
+   data-Attribute (data-scent-code-add, data-code, data-variant-id,
+   data-product-handle) und der daran hängende Cart-API-Weg bleiben
+   unberührt. */
 .vc-code-card__action {
   width: 100%;
-  min-height: 3.45rem;
+  min-height: 3.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: .9rem 1.05rem;
+  padding: 1rem 1.25rem;
   border: 0;
-  border-top: 1px solid rgb(var(--color-text));
-  border-bottom: 1px solid rgb(var(--color-text));
-  background: transparent;
-  color: inherit;
+  border-radius: 0;
+  background-color: rgb(var(--color-button, 11 11 10));
+  color: rgb(var(--color-button-label, 247 242 232));
   font: inherit;
-  font-size: .78rem;
+  font-size: .8125rem;
+  font-weight: 500;
   letter-spacing: .16em;
   text-transform: uppercase;
   text-align: left;
   text-decoration: none;
   cursor: pointer;
+  transition: opacity var(--dur, 260ms) var(--ease, ease);
 }
 
 .vc-code-card__action:disabled { opacity: .55; cursor: wait; }
-.vc-code-card__action:hover { opacity: .65; }
+.vc-code-card__action:hover { opacity: .84; }
+.vc-code-card__action:focus-visible {
+  outline: var(--focus-width, 2px) solid rgb(var(--color-text));
+  outline-offset: var(--focus-offset, 3px);
+}
+
+/* Die Vertrauenszeile steht direkt unter der Schaltfläche und ist bewusst
+   nur Text: drei Angaben, durch Mittelpunkte getrennt. Keine Symbole, keine
+   Plaketten. */
+.vc-code-card__trust {
+  margin: .8rem 0 0;
+  font-size: .6875rem;
+  line-height: 1.5;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+}
 
 .vc-code-card .predictive__code-error {
   margin-top: .75rem;
@@ -174,11 +208,14 @@
     gap: .25rem;
   }
 
+  /* Das Bild steht mittig und bekommt Luft nach unten: Es liest sich dadurch
+     als eigene Bildfläche über dem linksbündigen Textblock und nicht als
+     verrutschtes Element. Keine Fläche, keine Kante, keine Rundung. */
   .vc-code-card__media {
-    width: min(58vw, 16.5rem);
+    width: min(60vw, 17rem);
     aspect-ratio: 1 / 1;
-    margin-top: -.2rem;
-    margin-bottom: -.35rem;
+    margin-top: 0;
+    margin-bottom: var(--space-md);
   }
 
   .vc-code-card__content {
@@ -202,11 +239,13 @@
 
 
   .vc-code-result--generic .vc-code-card__media {
-    width: min(52vw, 14.5rem);
+    width: min(56vw, 15.5rem);
   }
 
   .vc-code-card__personal {
-    margin-top: .75rem;
+    margin-top: var(--space-lg);
+    padding-top: var(--space-md);
+    border-top: var(--hair);
   }
 
   .vc-code-card__personal-title {
@@ -215,13 +254,18 @@
   }
 
   .vc-code-card__personal-text {
-    font-size: .88rem;
-    line-height: 1.5;
+    font-size: .9375rem;
+    line-height: 1.6;
   }
 
   .vc-code-card__action {
-    min-height: 3.05rem;
-    padding: .75rem 0;
-    font-size: .72rem;
+    min-height: 3.5rem;
+    padding: 1rem;
+    font-size: .75rem;
+    letter-spacing: .12em;
   }
+
+  /* Der Kaufweg bekommt Abstand nach oben, damit die gefüllte Fläche nicht
+     am Text klebt. */
+  .vc-code-card__action-wrap { margin-top: var(--space-md); }
 }

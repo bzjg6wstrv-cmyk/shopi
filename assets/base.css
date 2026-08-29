@@ -1086,7 +1086,10 @@ p { text-wrap: pretty; }
    Bild → Code weit, Code → Ausführung eng, Ausführung → Preis mittel. */
 .card__content {
   display: grid;
-  gap: 0.3rem;
+  /* Der Takt der Karte: Code → Ausführung eng, danach Preis und Kaufweg mit
+     jeweils etwas mehr Luft. Die Abstände stehen einzeln unten, der
+     Grundabstand hier ist der engste davon. */
+  gap: 0.25rem;
   align-content: start;
   padding-top: 0;
   border-top: 0;
@@ -1132,7 +1135,7 @@ p { text-wrap: pretty; }
 }
 
 .card__price {
-  margin-top: 0.45rem;
+  margin-top: 0.55rem;
   font-size: 1rem;
   font-variant-numeric: tabular-nums lining-nums;
 }
@@ -2142,11 +2145,11 @@ html:not(.no-js) .animations-on .display__mask:nth-of-type(4) > span { transitio
   line-height: 0.8;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums lining-nums;
-  /* 0,14 war zu blass – die Ziffern verschwanden fast im Seitenton. 0,26
-     ergibt rund 1,8:1 gegen Ivory: als Gliederung deutlich erkennbar und
-     immer noch weit unter der Überschrift (17,7:1) und dem gedämpften
-     Fließtext (5,2:1). Die Ziffer bleibt Auszeichnung, nicht Aussage. */
-  color: rgb(var(--color-text) / 0.26);
+  /* Von 0,14 über 0,26 auf 0,34. Das ergibt rund 2,2:1 gegen Ivory – die
+     Ziffer liest sich als Gliederung, bleibt aber weit unter der Überschrift
+     (17,7:1) und unter dem gedämpften Fließtext (5,2:1). Sie ist
+     Auszeichnung, nicht Aussage. */
+  color: rgb(var(--color-text) / 0.34);
   user-select: none;
 }
 
@@ -2431,9 +2434,12 @@ img.brand-mark { object-fit: contain; }
     font-size: clamp(1.25rem, 5.8vw, 2.5rem);
     letter-spacing: 0.12em;
   }
-  .footer__top { padding-block: var(--space-lg); gap: var(--space-lg) var(--space-md); }
+  .footer__top { padding-block: var(--space-lg) var(--space-md); gap: var(--space-md); }
   .footer__block--brand .footer__brand-text { margin-top: var(--space-xs); }
-  .footer__bottom { padding-block: var(--space-sm); }
+  /* Der Seitenschluss: Die Zeile mit Copyright und Zahlarten steht dicht,
+     darunter liegt nur noch der Platz, den die feste Beratungsleiste
+     einnimmt – kein zusätzlicher Leerraum. */
+  .footer__bottom { padding-block: var(--space-sm) 0.625rem; gap: var(--space-xs) var(--space-md); }
 }
 @media (min-width: 990px) {
   .footer__brand-row { padding-block: var(--space-2xl) var(--space-xl); align-items: center; }
@@ -2468,7 +2474,7 @@ img.brand-mark { object-fit: contain; }
   /* Keine Linie über der Zeile: Sie wäre die untere Kartenkante, und genau
      die soll es hier nicht geben. Der Abstand allein trennt Angabe von
      Handlung. */
-  margin-top: var(--space-md);
+  margin-top: var(--space-sm);
 }
 
 .card__quick-add-button {
@@ -2482,12 +2488,17 @@ img.brand-mark { object-fit: contain; }
   border: 0;
   border-radius: 0;
   background-color: transparent;
-  color: rgb(var(--color-muted));
+  /* Deutlich dunkler als zuvor: Die Zeile ist der einzige Kaufweg auf der
+     Karte und war als gedämpfter Text (5,2:1) zu leise. 82 % Textfarbe
+     ergeben rund 12:1 – klar lesbar, aber eine Spur unter dem Preis, damit
+     die Rangfolge auf der Karte erhalten bleibt. Klein und versal bleibt
+     sie zurückhaltend; es wird kein Knopf daraus. */
+  color: rgb(var(--color-text) / 0.82);
   font-size: 0.6875rem;
   letter-spacing: var(--meta-tracking);
   text-transform: uppercase;
   text-align: left;
-  transition: color var(--dur) var(--ease);
+  transition: opacity var(--dur) var(--ease);
 }
 
 .card__quick-add-label { display: inline; }

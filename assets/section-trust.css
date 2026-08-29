@@ -3,28 +3,38 @@
    Ein Versprechen, ein Satz dazu, darunter drei kurze Angaben. Bewusst
    typografisch: keine Symbole, keine Kacheln, keine farbigen Plaketten.
    Getrennt wird durch Haarlinien, gewichtet durch Schriftgrad. */
+/* Der Abschnitt steht jetzt weit oben – gleich nach den Bestsellern und vor
+   dem Beratungsmoment. Dort muss er Gewicht haben, ohne laut zu werden: Er
+   bekommt die mittlere Abschnittsdichte statt der kleinen und eine
+   Überschrift eine Stufe größer. Farbe, Rahmen und Flächen bleiben, wie sie
+   sind – die Wirkung kommt aus Raum und Schriftgrad. */
+.trust-section { padding-block: var(--sect-md); }
+@media (min-width: 750px) {
+  .trust-section { padding-block: var(--sect-lg); }
+}
+
 .trust {
   display: grid;
   gap: var(--space-lg);
-  padding-top: var(--space-lg);
+  padding-top: var(--space-xl);
   border-top: var(--hair);
 }
 
 .trust__heading {
   font-family: var(--font-heading-family, Georgia, serif);
   font-weight: var(--font-heading-weight);
-  font-size: clamp(1.5rem, 1.15rem + 1.6vw, 2.25rem);
-  line-height: 1.1;
-  letter-spacing: -0.01em;
+  font-size: clamp(1.75rem, 1.25rem + 2.1vw, 2.75rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
   text-wrap: balance;
-  max-width: 22ch;
+  max-width: 20ch;
 }
 
 .trust__text {
   color: rgb(var(--color-muted));
-  font-size: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
+  font-size: clamp(1rem, 0.94rem + 0.3vw, 1.125rem);
   line-height: 1.55;
-  max-width: 46ch;
+  max-width: 44ch;
 }
 
 .trust__link {
