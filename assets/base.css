@@ -3356,9 +3356,16 @@ body { max-width: 100%; overflow-x: clip; }
   margin: 0 0 0.5rem;
 }
 
+/* Die globale Regel in Zeile 37 nimmt Listen ihre Punkte. Hier gehoeren sie
+   zurueck, sonst laufen die fehlenden Dokumente zu einem Block zusammen. */
 .legal-status__list {
   margin: 0 0 0.75rem;
-  padding-left: 1.1rem;
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+
+.legal-status__list li {
+  margin-bottom: 0.35rem;
 }
 
 .legal-status code {
@@ -3366,6 +3373,7 @@ body { max-width: 100%; overflow-x: clip; }
   border: var(--border-width) solid rgb(var(--color-muted));
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.75rem;
+  white-space: nowrap;
 }
 
 .legal-status__note {
