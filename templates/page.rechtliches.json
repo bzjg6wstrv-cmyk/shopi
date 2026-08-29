@@ -1,13 +1,9 @@
 {
   "sections": {
     "main": {
-      "type": "main-page",
-      "settings": {
-        "show_placeholder_note": true
-      }
+      "type": "legal-document",
+      "settings": { "document_type": "uebersicht" }
     }
   },
-  "order": [
-    "main"
-  ]
+  "order": ["main"]
 }

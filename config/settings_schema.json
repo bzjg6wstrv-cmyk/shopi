@@ -717,6 +717,13 @@
         "default": "inkl. MwSt."
       },
       {
+        "type": "checkbox",
+        "id": "show_demo_notice",
+        "label": "Firmendaten als Platzhalter kennzeichnen",
+        "default": false,
+        "info": "Blendet den Hinweis „DEMO-INHALT“ unter den Firmendaten in Fußbereich und Kontaktseite ein. Nur aktivieren, solange dort noch Musterdaten stehen – bei echten Angaben entwertet der Hinweis die Pflichtangaben."
+      },
+      {
         "type": "url",
         "id": "shipping_page",
         "label": "Link zur Versandseite",

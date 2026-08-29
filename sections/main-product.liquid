@@ -441,6 +441,40 @@
                   </div>
                 {%- endif -%}
 
+              {%- when 'safety' -%}
+                {%- comment -%}
+                  Produktsicherheit nach GPSR (VO (EU) 2023/988). Im Fernabsatz
+                  müssen Hersteller, ggf. verantwortliche Person in der EU und
+                  Warnhinweise schon vor dem Kauf sichtbar sein. Die Angaben
+                  stehen produktspezifisch im Metafeld, sonst greift der im
+                  Abschnitt hinterlegte Standardtext – zwei Ebenen, weil
+                  Hersteller und Warnhinweise je Duft abweichen können, die
+                  Angaben zum Inverkehrbringer aber meist gleich bleiben.
+                {%- endcomment -%}
+                {%- liquid
+                  assign gpsr_manufacturer = product.metafields.custom.hersteller.value | default: block.settings.manufacturer
+                  assign gpsr_eu_contact = product.metafields.custom.eu_verantwortlicher.value | default: block.settings.eu_contact
+                  assign gpsr_warnings = product.metafields.custom.warnhinweise.value | default: block.settings.warnings
+                -%}
+                {%- if gpsr_manufacturer != blank or gpsr_eu_contact != blank or gpsr_warnings != blank -%}
+                  <div class="product-block product__accordion" data-accordion-group {{ block.shopify_attributes }}>
+                    <details data-accordion>
+                      <summary>{{ block.settings.heading | escape }} {% render 'icon', name: 'chevron' %}</summary>
+                      <div class="rte text-body-sm">
+                        {%- if gpsr_manufacturer != blank -%}
+                          <p><strong>{{ 'products.product.gpsr_manufacturer' | t }}</strong><br>{{ gpsr_manufacturer | newline_to_br }}</p>
+                        {%- endif -%}
+                        {%- if gpsr_eu_contact != blank -%}
+                          <p><strong>{{ 'products.product.gpsr_eu_contact' | t }}</strong><br>{{ gpsr_eu_contact | newline_to_br }}</p>
+                        {%- endif -%}
+                        {%- if gpsr_warnings != blank -%}
+                          <p><strong>{{ 'products.product.gpsr_warnings' | t }}</strong><br>{{ gpsr_warnings | newline_to_br }}</p>
+                        {%- endif -%}
+                      </div>
+                    </details>
+                  </div>
+                {%- endif -%}
+
               {%- when 'text' -%}
                 {%- if block.settings.text != blank -%}
                   <div class="product-block product__accordion" data-accordion-group {{ block.shopify_attributes }}>
@@ -675,6 +709,41 @@
       "limit": 1,
       "settings": [
 
+      ]
+    },
+    {
+      "type": "safety",
+      "name": "Produktsicherheit (GPSR)",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Pflichtangaben nach GPSR. Produktspezifische Werte aus den Metafeldern custom.hersteller, custom.eu_verantwortlicher und custom.warnhinweise haben Vorrang vor den Feldern hier."
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Überschrift",
+          "default": "Produktsicherheit & Hersteller"
+        },
+        {
+          "type": "textarea",
+          "id": "manufacturer",
+          "label": "Hersteller",
+          "info": "Name, Anschrift, E-Mail-Adresse des Herstellers."
+        },
+        {
+          "type": "textarea",
+          "id": "eu_contact",
+          "label": "Verantwortliche Person in der EU",
+          "info": "Nur erforderlich, wenn der Hersteller außerhalb der EU sitzt."
+        },
+        {
+          "type": "textarea",
+          "id": "warnings",
+          "label": "Warn- und Sicherheitshinweise",
+          "info": "Z. B. Kennzeichnung nach CLP-Verordnung, Hinweise zu Entzündbarkeit und Anwendung."
+        }
       ]
     },
     {

@@ -55,43 +55,18 @@
                   <li><a href="{{ routes.root_url }}#duftberatung">Duftberatung</a></li>
 
               {%- elsif footer_title == 'rechtliches' -%}
-                {%- assign impressum_page = pages['impressum'] -%}
-                {%- assign datenschutz_page = pages['datenschutz'] -%}
-                {%- assign widerruf_page = pages['widerruf'] -%}
-                {%- assign agb_page = pages['agb'] -%}
-                {%- assign versand_page = pages['versand-zahlung'] -%}
-                {%- assign garantie_page = pages['zufriedenheitsgarantie'] -%}
-
-                  {%- if impressum_page != blank -%}
-                    <li><a href="{{ impressum_page.url }}">Impressum</a></li>
-                  {%- elsif shop.legal_notice != blank -%}
-                    <li><a href="{{ shop.legal_notice.url }}">Impressum</a></li>
+                {%- comment -%}
+                  Die Ziele kommen aus 'legal-url', damit Kopf- und Fußbereich
+                  bei gleicher Beschriftung dasselbe Dokument öffnen.
+                {%- endcomment -%}
+                {%- assign legal_labels = 'Impressum,Datenschutz,Widerruf & Rückgabe,AGB,Versand & Zahlung,Zufriedenheitsgarantie' | split: ',' -%}
+                {%- for legal_label in legal_labels -%}
+                  {%- capture legal_url -%}{% render 'legal-url', title: legal_label %}{%- endcapture -%}
+                  {%- assign legal_url = legal_url | strip -%}
+                  {%- if legal_url != blank and legal_url != 'unavailable' -%}
+                    <li><a href="{{ legal_url }}">{{ legal_label | escape }}</a></li>
                   {%- endif -%}
-
-                  {%- if shop.privacy_policy != blank -%}
-                    <li><a href="{{ shop.privacy_policy.url }}">Datenschutz</a></li>
-                  {%- elsif datenschutz_page != blank -%}
-                    <li><a href="{{ datenschutz_page.url }}">Datenschutz</a></li>
-                  {%- endif -%}
-
-                  {%- if widerruf_page != blank -%}
-                    <li><a href="{{ widerruf_page.url }}">Widerruf &amp; Rückgabe</a></li>
-                  {%- elsif shop.refund_policy != blank -%}
-                    <li><a href="{{ shop.refund_policy.url }}">Widerruf &amp; Rückgabe</a></li>
-                  {%- endif -%}
-
-                  {%- if agb_page != blank -%}
-                    <li><a href="{{ agb_page.url }}">AGB</a></li>
-                  {%- elsif shop.terms_of_service != blank -%}
-                    <li><a href="{{ shop.terms_of_service.url }}">AGB</a></li>
-                  {%- endif -%}
-
-                  {%- if versand_page != blank -%}
-                    <li><a href="{{ versand_page.url }}">Versand &amp; Zahlung</a></li>
-                  {%- endif -%}
-                  {%- if garantie_page != blank -%}
-                    <li><a href="{{ garantie_page.url }}">Zufriedenheitsgarantie</a></li>
-                  {%- endif -%}
+                {%- endfor -%}
 
               {%- elsif block.settings.menu != blank and block.settings.menu.links.size > 0 -%}
                   {%- for link in block.settings.menu.links -%}
@@ -121,7 +96,9 @@
                 <li>{{ settings.contact_phone }}</li>
                 <li>{{ settings.contact_hours }}</li>
               </ul>
-              <p class="demo-flag footer__note">{{ 'general.demo_notice' | t }}</p>
+              {%- if settings.show_demo_notice -%}
+                <p class="demo-flag footer__note">{{ 'general.demo_notice' | t }}</p>
+              {%- endif -%}
 
             {%- when 'newsletter' -%}
               <p class="footer__heading meta meta--muted">{{ 'sections.footer.newsletter_title' | t }}</p>

@@ -7,7 +7,6 @@
   assign about_page = pages['ueber-uns']
   assign contact_page = pages['contact']
   assign faq_page = pages['faq']
-  assign impressum_page = pages['impressum']
   assign discovery_product = all_products['discovery-set']
 -%}
 <header class="header color-{{ section.settings.color_scheme }} color-scheme"{% unless section.settings.sticky %} style="position: relative;"{% endunless %}>
@@ -59,6 +58,10 @@
                             assign child_title = child.title | downcase | strip
                             assign child_url = child.url
                             assign child_broken = false
+                            capture legal_url
+                              render 'legal-url', title: child_title
+                            endcapture
+                            assign legal_url = legal_url | strip
                             if child_title contains 'duftberatung'
                               assign child_url = routes.root_url | append: '#duftberatung'
                             elsif child_title contains 'bestseller'
@@ -85,31 +88,11 @@
                               else
                                 assign child_broken = true
                               endif
-                            elsif child_title contains 'impressum'
-                              if shop.legal_notice != blank
-                                assign child_url = shop.legal_notice.url
-                              elsif impressum_page != blank
-                                assign child_url = impressum_page.url
-                              else
+                            elsif legal_url != blank
+                              if legal_url == 'unavailable'
                                 assign child_broken = true
-                              endif
-                            elsif child_title contains 'datenschutz'
-                              if shop.privacy_policy != blank
-                                assign child_url = shop.privacy_policy.url
                               else
-                                assign child_broken = true
-                              endif
-                            elsif child_title contains 'widerruf' or child_title contains 'rückgabe'
-                              if shop.refund_policy != blank
-                                assign child_url = shop.refund_policy.url
-                              else
-                                assign child_broken = true
-                              endif
-                            elsif child_title == 'agb' or child_title contains 'geschäftsbedingungen'
-                              if shop.terms_of_service != blank
-                                assign child_url = shop.terms_of_service.url
-                              else
-                                assign child_broken = true
+                                assign child_url = legal_url
                               endif
                             elsif child.type == 'page_link' or child.type == 'product_link' or child.type == 'collection_link' or child.type == 'blog_link' or child.type == 'article_link'
                               if child.object == blank
@@ -184,6 +167,10 @@
                   assign nav_title = link.title | downcase | strip
                   assign nav_url = link.url
                   assign nav_skip = false
+                  capture legal_url
+                    render 'legal-url', title: nav_title
+                  endcapture
+                  assign legal_url = legal_url | strip
                   if nav_title contains 'duftberatung'
                     assign nav_url = routes.root_url | append: '#duftberatung'
                   elsif nav_title contains 'bestseller'
@@ -210,31 +197,11 @@
                     else
                       assign nav_skip = true
                     endif
-                  elsif nav_title contains 'impressum'
-                    if shop.legal_notice != blank
-                      assign nav_url = shop.legal_notice.url
-                    elsif impressum_page != blank
-                      assign nav_url = impressum_page.url
-                    else
+                  elsif legal_url != blank
+                    if legal_url == 'unavailable'
                       assign nav_skip = true
-                    endif
-                  elsif nav_title contains 'datenschutz'
-                    if shop.privacy_policy != blank
-                      assign nav_url = shop.privacy_policy.url
                     else
-                      assign nav_skip = true
-                    endif
-                  elsif nav_title contains 'widerruf' or nav_title contains 'rückgabe'
-                    if shop.refund_policy != blank
-                      assign nav_url = shop.refund_policy.url
-                    else
-                      assign nav_skip = true
-                    endif
-                  elsif nav_title == 'agb' or nav_title contains 'geschäftsbedingungen'
-                    if shop.terms_of_service != blank
-                      assign nav_url = shop.terms_of_service.url
-                    else
-                      assign nav_skip = true
+                      assign nav_url = legal_url
                     endif
                   elsif link.type == 'page_link' or link.type == 'product_link' or link.type == 'collection_link' or link.type == 'blog_link' or link.type == 'article_link'
                     if link.object == blank
@@ -376,6 +343,10 @@
             assign mobile_title = link.title | downcase | strip
             assign mobile_url = link.url
             assign mobile_skip = false
+            capture legal_url
+              render 'legal-url', title: mobile_title
+            endcapture
+            assign legal_url = legal_url | strip
             if mobile_title contains 'duftberatung'
               assign mobile_url = routes.root_url | append: '#duftberatung'
             elsif mobile_title contains 'bestseller'
@@ -402,31 +373,11 @@
               else
                 assign mobile_skip = true
               endif
-            elsif mobile_title contains 'impressum'
-              if shop.legal_notice != blank
-                assign mobile_url = shop.legal_notice.url
-              elsif impressum_page != blank
-                assign mobile_url = impressum_page.url
-              else
+            elsif legal_url != blank
+              if legal_url == 'unavailable'
                 assign mobile_skip = true
-              endif
-            elsif mobile_title contains 'datenschutz'
-              if shop.privacy_policy != blank
-                assign mobile_url = shop.privacy_policy.url
               else
-                assign mobile_skip = true
-              endif
-            elsif mobile_title contains 'widerruf' or mobile_title contains 'rückgabe'
-              if shop.refund_policy != blank
-                assign mobile_url = shop.refund_policy.url
-              else
-                assign mobile_skip = true
-              endif
-            elsif mobile_title == 'agb' or mobile_title contains 'geschäftsbedingungen'
-              if shop.terms_of_service != blank
-                assign mobile_url = shop.terms_of_service.url
-              else
-                assign mobile_skip = true
+                assign mobile_url = legal_url
               endif
             elsif link.type == 'page_link' or link.type == 'product_link' or link.type == 'collection_link' or link.type == 'blog_link' or link.type == 'article_link'
               if link.object == blank
@@ -474,6 +425,10 @@
             assign aux_title = link.title | downcase | strip
             assign aux_url = link.url
             assign aux_skip = false
+            capture legal_url
+              render 'legal-url', title: aux_title
+            endcapture
+            assign legal_url = legal_url | strip
             if aux_title contains 'duftberatung'
               assign aux_url = routes.root_url | append: '#duftberatung'
             elsif aux_title contains 'über uns' or aux_title contains 'ueber uns'
@@ -494,31 +449,11 @@
               else
                 assign aux_skip = true
               endif
-            elsif aux_title contains 'impressum'
-              if shop.legal_notice != blank
-                assign aux_url = shop.legal_notice.url
-              elsif impressum_page != blank
-                assign aux_url = impressum_page.url
-              else
+            elsif legal_url != blank
+              if legal_url == 'unavailable'
                 assign aux_skip = true
-              endif
-            elsif aux_title contains 'datenschutz'
-              if shop.privacy_policy != blank
-                assign aux_url = shop.privacy_policy.url
               else
-                assign aux_skip = true
-              endif
-            elsif aux_title contains 'widerruf' or aux_title contains 'rückgabe'
-              if shop.refund_policy != blank
-                assign aux_url = shop.refund_policy.url
-              else
-                assign aux_skip = true
-              endif
-            elsif aux_title == 'agb' or aux_title contains 'geschäftsbedingungen'
-              if shop.terms_of_service != blank
-                assign aux_url = shop.terms_of_service.url
-              else
-                assign aux_skip = true
+                assign aux_url = legal_url
               endif
             elsif link.type == 'page_link' or link.type == 'product_link' or link.type == 'collection_link' or link.type == 'blog_link' or link.type == 'article_link'
               if link.object == blank
@@ -556,6 +491,10 @@
             assign aux_title = link.title | downcase | strip
             assign aux_url = link.url
             assign aux_skip = false
+            capture legal_url
+              render 'legal-url', title: aux_title
+            endcapture
+            assign legal_url = legal_url | strip
             if aux_title contains 'duftberatung'
               assign aux_url = routes.root_url | append: '#duftberatung'
             elsif aux_title contains 'über uns' or aux_title contains 'ueber uns'
@@ -576,31 +515,11 @@
               else
                 assign aux_skip = true
               endif
-            elsif aux_title contains 'impressum'
-              if shop.legal_notice != blank
-                assign aux_url = shop.legal_notice.url
-              elsif impressum_page != blank
-                assign aux_url = impressum_page.url
-              else
+            elsif legal_url != blank
+              if legal_url == 'unavailable'
                 assign aux_skip = true
-              endif
-            elsif aux_title contains 'datenschutz'
-              if shop.privacy_policy != blank
-                assign aux_url = shop.privacy_policy.url
               else
-                assign aux_skip = true
-              endif
-            elsif aux_title contains 'widerruf' or aux_title contains 'rückgabe'
-              if shop.refund_policy != blank
-                assign aux_url = shop.refund_policy.url
-              else
-                assign aux_skip = true
-              endif
-            elsif aux_title == 'agb' or aux_title contains 'geschäftsbedingungen'
-              if shop.terms_of_service != blank
-                assign aux_url = shop.terms_of_service.url
-              else
-                assign aux_skip = true
+                assign aux_url = legal_url
               endif
             elsif link.type == 'page_link' or link.type == 'product_link' or link.type == 'collection_link' or link.type == 'blog_link' or link.type == 'article_link'
               if link.object == blank

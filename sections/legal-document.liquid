@@ -31,6 +31,84 @@
 
           <h2>Umsatzsteuer</h2>
           <p>Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG: {{ company_vat | escape }}</p>
+
+          <h2>Verbraucherstreitbeilegung</h2>
+          <p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen (§ 36 VSBG).</p>
+        </div>
+
+      {%- when 'datenschutz' -%}
+        <p class="meta meta--muted">RECHTLICHES</p>
+        <h1 class="h2 legal-document__title">Datenschutzerklärung</h1>
+        {%- assign dsg_n = 0 -%}
+        <div class="legal-document__content rte">
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Verantwortlicher</h2>
+          <p>Verantwortlich für die Datenverarbeitung auf dieser Website im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:</p>
+          <p><strong>{{ company_name | escape }}</strong><br>{{ company_address | escape }}<br>
+          Vertreten durch: {{ company_representative | escape }}<br>
+          Telefon: <a href="tel:{{ contact_phone | remove: ' ' | escape }}">{{ contact_phone | escape }}</a><br>
+          E-Mail: <a href="mailto:{{ contact_email | escape }}">{{ contact_email | escape }}</a></p>
+
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Hosting und Shop-System</h2>
+          <p>Diese Website wird auf der Plattform von Shopify betrieben. Anbieter ist die Shopify International Ltd., Victoria Buildings, 2. Etage, 1-2 Haddington Road, Dublin 4, D04 XN32, Irland. Shopify verarbeitet in unserem Auftrag die über die Website erhobenen Daten und ist als Auftragsverarbeiter vertraglich gebunden (Art. 28 DSGVO). Dabei können Daten auch an die Shopify Inc. in Kanada sowie an Server in den USA übermittelt werden; die Übermittlung wird auf Standardvertragsklauseln der EU-Kommission gestützt. Rechtsgrundlage ist unser berechtigtes Interesse an einem sicheren und effizienten Betrieb unseres Online-Shops (Art. 6 Abs. 1 lit. f DSGVO) sowie, soweit ein Vertrag angebahnt oder erfüllt wird, Art. 6 Abs. 1 lit. b DSGVO.</p>
+
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Server-Logfiles</h2>
+          <p>Beim Aufruf unserer Website werden automatisch Informationen erfasst, die Ihr Browser übermittelt: Browsertyp und -version, verwendetes Betriebssystem, Referrer-URL, Hostname des zugreifenden Rechners, Uhrzeit der Serveranfrage und IP-Adresse. Diese Daten werden nicht mit anderen Datenquellen zusammengeführt. Die Erfassung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO zur technisch fehlerfreien Darstellung und zur Sicherheit unserer Systeme.</p>
+
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Cookies und Einwilligungen</h2>
+          <p>Unsere Website verwendet Cookies. Technisch notwendige Cookies – etwa für den Warenkorb, die Sitzungsverwaltung und Sicherheitsfunktionen – setzen wir auf Grundlage von § 25 Abs. 2 TDDDG sowie Art. 6 Abs. 1 lit. f DSGVO ein. Alle nicht notwendigen Cookies, insbesondere solche für Reichweitenmessung und Marketing, werden erst nach Ihrer ausdrücklichen Einwilligung gesetzt (§ 25 Abs. 1 TDDDG, Art. 6 Abs. 1 lit. a DSGVO). Ihre Einwilligung können Sie jederzeit mit Wirkung für die Zukunft über die Cookie-Einstellungen auf dieser Website widerrufen.</p>
+
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Bestellabwicklung</h2>
+          <p>Wenn Sie bei uns bestellen, verarbeiten wir die von Ihnen angegebenen Bestands- und Bestelldaten (Name, Rechnungs- und Lieferanschrift, E-Mail-Adresse, ggf. Telefonnummer, Zahlungsdaten, bestellte Artikel) zur Durchführung des Vertrags gemäß Art. 6 Abs. 1 lit. b DSGVO. Ihre Daten geben wir dabei an die mit der Lieferung beauftragten Versanddienstleister und an das von Ihnen gewählte Zahlungsunternehmen weiter, soweit dies zur Vertragserfüllung erforderlich ist. Nach vollständiger Abwicklung werden die Daten für die Dauer der handels- und steuerrechtlichen Aufbewahrungsfristen (in der Regel sechs bzw. zehn Jahre nach § 257 HGB, § 147 AO) gespeichert und danach gelöscht. Rechtsgrundlage hierfür ist Art. 6 Abs. 1 lit. c DSGVO.</p>
+
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Zahlungsdienstleister</h2>
+          <p>Je nach gewählter Zahlungsart geben wir die zur Zahlungsabwicklung erforderlichen Daten an den jeweiligen Zahlungsdienstleister weiter. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO. Die Zahlungsdienstleister verarbeiten Ihre Daten teilweise auch in eigener Verantwortung nach ihren eigenen Datenschutzbestimmungen; bei einer Zahlung auf Rechnung oder per Ratenkauf kann eine Bonitätsprüfung erfolgen. Die im Shop verfügbaren Zahlungsarten und die dazugehörigen Anbieter werden Ihnen im Bestellvorgang angezeigt.</p>
+
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Kundenkonto</h2>
+          <p>Sie können bei uns ein Kundenkonto anlegen. Die dabei angegebenen Daten verarbeiten wir zur Verwaltung Ihres Kontos und zur vereinfachten Abwicklung künftiger Bestellungen auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO. Sie können Ihr Kundenkonto jederzeit löschen lassen; gesetzliche Aufbewahrungsfristen bleiben davon unberührt.</p>
+
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Kontaktaufnahme</h2>
+          <p>Wenn Sie uns über das Kontaktformular, per E-Mail oder telefonisch kontaktieren, verarbeiten wir Ihre Angaben zur Bearbeitung Ihrer Anfrage. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO, sofern Ihre Anfrage der Erfüllung eines Vertrags oder vorvertraglichen Maßnahmen dient, ansonsten unser berechtigtes Interesse an der Beantwortung von Anfragen (Art. 6 Abs. 1 lit. f DSGVO) bzw. Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Ihre Anfrage löschen wir, sobald sie erledigt ist und keine gesetzlichen Aufbewahrungspflichten entgegenstehen.</p>
+
+          {%- if settings.whatsapp_enabled and settings.whatsapp_number != blank -%}
+            {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Duftberatung über WhatsApp</h2>
+            <p>Auf unserer Website bieten wir Ihnen die Möglichkeit, uns über WhatsApp zu kontaktieren. Klicken Sie auf die entsprechende Schaltfläche, öffnet sich WhatsApp mit einer vorbereiteten Nachricht an uns; erst mit dem Absenden dieser Nachricht werden Daten übertragen. Anbieter des Dienstes ist die WhatsApp Ireland Limited, Merrion Road, Ballsbridge, Dublin 4, Irland. Bei der Nutzung von WhatsApp werden Ihre Telefonnummer, Ihre Nachrichteninhalte und weitere Nutzungsdaten verarbeitet; dabei können Daten auch außerhalb der Europäischen Union, insbesondere in die USA, übermittelt werden. Auf diese Verarbeitung durch WhatsApp haben wir keinen Einfluss. Wir verarbeiten die uns über WhatsApp übermittelten Daten ausschließlich zur Beantwortung Ihrer Anfrage. Rechtsgrundlage ist Ihre durch die Kontaktaufnahme erteilte Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) bzw. Art. 6 Abs. 1 lit. b DSGVO. Wenn Sie diese Verarbeitung vermeiden möchten, nutzen Sie bitte die übrigen Kontaktwege. Nähere Informationen finden Sie in den Datenschutzhinweisen von WhatsApp.</p>
+          {%- endif -%}
+
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Newsletter</h2>
+          <p>Wenn Sie unseren Newsletter abonnieren möchten, benötigen wir Ihre E-Mail-Adresse. Die Anmeldung erfolgt im Double-Opt-in-Verfahren: Nach Ihrer Eintragung senden wir Ihnen eine Bestätigungsmail, mit der Sie die Anmeldung bestätigen. Rechtsgrundlage ist Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Sie können Ihre Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen, etwa über den Abmeldelink in jeder Newsletter-Mail oder per Nachricht an uns. Nach der Abmeldung wird Ihre E-Mail-Adresse aus dem Newsletter-Verteiler gelöscht.</p>
+
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Produktbewertungen</h2>
+          <p>Sofern Sie eine Bewertung abgeben, verarbeiten wir die dabei angegebenen Daten zur Veröffentlichung der Bewertung. Rechtsgrundlage ist Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO), die Sie jederzeit mit Wirkung für die Zukunft widerrufen können.</p>
+
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Empfänger und Drittlandsübermittlung</h2>
+          <p>Eine Übermittlung Ihrer Daten findet nur statt, soweit dies zur Vertragserfüllung erforderlich ist, wir gesetzlich dazu verpflichtet sind, Sie eingewilligt haben oder ein berechtigtes Interesse besteht. Empfänger sind insbesondere unser Shop- und Hosting-Dienstleister, Zahlungs- und Versanddienstleister sowie gegebenenfalls Steuerberatung und Behörden. Soweit dabei Daten in Staaten außerhalb der EU bzw. des EWR übermittelt werden, stellen wir ein angemessenes Datenschutzniveau durch einen Angemessenheitsbeschluss der EU-Kommission oder durch Standardvertragsklauseln nebst ergänzenden Maßnahmen sicher.</p>
+
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Speicherdauer</h2>
+          <p>Wir speichern personenbezogene Daten nur so lange, wie es für die jeweiligen Zwecke erforderlich ist oder gesetzliche Aufbewahrungsfristen bestehen. Danach werden die Daten gelöscht oder eingeschränkt verarbeitet.</p>
+
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Ihre Rechte</h2>
+          <p>Sie haben uns gegenüber folgende Rechte hinsichtlich der Sie betreffenden personenbezogenen Daten:</p>
+          <ul>
+            <li>Recht auf Auskunft (Art. 15 DSGVO)</li>
+            <li>Recht auf Berichtigung (Art. 16 DSGVO)</li>
+            <li>Recht auf Löschung (Art. 17 DSGVO)</li>
+            <li>Recht auf Einschränkung der Verarbeitung (Art. 18 DSGVO)</li>
+            <li>Recht auf Datenübertragbarkeit (Art. 20 DSGVO)</li>
+            <li>Recht auf Widerruf erteilter Einwilligungen mit Wirkung für die Zukunft (Art. 7 Abs. 3 DSGVO)</li>
+          </ul>
+          <p>Zur Ausübung Ihrer Rechte genügt eine formlose Nachricht an <a href="mailto:{{ contact_email | escape }}">{{ contact_email | escape }}</a>.</p>
+
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Widerspruchsrecht</h2>
+          <p><strong>Sie haben das Recht, aus Gründen, die sich aus Ihrer besonderen Situation ergeben, jederzeit gegen die Verarbeitung Sie betreffender personenbezogener Daten, die aufgrund von Art. 6 Abs. 1 lit. f DSGVO erfolgt, Widerspruch einzulegen (Art. 21 Abs. 1 DSGVO). Werden Ihre Daten zum Zweck der Direktwerbung verarbeitet, haben Sie das Recht, jederzeit ohne Angabe von Gründen Widerspruch einzulegen; die Daten werden anschließend nicht mehr zu diesem Zweck verwendet (Art. 21 Abs. 2 und 3 DSGVO).</strong></p>
+
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Beschwerderecht bei der Aufsichtsbehörde</h2>
+          <p>Unbeschadet anderweitiger Rechtsbehelfe haben Sie das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren, insbesondere in dem Mitgliedstaat Ihres Aufenthaltsorts, Ihres Arbeitsplatzes oder des Orts des mutmaßlichen Verstoßes (Art. 77 DSGVO).</p>
+
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Erforderlichkeit der Bereitstellung</h2>
+          <p>Die Bereitstellung Ihrer personenbezogenen Daten ist weder gesetzlich noch vertraglich vorgeschrieben. Ohne die zur Vertragsabwicklung erforderlichen Angaben können wir einen Vertrag mit Ihnen jedoch nicht schließen und nicht erfüllen. Eine automatisierte Entscheidungsfindung einschließlich Profiling findet nicht statt.</p>
+
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. SSL-/TLS-Verschlüsselung</h2>
+          <p>Diese Website nutzt aus Sicherheitsgründen eine SSL- bzw. TLS-Verschlüsselung. Eine verschlüsselte Verbindung erkennen Sie daran, dass die Adresszeile des Browsers von „http://“ auf „https://“ wechselt.</p>
         </div>
 
       {%- when 'versand' -%}
@@ -180,6 +258,36 @@
           <p>Ist der Kunde Kaufmann, juristische Person des öffentlichen Rechts oder öffentlich-rechtliches Sondervermögen, ist für Streitigkeiten aus Vertragsverhältnissen mit uns Bremen Gerichtsstand. Gesetzliche ausschließliche Gerichtsstände bleiben unberührt.</p>
         </div>
 
+      {%- when 'uebersicht' -%}
+        {%- comment -%}
+          Sammelseite: verlinkt die Rechtstexte über 'legal-url', damit hier
+          nichts steht, was im Kopf- und Fußbereich anders aufgelöst wird.
+          Fehlt ein Dokument, entfällt der Eintrag – so entsteht kein toter Link.
+        {%- endcomment -%}
+        <p class="meta meta--muted">RECHTLICHES</p>
+        <h1 class="h2 legal-document__title">Rechtliches im Überblick</h1>
+        <div class="legal-document__content rte">
+          <p>Alle rechtlichen Informationen zu {{ company_name | escape }} und zum Online-Shop VENT CELESTE auf einen Blick.</p>
+          <ul>
+            {%- assign legal_labels = 'Impressum,Datenschutzerklärung,Widerrufsbelehrung,AGB,Versand & Zahlung,Zufriedenheitsgarantie' | split: ',' -%}
+            {%- for legal_label in legal_labels -%}
+              {%- capture legal_url -%}{% render 'legal-url', title: legal_label %}{%- endcapture -%}
+              {%- assign legal_url = legal_url | strip -%}
+              {%- if legal_url != blank and legal_url != 'unavailable' -%}
+                <li><a href="{{ legal_url }}">{{ legal_label | escape }}</a></li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+
+          <h2>Anbieter</h2>
+          <p><strong>{{ company_name | escape }}</strong><br>{{ company_address | escape }}<br>
+          E-Mail: <a href="mailto:{{ contact_email | escape }}">{{ contact_email | escape }}</a><br>
+          Telefon: <a href="tel:{{ contact_phone | remove: ' ' | escape }}">{{ contact_phone | escape }}</a></p>
+
+          <h2>Online-Streitbeilegung und Verbraucherschlichtung</h2>
+          <p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
+        </div>
+
       {%- else -%}
         <h1 class="h2 legal-document__title">{{ page.title | escape }}</h1>
         <div class="legal-document__content rte">{{ page.content }}</div>
@@ -200,10 +308,12 @@
       "label": "Dokument",
       "options": [
         { "value": "impressum", "label": "Impressum" },
+        { "value": "datenschutz", "label": "Datenschutzerklärung" },
         { "value": "versand", "label": "Versand & Zahlung" },
         { "value": "garantie", "label": "Zufriedenheitsgarantie" },
         { "value": "widerruf", "label": "Widerrufsbelehrung" },
-        { "value": "agb", "label": "AGB" }
+        { "value": "agb", "label": "AGB" },
+        { "value": "uebersicht", "label": "Rechtliches (Übersicht)" }
       ],
       "default": "impressum"
     }

@@ -1,0 +1,86 @@
+{%- comment -%}
+  Zieladresse für einen Rechts- oder Serviceeintrag in der Navigation.
+
+  Aufruf:
+    {%- capture legal_url -%}{% render 'legal-url', title: nav_title %}{%- endcapture -%}
+    {%- assign legal_url = legal_url | strip -%}
+
+  Rückgabewerte:
+    <URL>         – die Beschriftung ist ein Rechts-/Servicelink mit Ziel
+    'unavailable' – die Beschriftung ist ein Pflichtdokument (Impressum,
+                    Datenschutz, Widerruf, AGB), aber weder Theme-Seite noch
+                    Shopify-Richtlinie sind gepflegt; der aufrufende Abschnitt
+                    lässt den Eintrag dann weg, damit kein Menüpunkt auf eine
+                    404-Seite zeigt. Für Versand und Garantie entfällt das:
+                    dort bleibt der im Editor gesetzte Link bestehen
+    ''            – die Beschriftung ist kein Rechts-/Servicelink; der
+                    aufrufende Abschnitt behandelt sie wie jeden anderen Eintrag
+
+  Kopf- und Fußbereich fragen dieselbe Stelle, damit ein und dieselbe
+  Beschriftung überall dasselbe Dokument öffnet. Vorher entschied jeder
+  Abschnitt für sich: Der Fußbereich nahm die Theme-Seite, der Kopfbereich nur
+  die Shopify-Richtlinie – und ließ AGB, Widerruf und Datenschutz ganz weg,
+  solange diese Richtlinien im Adminbereich leer waren.
+
+  Reihenfolge: Zuerst die Theme-Seite, danach die Shopify-Richtlinie. Der
+  Datenschutz dreht sie um, weil Shopify die dort hinterlegte Erklärung auch
+  im Checkout verlinkt und beide Stellen dasselbe Dokument zeigen müssen.
+{%- endcomment -%}
+{%- liquid
+  assign legal_title = title | downcase | strip
+
+  if legal_title contains 'impressum'
+    assign legal_page = pages['impressum']
+    if legal_page != blank
+      echo legal_page.url
+    elsif shop.legal_notice != blank
+      echo shop.legal_notice.url
+    else
+      echo 'unavailable'
+    endif
+
+  elsif legal_title contains 'datenschutz'
+    assign legal_page = pages['datenschutz']
+    if shop.privacy_policy != blank
+      echo shop.privacy_policy.url
+    elsif legal_page != blank
+      echo legal_page.url
+    else
+      echo 'unavailable'
+    endif
+
+  elsif legal_title contains 'widerruf' or legal_title contains 'rückgabe'
+    assign legal_page = pages['widerruf']
+    if legal_page != blank
+      echo legal_page.url
+    elsif shop.refund_policy != blank
+      echo shop.refund_policy.url
+    else
+      echo 'unavailable'
+    endif
+
+  elsif legal_title == 'agb' or legal_title contains 'geschäftsbedingungen'
+    assign legal_page = pages['agb']
+    if legal_page != blank
+      echo legal_page.url
+    elsif shop.terms_of_service != blank
+      echo shop.terms_of_service.url
+    else
+      echo 'unavailable'
+    endif
+
+  elsif legal_title contains 'versand' or legal_title contains 'zahlung'
+    assign legal_page = pages['versand-zahlung']
+    if legal_page != blank
+      echo legal_page.url
+    elsif shop.shipping_policy != blank
+      echo shop.shipping_policy.url
+    endif
+
+  elsif legal_title contains 'garantie' or legal_title contains 'zufrieden'
+    assign legal_page = pages['zufriedenheitsgarantie']
+    if legal_page != blank
+      echo legal_page.url
+    endif
+  endif
+-%}

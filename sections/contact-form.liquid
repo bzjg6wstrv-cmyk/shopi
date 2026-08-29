@@ -44,7 +44,9 @@
           <li>{{ settings.contact_phone }}</li>
           <li>{{ settings.contact_hours }}</li>
         </ul>
-        <p class="demo-flag contact-company__note">{{ 'general.demo_notice' | t }}</p>
+        {%- if settings.show_demo_notice -%}
+          <p class="demo-flag contact-company__note">{{ 'general.demo_notice' | t }}</p>
+        {%- endif -%}
       </div>
     {%- endif -%}
   </div>

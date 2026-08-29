@@ -22,6 +22,9 @@
         "ingredients": {
           "type": "ingredients"
         },
+        "safety": {
+          "type": "safety"
+        },
         "whatsapp": {
           "type": "whatsapp",
           "settings": {
@@ -37,7 +40,8 @@
         "wear",
         "whatsapp",
         "description",
-        "ingredients"
+        "ingredients",
+        "safety"
       ]
     },
     "recommendations": {

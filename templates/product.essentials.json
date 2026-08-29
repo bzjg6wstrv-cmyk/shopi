@@ -21,6 +21,9 @@
         },
         "ingredients": {
           "type": "ingredients"
+        },
+        "safety": {
+          "type": "safety"
         }
       },
       "block_order": [
@@ -28,7 +31,8 @@
         "character",
         "wear",
         "description",
-        "ingredients"
+        "ingredients",
+        "safety"
       ]
     },
     "recommendations": {
