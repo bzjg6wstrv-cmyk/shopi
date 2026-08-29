@@ -1,0 +1,202 @@
+{%- comment -%}
+  Übersetzt die Theme Settings in CSS Custom Properties.
+  Jede Section kann über die Klasse .color-<schema-id> ihr Farbschema wählen.
+  Es gibt bewusst keine hart codierten Markenfarben im Stylesheet.
+{%- endcomment -%}
+{%- liquid
+  assign body_font = settings.font_body
+  assign body_font_bold = body_font | font_modify: 'weight', 'bolder'
+  assign body_font_italic = body_font | font_modify: 'style', 'italic'
+  assign heading_font = settings.font_heading
+
+  assign radius = settings.corner_radius
+  assign button_radius = 0
+  case settings.button_style
+    when 'soft'
+      assign button_radius = 4
+    when 'pill'
+      assign button_radius = 999
+  endcase
+
+  assign button_transform = 'none'
+  if settings.button_uppercase
+    assign button_transform = 'uppercase'
+  endif
+
+  comment
+    Display-Register: Die ganz großen Schlagzeilen laufen entweder in der
+    Sans oder in der Serif – beide sind bereits geladen, es kommt keine
+    dritte Schrift hinzu. Die Sans bekommt eine engere Laufweite und ein
+    höheres Gewicht, sonst wirkt Versalsatz in diesem Grad zu dünn.
+  endcomment
+  assign display_font = heading_font
+  assign display_extra_tracking = '0em'
+  assign display_weight = heading_font.weight
+  if settings.display_font == 'sans'
+    assign display_font = body_font
+    assign display_extra_tracking = '-0.015em'
+    assign display_weight = body_font.weight
+  endif
+-%}
+{{ body_font | font_face: font_display: 'swap' }}
+{{ body_font_bold | font_face: font_display: 'swap' }}
+{{ body_font_italic | font_face: font_display: 'swap' }}
+{{ heading_font | font_face: font_display: 'swap' }}
+
+
+{%- comment -%}
+  Das Farbsystem hat vier Stufen. Aus ihrem Wechsel entsteht der Rhythmus
+  beim Scrollen – nicht aus Rahmen oder Kacheln.
+
+    1  Hauptfläche      #F7F2E8   sehr helles warmes Ivory. Der Ton ist an
+                                  der ausgelieferten Produktfotografie
+                                  gemessen (deren Grund liegt bei #E7DAC8
+                                  bis #E4D5C3) und eine Spur wärmer gefasst
+                                  als zuvor, damit die Bilder ohne sichtbare
+                                  Kante in die Seite übergehen. Es bleibt
+                                  warmes Weiß, kein Beige: 94 % Helligkeit.
+    2  Redaktionell     #EEE6D8   rund 10 % tiefer, warmes Beige. Für
+                                  Bereiche, die sich bewusst absetzen sollen
+                                  (Kennenlernvorteil, Fußbereich).
+    3  Kontrast         #0B0B0A   tiefes Schwarz. Sparsam und dafür stark –
+                                  der Beratungsmoment.
+    4  Stein            #9A9185   für seltene Sonderflächen.
+
+  Zwei Töne begleiten alle Stufen:
+    Sand      #E9E0D0  Grundfläche unter freigestellten Motiven
+    Champagne #B5A080  Akzent – nur als Linie oder auf dunklem Grund
+
+  Zur Lesbarkeit: Warm Grey erreicht auf Ivory nur 2,8:1, Champagne 2,3:1.
+  Auf hellen Flächen läuft gedämpfter Text deshalb in einem dunkleren
+  Warmgrau; Champagne erscheint dort ausschließlich als Linie.
+{%- endcomment -%}
+{%- comment -%}
+  Die Hauptfläche steht bewusst in ZWEI Regeln statt in einer gemeinsamen
+  Selektorliste mit :root. In CSS verwirft ein einziger Fehler in einer
+  Selektorliste die komplette Regel – die helle Grundfläche fiele dann auf
+  das Weiß des Browsers zurück, während die dunklen Stufen (eigene Regeln)
+  weiterlaufen. Genau dieses Bild – schwarze Bereiche richtig, helle Flächen
+  reinweiß – war im Live-Shop zu sehen. Zwei Regeln plus der feste Rückfall
+  in base.css schließen das aus.
+{%- endcomment -%}
+:root {
+  --color-background: 247 242 232;
+  --color-text: 11 11 10;
+  --color-muted: 108 101 90;
+  --color-line: 227 217 199;
+  --color-accent: 181 160 128;
+  --color-stone: 154 145 133;
+  --color-sand: 233 224 208;
+  --color-button: 11 11 10;
+  --color-button-label: 247 242 232;
+}
+.color-scheme,
+.color-scheme-1,
+.color-scheme-ivory {
+  --color-background: 247 242 232;
+  --color-text: 11 11 10;
+  --color-muted: 108 101 90;
+  --color-line: 227 217 199;
+  --color-accent: 181 160 128;
+  --color-stone: 154 145 133;
+  --color-sand: 233 224 208;
+  --color-button: 11 11 10;
+  --color-button-label: 247 242 232;
+}
+.color-scheme-2,
+.color-scheme-ivory-deep {
+  --color-background: 238 230 216;
+  --color-text: 11 11 10;
+  --color-muted: 102 95 84;
+  --color-line: 216 205 185;
+  --color-accent: 168 147 114;
+  --color-stone: 154 145 133;
+  --color-sand: 233 224 208;
+  --color-button: 11 11 10;
+  --color-button-label: 247 242 232;
+}
+.color-scheme-3,
+.color-scheme-ink {
+  --color-background: 11 11 10;
+  --color-text: 247 242 232;
+  --color-muted: 158 149 136;
+  --color-line: 42 40 36;
+  --color-accent: 181 160 128;
+  --color-stone: 154 145 133;
+  --color-sand: 233 224 208;
+  --color-button: 247 242 232;
+  --color-button-label: 11 11 10;
+}
+{%- comment -%}
+  Stein trägt dunkle Schrift, nicht helle: Elfenbein auf Warm Grey erreicht
+  nur 3:1, tiefes Schwarz dagegen 6,3:1. Ein Akzentton ist auf dieser Fläche
+  nicht unterzubringen – dort übernimmt die Textfarbe.
+{%- endcomment -%}
+.color-scheme-4,
+.color-scheme-stone {
+  --color-background: 154 145 133;
+  --color-text: 11 11 10;
+  --color-muted: 46 42 37;
+  --color-line: 133 125 113;
+  --color-accent: 11 11 10;
+  --color-stone: 154 145 133;
+  --color-sand: 233 224 208;
+  --color-button: 11 11 10;
+  --color-button-label: 247 242 232;
+}
+
+{%- comment -%}
+  Klarer Kontrast zwischen zwei hellen Abschnitten: Die Linienfarbe wird
+  etwas dunkler, damit Haarlinien auf Ivory sichtbar bleiben.
+{%- endcomment -%}
+{%- if settings.section_contrast == 'crisp' -%}
+.color-scheme-1 { --color-line: 217 206 189; }
+.color-scheme-2 { --color-line: 208 196 176; }
+{%- endif -%}
+
+
+.color-scheme { background-color: rgb(var(--color-background)); color: rgb(var(--color-text)); }
+
+:root {
+  {%- comment -%}
+    Die Schriftfamilien werden nur ausgegeben, wenn sie sich auch auflösen
+    lassen. Eine leere Familie ergäbe „font-family: , ;" – eine ungültige
+    Angabe, die den gesamten Aufruf verwirft. So greift stattdessen sauber
+    der Ersatzwert im Stylesheet.
+  {%- endcomment -%}
+  {%- if body_font.family != blank -%}
+  --font-body-family: {{ body_font.family }}, {{ body_font.fallback_families }};
+  {%- endif %}
+  --font-body-style: {{ body_font.style | default: 'normal' }};
+  --font-body-weight: {{ body_font.weight | default: 400 }};
+  --body-scale: {{ settings.body_scale | divided_by: 100.0 }};
+
+  {%- if heading_font.family != blank %}
+  --font-heading-family: {{ heading_font.family }}, {{ heading_font.fallback_families }};
+  {%- endif %}
+  --font-heading-style: {{ heading_font.style | default: 'normal' }};
+  --font-heading-weight: {{ heading_font.weight | default: 400 }};
+
+  /* Display-Register – siehe Einstellung „Charakter der Schlagzeilen". */
+  {%- if display_font.family != blank %}
+  --font-display-family: {{ display_font.family }}, {{ display_font.fallback_families }};
+  {%- endif %}
+  --font-display-style: {{ display_font.style | default: 'normal' }};
+  --font-display-weight: {{ display_weight | default: 400 }};
+  --display-extra-tracking: {{ display_extra_tracking }};
+
+  --heading-scale: {{ settings.heading_scale | divided_by: 100.0 }};
+  --heading-tracking: {{ settings.heading_tracking | divided_by: 100.0 }}em;
+  --meta-tracking: {{ settings.meta_tracking | divided_by: 100.0 }}em;
+  --display-tracking: {{ settings.display_tracking | divided_by: 100.0 }}em;
+  --display-leading: {{ settings.display_leading | divided_by: 100.0 }};
+  --wordmark-tracking: {{ settings.wordmark_tracking | divided_by: 100.0 }}em;
+
+  --page-width: {{ settings.page_width }}px;
+  --border-width: {{ settings.border_width }}px;
+  --card-radius: {{ radius }}px;
+  --input-radius: {{ radius }}px;
+  --button-radius: {{ button_radius }}px;
+  --button-padding: {{ settings.button_padding }}px;
+  --button-transform: {{ button_transform }};
+}

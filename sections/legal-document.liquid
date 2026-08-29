@@ -1,0 +1,212 @@
+{%- liquid
+  assign legal_type = section.settings.document_type
+  assign company_name = settings.company_name | default: 'TUKAN Fragrance GmbH'
+  assign company_address = settings.company_address | default: 'Dovemoorstraße 30, 28259 Bremen, Deutschland'
+  assign company_vat = settings.company_vat | default: 'DE463180875'
+  assign company_representative = settings.company_representative | default: 'Ahmed Eke'
+  assign company_register = settings.company_register | default: 'Amtsgericht Bremen · HRB 42508 HB'
+  assign contact_email = settings.contact_email | default: 'info@vent-celeste.de'
+  assign contact_phone = settings.contact_phone | default: '+49 172 8439661'
+-%}
+
+<section class="legal-document section">
+  <div class="page-width page-width--narrow legal-document__inner">
+    {%- case legal_type -%}
+      {%- when 'impressum' -%}
+        <p class="meta meta--muted">RECHTLICHES</p>
+        <h1 class="h2 legal-document__title">Impressum</h1>
+        <div class="legal-document__content rte">
+          <p><strong>VENT CELESTE</strong><br>ist ein Angebot der</p>
+          <p><strong>{{ company_name | escape }}</strong><br>{{ company_address | escape }}</p>
+
+          <h2>Vertretung</h2>
+          <p>Geschäftsführer: {{ company_representative | escape }}</p>
+
+          <h2>Kontakt</h2>
+          <p>Telefon: <a href="tel:{{ contact_phone | remove: ' ' | escape }}">{{ contact_phone | escape }}</a><br>
+          E-Mail: <a href="mailto:{{ contact_email | escape }}">{{ contact_email | escape }}</a></p>
+
+          <h2>Handelsregister</h2>
+          <p>{{ company_register | escape }}</p>
+
+          <h2>Umsatzsteuer</h2>
+          <p>Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG: {{ company_vat | escape }}</p>
+        </div>
+
+      {%- when 'versand' -%}
+        <p class="meta meta--muted">SERVICE &amp; BESTELLUNG</p>
+        <h1 class="h2 legal-document__title">Versand &amp; Zahlung</h1>
+        <div class="legal-document__content rte">
+          <h2>Versandgebiet</h2>
+          <p>Wir liefern innerhalb Deutschlands sowie in die Mitgliedstaaten der Europäischen Union.</p>
+
+          <h2>Versandkosten</h2>
+          <div class="legal-document__facts">
+            <div><span>Deutschland</span><strong>4,99 €</strong></div>
+            <div><span>EU</span><strong>4,99 €</strong></div>
+          </div>
+          <p>Die jeweils anfallenden Versandkosten werden vor Abschluss der Bestellung im Checkout angezeigt.</p>
+
+          <h2>Lieferzeiten</h2>
+          <div class="legal-document__facts">
+            <div><span>Deutschland</span><strong>ca. 2–4 Werktage</strong></div>
+            <div><span>EU</span><strong>ca. 7–10 Werktage</strong></div>
+          </div>
+          <p>Bei Zahlung per Vorkasse beginnt die Lieferzeit nach Eingang der Zahlung. Werktage sind Montag bis Freitag, gesetzliche Feiertage ausgenommen. Sollte es im Einzelfall zu Verzögerungen kommen, informieren wir dich schnellstmöglich.</p>
+
+          <h2>Zahlungsmöglichkeiten</h2>
+          <p>Je nach Verfügbarkeit im Checkout bieten wir Apple Pay, PayPal, Klarna, Kreditkarte und Vorkasse an. Bei Zahlungsarten, die über externe Zahlungsdienstleister abgewickelt werden, können ergänzend deren Bedingungen gelten.</p>
+
+          <h2>Preise</h2>
+          <p>Alle im Shop angegebenen Preise verstehen sich einschließlich der gesetzlichen Umsatzsteuer. Die für deine Bestellung maßgeblichen Versandkosten und verfügbaren Zahlungsarten werden im Checkout angezeigt.</p>
+        </div>
+
+      {%- when 'garantie' -%}
+        <p class="meta meta--muted">VENT CELESTE VERSPRECHEN</p>
+        <h1 class="h2 legal-document__title">30 Tage zufrieden oder Geld zurück</h1>
+        <div class="legal-document__content rte">
+          <p>Wir möchten, dass du deinen VENT CELESTE Duft gerne trägst. Deshalb bieten wir dir zusätzlich zu deinen gesetzlichen Rechten eine freiwillige 30-Tage-Zufriedenheitsgarantie.</p>
+
+          <h2>1. Geltungsbereich</h2>
+          <p>Die Garantie gilt einmalig für die erste Bestellung eines Kunden und für Lieferungen innerhalb unseres Liefergebiets. Sie gilt für alle Duftprodukte dieser ersten Bestellung.</p>
+
+          <h2>2. Dauer</h2>
+          <p>Die Garantiefrist beträgt 30 Tage ab Erhalt der Bestellung. Bei einer auf mehrere Sendungen aufgeteilten Bestellung beginnt die Frist mit Erhalt der letzten zur Bestellung gehörenden Ware.</p>
+
+          <h2>3. Testen erlaubt</h2>
+          <p>Die Parfums dürfen innerhalb der Garantiefrist geöffnet und getestet werden. Wenn du mit einem oder mehreren Düften aus deiner ersten Bestellung nicht zufrieden bist, kannst du diese zurücksenden. Du kannst auch alle Düfte deiner ersten Bestellung zurückgeben.</p>
+
+          <h2>4. Rücksendung</h2>
+          <p>Bitte informiere uns vor der Rücksendung per E-Mail an <a href="mailto:{{ contact_email | escape }}">{{ contact_email | escape }}</a>. Die Ware ist an folgende Adresse zurückzusenden:</p>
+          <p><strong>{{ company_name | escape }}</strong><br>{{ company_address | escape }}</p>
+          <p>Die unmittelbaren Kosten der Rücksendung trägt der Kunde.</p>
+
+          <h2>5. Erstattung</h2>
+          <p>Nach Eingang der zurückgesendeten Produkte erstatten wir den tatsächlich für diese Produkte gezahlten Kaufpreis über das ursprünglich verwendete Zahlungsmittel. Im Rahmen dieser freiwilligen Garantie werden die ursprünglichen Versandkosten nicht erstattet. Gesetzliche Ansprüche, insbesondere im Rahmen eines wirksamen Widerrufs, bleiben davon unberührt.</p>
+
+          <h2>6. Verhältnis zu gesetzlichen Rechten</h2>
+          <p>Diese Zufriedenheitsgarantie ist eine freiwillige zusätzliche Leistung. Deine gesetzlichen Rechte, insbesondere dein gesetzliches Widerrufsrecht und deine gesetzlichen Mängelrechte, werden durch diese Garantie nicht eingeschränkt.</p>
+
+          <h2>Garantiegeber</h2>
+          <p><strong>{{ company_name | escape }}</strong><br>{{ company_address | escape }}<br>E-Mail: <a href="mailto:{{ contact_email | escape }}">{{ contact_email | escape }}</a></p>
+        </div>
+
+      {%- when 'widerruf' -%}
+        <p class="meta meta--muted">RECHTLICHES</p>
+        <h1 class="h2 legal-document__title">Widerrufsbelehrung</h1>
+        <div class="legal-document__content rte">
+          <h2>Widerrufsrecht</h2>
+          <p>Sie haben das Recht, binnen vierzehn Tagen ohne Angabe von Gründen diesen Vertrag zu widerrufen.</p>
+          <p>Die Widerrufsfrist beträgt vierzehn Tage ab dem Tag, an dem Sie oder ein von Ihnen benannter Dritter, der nicht der Beförderer ist, die Ware in Besitz genommen haben bzw. hat. Wenn Sie im Rahmen einer einheitlichen Bestellung mehrere Waren bestellt haben und diese getrennt geliefert werden, beginnt die Frist mit dem Tag, an dem Sie oder ein von Ihnen benannter Dritter, der nicht der Beförderer ist, die letzte Ware in Besitz genommen haben bzw. hat.</p>
+
+          <p>Um Ihr Widerrufsrecht auszuüben, müssen Sie uns</p>
+          <p><strong>{{ company_name | escape }}</strong><br>{{ company_address | escape }}<br>
+          Telefon: {{ contact_phone | escape }}<br>
+          E-Mail: <a href="mailto:{{ contact_email | escape }}">{{ contact_email | escape }}</a></p>
+          <p>mittels einer eindeutigen Erklärung (z. B. ein mit der Post versandter Brief oder eine E-Mail) über Ihren Entschluss, diesen Vertrag zu widerrufen, informieren. Sie können dafür das unten aufgeführte Muster-Widerrufsformular verwenden, das jedoch nicht vorgeschrieben ist.</p>
+
+          {%- if settings.withdrawal_url != blank -%}
+            <p>Sie können Ihr Widerrufsrecht auch online über unsere elektronische Widerrufsfunktion ausüben. Wenn Sie diese Online-Funktion nutzen, erhalten Sie unverzüglich auf einem dauerhaften Datenträger (z. B. per E-Mail) eine Eingangsbestätigung mit Informationen zum Inhalt Ihrer Widerrufserklärung sowie dem Datum und der Uhrzeit ihres Eingangs.</p>
+            <p><a class="button button--primary legal-document__withdrawal" href="{{ settings.withdrawal_url }}">Vertrag widerrufen</a></p>
+          {%- endif -%}
+
+          <p>Zur Wahrung der Widerrufsfrist reicht es aus, dass Sie die Mitteilung über die Ausübung des Widerrufsrechts vor Ablauf der Widerrufsfrist absenden.</p>
+
+          <h2>Folgen des Widerrufs</h2>
+          <p>Wenn Sie diesen Vertrag widerrufen, haben wir Ihnen alle Zahlungen, die wir von Ihnen erhalten haben, einschließlich der Lieferkosten (mit Ausnahme der zusätzlichen Kosten, die sich daraus ergeben, dass Sie eine andere Art der Lieferung als die von uns angebotene, günstigste Standardlieferung gewählt haben), unverzüglich und spätestens binnen vierzehn Tagen ab dem Tag zurückzuzahlen, an dem die Mitteilung über Ihren Widerruf dieses Vertrags bei uns eingegangen ist.</p>
+          <p>Für diese Rückzahlung verwenden wir dasselbe Zahlungsmittel, das Sie bei der ursprünglichen Transaktion eingesetzt haben, es sei denn, mit Ihnen wurde ausdrücklich etwas anderes vereinbart; in keinem Fall werden Ihnen wegen dieser Rückzahlung Entgelte berechnet.</p>
+          <p>Wir können die Rückzahlung verweigern, bis wir die Waren wieder zurückerhalten haben oder bis Sie den Nachweis erbracht haben, dass Sie die Waren zurückgesandt haben, je nachdem, welches der frühere Zeitpunkt ist.</p>
+          <p>Sie haben die Waren unverzüglich und in jedem Fall spätestens binnen vierzehn Tagen ab dem Tag, an dem Sie uns über den Widerruf dieses Vertrags unterrichten, an uns zurückzusenden oder zu übergeben:</p>
+          <p><strong>{{ company_name | escape }}</strong><br>{{ company_address | escape }}</p>
+          <p>Die Frist ist gewahrt, wenn Sie die Waren vor Ablauf der Frist von vierzehn Tagen absenden.</p>
+          <p>Sie tragen die unmittelbaren Kosten der Rücksendung der Waren.</p>
+          <p>Sie müssen für einen etwaigen Wertverlust der Waren nur aufkommen, wenn dieser Wertverlust auf einen zur Prüfung der Beschaffenheit, Eigenschaften und Funktionsweise der Waren nicht notwendigen Umgang mit ihnen zurückzuführen ist.</p>
+
+          <hr>
+          <h2>Muster-Widerrufsformular</h2>
+          <p>(Wenn Sie den Vertrag widerrufen wollen, dann füllen Sie bitte dieses Formular aus und senden Sie es zurück.)</p>
+          <p>An:<br><strong>{{ company_name | escape }}</strong><br>{{ company_address | escape }}<br>E-Mail: {{ contact_email | escape }}</p>
+          <p>Hiermit widerrufe(n) ich/wir (*) den von mir/uns (*) abgeschlossenen Vertrag über den Kauf der folgenden Waren (*) / die Erbringung der folgenden Dienstleistung (*):</p>
+          <p>________________________________________</p>
+          <p>Bestellt am (*) / erhalten am (*): ________________________________________</p>
+          <p>Name des/der Verbraucher(s): ________________________________________</p>
+          <p>Anschrift des/der Verbraucher(s): ________________________________________</p>
+          <p>Unterschrift des/der Verbraucher(s) (nur bei Mitteilung auf Papier): ________________________________________</p>
+          <p>Datum: ________________________________________</p>
+          <p><small>(*) Unzutreffendes streichen.</small></p>
+        </div>
+
+      {%- when 'agb' -%}
+        <p class="meta meta--muted">RECHTLICHES</p>
+        <h1 class="h2 legal-document__title">Allgemeine Geschäftsbedingungen</h1>
+        <div class="legal-document__content rte">
+          <h2>1. Geltungsbereich und Vertragspartner</h2>
+          <p>Diese Allgemeinen Geschäftsbedingungen gelten für Bestellungen über den Online-Shop VENT CELESTE. Vertragspartner ist <strong>{{ company_name | escape }}</strong>, {{ company_address | escape }}.</p>
+
+          <h2>2. Vertragsschluss</h2>
+          <p>Die Darstellung der Produkte im Online-Shop stellt noch kein rechtlich bindendes Angebot dar. Durch Abschluss des Bestellvorgangs und Betätigung der hierfür vorgesehenen Bestellschaltfläche geben Sie eine verbindliche Bestellung der im Warenkorb enthaltenen Produkte ab. Der Eingang der Bestellung wird elektronisch bestätigt. Der Vertrag kommt nach Maßgabe des im Checkout angezeigten Bestellablaufs zustande.</p>
+
+          <h2>3. Vertragssprache und Bestelldaten</h2>
+          <p>Die Vertragssprache ist Deutsch. Die Bestelldaten werden im Rahmen der gesetzlichen Aufbewahrungsfristen gespeichert. Sie erhalten nach der Bestellung eine Bestätigung an die von Ihnen angegebene E-Mail-Adresse. Diese AGB können vor Abgabe der Bestellung auf unserer Website abgerufen und gespeichert werden.</p>
+
+          <h2>4. Preise und Versandkosten</h2>
+          <p>Alle angegebenen Preise enthalten die jeweils geltende gesetzliche Umsatzsteuer. Zusätzlich können Versandkosten anfallen. Die für Ihre Bestellung anfallenden Versandkosten werden vor Abschluss der Bestellung im Checkout angezeigt.</p>
+
+          <h2>5. Zahlung</h2>
+          <p>Die im Shop verfügbaren Zahlungsmethoden werden im Checkout angezeigt. Je nach Verfügbarkeit können insbesondere Apple Pay, PayPal, Klarna, Kreditkarte und Vorkasse angeboten werden. Bei Nutzung eines externen Zahlungsdienstleisters können ergänzend dessen Bedingungen gelten. Bei Vorkasse wird die Bestellung nach Zahlungseingang bearbeitet.</p>
+
+          <h2>6. Lieferung</h2>
+          <p>Die Lieferung erfolgt innerhalb Deutschlands sowie in Mitgliedstaaten der Europäischen Union. Die reguläre Lieferzeit beträgt innerhalb Deutschlands ca. 2–4 Werktage und innerhalb der EU ca. 7–10 Werktage. Bei Vorkasse beginnt die Lieferzeit nach Zahlungseingang.</p>
+
+          <h2>7. Eigentumsvorbehalt</h2>
+          <p>Die Ware bleibt bis zur vollständigen Zahlung unser Eigentum.</p>
+
+          <h2>8. Widerrufsrecht</h2>
+          <p>Verbrauchern steht bei Vorliegen der gesetzlichen Voraussetzungen ein Widerrufsrecht zu. Einzelheiten ergeben sich aus unserer gesonderten Widerrufsbelehrung.</p>
+
+          <h2>9. Gesetzliche Mängelrechte</h2>
+          <p>Es gelten die gesetzlichen Mängelrechte. Unsere freiwillige Zufriedenheitsgarantie schränkt diese Rechte nicht ein.</p>
+
+          <h2>10. Freiwillige 30-Tage-Zufriedenheitsgarantie</h2>
+          <p>Für die erste Bestellung eines Kunden gewährt VENT CELESTE eine freiwillige 30-Tage-Zufriedenheitsgarantie nach den gesondert veröffentlichten Garantiebedingungen.</p>
+
+          <h2>11. Neukundenrabatt</h2>
+          <p>VENT CELESTE kann Neukunden einen Rabatt von 20 % auf ihre erste Bestellung gewähren. Der Rabatt ist einmalig pro Kunde und nicht mit anderen Rabattaktionen kombinierbar. Maßgeblich sind die im Shop zum Zeitpunkt der Bestellung angezeigten Aktionsbedingungen. Die Prüfung und Anwendung eines automatischen Rabatts erfolgt im Checkout.</p>
+
+          <h2>12. Anwendbares Recht</h2>
+          <p>Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts. Gegenüber Verbrauchern gilt diese Rechtswahl nur insoweit, als dadurch nicht der Schutz zwingender Bestimmungen des Staates entzogen wird, in dem der Verbraucher seinen gewöhnlichen Aufenthalt hat.</p>
+
+          <h2>13. Gerichtsstand für Unternehmer</h2>
+          <p>Ist der Kunde Kaufmann, juristische Person des öffentlichen Rechts oder öffentlich-rechtliches Sondervermögen, ist für Streitigkeiten aus Vertragsverhältnissen mit uns Bremen Gerichtsstand. Gesetzliche ausschließliche Gerichtsstände bleiben unberührt.</p>
+        </div>
+
+      {%- else -%}
+        <h1 class="h2 legal-document__title">{{ page.title | escape }}</h1>
+        <div class="legal-document__content rte">{{ page.content }}</div>
+    {%- endcase -%}
+
+    <p class="legal-document__updated">Stand: August 2026</p>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Rechtstext",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "document_type",
+      "label": "Dokument",
+      "options": [
+        { "value": "impressum", "label": "Impressum" },
+        { "value": "versand", "label": "Versand & Zahlung" },
+        { "value": "garantie", "label": "Zufriedenheitsgarantie" },
+        { "value": "widerruf", "label": "Widerrufsbelehrung" },
+        { "value": "agb", "label": "AGB" }
+      ],
+      "default": "impressum"
+    }
+  ]
+}
+{% endschema %}

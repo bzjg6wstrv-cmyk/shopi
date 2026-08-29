@@ -1,0 +1,186 @@
+{{ 'section-discovery.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  Discovery Set – fünf Scent Codes eingeben.
+
+  Bewusst dieselbe Eingabe- und Normalisierungslogik wie im übrigen Shop:
+  47, 047, vc47 und VC-047 führen alle zum selben Code. Das passt zum
+  Beratungsmodell und braucht keine Produktliste, aus der ausgewählt wird.
+
+  Die fünf Codes werden als Positionsangaben an das native Shopify-Produkt-
+  formular gehängt und sind damit im Warenkorb, im Checkout, in der Bestell-
+  bestätigung, im Admin und in jedem Export sichtbar.
+
+  Bekannte Grenze: Der Bestand der einzelnen Proben wird nicht gebucht –
+  gebucht wird der Bestand des Set-Produkts. Siehe README.
+{%- endcomment -%}
+{%- liquid
+  assign max_picks = section.settings.max_picks
+  assign current_variant = product.selected_or_first_available_variant
+  assign prefix = settings.scent_code_prefix | default: 'VC'
+-%}
+<section class="section">
+  <div class="page-width">
+    <div class="discovery">
+      <div class="discovery__intro">
+        {%- if product.featured_media -%}
+          <div class="discovery__media">
+            <img
+              src="{{ product.featured_media | image_url: width: 1000 }}"
+              srcset="{{ product.featured_media | image_url: width: 500 }} 500w,
+                      {{ product.featured_media | image_url: width: 1000 }} 1000w"
+              sizes="(min-width: 990px) 40vw, 100vw"
+              alt="{{ product.featured_media.alt | default: product.title | escape }}"
+              width="{{ product.featured_media.width }}"
+              height="{{ product.featured_media.height }}"
+              loading="eager"
+              fetchpriority="high"
+            >
+          </div>
+        {%- endif -%}
+
+        <h1 class="h2 mt-lg">{{ product.title }}</h1>
+
+        <div class="product__price">
+          {% render 'product-price', variant: current_variant, product: product %}
+        </div>
+
+        {%- if product.description != blank -%}
+          <div class="rte measure mt-md">{{ product.description }}</div>
+        {%- endif -%}
+
+        <div class="picker__counter" aria-hidden="true">
+          <span class="picker__counter-value" data-picker-count>0</span>
+          <span class="picker__counter-sep">/</span>
+          <span class="picker__counter-max">{{ max_picks }}</span>
+        </div>
+        <p class="visually-hidden" role="status" aria-live="polite" data-picker-counter></p>
+
+        <p class="product__note mt-md">
+          {{ settings.tax_note }}
+          {%- if settings.shipping_page != blank -%}
+            , <a class="link-inline" href="{{ settings.shipping_page }}">{{ 'sections.cart.taxes_note' | t }}</a>
+          {%- endif -%}
+        </p>
+
+        {%- if section.settings.voucher_note != blank -%}
+          <div class="concentration-note mt-lg">
+            <div class="rte text-body-sm">{{ section.settings.voucher_note }}</div>
+          </div>
+        {%- endif -%}
+      </div>
+
+      <div>
+        <p class="eyebrow">{{ 'sections.discovery_set.select_prompt' | t }}</p>
+
+        <div class="js-hidden">
+          <p class="note-placeholder">{{ 'sections.discovery_set.no_js' | t }}</p>
+        </div>
+
+        <form
+          method="post"
+          action="{{ routes.cart_add_url }}"
+          id="DiscoveryForm"
+          class="js-only"
+          data-discovery-form
+          data-max="{{ max_picks }}"
+        >
+          <input type="hidden" name="id" value="{{ current_variant.id }}">
+          <input type="hidden" name="quantity" value="1">
+          <div data-discovery-properties hidden></div>
+
+          <ol class="code-list">
+            {%- for i in (1..max_picks) -%}
+              {%- assign slot_label = 'sections.discovery_set.code_label' | t | replace: '__INDEX__', forloop.index -%}
+              <li class="code-slot">
+                <label class="code-slot__label" for="DiscoveryCode-{{ forloop.index }}">{{ slot_label }}</label>
+                <div class="code-slot__row" data-slot-row>
+                  <span class="code-slot__prefix" aria-hidden="true">{{ prefix }}-</span>
+                  <input
+                    class="code-slot__input"
+                    id="DiscoveryCode-{{ forloop.index }}"
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    autocorrect="off"
+                    spellcheck="false"
+                    maxlength="8"
+                    placeholder="{{ 'sections.scent_code.placeholder' | t }}"
+                    aria-describedby="DiscoveryHint-{{ forloop.index }}"
+                    data-discovery-code
+                  >
+                  <span class="code-slot__mark" data-slot-mark hidden aria-hidden="true">
+                    {% render 'icon', name: 'check' %}
+                  </span>
+                </div>
+                <p class="code-slot__hint" id="DiscoveryHint-{{ forloop.index }}" data-slot-hint></p>
+              </li>
+            {%- endfor -%}
+          </ol>
+
+          <div class="product-form__actions mt-lg">
+            <button type="submit" class="button" data-discovery-submit disabled>
+              {{ 'sections.discovery_set.add_to_cart' | t }}
+            </button>
+            <p class="field__error" data-form-error hidden></p>
+          </div>
+
+          <p class="discovery__note">{{ 'sections.discovery_set.note' | t }}</p>
+        </form>
+
+        {%- if settings.whatsapp_enabled -%}
+          <p class="discovery__note">
+            {{ section.settings.help_text | escape }}
+            {% render 'whatsapp-link', class: 'link-underline', label: section.settings.help_label %}
+          </p>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  window.VCDiscoveryStrings = {
+    selected: {{ 'sections.discovery_set.selected_count' | t | json }},
+    incomplete: {{ 'sections.discovery_set.incomplete' | t | json }},
+    duplicate: {{ 'sections.discovery_set.duplicate' | t | json }},
+    unknown: {{ 'sections.discovery_set.unknown' | t | json }},
+    label: {{ 'sections.discovery_set.step_label' | t | json }}
+  };
+</script>
+<script src="{{ 'discovery-set.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Discovery Set",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "max_picks",
+      "min": 3,
+      "max": 8,
+      "step": 1,
+      "label": "Anzahl der Codes",
+      "default": 5
+    },
+    {
+      "type": "text",
+      "id": "help_text",
+      "label": "Hinweis unter dem Formular",
+      "default": "Noch keine fünf Codes?"
+    },
+    {
+      "type": "text",
+      "id": "help_label",
+      "label": "Textlink zur Beratung",
+      "default": "Duftberatung starten"
+    },
+    {
+      "type": "richtext",
+      "id": "voucher_note",
+      "label": "Hinweisbox (optional)",
+      "info": "Vorbereitet für einen späteren Gutschein-Hinweis. Der Rabatt selbst wird als regulärer Shopify-Rabattcode angelegt."
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,115 @@
+/* Vertrauenszeile.
+
+   Ein Versprechen, ein Satz dazu, darunter drei kurze Angaben. Bewusst
+   typografisch: keine Symbole, keine Kacheln, keine farbigen Plaketten.
+   Getrennt wird durch Haarlinien, gewichtet durch Schriftgrad. */
+/* Der Abschnitt steht jetzt weit oben – gleich nach den Bestsellern und vor
+   dem Beratungsmoment. Dort muss er Gewicht haben, ohne laut zu werden: Er
+   bekommt die mittlere Abschnittsdichte statt der kleinen und eine
+   Überschrift eine Stufe größer. Farbe, Rahmen und Flächen bleiben, wie sie
+   sind – die Wirkung kommt aus Raum und Schriftgrad. */
+.trust-section { padding-block: var(--sect-md); }
+@media (min-width: 750px) {
+  .trust-section { padding-block: var(--sect-lg); }
+}
+
+.trust {
+  display: grid;
+  gap: var(--space-lg);
+  padding-top: var(--space-xl);
+  border-top: var(--hair);
+}
+
+.trust__heading {
+  font-family: var(--font-heading-family, Georgia, serif);
+  font-weight: var(--font-heading-weight);
+  font-size: clamp(1.75rem, 1.25rem + 2.1vw, 2.75rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+  max-width: 20ch;
+}
+
+.trust__text {
+  color: rgb(var(--color-muted));
+  font-size: clamp(1rem, 0.94rem + 0.3vw, 1.125rem);
+  line-height: 1.55;
+  max-width: 44ch;
+}
+
+.trust__link {
+  justify-self: start;
+  font-size: 0.75rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+  text-decoration: underline;
+  text-underline-offset: 0.4em;
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+}
+.trust__link:hover { color: rgb(var(--color-text)); }
+
+/* Die Angaben bilden eine Leiste: drei gleich breite Spalten nebeneinander,
+   auch auf dem Telefon. Das spart gegenüber einer Liste untereinander rund
+   zwei Drittel der Höhe und liest sich als eine Aussage, nicht als
+   Aufzählung.
+
+   Getrennt wird ausschließlich durch feine Linien – eine waagerechte über
+   der Leiste und senkrechte zwischen den Spalten. Keine Kacheln, keine
+   Symbole, keine Plaketten, keine Rundungen, keine Schatten. */
+.trust__points {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin-top: var(--space-xs);
+  border-top: var(--hair);
+}
+.trust__point {
+  padding: var(--space-sm) var(--space-sm) 0 0;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+  text-wrap: balance;
+}
+/* Die senkrechte Linie steht zwischen den Spalten, nicht außen: Sie trennt,
+   sie rahmt nicht ein. */
+.trust__point + .trust__point {
+  padding-left: var(--space-sm);
+  border-left: var(--hair);
+}
+
+@media (min-width: 430px) {
+  .trust__point {
+    font-size: 0.75rem;
+    letter-spacing: var(--meta-tracking);
+    padding-right: var(--space-md);
+  }
+  .trust__point + .trust__point { padding-left: var(--space-md); }
+}
+
+@media (min-width: 750px) {
+  .trust {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: clamp(2rem, 5vw, 4.5rem);
+    align-items: start;
+    padding-top: var(--space-xl);
+  }
+  .trust__heading { grid-row: 1 / span 2; align-self: center; }
+  .trust__points {
+    grid-column: 1 / -1;
+    margin-top: var(--space-md);
+  }
+  .trust__point { padding-top: var(--space-md); padding-right: var(--space-xl); }
+  .trust__point + .trust__point { padding-left: var(--space-xl); }
+}
+
+/* Micro-Polish · Auch hier lagen zwei Rahmen übereinander: 38 px am
+   Abschnitt und 32 px am .trust-Block. Der äußere gibt nach, der Block
+   selbst und seine Typografie bleiben, wie sie sind. */
+@media (max-width: 749px) {
+  .trust-section { padding-block-start: 1.25rem; }
+}

@@ -1,0 +1,3336 @@
+/* ==========================================================================
+   VENT CELESTE – Basis-Stylesheet
+   Aufbau: 1 Reset · 2 Tokens · 3 Typografie · 4 Layout · 5 Buttons & Formulare
+           6 Header · 7 Footer · 8 Produktkarte · 9 Hilfsklassen · 10 A11y
+   Farben, Schriften, Radius und Seitenbreite kommen aus den Theme Settings
+   (siehe snippets/css-variables.liquid). Hier steht kein fester Markenwert.
+
+   Gestaltungsregeln dieser Fassung:
+   · Struktur entsteht aus Haarlinie und Weißraum, nicht aus Karten, Rahmen,
+     Schatten oder gefüllten Flächen.
+   · Es gibt genau eine Linienstärke und genau eine Akzentfarbe. Der Akzent
+     markiert Zustände, er dekoriert nicht.
+   · Kompositionen sind asymmetrisch: Inhalte sitzen auf festen Spalten,
+     nicht in der Mitte.
+   · Bewegung liegt zwischen 160 und 350 ms und betrifft nur transform und
+     opacity.
+   ========================================================================== */
+
+/* 1 Reset ---------------------------------------------------------------- */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+/* Fester Rückfall für die Grundfläche. Er greift nur, wenn die
+   Token-Regeln aus snippets/css-variables.liquid gar nicht ankommen –
+   dann steht die Seite trotzdem auf warmem Ivory und nicht auf dem
+   Reinweiß des Browsers. */
+html {
+  -webkit-text-size-adjust: 100%;
+  background-color: rgb(247 242 232);
+}
+
+body,
+h1, h2, h3, h4, h5, h6,
+p, figure, blockquote, dl, dd, ul, ol { margin: 0; }
+
+ul, ol { padding: 0; list-style: none; }
+
+img, picture, svg, video { display: block; max-width: 100%; }
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+
+a { color: inherit; text-decoration: none; }
+
+table { border-collapse: collapse; width: 100%; }
+
+summary { cursor: pointer; list-style: none; }
+summary::-webkit-details-marker { display: none; }
+
+/* 2 Tokens --------------------------------------------------------------- */
+/* Das gesamte Theme rechnet mit dieser Liste. Kein Abschnitt erfindet eigene
+   Abstände, Größen oder Zeiten. */
+:root {
+  /* --- Raum -------------------------------------------------------------
+     8-px-System. Die Werte darüber hinaus sind bewusst grob gestuft: Große
+     Sprünge erzeugen Rhythmus, kleine Sprünge erzeugen Matsch. */
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+  --space-4xl: 6rem;
+  --space-5xl: 8rem;
+
+  /* --- Abschnittsrhythmus -----------------------------------------------
+     Fünf Dichten statt einer. Erst dadurch bekommt die Startseite beim
+     Scrollen einen Takt: laute Bereiche atmen, ruhige Bereiche verdichten. */
+  --sect-xs: clamp(1.75rem, 4vw, 3rem);
+  --sect-sm: clamp(2.5rem, 5vw, 4.5rem);
+  --sect-md: clamp(3.5rem, 7vw, 7rem);
+  --sect-lg: clamp(4.5rem, 9vw, 9.5rem);
+  --sect-xl: clamp(6rem, 12vw, 13rem);
+
+  /* Rückwärtskompatible Namen – ältere Abschnitte greifen darauf zu. */
+  --section-space: var(--sect-md);
+  --section-space-tight: var(--sect-sm);
+
+  /* --- Breiten -----------------------------------------------------------
+     Drei Stufen. „page" ist der Regelfall aus den Theme Settings, „wide"
+     nutzt große Bildschirme für Bild- und Editorial-Momente, „text" hält
+     Fließtext lesbar, egal wie breit der Container ist. */
+  --w-page: var(--page-width, 1440px);
+  --w-wide: 1760px;
+  --w-text: 34em;
+  --w-text-narrow: 26em;
+
+  /* --- Linien ------------------------------------------------------------
+     Genau eine Stärke. Abgrenzung entsteht über Weißraum und Fläche,
+     nicht über Kanten oder Schatten. */
+  --hair: var(--border-width) solid rgb(var(--color-line));
+  --hair-strong: var(--border-width) solid rgb(var(--color-text) / 0.3);
+  --hair-accent: var(--border-width) solid rgb(var(--color-accent));
+
+  /* --- Raster ------------------------------------------------------------ */
+  --col: minmax(0, 1fr);
+  --grid-gap: clamp(1rem, 2.5vw, 2rem);
+
+  /* --- Bildformate -------------------------------------------------------
+     Vier feste Verhältnisse. Nicht jeder Abschnitt erfindet ein eigenes. */
+  --ratio-portrait: 3 / 4;
+  --ratio-tall: 2 / 3;
+  --ratio-square: 1 / 1;
+  --ratio-wide: 16 / 10;
+  --ratio-cinema: 21 / 9;
+
+  /* --- Bewegung ----------------------------------------------------------
+     Eine Kurve, vier Dauern. Alles zwischen 160 und 800 ms. */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 160ms;
+  --dur: 260ms;
+  --dur-slow: 480ms;
+  --dur-reveal: 720ms;
+
+  /* --- Ebenen ------------------------------------------------------------ */
+  --z-header: 40;
+  --z-sticky-bar: 50;
+  --z-overlay: 60;
+  --z-drawer: 70;
+  --z-skip: 100;
+
+  --focus-width: 2px;
+  --focus-offset: 3px;
+}
+
+/* Auf Telefonen wird der Rhythmus enger gefasst – die Stufen bleiben
+   erhalten, sie liegen nur dichter beieinander.
+
+   Die Werte sind gegenüber der Vorfassung um rund 15 % gestrafft. Zwei
+   Abschnitte mit demselben Seitenton standen sonst mit über 130 px leerer
+   Fläche zwischen sich; das las sich nicht als Ruhe, sondern als Lücke. */
+@media (max-width: 749px) {
+  :root {
+    --sect-xs: 1.25rem;
+    --sect-sm: 1.75rem;
+    --sect-md: 2.375rem;
+    --sect-lg: 3rem;
+    --sect-xl: 3.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 1ms; --dur: 1ms; --dur-slow: 1ms; --dur-reveal: 1ms; }
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 3 Typografie ----------------------------------------------------------- */
+/* Drei Register, klar getrennt:
+
+     Display  – der Markenauftritt. Sehr groß, versal, eng gesetzt.
+     Serif    – Produktnamen, redaktionelle Überschriften, Zitate.
+     Sans     – Fließtext, Navigation, Preise, Formulare, Auszeichnungen.
+
+   Welche Schrift das Display-Register bedient, entscheidet die Einstellung
+   „Charakter der Schlagzeilen": die Sans wirkt modisch und gegenwärtig, die
+   Serif klassisch-redaktionell. Beide Familien kommen aus dem vorhandenen
+   Shopify-Schriftwähler – es wird keine zusätzliche Schrift geladen. */
+body {
+  font-family: var(--font-body-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif);
+  font-weight: var(--font-body-weight);
+  font-style: var(--font-body-style);
+  font-size: calc(1.0625rem * var(--body-scale, 1));
+  line-height: 1.6;
+  color: rgb(var(--color-text, 11 11 10));
+  background-color: rgb(var(--color-background, 247 242 232));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4 {
+  font-family: var(--font-heading-family, Georgia, 'Times New Roman', serif);
+  font-weight: var(--font-heading-weight);
+  font-style: var(--font-heading-style);
+  letter-spacing: var(--heading-tracking);
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+/* Größensprünge statt Größenstufen. Zwischen h1 und h4 liegt Faktor vier –
+   dadurch entsteht Hierarchie, ohne dass irgendwo ausgezeichnet werden muss. */
+.h1, h1, .h2, h2, .h3, h3, .h4, h4 { font-size: calc(var(--_fs) * var(--heading-scale, 1)); }
+.h1, h1 { --_fs: clamp(2.25rem, 1.35rem + 3.8vw, 4.5rem); letter-spacing: calc(var(--heading-tracking) - 0.01em); }
+.h2, h2 { --_fs: clamp(1.75rem, 1.15rem + 2.4vw, 2.875rem); }
+.h3, h3 { --_fs: clamp(1.3125rem, 1.1rem + 1vw, 1.75rem); line-height: 1.15; }
+.h4, h4 { --_fs: clamp(1.0625rem, 1rem + 0.35vw, 1.3125rem); line-height: 1.25; }
+
+p { text-wrap: pretty; }
+
+/* Vorspann unter einer Schlagzeile. Bewusst größer als Fließtext. */
+.lede {
+  font-size: clamp(1.0625rem, 0.98rem + 0.5vw, 1.375rem);
+  line-height: 1.5;
+  max-width: 40ch;
+}
+.text-lead { font-size: clamp(1.0625rem, 1rem + 0.4vw, 1.3125rem); line-height: 1.55; }
+.text-body-sm { font-size: 0.9375rem; }
+
+/* Auszeichnungstypografie – der eigentliche Träger der Wertigkeit.
+   Klein, versal, leicht gesperrt. Sie kommt überall dort zum Einsatz, wo
+   sonst ein Symbol oder eine Kapsel stünde.
+
+   Bewusst nicht kleiner als 11 px und bewusst ohne zusätzliche Sperrung
+   über der Grundeinstellung: Sehr kleine, sehr weit auseinandergezogene
+   Versalien lesen sich auf dem Telefon nur noch als Muster. */
+.meta {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: var(--meta-tracking);
+  font-weight: 500;
+}
+.meta--muted { color: rgb(var(--color-muted)); }
+
+/* Kleiner Beitext: Hinweise, Antwortzeiten, Wegweiser. Bewusst NICHT versal.
+   Ganze Sätze in Versalien lesen sich langsamer und wirken wie eine Vorlage,
+   nicht wie eine Marke. Versalien bleiben den kurzen Auszeichnungen
+   vorbehalten (siehe .meta und .eyebrow). */
+.micro {
+  display: block;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  letter-spacing: 0;
+  color: rgb(var(--color-muted));
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: var(--space-sm);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: var(--meta-tracking);
+  color: rgb(var(--color-muted));
+}
+
+/* Der Abschnittskopf des Themes: eine Kennziffer auf der linken Rasterkante,
+   die Überschrift daneben, ein kurzer Beitext rechts. Bewusst nie zentriert –
+   und bewusst nicht in jedem Abschnitt, damit die Startseite nicht in jeder
+   Zeile dieselbe Komposition wiederholt. */
+.sec-head {
+  display: grid;
+  gap: var(--space-xs);
+  padding-top: var(--space-md);
+  border-top: var(--hair);
+  margin-bottom: var(--space-lg);
+}
+.sec-head__index {
+  font-size: 0.6875rem;
+  letter-spacing: var(--meta-tracking);
+  color: rgb(var(--color-muted));
+  font-variant-numeric: tabular-nums;
+}
+.sec-head__title { margin: 0; }
+.sec-head__aside {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgb(var(--color-muted));
+  max-width: 46ch;
+}
+@media (min-width: 990px) {
+  .sec-head {
+    grid-template-columns: 4rem minmax(0, 1fr) minmax(0, 22rem);
+    align-items: baseline;
+    column-gap: var(--space-2xl);
+    margin-bottom: var(--space-2xl);
+  }
+  .sec-head__index { grid-row: 1; }
+  .sec-head__aside { text-align: right; }
+  .sec-head--no-index { grid-template-columns: minmax(0, 1fr) minmax(0, 22rem); }
+}
+
+.rte > * + * { margin-top: 1em; }
+.rte a { text-decoration: underline; text-underline-offset: 0.2em; }
+.rte ul { list-style: disc; padding-left: 1.2em; }
+.rte ol { list-style: decimal; padding-left: 1.2em; }
+.rte li + li { margin-top: 0.35em; }
+
+/* Textlänge begrenzen – nie mehr als ~68 Zeichen pro Zeile */
+.measure { max-width: var(--w-text); }
+.measure-narrow { max-width: var(--w-text-narrow); }
+
+/* 4 Layout --------------------------------------------------------------- */
+/* Drei Containerstufen und ein durchgehendes 12-Spalten-Raster. Abschnitte
+   setzen ihre Inhalte auf benannte Spalten, statt eigene Raster zu bauen. */
+:root { --gutter: 1.25rem; }
+@media (min-width: 750px) { :root { --gutter: 2.5rem; } }
+@media (min-width: 1200px) { :root { --gutter: 4rem; } }
+@media (min-width: 1600px) { :root { --gutter: 5rem; } }
+
+.page-width {
+  width: 100%;
+  max-width: var(--w-page);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* Für Bild- und Editorial-Momente: nutzt große Bildschirme wirklich aus. */
+.page-wide {
+  width: 100%;
+  max-width: var(--w-wide);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* Ohne jede Begrenzung – für vollflächige Bilder und dunkle Bänder. */
+.page-full { width: 100%; padding-inline: var(--gutter); }
+
+.page-width--narrow { max-width: min(var(--w-page), 62rem); }
+.page-width--flush { padding-inline: 0; }
+
+/* Abschnittsdichten. „section" bleibt der Regelfall. */
+.section { padding-block: var(--sect-md); }
+.section--xs { padding-block: var(--sect-xs); }
+.section--sm { padding-block: var(--sect-sm); }
+.section--tight { padding-block: var(--sect-sm); }
+.section--lg { padding-block: var(--sect-lg); }
+/* Auf dem Telefon nehmen die beiden großen Abschnitte – Bestseller und
+   Willkommensvorteil – denselben Rahmen wie alle übrigen. Der große Grad
+   war für die breite Ansicht gedacht; auf 390 px standen dadurch 152 px
+   Leerraum zwischen der letzten Karte und „Willkommensvorteil". Der
+   Bestseller gibt unten zusätzlich nach, weil die Karte selbst schon
+   30 px nachlaufenden Raum mitbringt. */
+@media (max-width: 749px) {
+  .section--lg { padding-block: var(--sect-md); }
+  .section--lg:not(.offer-band) { padding-block-end: 1.5rem; }
+}
+.section--xl { padding-block: var(--sect-xl); }
+.section--flush-top { padding-block-start: 0; }
+.section--flush-bottom { padding-block-end: 0; }
+
+.stack > * + * { margin-top: var(--space-md); }
+.stack-lg > * + * { margin-top: var(--space-lg); }
+.stack-xl > * + * { margin-top: var(--space-xl); }
+
+.grid { display: grid; gap: var(--space-lg); }
+
+@media (min-width: 750px) {
+  .grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 990px) {
+  .grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .grid--5-7 { grid-template-columns: 5fr 7fr; }
+  .grid--7-5 { grid-template-columns: 7fr 5fr; }
+  .grid--6-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Zwölf Spalten. Abschnitte greifen über .col-* auf Bereiche zu. */
+.grid--editorial { display: grid; gap: var(--grid-gap); }
+@media (min-width: 990px) {
+  .grid--editorial {
+    grid-template-columns: repeat(12, var(--col));
+    column-gap: var(--grid-gap);
+    row-gap: var(--space-2xl);
+  }
+  .col-1-4 { grid-column: 1 / span 4; }
+  .col-1-5 { grid-column: 1 / span 5; }
+  .col-1-6 { grid-column: 1 / span 6; }
+  .col-1-7 { grid-column: 1 / span 7; }
+  .col-2-5 { grid-column: 2 / span 5; }
+  .col-5-8 { grid-column: 5 / span 8; }
+  .col-6-7 { grid-column: 6 / span 7; }
+  .col-7-6 { grid-column: 7 / span 6; }
+  .col-8-5 { grid-column: 8 / span 5; }
+  .col-9-4 { grid-column: 9 / span 4; }
+}
+
+.grid--products {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2xl) var(--space-md);
+}
+@media (min-width: 750px) {
+  .grid--products { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3xl) var(--space-lg); }
+}
+@media (min-width: 1200px) {
+  .grid--products { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* Haarlinien statt Karten. */
+.rule { border: 0; border-top: var(--hair); }
+.rule--accent { border-top-color: rgb(var(--color-accent)); }
+.rule--strong { border-top: var(--hair-strong); }
+.hairline-top { border-top: var(--hair); }
+.hairline-bottom { border-bottom: var(--hair); }
+
+/* Jede Fläche mit Farbstil streicht sich selbst. Die Rückfallwerte in den
+   var()-Aufrufen sind Absicht: Fehlt der Token, steht die Fläche auf Ivory
+   mit schwarzer Schrift – nie auf Reinweiß und nie ohne Farbe. */
+.color-scheme {
+  background-color: rgb(var(--color-background, 247 242 232));
+  color: rgb(var(--color-text, 11 11 10));
+}
+
+/* 5 Interaktion: Schaltflächen, Verweise, Formulare ---------------------- */
+/* Vier Register mit klarer Rangfolge. Sie werden nie gemischt: Pro Abschnitt
+   gibt es höchstens eine gefüllte Fläche.
+
+     .button            Hauptweg. Gefüllte Fläche in der Textfarbe.
+     .button--secondary Nebenhandlung. Kontur, keine Fläche.
+     .action-link       Redaktionelle Handlung. Text mit Pfeil, Linie darunter.
+     .link-underline    Verweis. Text mit einlaufender Unterstreichung.
+
+   Alle Zustände laufen über transform, opacity und Farbe – nie über Schatten,
+   Leuchten oder Größensprünge. */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  min-height: 3.25rem;
+  padding: var(--button-padding) calc(var(--button-padding) * 2);
+  /* Fallback-Werte in var(): Fehlt eine Farbvariable, wäre rgb(var(--x))
+     ungültig und die Fläche transparent – der Button sähe aus wie ein
+     Textlink. Die Werte entsprechen dem Standard-Farbstil. */
+  border: var(--border-width) solid rgb(var(--color-button, 18 16 14));
+  border-radius: var(--button-radius, 0px);
+  background-color: rgb(var(--color-button, 18 16 14));
+  color: rgb(var(--color-button-label, 247 242 232));
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: var(--meta-tracking);
+  text-transform: var(--button-transform);
+  text-align: center;
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+/* Die Fläche wird leicht aufgehellt statt die ganze Schaltfläche
+   auszublenden – die Beschriftung behält ihren vollen Kontrast. */
+.button:hover {
+  background-color: rgb(var(--color-button, 18 16 14) / 0.86);
+  border-color: rgb(var(--color-button, 18 16 14) / 0.86);
+}
+
+.button--secondary {
+  background-color: transparent;
+  color: rgb(var(--color-text));
+  border-color: rgb(var(--color-text) / 0.32);
+}
+.button--secondary:hover {
+  background-color: transparent;
+  border-color: rgb(var(--color-text));
+  color: rgb(var(--color-text));
+}
+
+.button--quiet {
+  background: none;
+  border-color: transparent;
+  color: rgb(var(--color-text));
+  padding-inline: 0;
+  min-height: auto;
+}
+.button--quiet:hover { background: none; border-color: transparent; color: rgb(var(--color-muted)); }
+
+/* Volle Breite – auf Mobile der Regelfall für den Hauptweg. */
+.button--block { display: flex; width: 100%; }
+
+.button[disabled],
+.button[aria-disabled='true'] { opacity: 0.45; cursor: not-allowed; }
+.button[disabled]:hover,
+.button[aria-disabled='true']:hover {
+  background-color: rgb(var(--color-button, 18 16 14));
+  border-color: rgb(var(--color-button, 18 16 14));
+}
+
+.button svg { width: 18px; height: 18px; flex: none; }
+.button--whatsapp { gap: 0.55rem; }
+
+/* --- Handlungsverweis mit Pfeil ---------------------------------------
+   Das Arbeitspferd dieses Themes. Kein Kasten, keine Fläche: eine Zeile
+   Text, eine Linie darunter, ein Pfeil, der beim Zeigen nach rechts rückt.
+   Die Linie läuft dabei in voller Deckung von links ein. */
+.action-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  width: 100%;
+  /* Die ganze Zeile ist die Schaltfläche, nicht nur der Text: volle Breite,
+     bequeme Höhe, Linie und Pfeil gehören mit dazu. */
+  min-height: 3rem;
+  padding-bottom: 0.55rem;
+  color: rgb(var(--color-text));
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+}
+.action-link::before,
+.action-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--border-width);
+  background-color: currentColor;
+}
+.action-link::before { opacity: 0.24; }
+.action-link::after {
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+.action-link:hover::after,
+.action-link:focus-visible::after { transform: scaleX(1); }
+
+.action-link svg,
+.action-link .icon-arrow { width: 17px; height: 17px; flex: none; }
+.action-link::after,
+.action-link svg { transition: transform var(--dur-slow) var(--ease-out); }
+.action-link:hover svg { transform: translateX(5px); }
+
+/* Der große Grad – für den Hauptweg im Hero und in Vollflächen-Abschnitten.
+   52 px auf dem Telefon: bequem zu treffen, ohne wie ein Knopf zu wirken. */
+.action-link--lg {
+  min-height: 3.25rem;
+  font-size: clamp(0.875rem, 0.82rem + 0.3vw, 1.0625rem);
+  padding-bottom: 0.7rem;
+}
+.action-link--lg svg { width: 20px; height: 20px; }
+
+/* In einer Reihe nebeneinander statt über die volle Breite. */
+.action-link--inline { width: auto; }
+
+/* --- Verweis ----------------------------------------------------------- */
+.link-underline {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 4px;
+  border-bottom: 0;
+  font-size: 0.75rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.link-underline::before,
+.link-underline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* Die Linie hängt an der Schrift, nicht am Kasten: Auf Touch wächst der
+     Kasten auf 44 px, die Linie bleibt trotzdem direkt unter dem Wort. */
+  bottom: var(--ul-bottom, 0px);
+  height: var(--border-width);
+  background-color: currentColor;
+}
+.link-underline::before { opacity: 0.28; }
+.link-underline::after {
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur) var(--ease);
+}
+.link-underline:hover::after,
+.link-underline:focus-visible::after { transform: scaleX(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .link-underline::after,
+  .action-link::after,
+  .action-link svg { transition: none; }
+}
+
+/* Die Rückmeldung beim Tippen ist bewusst leise: Die Zeile wird kurz
+   blasser, es springt nichts und es füllt sich keine Fläche. */
+.action-link { transition: opacity var(--dur-fast) var(--ease); }
+.action-link:active { opacity: 0.62; }
+
+/* Auf Touch braucht jede Textmarke eine Fläche von mindestens 44 px. */
+@media (pointer: coarse) {
+  .link-underline {
+    padding-block: 0.8rem;
+    --ul-bottom: calc(0.8rem - 4px);
+  }
+}
+
+/* Auf Touch gibt es keinen Zeigezustand – die Rückmeldung kommt beim
+   Antippen und ist sofort sichtbar. */
+@media (hover: none) {
+  .button:active,
+  .link-underline:active,
+  .action-link:active,
+  .card__quick-add-button:active,
+  .inline-field__submit:active,
+  .search-panel__submit:active,
+  .code-field__submit:active { opacity: 0.72; }
+}
+
+/* --- Formulare ---------------------------------------------------------
+   Eine Grundlinie, kein Kasten. Auswahl- und Textfelder folgen demselben
+   Muster, damit Formulare nie wie ein fremdes Modul wirken. */
+.field { display: flex; flex-direction: column; gap: var(--space-2xs); }
+
+.field__label {
+  font-size: 0.6875rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+}
+
+.field__input,
+.field select,
+.field textarea {
+  width: 100%;
+  min-height: 3rem;
+  padding: var(--space-xs) 0;
+  background-color: transparent;
+  border: 0;
+  border-bottom: var(--border-width) solid rgb(var(--color-line));
+  border-radius: 0;
+  color: rgb(var(--color-text));
+  transition: border-color var(--dur) var(--ease);
+}
+
+.field select { padding-right: var(--space-lg); }
+.field textarea { min-height: 6rem; resize: vertical; }
+
+.field__input:hover,
+.field select:hover,
+.field textarea:hover { border-bottom-color: rgb(var(--color-muted)); }
+
+.field__input:focus,
+.field select:focus,
+.field textarea:focus { border-bottom-color: rgb(var(--color-text)); }
+
+.field__input::placeholder,
+.field textarea::placeholder { color: rgb(var(--color-muted)); opacity: 1; }
+
+.field__error {
+  font-size: 0.8125rem;
+  color: rgb(var(--color-text));
+  border-left: 2px solid rgb(var(--color-accent));
+  padding-left: var(--space-sm);
+}
+
+.form-status { font-size: 0.9375rem; }
+
+/* Eingabezeile: Feld und Absenden teilen sich eine Grundlinie. Wird für
+   Newsletter, Suche und alle kurzen Formulare verwendet. */
+.inline-field {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-md);
+  border-bottom: var(--border-width) solid rgb(var(--color-text) / 0.28);
+  transition: border-color var(--dur) var(--ease);
+}
+.inline-field:focus-within { border-bottom-color: rgb(var(--color-text)); }
+.inline-field .field__input,
+.inline-field input {
+  flex: 1;
+  min-width: 0;
+  min-height: 3rem;
+  padding: var(--space-xs) 0;
+  border: 0;
+  background-color: transparent;
+}
+.inline-field .field__input:hover,
+.inline-field input:hover { border-bottom-color: transparent; }
+.inline-field__submit {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: rgb(var(--color-text));
+  font-size: 0.6875rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  transition: opacity var(--dur) var(--ease);
+}
+.inline-field__submit:hover { opacity: 0.6; }
+.inline-field__submit svg { width: 15px; height: 15px; transition: transform var(--dur) var(--ease); }
+.inline-field__submit:hover svg { transform: translateX(4px); }
+
+/* 6 Header --------------------------------------------------------------- */
+/* Der Kopfbereich ist eine Zeile, keine Fläche: Haarlinie statt Schatten,
+   flächiger Hintergrund im Farbstil des Abschnitts, Wortmarke mittig
+   zwischen Navigation und Handlungen.
+
+   Verdichtung beim Scrollen (ab 990 px): Die Leiste bekommt oben einen
+   Reserveraum von --header-reserve. Beim Scrollen rückt die klebende Leiste
+   um genau diesen Betrag nach oben, der Reserveraum verschwindet aus dem
+   Blick. Die Leiste wird dadurch sichtbar flacher, ohne dass sich die Höhe
+   im Textfluss ändert – der Seiteninhalt springt nicht. Ausgeblendet wird
+   der Kopf nie. */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  background-color: rgb(var(--color-background));
+  border-bottom: var(--hair);
+  transition: top var(--dur) var(--ease);
+}
+
+.header__inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-md);
+  min-height: 3.5rem;
+}
+
+.header__lead { display: flex; align-items: center; gap: var(--space-lg); min-width: 0; }
+.header__lead .header__menu-toggle { margin-left: -0.75rem; }
+
+.header__brand { justify-self: center; min-width: 0; }
+
+/* Der Kopf ist eine Waage: links der Menüknopf, rechts Suche und Warenkorb,
+   in der Mitte die Marke. Die Bedienelemente geben nicht nach (siehe
+   .header__icon), also muss die Marke sich der Breite anpassen – sonst
+   schiebt sie sich auf dem Telefon über den Menüknopf.
+
+   Unter 390 px steht die Wortmarke allein. Das Signet ist dort nicht
+   verloren: Es trägt den Fußbereich in großer Form und steht über der
+   Navigation im mobilen Menü. */
+@media (max-width: 749px) {
+  .header__inner { gap: var(--space-sm); }
+  .header .brand-lockup { gap: 0.5em; }
+  .header .brand-mark { --mark-size: 20px; }
+  .header .wordmark {
+    font-size: clamp(0.9375rem, 0.7rem + 0.9vw, 1.125rem);
+    letter-spacing: 0.14em;
+  }
+}
+@media (max-width: 389px) {
+  .header .brand-lockup .brand-mark { display: none; }
+}
+
+.header__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2xs);
+}
+.header__actions .header__icon:last-child { margin-right: -0.75rem; }
+
+.header__nav { display: none; }
+
+@media (min-width: 990px) {
+  :root { --header-reserve: 1.375rem; }
+
+  .header__inner {
+    min-height: 4.25rem;
+    padding-top: var(--header-reserve);
+    transition: min-height var(--dur) var(--ease);
+  }
+  .header.is-compact { top: calc(var(--header-reserve) * -1); }
+
+  .header__nav { display: flex; align-items: center; }
+  .header__nav > ul { display: flex; align-items: center; gap: clamp(1.5rem, 2.4vw, 2.75rem); }
+}
+
+.wordmark {
+  display: inline-block;
+  font-family: var(--font-heading-family);
+  font-size: clamp(1.0625rem, 0.9rem + 0.9vw, 1.75rem);
+  letter-spacing: var(--wordmark-tracking);
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Symbole: eine Größe, eine Strichstärke, eine Tippfläche. */
+/* „flex: none" ist hier keine Kosmetik: Ohne die Zeile gibt der Menüknopf
+   nach, sobald die Wortmarke daneben breiter wird – auf 320 px schrumpfte er
+   auf 12 px und war praktisch nicht mehr zu treffen. Die Bedienelemente
+   behalten ihre 44 px, die Wortmarke gibt stattdessen nach. */
+.header__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  position: relative;
+  color: rgb(var(--color-text));
+  transition: color var(--dur) var(--ease);
+}
+.header__icon:hover { color: rgb(var(--color-muted)); }
+.header__icon svg { width: 19px; height: 19px; }
+
+.header__icon--desktop { display: none; }
+@media (min-width: 990px) { .header__icon--desktop { display: inline-flex; } }
+
+.header__menu-toggle { display: inline-flex; }
+@media (min-width: 990px) { .header__menu-toggle { display: none; } }
+
+/* Der Zähler ist eine Ziffer, kein Etikett: keine Fläche, keine Kapsel. */
+.cart-count {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.35rem;
+  min-width: 0.9rem;
+  display: grid;
+  place-items: center;
+  font-size: 0.6875rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: rgb(var(--color-text));
+}
+.cart-count::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -0.3rem;
+  width: 3px;
+  height: 3px;
+  transform: translateX(-50%);
+  background-color: rgb(var(--color-accent));
+}
+.cart-count[hidden] { display: none; }
+
+/* Hauptnavigation – dieselbe Unterstreichung wie bei jeder Textmarke. */
+.nav__item { position: relative; }
+.nav__item > details > summary { list-style: none; }
+
+.nav__link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding-block: 0.5rem;
+  font-size: 0.6875rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.nav__link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.15rem;
+  height: var(--border-width);
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur) var(--ease);
+}
+.nav__link:hover::after,
+.nav__link:focus-visible::after,
+.nav__item[open] > summary .nav__link::after { transform: scaleX(1); }
+.nav__link svg { transition: transform var(--dur) var(--ease); }
+.nav__item[open] > summary .nav__link svg { transform: rotate(180deg); }
+
+/* Aufklappmenü: eine Fläche im Seitenton, oben von der Haarlinie des
+   Kopfbereichs gehalten – kein schwebendes Kärtchen. */
+.mega {
+  position: absolute;
+  top: 100%;
+  left: calc(var(--space-lg) * -1);
+  z-index: var(--z-header);
+  min-width: 17rem;
+  padding: var(--space-xl) var(--space-lg);
+  background-color: rgb(var(--color-background));
+  border: 0;
+  border-bottom: var(--hair);
+  box-shadow: 0 1px 0 rgb(var(--color-line));
+}
+
+.mega--wide {
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(66rem, calc(100vw - 4rem));
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.15fr;
+  gap: var(--space-3xl);
+  padding: var(--space-2xl) var(--space-xl) var(--space-3xl);
+}
+
+.mega__title {
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-xs);
+  border-bottom: var(--hair);
+  color: rgb(var(--color-muted));
+}
+
+.mega__list > li + li { margin-top: 0.55rem; }
+.mega__list a {
+  font-size: 0.9375rem;
+  transition: color var(--dur) var(--ease), padding-left var(--dur) var(--ease);
+}
+.mega__list a:hover { color: rgb(var(--color-muted)); }
+
+.mega__list--split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--space-lg);
+}
+.mega__list--split > li + li { margin-top: 0; }
+.mega__list--split a { display: block; padding-block: 0.3rem; }
+
+.mega__feature { display: block; }
+.mega__feature img { width: 100%; height: auto; object-fit: cover; aspect-ratio: 4 / 5; }
+
+.mega__wa { display: grid; align-content: start; gap: var(--space-sm); }
+.mega__wa-text { font-size: 0.9375rem; color: rgb(var(--color-muted)); max-width: 26ch; }
+.mega__wa .button { justify-self: start; }
+.mega__wa-note { font-size: 0.75rem; color: rgb(var(--color-muted)); }
+
+/* 7 Footer --------------------------------------------------------------- */
+/* Mobile zuerst: Die Verweisspalten stehen nebeneinander statt untereinander,
+   der Markenblock darüber. Der Fußbereich bleibt dadurch auf dem Telefon
+   kurz, ohne dass ein einziger Verweis wegfällt. */
+.footer { border-top: var(--hair); }
+
+/* Die Wortmarke als Markenpräsenz am Kopf des Fußbereichs. Sehr weit
+   gesperrt, im Display-Register, auf großen Bildschirmen über die volle
+   Breite verteilt. */
+.footer__brandline > span { display: block; }
+.footer__brandline {
+  font-family: var(--font-display-family, var(--font-heading-family));
+  font-weight: var(--font-display-weight, var(--font-heading-weight));
+  font-size: clamp(1.5rem, 7vw, 3rem);
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding-block: var(--space-xl) var(--space-lg);
+  border-bottom: var(--hair);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (min-width: 990px) {
+  .footer__brandline {
+    font-size: clamp(3rem, 6vw, 6rem);
+    letter-spacing: 0.1em;
+    padding-block: var(--space-2xl) var(--space-xl);
+  }
+}
+
+.footer__top {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-xl) var(--space-lg);
+  padding-block: var(--space-xl);
+}
+
+/* Markenblock und Newsletter brauchen die volle Breite, die Menüs nicht. */
+.footer__block--brand,
+.footer__block--newsletter { grid-column: 1 / -1; }
+
+.footer__brand-text {
+  margin-top: var(--space-sm);
+  max-width: 32ch;
+  font-size: 0.875rem;
+  color: rgb(var(--color-muted));
+}
+.footer__note { margin-top: var(--space-md); }
+.footer__fineprint { font-size: 0.75rem; color: rgb(var(--color-muted)); }
+
+.footer__heading { margin-bottom: var(--space-sm); color: rgb(var(--color-muted)); }
+.footer__list > li + li { margin-top: 0.4rem; }
+.footer__list a {
+  display: inline-block;
+  padding-block: 0.15rem;
+  font-size: 0.875rem;
+  transition: color var(--dur) var(--ease);
+}
+.footer__list a:hover { color: rgb(var(--color-muted)); }
+
+.footer__newsletter { margin-top: var(--space-md); }
+.footer__newsletter .footer__fineprint { margin-top: var(--space-sm); }
+
+.footer__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm) var(--space-md);
+  padding-block: var(--space-md);
+  border-top: var(--hair);
+}
+
+.payment-icons { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+.payment-icons svg { width: 34px; height: 22px; }
+
+.social-list { display: flex; flex-wrap: wrap; gap: var(--space-md); margin-top: var(--space-lg); }
+.social-list a {
+  font-size: 0.75rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+  transition: color var(--dur) var(--ease);
+}
+.social-list a:hover { color: rgb(var(--color-text)); }
+
+/* Sehr schmale Geräte: eine Spalte, sonst brechen die Verweise um. */
+@media (max-width: 359px) {
+  .footer__top { grid-template-columns: minmax(0, 1fr); gap: var(--space-lg); }
+}
+
+@media (min-width: 750px) {
+  .footer__top {
+    grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr));
+    gap: var(--space-2xl);
+    padding-block: var(--space-3xl);
+  }
+  .footer__block--brand { grid-column: auto; }
+  .footer__block--newsletter { grid-column: auto; }
+  .footer__bottom { padding-block: var(--space-lg); }
+}
+
+/* 8 Produktkarte --------------------------------------------------------- */
+/* Editorial Tile statt Shopify-Kachel: Das Bild trägt die Karte, darunter
+   steht eine Bildunterschrift. Kein Rahmen, kein Rundung, keine Fläche unter
+   dem Text – die Karte ist ein Bild mit Angaben, nicht ein Kasten mit Inhalt.
+
+   Der Name läuft im Display-Register: Bei VENT CELESTE ist der Produktname
+   der Scent Code, und der ist das Markenzeichen. */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.card__media {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: var(--space-sm);
+  /* Bewusst ohne Fläche, ohne Rundung, ohne Kante: Der helle warme Grund der
+     Produktfotografie und der Seitenton sind aufeinander abgestimmt. Alles,
+     was hier läge – eine Kachel, ein Radius, ein Schatten –, würde das Bild
+     wieder zu einem Kärtchen machen. */
+  background-color: transparent;
+  border-radius: 0;
+}
+
+/* „contain" statt „cover": Der Flakon wird nie angeschnitten. Da das Bild in
+   voller Breite sitzt, steht er trotzdem groß im Raum; der Rest des Kastens
+   ist derselbe Seitenton wie daneben und damit unsichtbar. */
+.card__media img,
+.card__media svg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  transition: opacity var(--dur-slow) var(--ease), transform var(--dur-reveal) var(--ease-out);
+}
+
+.card__media--portrait { aspect-ratio: var(--ratio-portrait); }
+.card__media--square { aspect-ratio: var(--ratio-square); }
+.card__media--tall { aspect-ratio: var(--ratio-tall); }
+
+.card__image--secondary { position: absolute; inset: 0; opacity: 0; }
+
+/* Zustände auf Zeigegeräten: ein sehr langsamer Zoom, der Bildwechsel als
+   Überblendung, der Name unterstrichen. Auf Touch passiert nichts davon. */
+@media (hover: hover) {
+  .card:hover .card__image--secondary { opacity: 1; }
+  .card:hover .card__image--primary { opacity: 0; }
+  .card:hover .card__media img { transform: scale(1.035); }
+  .card:hover .card__title { color: rgb(var(--color-text)); }
+  .card:hover .card__title::after { transform: scaleX(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card:hover .card__media img { transform: none; }
+}
+
+/* Auszeichnung: kleine Versalien auf dem Seitenton, oben links bündig mit
+   der Bildkante. Keine Kapsel, keine Farbe. */
+.card__badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0;
+  background-color: transparent;
+  color: rgb(var(--color-muted));
+  font-size: 0.6875rem;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: var(--meta-tracking);
+}
+
+/* Bild, Code, Ausführung, Preis stehen in einer Leseachse untereinander.
+   Keine Trennlinie unter dem Bild – die Linie wäre die Kartenkante, die hier
+   ausdrücklich nicht sein soll. Der Takt kommt aus den Abständen:
+   Bild → Code weit, Code → Ausführung eng, Ausführung → Preis mittel. */
+.card__content {
+  display: grid;
+  /* Der Takt der Karte: Code → Ausführung eng, danach Preis und Kaufweg mit
+     jeweils etwas mehr Luft. Die Abstände stehen einzeln unten, der
+     Grundabstand hier ist der engste davon. */
+  gap: 0.25rem;
+  align-content: start;
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* Der Name im Display-Register – der Scent Code ist das Markenzeichen. */
+.card__title {
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-display-family, var(--font-heading-family));
+  font-weight: var(--font-display-weight, var(--font-heading-weight));
+  font-size: clamp(1.125rem, 1rem + 0.65vw, 1.5rem);
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.card__title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: var(--border-width);
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur) var(--ease);
+}
+.card__title a::after { content: ''; position: absolute; inset: 0; z-index: 1; }
+
+.card__family {
+  color: rgb(var(--color-muted));
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+/* Die Ausführung in derselben Auszeichnung wie alle Detailangaben. */
+.card__meta {
+  color: rgb(var(--color-muted));
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+}
+
+.card__price {
+  margin-top: 0.55rem;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.card__unit-price { font-size: 0.75rem; color: rgb(var(--color-muted)); }
+
+.price--on-sale .price__regular {
+  text-decoration: line-through;
+  color: rgb(var(--color-muted));
+  margin-right: 0.4em;
+}
+
+/* 9 Hilfsklassen --------------------------------------------------------- */
+.hidden,
+[hidden] { display: none !important; }
+
+.text-center { text-align: center; }
+.text-muted { color: rgb(var(--color-muted)); }
+.uppercase { text-transform: uppercase; }
+.full-bleed-media { width: 100%; height: 100%; object-fit: cover; }
+
+/* Kleingedrucktes: Steuerhinweise, Versandhinweise, Rechtszeilen. */
+.text-fine { font-size: 0.75rem; line-height: 1.5; color: rgb(var(--color-muted)); }
+
+/* Verweis mitten im Fließtext. */
+.link-inline { text-decoration: underline; text-underline-offset: 0.15em; }
+
+/* Eine Reihe gleichrangiger Handlungen. */
+.actions-row { display: flex; flex-wrap: wrap; gap: var(--space-md); }
+
+/* Abstandshilfen. Sie ersetzen die früheren Inline-Styles an Stellen, an
+   denen ein eigenes Bauteil zu viel wäre. */
+.mt-sm { margin-top: var(--space-sm); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.mt-xl { margin-top: var(--space-xl); }
+.mt-2xl { margin-top: var(--space-2xl); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+.mb-xl { margin-bottom: var(--space-xl); }
+.mb-2xl { margin-bottom: var(--space-2xl); }
+
+.demo-flag {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border: var(--border-width) dashed rgb(var(--color-muted));
+  font-size: 0.625rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+}
+
+/* --- Einblendungen ------------------------------------------------------
+   Ein System, drei Stufen:
+
+     .reveal            Block fährt leicht herauf und blendet ein.
+     .reveal--mask      Inhalt fährt hinter einer Kante hervor (nur transform).
+     .reveal--stagger   Kinder folgen versetzt, 70 ms je Element.
+
+   Die Regeln hängen an html:not(.no-js): Ohne JavaScript bleibt die Klasse
+   .no-js stehen, der Ausgangszustand greift dann gar nicht erst und alle
+   Inhalte sind sofort sichtbar. */
+.reveal { opacity: 1; }
+
+html:not(.no-js) .animations-on .reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity var(--dur-reveal) var(--ease-out), transform var(--dur-reveal) var(--ease-out);
+}
+html:not(.no-js) .animations-on .reveal.is-visible { opacity: 1; transform: none; }
+
+/* Maskenaufdeckung: Der Inhalt sitzt in einem Fenster und fährt herein.
+   Bewegt wird ausschließlich transform, die Kante bleibt hart. */
+html:not(.no-js) .animations-on .reveal--mask {
+  opacity: 1;
+  transform: none;
+  overflow: hidden;
+}
+html:not(.no-js) .animations-on .reveal--mask > * {
+  transform: translateY(103%);
+  transition: transform var(--dur-reveal) var(--ease-out);
+}
+html:not(.no-js) .animations-on .reveal--mask.is-visible > * { transform: none; }
+
+/* Versatz für Gruppen – die Kinder folgen einander. */
+html:not(.no-js) .animations-on .reveal--stagger > * {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity var(--dur-reveal) var(--ease-out), transform var(--dur-reveal) var(--ease-out);
+}
+html:not(.no-js) .animations-on .reveal--stagger.is-visible > * { opacity: 1; transform: none; }
+html:not(.no-js) .animations-on .reveal--stagger.is-visible > *:nth-child(2) { transition-delay: 70ms; }
+html:not(.no-js) .animations-on .reveal--stagger.is-visible > *:nth-child(3) { transition-delay: 140ms; }
+html:not(.no-js) .animations-on .reveal--stagger.is-visible > *:nth-child(4) { transition-delay: 210ms; }
+html:not(.no-js) .animations-on .reveal--stagger.is-visible > *:nth-child(5) { transition-delay: 280ms; }
+html:not(.no-js) .animations-on .reveal--stagger.is-visible > *:nth-child(n + 6) { transition-delay: 350ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  html:not(.no-js) .animations-on .reveal,
+  html:not(.no-js) .animations-on .reveal--mask > *,
+  html:not(.no-js) .animations-on .reveal--stagger > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Bausteine, die vorher als Inline-Styles im Markup standen. Sie sind hier
+   benannt, damit sie sich an einer Stelle pflegen lassen. */
+.header__brand-heading { margin: 0; }
+.mega__title--plain { margin-top: var(--space-md); border: 0; padding: 0; }
+
+.cart-drawer__view { display: block; margin-top: var(--space-md); text-align: center; }
+
+.cart-page__items { max-width: 46rem; }
+.cart-page__summary { max-width: 46rem; margin-top: var(--space-2xl); }
+
+.article__cover { margin-block: var(--space-xl); }
+
+.password__wordmark { font-size: 1.5rem; }
+.password__text { margin: var(--space-xl) auto 0; }
+
+.code-page__image { aspect-ratio: 4 / 5; object-fit: cover; }
+.code-inline__label { margin-bottom: var(--space-xs); }
+
+.facet__price-actions { display: flex; gap: var(--space-sm); margin-top: var(--space-md); }
+
+/* Kundenkonto */
+.account-panel { max-width: 34rem; }
+.account-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+.account-block { margin-top: var(--space-2xl); max-width: 34rem; }
+.account-row { padding-block: var(--space-lg); border-top: var(--hair); }
+.account-total { margin-top: var(--space-xl); max-width: 24rem; margin-left: auto; }
+.account-table__th { text-align: left; padding-bottom: var(--space-xs); border-bottom: var(--hair); }
+.account-table__th--end { text-align: right; }
+.account-table__td { padding-block: var(--space-sm); border-bottom: var(--hair); }
+.account-table__td--end { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* 10 Accessibility ------------------------------------------------------- */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: 0; left: 0;
+  z-index: var(--z-skip);
+  padding: var(--space-sm) var(--space-md);
+  background-color: rgb(var(--color-background));
+  color: rgb(var(--color-text));
+  border: var(--border-width) solid rgb(var(--color-text));
+  transform: translateY(-120%);
+}
+.skip-link:focus { transform: translateY(0); }
+
+:where(a, button, summary, input, select, textarea, [tabindex]):focus-visible {
+  /* Der Fokusrahmen läuft in der Textfarbe: Champagner erreicht auf Ivory
+     nur 2,6:1 und verfehlt damit die geforderten 3:1 für Bedienelemente. */
+  outline: var(--focus-width) solid rgb(var(--color-text));
+  outline-offset: var(--focus-offset);
+  border-radius: 1px;
+}
+
+/* Fokus nur bei Tastatur, aber niemals ganz entfernen */
+:where(a, button, summary):focus:not(:focus-visible) { outline: none; }
+
+/* Overlay für Drawer und Modals */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  background-color: rgb(11 11 10 / 0.42);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--dur) var(--ease), visibility var(--dur) var(--ease);
+}
+.overlay.is-open { opacity: 1; visibility: visible; }
+
+body.is-locked { overflow: hidden; }
+
+/* Generisches Drawer-Muster: Header, Body, Footer */
+.drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  z-index: var(--z-drawer);
+  display: flex;
+  flex-direction: column;
+  width: min(28rem, 100vw);
+  background-color: rgb(var(--color-background));
+  color: rgb(var(--color-text));
+  visibility: hidden;
+  transition: transform var(--dur-slow) var(--ease), visibility var(--dur-slow) var(--ease);
+}
+.drawer--right { right: 0; transform: translateX(100%); }
+.drawer--left { left: 0; transform: translateX(-100%); }
+.drawer--bottom {
+  left: 0; right: 0; top: auto; bottom: 0;
+  width: 100%;
+  max-height: 88vh;
+  transform: translateY(100%);
+}
+.drawer.is-open { transform: none; visibility: visible; }
+
+.drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-lg) var(--space-lg) var(--space-md);
+  border-bottom: var(--border-width) solid rgb(var(--color-line));
+}
+
+.drawer__body { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: var(--space-lg); }
+.drawer__footer { padding: var(--space-lg); border-top: var(--border-width) solid rgb(var(--color-line)); }
+
+.drawer__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-right: -0.75rem;
+}
+.drawer__close svg { width: 16px; height: 16px; }
+
+/* Touch-Targets: mindestens 44 px auf Mobilgeräten.
+   Ausgenommen sind Verweise, deren Fläche ohnehin größer ist – etwa der
+   Produktname auf der Karte, der über ein Überlagerungsfeld die gesamte
+   Karte anklickbar macht. */
+@media (pointer: coarse) {
+  a.nav__link,
+  .footer__list a,
+  .mega__list a,
+  .header__brand > a,
+  .header__brand-heading > a { min-height: 44px; display: flex; align-items: center; }
+  .header__brand > a,
+  .header__brand-heading > a { justify-content: center; }
+}
+
+/* 11 Ankündigungsleiste und mobiles Menü --------------------------------- */
+/* Eine sehr feine Zeile über dem Kopfbereich. Sie ist zurückgenommen
+   gesetzt, damit sie dem Hero nicht die Aufmerksamkeit nimmt. */
+.announcement {
+  border-bottom: var(--hair);
+  text-align: center;
+}
+.announcement__inner { padding-block: 0.55rem; }
+/* Die Ankündigungszeile trägt einen ganzen Satz. In Versalien und weit
+   gesperrt wäre er auf dem Telefon eine Mauer – er läuft deshalb in
+   gemischter Schreibweise. */
+.announcement__text {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  letter-spacing: 0;
+  color: rgb(var(--color-muted));
+}
+.announcement__text a {
+  color: rgb(var(--color-text));
+  border-bottom: var(--border-width) solid rgb(var(--color-text) / 0.3);
+  transition: border-color var(--dur) var(--ease);
+}
+.announcement__text a:hover { border-bottom-color: rgb(var(--color-text)); }
+
+@media (max-width: 749px) {
+  .announcement__inner { padding-block: 0.4rem; }
+  .announcement__text { letter-spacing: 0.1em; }
+}
+
+/* Mobile-Navigation */
+.menu-drawer__search { padding: var(--space-lg); border-bottom: var(--border-width) solid rgb(var(--color-line)); }
+
+.menu-drawer__list > li { border-bottom: var(--border-width) solid rgb(var(--color-line)); }
+
+.menu-drawer__link,
+.menu-drawer__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  min-height: 3.25rem;
+  padding-block: 0.5rem;
+  font-size: 0.9375rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.menu-drawer__summary svg { width: 12px; height: 12px; transition: transform var(--dur) var(--ease); }
+.menu-drawer__item[open] > .menu-drawer__summary svg { transform: rotate(180deg); }
+
+.menu-drawer__sublist { padding-bottom: var(--space-md); }
+.menu-drawer__sublist a { display: flex; align-items: center; min-height: 44px; font-size: 0.9375rem; }
+
+.menu-drawer__families {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--space-md);
+  padding-bottom: var(--space-md);
+}
+.menu-drawer__families a { display: flex; align-items: center; min-height: 44px; font-size: 0.9375rem; }
+
+.menu-drawer__highlights { padding: var(--space-lg); display: grid; gap: var(--space-sm); }
+
+/* Suchpanel */
+.drawer--top {
+  top: 0;
+  bottom: auto;
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-height: 90vh;
+  transform: translateY(-100%);
+}
+
+/* Suchpanel: eine Kopfzeile, darunter eine einzige Eingabezeile auf einer
+   Haarlinie. Dieselbe Bauform wie die Scent-Code-Eingabe im Hero. */
+.search-panel { padding-block: var(--space-lg) var(--space-xl); }
+.search-panel__inner { display: grid; }
+
+.search-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.search-panel__form {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-md);
+  border-bottom: var(--border-width) solid rgb(var(--color-text) / 0.28);
+  transition: border-color var(--dur) var(--ease);
+}
+.search-panel__form:focus-within { border-bottom-color: rgb(var(--color-text)); }
+
+.search-panel__input {
+  flex: 1;
+  min-width: 0;
+  min-height: 3.25rem;
+  padding: 0 0 var(--space-xs);
+  border: 0;
+  background: none;
+  color: rgb(var(--color-text));
+  font-family: var(--font-heading-family);
+  font-size: clamp(1.25rem, 1rem + 1.4vw, 2rem);
+  line-height: 1.2;
+}
+.search-panel__input:focus { outline: none; }
+.search-panel__input::placeholder { color: rgb(var(--color-muted)); opacity: 1; }
+.search-panel__input::-webkit-search-cancel-button { -webkit-appearance: none; }
+
+.search-panel__submit {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0 0 var(--space-xs);
+  color: rgb(var(--color-text));
+  font-size: 0.6875rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: opacity var(--dur) var(--ease);
+}
+.search-panel__submit:hover { opacity: 0.6; }
+.search-panel__submit svg { width: 15px; height: 15px; }
+
+.search-panel__hint {
+  margin-top: var(--space-sm);
+  font-size: 0.75rem;
+  color: rgb(var(--color-muted));
+}
+.search-panel__results:not(:empty) { margin-top: var(--space-xl); }
+
+@media (max-width: 599px) {
+  /* Beschriftung weicht, das Zeichen bleibt – die Tippfläche bleibt groß
+     und die Eingabe bekommt die volle Breite. */
+  .search-panel__submit span { display: none; }
+  .search-panel__submit { min-width: 2.75rem; justify-content: flex-end; }
+}
+
+.predictive__group + .predictive__group { margin-top: var(--space-xl); }
+.predictive__heading {
+  margin-bottom: var(--space-sm);
+  padding-bottom: var(--space-2xs);
+  border-bottom: var(--border-width) solid rgb(var(--color-line));
+}
+.predictive__products { display: grid; gap: var(--space-md); }
+@media (min-width: 750px) { .predictive__products { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-lg); } }
+
+.predictive__item { display: flex; gap: var(--space-md); align-items: center; min-height: 44px; }
+.predictive__item img { width: 56px; height: 72px; object-fit: cover; flex: none; }
+.predictive__item-title { font-family: var(--font-heading-family); font-size: 1rem; }
+.predictive__item-meta { font-size: 0.8125rem; color: rgb(var(--color-muted)); }
+.predictive__links > li + li { margin-top: 0.5rem; }
+.predictive__status { font-size: 0.9375rem; color: rgb(var(--color-muted)); }
+
+.js-hidden { display: none; }
+.no-js .js-hidden { display: block; }
+.no-js .js-only { display: none !important; }
+
+/* 12 Warenkorb ----------------------------------------------------------- */
+.cart-items { display: grid; gap: var(--space-lg); }
+.cart-item {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: var(--space-md);
+  padding-bottom: var(--space-lg);
+  border-bottom: var(--border-width) solid rgb(var(--color-line));
+}
+.cart-item:last-child { border-bottom: 0; padding-bottom: 0; }
+.cart-item__media img { width: 72px; height: 96px; object-fit: cover; }
+.cart-item__title { font-family: var(--font-heading-family); font-size: 1.0625rem; line-height: 1.2; }
+.cart-item__variant { font-size: 0.8125rem; color: rgb(var(--color-muted)); }
+.cart-item__properties { margin-top: var(--space-xs); font-size: 0.8125rem; color: rgb(var(--color-muted)); }
+.cart-item__properties dt { display: inline; font-weight: 600; }
+.cart-item__properties dd { display: inline; margin: 0; }
+.cart-item__properties div + div { margin-top: 0.15rem; }
+.cart-item__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-top: var(--space-sm);
+}
+
+/* Mengenwahl: eine Grundlinie, kein Kasten – wie alle Eingaben im Theme. */
+.quantity {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  border-bottom: var(--border-width) solid rgb(var(--color-line));
+  border-radius: 0;
+  transition: border-color var(--dur) var(--ease);
+}
+.quantity:focus-within { border-bottom-color: rgb(var(--color-text)); }
+.quantity button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  color: rgb(var(--color-muted));
+  transition: color var(--dur) var(--ease);
+}
+.quantity button:hover { color: rgb(var(--color-text)); }
+.quantity button svg { width: 12px; height: 12px; }
+.quantity input {
+  width: 2.5rem;
+  height: 2.75rem;
+  border: 0;
+  background: none;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+}
+.quantity input::-webkit-outer-spin-button,
+.quantity input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.cart-item__remove { font-size: 0.75rem; text-decoration: underline; color: rgb(var(--color-muted)); min-height: 44px; display: inline-flex; align-items: center; }
+
+.shipping-bar { margin-bottom: var(--space-lg); }
+.shipping-bar__track { height: 2px; background-color: rgb(var(--color-line)); margin-block: var(--space-xs); }
+.shipping-bar__fill { height: 100%; background-color: rgb(var(--color-accent)); transition: width var(--dur-slow) var(--ease); }
+
+.cart-cross-sell {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: var(--border-width) solid rgb(var(--color-line));
+}
+.cart-cross-sell__item { display: flex; gap: var(--space-md); align-items: center; margin-top: var(--space-sm); }
+.cart-cross-sell__item img { width: 56px; height: 72px; object-fit: cover; flex: none; }
+
+.cart-footer__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xs);
+}
+.cart-footer__total { font-size: 1.125rem; font-variant-numeric: tabular-nums; }
+.cart-footer .button { width: 100%; margin-top: var(--space-md); }
+.cart-note { margin-top: var(--space-md); }
+
+/* 13 Produktseite -------------------------------------------------------- */
+/* Mobile zuerst: Die Galerie ist eine waagerechte Bahn, die bis an beide
+   Bildschirmkanten läuft und einrastet – ein Bild pro Blick. Direkt darunter
+   stehen Name, Angabe, Preis, Ausführung und Kaufen. Die Kaufentscheidung
+   ist damit ohne Scrollen erreichbar.
+
+   Ab 990 px stehen die Bilder untereinander, die Kaufspalte bleibt beim
+   Scrollen stehen. */
+.product { display: grid; gap: var(--space-xl); }
+.product,
+.product > *,
+.product__gallery,
+.product__info,
+.product-form,
+.product-form form,
+.product-form__actions,
+.variant-options,
+.variant-option,
+.variant-option__label { min-width: 0; max-width: 100%; }
+
+.product__gallery { min-width: 0; }
+
+/* Die Bahn läuft bis an beide Bildschirmkanten, ohne die Seite zu
+   verbreitern. Die Kartenbreite ist eine Bahnbreite minus Wischvorschau:
+   Genau ein Bild liegt im Blick, vom nächsten steht ein schmaler Streifen
+   am Rand. Erst dieser Streifen macht aus einem großen Bild sichtbar eine
+   Galerie – ohne ihn liest sich die Seite wie ein Stapel Vollbilder. */
+.product__media {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc(
+    (100% + var(--gutter) - var(--space-sm)) / var(--gallery-peek-ratio, 1.1)
+  );
+  gap: var(--space-sm);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  width: calc(100% + (var(--gutter) * 2));
+  margin-inline: calc(var(--gutter) * -1);
+  padding-inline: var(--gutter);
+  scroll-padding-inline: var(--gutter);
+  box-sizing: border-box;
+}
+.product__media::-webkit-scrollbar { display: none; }
+.product__media > * { scroll-snap-align: start; scroll-snap-stop: always; min-width: 0; }
+
+/* Die Bahnbreite. Das Bild darin bleibt in der Mitte, egal welches Maß es
+   hat – dadurch rastet jede Position gleich weit ein. */
+.product__slide { display: grid; place-items: center; min-width: 0; }
+
+/* „contain" statt „cover": Bild 3 trägt die Duftnoten als Text. Ein
+   Anschnitt würde sie unlesbar machen, ein Strecken sie verzerren. Alle
+   Bilder liegen deshalb ungeschnitten in einem festen Rahmen; was übrig
+   bleibt, ist Seitenton und damit unsichtbar. */
+.product__media img,
+.product__media svg,
+.product__media .full-bleed-media {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  max-height: 54vh;
+  object-fit: contain;
+  object-position: center;
+}
+
+/* Zähler statt Fortschrittsbalken: „2 / 4“ sagt genau, wo man steht.
+   Rechtsbündig unter der Bahn, in der Auszeichnungsschrift. */
+.product__count {
+  margin-top: var(--space-sm);
+  text-align: right;
+  color: rgb(var(--color-muted));
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.product__count[hidden] { display: none; }
+.product__count-sep { opacity: 0.5; }
+
+/* Vorschauen erst ab Tablet – auf dem Telefon führt der Zähler. */
+.product__thumbs { display: none; }
+
+/* Sehr niedrige Geräte: Das Bild gibt etwas Höhe ab, damit Preis und
+   Kaufbutton mit einer kurzen Bewegung erreichbar bleiben. */
+@media (max-height: 700px) {
+  .product__media img,
+  .product__media svg,
+  .product__media .full-bleed-media { max-height: 46vh; }
+}
+
+/* Auf dem Telefon beginnt die Produktseite dichter unter dem Kopfbereich –
+   jede eingesparte Zeile bringt den Kaufbutton höher. */
+@media (max-width: 749px) {
+  .product__page { padding-top: var(--sect-sm); }
+}
+
+.product__title { margin-bottom: var(--space-2xs); }
+/* Fällt der Scent Code aus dem Metafeld weg, bleibt der Titel als
+   redaktionelle Überschrift stehen. */
+.product__title--text {
+  font-family: var(--font-heading-family, Georgia, serif);
+  font-size: clamp(1.625rem, 1.1rem + 2.2vw, 2.875rem);
+  line-height: 1.08;
+}
+.product__meta { color: rgb(var(--color-muted)); font-size: 0.9375rem; }
+.product__variant-line { margin-top: var(--space-xs); color: rgb(var(--color-muted)); }
+
+.product__price {
+  margin-block: var(--space-md);
+  padding-top: var(--space-sm);
+  border-top: var(--hair);
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ausführung: Zeilen auf Haarlinien statt gerahmter Kacheln. Die gewählte
+   Zeile ist an der kräftigeren Linie und der vollen Textfarbe erkennbar. */
+.variant-options {
+  display: grid;
+  /* Auf dem Telefon knapp gehalten – zwischen Preis und Kaufbutton soll
+     möglichst wenig Höhe liegen. */
+  /* Ein Fieldset bringt einen eigenen Rahmen, eigene Innenabstände und einen
+     Mindestwert für die Breite mit. Alles zurücksetzen, sonst steht um die
+     Ausführungen der graue Standardkasten des Browsers. */
+  margin: 0 0 var(--space-md);
+  padding: 0;
+  border: 0;
+  border-top: var(--hair);
+  min-inline-size: 0;
+}
+.variant-options legend {
+  float: left;
+  width: 100%;
+  padding: var(--space-xs) 0;
+  font-size: 0.6875rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+}
+.variant-option { position: relative; clear: both; }
+.variant-option input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; cursor: pointer; }
+.variant-option__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  min-height: 3rem;
+  padding: var(--space-xs) 0;
+  border-bottom: var(--hair);
+  color: rgb(var(--color-muted));
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.variant-option input:checked + .variant-option__label {
+  border-bottom-color: rgb(var(--color-text));
+  color: rgb(var(--color-text));
+}
+.variant-option input:focus-visible + .variant-option__label {
+  /* Der Fokusrahmen läuft in der Textfarbe: Champagner erreicht auf Ivory
+     nur 2,6:1 und verfehlt damit die geforderten 3:1 für Bedienelemente. */
+  outline: var(--focus-width) solid rgb(var(--color-text));
+  outline-offset: var(--focus-offset);
+}
+.variant-option input:disabled + .variant-option__label { opacity: 0.45; text-decoration: line-through; }
+.variant-option__price { font-variant-numeric: tabular-nums; flex: none; }
+
+.product-form__actions {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-md);
+}
+.product-form__actions .quantity { justify-self: start; max-width: 100%; }
+.product-form__actions [data-form-error] { grid-column: 1 / -1; }
+/* Der Hauptweg der Seite: volle Breite, ruhige Fläche, klare Beschriftung.
+   Er steht unmittelbar nach Preis und Ausführung. */
+.product-form__actions .button {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 3.5rem;
+  /* Neben der Mengenwahl bleibt wenig Breite – der Innenabstand wird
+     deshalb knapper gefasst, damit „In den Warenkorb" in eine Zeile passt. */
+  padding-inline: var(--space-sm);
+  font-size: 0.8125rem;
+  letter-spacing: var(--meta-tracking);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+@media (min-width: 750px) {
+  .product-form__actions .button { padding-inline: calc(var(--button-padding) * 1.5); }
+}
+
+.product__note { font-size: 0.75rem; color: rgb(var(--color-muted)); }
+.product__tax { margin-top: var(--space-md); }
+.product__title,
+.product__meta,
+.product__price,
+.product__note { max-width: 100%; overflow-wrap: anywhere; }
+
+.product__blocks { margin-top: var(--space-2xl); }
+
+/* Aufklappbereiche: nur Haarlinien, keine Kästen. */
+.product__accordion { margin-top: var(--space-2xl); }
+.product__accordion details { border-top: var(--hair); }
+.product__accordion details:last-of-type { border-bottom: var(--hair); }
+.product__accordion summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  min-height: 3.5rem;
+  font-family: var(--font-heading-family);
+  font-size: 1.0625rem;
+}
+.product__accordion summary svg { width: 12px; height: 12px; transition: transform var(--dur) var(--ease); flex: none; }
+.product__accordion details[open] summary svg { transform: rotate(180deg); }
+.product__accordion .rte { padding-bottom: var(--space-lg); }
+
+/* Ab Tablet bleibt es dieselbe Bahn – sie wird zur Bühne. Kein Stapel aus
+   vier riesigen Bildern mehr: ein großes Bild steht im Blick, darunter
+   führen kleine Vorschauen durch die Reihe. */
+@media (min-width: 750px) {
+  .product__media {
+    grid-auto-columns: 100%;
+    gap: var(--space-md);
+    width: 100%;
+    margin-inline: 0;
+    padding-inline: 0;
+    scroll-padding-inline: 0;
+  }
+  /* Auf der Bühne bekommt jedes Bild sein eigenes Maß: Breite und Höhe
+     laufen frei, begrenzt von der Spalte und von der Bildschirmhöhe. Es
+     entsteht kein Rahmen um das Bild, also auch kein Kasten. */
+  .product__media img,
+  .product__media svg,
+  .product__media .full-bleed-media {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: auto;
+    max-height: min(74vh, 46rem);
+  }
+
+  .product__count { display: none; }
+
+  /* Vorschauen: kleine Bilder auf dem Seitenton, ohne Rahmen und ohne
+     Rundung. Die aktive trägt eine Haarlinie unter sich – mehr braucht es
+     nicht, um den Stand zu zeigen. */
+  .product__thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+  }
+  .product__thumb {
+    width: clamp(3.75rem, 6vw, 5.5rem);
+    padding-bottom: var(--space-2xs);
+    border-bottom: var(--border-width) solid transparent;
+    opacity: 0.55;
+    transition: opacity var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  }
+  .product__thumb img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: var(--ratio-portrait);
+    object-fit: contain;
+  }
+  .product__thumb.is-active {
+    opacity: 1;
+    border-bottom-color: rgb(var(--color-text));
+  }
+  .product__thumb:focus-visible {
+    outline: var(--focus-width) solid rgb(var(--color-text));
+    outline-offset: var(--focus-offset);
+  }
+}
+
+@media (min-width: 750px) and (hover: hover) {
+  .product__thumb:hover { opacity: 1; }
+}
+
+/* Ohne JavaScript gibt es keine Vorschauen, die die Bühne weiterschalten
+   könnten – dann stehen die Bilder untereinander und bleiben vollständig
+   erreichbar. */
+.no-js .product__thumbs,
+.no-js .product__count { display: none; }
+.no-js .product__media {
+  grid-auto-flow: row;
+  grid-auto-columns: 100%;
+  overflow-x: visible;
+  scroll-snap-type: none;
+}
+
+@media (min-width: 990px) {
+  .product {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: start;
+  }
+  .product__info { position: sticky; top: 7rem; }
+}
+
+/* Sticky Add-to-Cart auf Mobilgeräten. Bleibt unverändert erhalten. */
+.sticky-atc {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: var(--z-sticky-bar, 50);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--gutter);
+  padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom, 0px));
+  background-color: rgb(var(--color-background));
+  border-top: var(--hair);
+  transform: translateY(100%);
+  transition: transform var(--dur) var(--ease);
+}
+.sticky-atc.is-visible { transform: none; }
+.sticky-atc__info { flex: 1; min-width: 0; }
+.sticky-atc__title { font-size: 0.875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sticky-atc__price { font-size: 0.8125rem; color: rgb(var(--color-muted)); font-variant-numeric: tabular-nums; }
+.sticky-atc .button { flex: none; min-height: 2.75rem; padding-inline: var(--space-lg); }
+@media (min-width: 990px) { .sticky-atc { display: none; } }
+
+/* 14 Kollektion, Suche, leere Zustände ----------------------------------- */
+/* Der Seitenkopf folgt derselben Regel wie auf der Startseite: Titel links
+   auf einer Haarlinie, Beitext rechts – nicht zentriert. */
+.collection-head {
+  display: grid;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-lg);
+  border-bottom: var(--hair);
+  margin-bottom: var(--space-lg);
+}
+.collection-head > .h2,
+.collection-head > h1 { margin: 0; }
+
+@media (min-width: 990px) {
+  .collection-head {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+    align-items: end;
+    gap: var(--space-2xl);
+    margin-bottom: var(--space-xl);
+  }
+}
+
+.collection-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm) var(--space-md);
+  padding-bottom: var(--space-md);
+  border-bottom: var(--hair);
+  margin-bottom: var(--space-xl);
+}
+.collection-toolbar__sort { min-width: 0; }
+.collection-toolbar__sort select { min-height: 2.75rem; }
+
+/* Leerer Zustand für Kundinnen und Kunden: eine ruhige Aussage auf einer
+   Haarlinie, kein gestrichelter Kasten. Der gestrichelte Hinweis bleibt
+   ausschließlich den Meldungen für den Theme-Editor vorbehalten. */
+.empty-state {
+  padding-top: var(--space-lg);
+  border-top: var(--hair-strong);
+  max-width: 46rem;
+}
+.empty-state__title { margin-bottom: var(--space-sm); }
+.empty-state__text { color: rgb(var(--color-muted)); max-width: 46ch; }
+.empty-state__actions { margin-top: var(--space-lg); display: flex; flex-wrap: wrap; gap: var(--space-md); }
+@media (max-width: 599px) { .empty-state__actions .button { display: flex; width: 100%; } }
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding-top: var(--space-lg);
+  border-top: var(--hair);
+  margin-top: var(--space-3xl);
+}
+.pagination a,
+.pagination span {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  color: rgb(var(--color-muted));
+  transition: color var(--dur) var(--ease);
+}
+.pagination a:hover { color: rgb(var(--color-text)); }
+.pagination [aria-current] {
+  color: rgb(var(--color-text));
+  border-bottom: var(--border-width) solid rgb(var(--color-text));
+}
+
+/* Seite nicht gefunden – eine ruhige typografische Seite. */
+.error-page { max-width: 34rem; }
+.error-page__text { margin-top: var(--space-md); color: rgb(var(--color-muted)); }
+.error-page__actions { margin-top: var(--space-xl); display: flex; flex-wrap: wrap; gap: var(--space-md); }
+@media (max-width: 599px) { .error-page__actions .button { display: flex; width: 100%; } }
+
+/* Formulare mit mehreren Feldern */
+.form-grid { display: grid; gap: var(--space-lg); max-width: 36rem; margin-top: var(--space-xl); }
+.form-grid__wide { grid-column: 1 / -1; }
+.form-grid .button { justify-self: start; min-width: 12rem; }
+@media (min-width: 600px) {
+  .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-lg); }
+}
+@media (max-width: 599px) { .form-grid .button { width: 100%; } }
+
+/* ==========================================================================
+   V2 — Editorial-Schärfung, Scent Code, Sticky-Leisten
+   ========================================================================== */
+
+/* 15 Display-Typografie und Markenzeichen -------------------------------- */
+/* Das Display-Register ist der Markenauftritt: sehr groß, versal, eng
+   gesetzt, mit einer Zeilenhöhe unter 1. Es kommt nur an wenigen Stellen vor –
+   Hero, Beratungsmoment, Extrait, Fußbereich. Überall sonst gilt die
+   Überschriftenskala. */
+.display {
+  font-family: var(--font-display-family, var(--font-heading-family));
+  font-weight: var(--font-display-weight, var(--font-heading-weight));
+  font-style: var(--font-display-style, normal);
+  font-size: clamp(3rem, 15vw, 9rem);
+  line-height: var(--display-leading, 0.9);
+  letter-spacing: calc(var(--display-tracking, -0.03em) + var(--display-extra-tracking, 0em));
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+/* Mobile: kompakter gesetzt, damit die Schlagzeile das Markenelement bleibt,
+   ohne den Handlungsweg nach unten zu drücken. */
+@media (max-width: 749px) {
+  .display {
+    font-size: clamp(2.875rem, 17vw, 5rem);
+    line-height: calc(var(--display-leading, 0.9) - 0.02);
+  }
+}
+
+@media (min-width: 990px) {
+  .display { font-size: clamp(4.5rem, 10vw, 12rem); }
+}
+
+.display--lines { display: block; }
+.display__line { display: block; }
+
+/* Zeilenweises Aufdecken: Jede Zeile sitzt in einem Fenster und fährt von
+   unten herein. Bewegt wird ausschließlich transform. */
+.display__mask { display: block; overflow: hidden; }
+html:not(.no-js) .animations-on .display__mask > span {
+  display: block;
+  transform: translateY(105%);
+  transition: transform var(--dur-reveal) var(--ease-out);
+}
+html:not(.no-js) .animations-on .reveal.is-visible .display__mask > span,
+html:not(.no-js) .animations-on .display__mask.is-visible > span { transform: none; }
+html:not(.no-js) .animations-on .display__mask:nth-of-type(2) > span { transition-delay: 90ms; }
+html:not(.no-js) .animations-on .display__mask:nth-of-type(3) > span { transition-delay: 180ms; }
+html:not(.no-js) .animations-on .display__mask:nth-of-type(4) > span { transition-delay: 270ms; }
+@media (prefers-reduced-motion: reduce) {
+  html:not(.no-js) .animations-on .display__mask > span { transform: none; }
+}
+
+/* --- Das Scent-Code-Monument -------------------------------------------
+   Das wiederkehrende Markenzeichen des Shops. Der Präfix steht in
+   Champagner und in einem kleineren Grad, die Ziffern tragen die Zeile.
+   Es erscheint im Hero, auf der Produktseite, in den Suchergebnissen und im
+   Warenkorb – immer gleich gebaut, nur in unterschiedlichen Graden. */
+.code-mark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.04em;
+  font-family: var(--font-display-family, var(--font-heading-family));
+  font-weight: var(--font-display-weight, var(--font-heading-weight));
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums lining-nums;
+  white-space: nowrap;
+}
+/* Der Präfix steht in der gedämpften Textfarbe, nicht in Champagner: Auf
+   Ivory erreicht Champagner nur 2,6:1 und wäre als Schrift zu schwach. Auf
+   dunklen Farbstilen, wo der Ton kräftig genug steht, kommt er zurück. */
+.code-mark__prefix {
+  font-size: 0.52em;
+  letter-spacing: 0.16em;
+  color: rgb(var(--color-muted));
+  transform: translateY(-0.06em);
+}
+.color-scheme-3 .code-mark__prefix,
+.color-scheme-ink .code-mark__prefix { color: rgb(var(--color-accent)); }
+.code-mark__digits { font-size: 1em; }
+.code-mark--xl { font-size: clamp(2.5rem, 9vw, 5rem); }
+.code-mark--lg { font-size: clamp(1.75rem, 5vw, 2.75rem); }
+.code-mark--md { font-size: 1.375rem; }
+.code-mark--sm { font-size: 1rem; }
+
+/* --- Kennziffer eines Abschnitts ---------------------------------------
+   Sehr große, sehr zurückgenommene Ziffer als Gliederung. Sie ist reine
+   Auszeichnung und wird beim Vorlesen übersprungen. */
+.figure-index {
+  font-family: var(--font-display-family, var(--font-heading-family));
+  font-weight: var(--font-display-weight, var(--font-heading-weight));
+  font-size: clamp(2.5rem, 8vw, 5.5rem);
+  line-height: 0.8;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums lining-nums;
+  /* Von 0,14 über 0,26 auf 0,34. Das ergibt rund 2,2:1 gegen Ivory – die
+     Ziffer liest sich als Gliederung, bleibt aber weit unter der Überschrift
+     (17,7:1) und unter dem gedämpften Fließtext (5,2:1). Sie ist
+     Auszeichnung, nicht Aussage. */
+  color: rgb(var(--color-text) / 0.34);
+  user-select: none;
+}
+
+/* 16 Scent-Code-Feld ----------------------------------------------------- */
+.code-field { display: block; }
+.code-field__label { display: block; margin-bottom: var(--space-xs); }
+
+.code-field__row {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  border: var(--border-width) solid rgb(var(--color-text));
+  border-radius: var(--input-radius);
+  background-color: rgb(var(--color-background));
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.code-field__row:focus-within { box-shadow: inset 0 0 0 1px rgb(var(--color-text)); }
+
+.code-field__prefix {
+  display: flex;
+  align-items: center;
+  padding-inline: var(--space-md) 0;
+  font-family: var(--font-heading-family);
+  font-size: 1.125rem;
+  letter-spacing: .04em;
+  color: rgb(var(--color-muted));
+  user-select: none;
+}
+
+.code-field__input {
+  flex: 1;
+  min-width: 0;
+  min-height: 3.25rem;
+  padding: 0 var(--space-sm);
+  border: 0;
+  background: none;
+  font-family: var(--font-heading-family);
+  font-size: 1.125rem;
+  letter-spacing: .18em;
+  color: rgb(var(--color-text));
+}
+.code-field__input:focus { outline: none; }
+.code-field__input::placeholder { color: rgb(var(--color-muted)); opacity: .6; letter-spacing: .18em; }
+
+.code-field__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  min-height: 3.25rem;
+  padding-inline: var(--space-lg);
+  background-color: rgb(var(--color-text));
+  color: rgb(var(--color-background));
+  font-size: .75rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  transition: opacity var(--dur) var(--ease);
+}
+.code-field__submit:hover { opacity: .85; }
+.code-field__submit svg { width: 16px; height: 16px; }
+
+.code-field--large .code-field__input { min-height: 4rem; font-size: 1.5rem; }
+.code-field--large .code-field__prefix { font-size: 1.5rem; padding-inline: var(--space-lg) 0; }
+.code-field--large .code-field__submit { min-height: 4rem; }
+
+.code-field--compact .code-field__submit-text { display: none; }
+.code-field--compact .code-field__submit { padding-inline: var(--space-md); }
+
+.code-field__status { margin-top: var(--space-xs); font-size: .8125rem; min-height: 1.2em; }
+.code-field__status[data-tone='error'] { color: rgb(var(--color-text)); }
+.code-field__status[data-tone='ok'] { color: rgb(var(--color-muted)); }
+
+.code-field__row.is-valid { border-color: rgb(var(--color-accent)); }
+
+@keyframes vc-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+.code-field__row.is-invalid { animation: vc-shake 240ms var(--ease); }
+@media (prefers-reduced-motion: reduce) {
+  .code-field__row.is-invalid { animation: none; }
+}
+
+/* 17 Sticky-Leisten ------------------------------------------------------ */
+/* Eine Quelle für die Leistenhöhe: Sie steuert die Leiste selbst und den
+   Platz, den der Fußbereich dafür freihält. */
+:root {
+  --whatsapp-bar-height: 3.5rem;
+  /* Über dem Header (40), unter Overlay (60) und Drawer (70): Die Leiste wird
+     von keinem Abschnitt verdeckt, verdeckt aber ihrerseits keinen Dialog. */
+  --z-sticky-bar: 50;
+}
+
+/* Bewusst ohne `transform` auf dem fixierten Element: iOS Safari verschiebt
+   ein `position: fixed`-Element mit eigenem transform in eine separate
+   Compositing-Ebene und zeichnet es beim Scrollen nicht zuverlässig neu – die
+   Leiste blieb dadurch auf dem iPhone unsichtbar, obwohl sie im DOM lag und
+   `is-visible` gesetzt war. Ein- und Ausblenden läuft deshalb über `bottom`;
+   optisch ist das derselbe Übergang von unten. */
+.sticky-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(-1 * (var(--whatsapp-bar-height) + env(safe-area-inset-bottom, 0px)));
+  z-index: var(--z-sticky-bar, 50);
+  padding: 0.375rem var(--gutter);
+  padding-bottom: calc(0.375rem + env(safe-area-inset-bottom, 0px));
+  visibility: hidden;
+  pointer-events: none;
+  transition: bottom var(--dur, 240ms) var(--ease, ease),
+              visibility 0s linear var(--dur, 240ms);
+}
+.sticky-bar.is-visible {
+  bottom: 0;
+  visibility: visible;
+  pointer-events: auto;
+  transition: bottom var(--dur, 240ms) var(--ease, ease), visibility 0s;
+}
+
+/* Drei Spalten: leerer Platzhalter, Beratung, Schließen. Der Platzhalter ist
+   so breit wie der Schließen-Button – dadurch steht die Beschriftung in der
+   optischen Mitte und überlagert das Symbol nie.
+   Höhe: 44 px Touch-Fläche + 2 × 6 px Innenabstand = 56 px. */
+.whatsapp-bar {
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
+  align-items: center;
+  background-color: rgb(var(--color-text, 11 11 10));
+  color: rgb(var(--color-background, 247 242 232));
+}
+
+.whatsapp-bar__link {
+  grid-column: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 2.75rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: inherit;
+}
+.whatsapp-bar__link svg { width: 17px; height: 17px; flex: none; }
+/* Schutz gegen horizontales Überlaufen, falls die Beschriftung im
+   Theme-Editor länger gesetzt wird als die mittlere Spalte breit ist. */
+.whatsapp-bar__link span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.whatsapp-bar__close {
+  grid-column: 3;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  color: inherit;
+  opacity: 0.7;
+}
+.whatsapp-bar__close:hover { opacity: 1; }
+.whatsapp-bar__close svg { width: 14px; height: 14px; }
+
+/* Platz freihalten, solange die Leiste erscheinen kann. Der Abstand sitzt am
+   Fußbereich statt am Body: So trägt die reservierte Fläche dessen Farbe und
+   es entsteht kein heller Streifen darunter. */
+body.has-whatsapp-bar .footer {
+  padding-bottom: calc(var(--whatsapp-bar-height) + env(safe-area-inset-bottom, 0px));
+}
+
+/* Auf Produktseiten gewinnt der Warenkorb-Button. */
+.template-product .whatsapp-bar,
+body.has-sticky-atc .whatsapp-bar { display: none; }
+
+@media (min-width: 990px) {
+  .whatsapp-bar { display: none; }
+  body.has-whatsapp-bar .footer { padding-bottom: 0; }
+}
+
+/* Bei Fokus in einem Eingabefeld weicht der Warenkorb-Balken der Tastatur.
+   Die Beratungsleiste ist hier bewusst nicht aufgeführt: Ihr Tastatur-Zustand
+   wird in theme.js in dieselbe Klasse `is-visible` eingerechnet. Sonst wuerde
+   `body.is-typing .sticky-bar` (0,2,1) die Regel `.sticky-bar.is-visible`
+   (0,2,0) dauerhaft ueberstimmen und die Leiste bliebe unsichtbar, sobald der
+   Fokus einmal in einem Eingabefeld war. */
+body.is-typing .sticky-atc { transform: translateY(110%); }
+
+/* 19 Gestaffeltes Einblenden --------------------------------------------- */
+html:not(.no-js) .animations-on .reveal[data-reveal-delay='1'] { transition-delay: 70ms; }
+html:not(.no-js) .animations-on .reveal[data-reveal-delay='2'] { transition-delay: 140ms; }
+html:not(.no-js) .animations-on .reveal[data-reveal-delay='3'] { transition-delay: 210ms; }
+html:not(.no-js) .animations-on .reveal[data-reveal-delay='4'] { transition-delay: 280ms; }
+
+/* 20 Marke: Signet und Wortmarke ---------------------------------------- */
+/* Das Signet wird als Maske gefüllt und übernimmt dadurch die Textfarbe des
+   Farbstils: tiefes Schwarz auf hellen Flächen, Elfenbein auf schwarzen.
+   Eine Datei, zwei Erscheinungen – und die Originalfarbe der Datei spielt
+   keine Rolle mehr. Ohne Maskierungsunterstützung im Browser bleibt die
+   Fläche leer, deshalb greift dort der Bildpfad aus dem Snippet. */
+.brand-mark {
+  display: block;
+  flex: none;
+  height: var(--mark-size, 22px);
+  width: calc(var(--mark-size, 22px) * var(--mark-ratio, 1));
+}
+/* Ohne Maskierungsunterstützung bliebe eine schwarze Fläche stehen – dann
+   lieber gar kein Signet. Alle aktuellen Browser unterstützen die Maske. */
+.brand-mark--tint { display: none; }
+@supports ((-webkit-mask-image: url('#m')) or (mask-image: url('#m'))) {
+  .brand-mark--tint {
+    display: block;
+    background-color: currentColor;
+    -webkit-mask-image: var(--mark-src);
+    mask-image: var(--mark-src);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+  }
+}
+img.brand-mark { object-fit: contain; }
+
+/* Kopfbereich: Signet und Wortmarke bilden ein Paar. */
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  min-width: 0;
+  color: rgb(var(--color-text));
+}
+
+/* Die Wortmarke im Kopfbereich läuft in der Sans, nicht in der Serif: So
+   entspricht sie der Wortmarke auf dem Flakon und im Fußbereich. Versalien,
+   ruhige Sperrung, mittleres Gewicht – kompakt genug, um neben dem
+   Monogramm zu stehen, ohne es zu überstimmen.
+
+   Nur die Darstellung ändert sich; Aufbau, Verweis und Beschriftung des
+   Lockups bleiben, wie sie sind. Der Fußbereich behält sein eigenes
+   Register. */
+.brand-lockup .wordmark {
+  font-family: var(--font-body-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  /* Versalien tragen rechts eine Sperrung, die optisch als Loch erscheint.
+     Sie wird um denselben Betrag zurückgenommen, damit das Lockup mittig
+     bleibt. */
+  margin-right: -0.2em;
+}
+
+/* Monogramm und Wortmarke stehen auf einer gemeinsamen optischen Achse:
+   Das Monogramm ist ein Zeichen ohne Grundlinie, deshalb wird nicht an der
+   Schriftgrundlinie, sondern an der Mitte ausgerichtet. */
+.brand-lockup .brand-mark { align-self: center; }
+.brand-lockup .wordmark { display: inline-block; }
+
+/* Mobiles Menü: kleine Markenreferenz über der Navigation. */
+.menu-drawer__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: rgb(var(--color-text));
+}
+.menu-drawer__brand .wordmark { font-size: 0.9375rem; }
+
+/* Fußbereich: das Signet steht neben der Wortmarke auf einer Grundlinie. */
+.footer__brand-row {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(0.75rem, 3vw, 1.5rem);
+  padding-block: var(--space-xl) var(--space-lg);
+  border-bottom: var(--hair);
+}
+.footer__brand-row .footer__brandline {
+  padding-block: 0;
+  border-bottom: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Auf dem Telefon tritt der Markenblock eine Stufe zurück: Signet und
+   Wortmarke rund 18 % kleiner, die Abstände darum enger. Der Fußbereich
+   bleibt luftig, kostet aber deutlich weniger Bildschirmhöhe – vorher nahm
+   allein die Markenzeile 113 px ein. */
+@media (max-width: 749px) {
+  .footer__brand-row {
+    padding-block: var(--space-lg) var(--space-md);
+    gap: 0.75rem;
+  }
+  /* Nicht über --mark-size: Die Variable kommt aus einem style-Attribut und
+     schlägt jede Regel aus dem Stylesheet. Höhe und Breite dagegen stehen
+     nur hier – sie lassen sich überschreiben und rechnen den eingestellten
+     Wert um 18 % herunter, statt ihn durch eine feste Zahl zu ersetzen. */
+  .footer__brand-row .brand-mark {
+    height: calc(var(--mark-size, 56px) * 0.82);
+    width: calc(var(--mark-size, 56px) * 0.82 * var(--mark-ratio, 1));
+  }
+  .footer__brand-row .footer__brandline {
+    font-size: clamp(1.25rem, 5.8vw, 2.5rem);
+    letter-spacing: 0.12em;
+  }
+  .footer__top { padding-block: var(--space-lg) var(--space-md); gap: var(--space-md); }
+  .footer__block--brand .footer__brand-text { margin-top: var(--space-xs); }
+  /* Der Seitenschluss: Die Zeile mit Copyright und Zahlarten steht dicht,
+     darunter liegt nur noch der Platz, den die feste Beratungsleiste
+     einnimmt – kein zusätzlicher Leerraum. */
+  .footer__bottom { padding-block: var(--space-sm) 0.625rem; gap: var(--space-xs) var(--space-md); }
+}
+@media (min-width: 990px) {
+  .footer__brand-row { padding-block: var(--space-2xl) var(--space-xl); align-items: center; }
+}
+
+/* Wasserzeichen – bewusst nur an einer einzigen Stelle und sehr schwach.
+   Es liegt hinter dem Inhalt und wird nie zum Muster. */
+.brand-watermark {
+  position: absolute;
+  z-index: 0;
+  opacity: 0.05;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* 20b Logo als Inline-SVG ------------------------------------------------ */
+.header__logo-svg { display: block; }
+.header__logo-svg svg { display: block; width: 100%; height: auto; }
+.header__logo-svg svg [fill]:not([fill='none']) { fill: currentColor; }
+.header__logo-svg svg [stroke]:not([stroke='none']) { stroke: currentColor; }
+
+/* 21 Quick Add ----------------------------------------------------------- */
+/* Auf Touch: ein kleines Feld in der Bildecke, dauerhaft erreichbar.
+   Auf Zeigegeräten: eine beschriftete Leiste, die hinter einer Maske aus dem
+   unteren Bildrand hervorfährt. Bewegt wird ausschließlich transform. */
+/* Schnell-hinzufügen sitzt unter den Angaben, nicht auf dem Bild. Es ist
+   eine Zeile in der Auszeichnungsschrift über einer Haarlinie – kein Knopf,
+   der sich vor das Produktfoto legt. */
+.card__quick-add {
+  position: relative;
+  z-index: 2;
+  /* Keine Linie über der Zeile: Sie wäre die untere Kartenkante, und genau
+     die soll es hier nicht geben. Der Abstand allein trennt Angabe von
+     Handlung. */
+  margin-top: var(--space-sm);
+}
+
+.card__quick-add-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  width: auto;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+  /* Deutlich dunkler als zuvor: Die Zeile ist der einzige Kaufweg auf der
+     Karte und war als gedämpfter Text (5,2:1) zu leise. 82 % Textfarbe
+     ergeben rund 12:1 – klar lesbar, aber eine Spur unter dem Preis, damit
+     die Rangfolge auf der Karte erhalten bleibt. Klein und versal bleibt
+     sie zurückhaltend; es wird kein Knopf daraus. */
+  color: rgb(var(--color-text) / 0.82);
+  font-size: 0.6875rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  text-align: left;
+  transition: opacity var(--dur) var(--ease);
+}
+
+.card__quick-add-label { display: inline; }
+.card__quick-add-button svg {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  transition: transform var(--dur) var(--ease);
+}
+
+@media (hover: hover) {
+  .card__quick-add-button:hover {
+    color: rgb(var(--color-text));
+    text-decoration: underline;
+    text-underline-offset: 0.35em;
+  }
+  .card__quick-add-button:hover svg { transform: rotate(90deg); }
+}
+
+/* Rückmeldung nach dem Absenden: die Zeile wird kurz zur Textfarbe. */
+.card__quick-add-button[data-state='added'] {
+  background-color: transparent;
+  color: rgb(var(--color-text));
+}
+
+/* 22 Mobiles Menü, Suchpanel, Sofortsuche ------------------------------- */
+/* Mobiles Menü */
+.menu-drawer__top {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  border-bottom: var(--border-width) solid rgb(var(--color-line));
+}
+.menu-drawer__wa { width: 100%; min-height: 3rem; }
+
+.menu-drawer__primary > li { border-bottom: var(--border-width) solid rgb(var(--color-line)); }
+.menu-drawer__primary .menu-drawer__link { font-size: 1.0625rem; letter-spacing: .04em; }
+.menu-drawer__link svg { width: 16px; height: 16px; opacity: .5; }
+
+.menu-drawer__secondary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--space-md);
+  padding-block: var(--space-md);
+  border-bottom: var(--border-width) solid rgb(var(--color-line));
+}
+.menu-drawer__secondary a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: .9375rem;
+  color: rgb(var(--color-muted));
+}
+
+.menu-drawer__tertiary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding-block: var(--space-lg);
+}
+.menu-drawer__tertiary a {
+  font-size: .8125rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.menu-drawer__account { border-top: var(--border-width) solid rgb(var(--color-line)); }
+
+/* Scent-Code-Feld über der Suche */
+.search-panel__code { max-width: 24rem; margin-bottom: var(--space-xl); }
+
+/* Scent-Code-Treffer in der Sofortsuche */
+.predictive__code {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  min-height: 3.5rem;
+  padding: var(--space-sm) var(--space-md);
+  border: var(--border-width) solid rgb(var(--color-text));
+  margin-bottom: var(--space-lg);
+}
+/* Der generische Treffer ist ein Absende-Button statt eines Links: gleiche
+   Darstellung, damit der Wechsel im Markup optisch nicht auffällt. */
+/* Titel und Ausführungszeile untereinander, damit die Beschriftung rechts
+   nicht in den Text läuft. */
+.predictive__code > span:first-child { display: grid; gap: .15rem; min-width: 0; }
+.predictive__code-meta { display: block; }
+
+button.predictive__code {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  background: none;
+}
+button.predictive__code[disabled] { opacity: .6; cursor: default; }
+
+/* Meldung, falls Shopify den Artikel nicht annimmt. Sitzt im Platz, den der
+   untere Abstand des Treffers ohnehin freihält – kein zusätzlicher Raum. */
+.predictive__code-error {
+  margin-top: calc(var(--space-lg) * -1 + var(--space-xs));
+  margin-bottom: var(--space-lg);
+  font-size: .8125rem;
+  color: rgb(var(--color-text));
+}
+.predictive__code-error[hidden] { display: none; }
+
+.predictive__code-title { font-family: var(--font-heading-family); font-size: 1.125rem; letter-spacing: .1em; }
+.predictive__code-meta { font-size: .8125rem; color: rgb(var(--color-muted)); }
+.predictive__code-cta { font-size: .75rem; letter-spacing: var(--meta-tracking); text-transform: uppercase; white-space: nowrap; }
+
+/* 23 Scent Code im Warenkorb --------------------------------------------- */
+.cart-item__code {
+  margin-top: var(--space-xs);
+  padding-left: var(--space-sm);
+  border-left: 2px solid rgb(var(--color-accent));
+  color: rgb(var(--color-text));
+}
+.cart-item__code dt,
+.cart-item__code dd {
+  font-size: .75rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+}
+.cart-item__code dd { font-family: var(--font-heading-family); letter-spacing: .1em; }
+
+/* Der Scent Code als Überschrift der Position. Er steht in der Auszeichnungs-
+   schrift mit ruhiger Sperrung – erkennbar als Kennung, nicht als Fließtext.
+   Die Größe bleibt die der übrigen Positionstitel; hervorgehoben wird durch
+   Form, nicht durch Fläche. */
+.cart-item__title--code {
+  font-family: var(--font-heading-family);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+/* Leerer Warenkorb: zwei Wege untereinander, der zweite deutlich leiser. */
+.cart-empty__actions {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+.cart-empty__button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-height: 3.25rem;
+  padding-inline: var(--space-lg);
+}
+.cart-empty__button svg { width: 16px; height: 16px; flex: none; }
+/* Der zweite Weg als leiser Textlink. Der Pfeil braucht eine feste Größe:
+   ohne sie hat das SVG kein eigenes Maß und läuft auf volle Spaltenbreite
+   auf – .link-underline setzt anders als .action-link keine Maße. */
+.cart-empty__beratung {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: .8125rem;
+}
+.cart-empty__beratung svg { width: 15px; height: 15px; flex: none; }
+
+/* 24 Ruhige Zeile -------------------------------------------------------- */
+.quiet-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding-block: var(--space-lg);
+  border-top: var(--border-width) solid rgb(var(--color-line));
+  border-bottom: var(--border-width) solid rgb(var(--color-line));
+}
+.quiet-row__main { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-md); }
+.quiet-row__title {
+  font-size: .8125rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+}
+.quiet-row__text { color: rgb(var(--color-muted)); font-size: .9375rem; }
+
+/* 25 Sehr schmale Geräte (320 px) ---------------------------------------- */
+@media (max-width: 359px) {
+  /* Beschriftung weicht, das Symbol bleibt – der Button behält 44 px Breite. */
+  .code-field--inline .code-field__submit-text { display: none; }
+  .code-field--inline .code-field__submit { padding-inline: var(--space-md); }
+  .code-field__prefix { padding-inline: var(--space-sm) 0; }
+  .code-field__input { letter-spacing: .12em; }
+
+  /* Nur die Laufweite weiter zurücknehmen – die Größe setzt der Block oben. */
+  .announcement__text { letter-spacing: .08em; }
+
+  /* Zwei Spalten im mobilen Menü werden zu einer. */
+  .menu-drawer__secondary { grid-template-columns: 1fr; }
+}
+
+/* Waagerechte Bewegung ist nur innerhalb der Bauteile erlaubt, die
+   ausdrücklich zum Wischen gedacht sind – die Seite selbst verbreitert sich
+   nie. */
+html,
+body { max-width: 100%; overflow-x: clip; }
+
+/* Nur die Mindestbreite zurücksetzen. Ein max-width: 100 % an dieser Stelle
+   würde die Seitenbreite aus den Theme Settings überschreiben – der Inhalt
+   liefe dann auf großen Bildschirmen bis an beide Ränder. */
+.page-width { min-width: 0; }
+
+
+/* V4.2.2 — Cart drawer mobile hardening ----------------------------------
+   Safari/iOS treated the previous display:contents wrapper inconsistently,
+   which let drawer content visually mix with the dimmed product page. */
+#CartDrawer {
+  width: min(28rem, 92vw);
+  height: 100dvh;
+  max-height: 100dvh;
+  background: rgb(var(--color-background));
+  color: rgb(var(--color-text));
+  /* Abgrenzung übernimmt der Abdunkler und eine Haarlinie an der Kante –
+     kein weicher Schlagschatten. */
+  box-shadow: -1px 0 0 rgb(var(--color-line));
+  overflow: hidden;
+  isolation: isolate;
+}
+
+#CartDrawer .cart-drawer__shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background: inherit;
+}
+
+#CartDrawer .drawer__header {
+  flex: 0 0 auto;
+  padding: 1.25rem 1.25rem .9rem;
+  background: inherit;
+  border-bottom: 1px solid rgb(var(--color-line));
+}
+
+#CartDrawer .drawer__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.1rem 1.25rem;
+  background: inherit;
+  -webkit-overflow-scrolling: touch;
+}
+
+#CartDrawer .drawer__footer {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 1rem 1.25rem calc(1rem + env(safe-area-inset-bottom));
+  background: inherit;
+  border-top: 1px solid rgb(var(--color-line));
+  box-shadow: none;
+}
+
+#CartDrawer .cart-items { gap: 1rem; }
+#CartDrawer .cart-item {
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: .9rem;
+  padding-bottom: 1rem;
+}
+#CartDrawer .cart-item__media { width: 56px; min-width: 56px; }
+#CartDrawer .cart-item__media:empty { display: none; }
+#CartDrawer .cart-item__media img {
+  width: 56px;
+  height: 72px;
+  object-fit: cover;
+}
+#CartDrawer .cart-item > div { min-width: 0; }
+#CartDrawer .cart-item__title {
+  margin: 0;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+#CartDrawer .cart-item__variant { margin-top: .2rem; }
+#CartDrawer .cart-item__row {
+  gap: .75rem;
+  margin-top: .65rem;
+}
+#CartDrawer .cart-item__price {
+  margin-left: auto;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+#CartDrawer .quantity { flex: 0 0 auto; }
+#CartDrawer .quantity button,
+#CartDrawer .quantity input {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+/* Die Zeile wird dichter: Bild, Name, Ausführung, dann Menge und Preis auf
+   einer Grundlinie. „Entfernen" ist der leiseste Punkt der Zeile – kleine
+   Schrift, gedämpft, Unterstreichung erst beim Zeigen. Die Tippfläche bleibt
+   trotzdem 44 px hoch, sie wird nur nach oben in den Abstand gezogen. */
+#CartDrawer .cart-item__media img {
+  aspect-ratio: 4 / 5;
+  object-fit: contain;
+  background: transparent;
+}
+#CartDrawer .cart-item__title { font-size: .9375rem; line-height: 1.25; }
+#CartDrawer .cart-item__variant { font-size: .78125rem; }
+#CartDrawer .cart-item__properties { margin-top: .35rem; font-size: .75rem; }
+#CartDrawer .cart-item__row { margin-top: .5rem; }
+#CartDrawer .cart-item__price { font-size: .9375rem; }
+
+#CartDrawer .cart-item__remove {
+  min-height: 2.75rem;
+  margin-top: -.55rem;
+  font-size: .6875rem;
+  letter-spacing: .04em;
+  text-decoration: none;
+  color: rgb(var(--color-muted));
+}
+#CartDrawer .cart-item__remove:hover { text-decoration: underline; text-underline-offset: .3em; }
+
+/* Die Hinweise unter der Zwischensumme stehen dicht beieinander und leise.
+   Sie erklären, was im Checkout passiert – mehr sollen sie nicht. */
+#CartDrawer .cart-footer .text-fine { margin-top: .35rem; line-height: 1.45; }
+#CartDrawer .cart-footer__hinweis {
+  margin-top: .2rem;
+  font-size: .6875rem;
+  line-height: 1.45;
+  color: rgb(var(--color-muted));
+}
+#CartDrawer .cart-footer__row { margin-bottom: .35rem; }
+#CartDrawer .cart-footer__total { white-space: nowrap; }
+#CartDrawer .cart-footer .button {
+  width: 100%;
+  min-height: 3.25rem;
+  margin-top: .85rem;
+}
+
+@media (max-width: 749px) {
+  #CartDrawer { width: min(26rem, 94vw); }
+  #CartDrawer .drawer__header { padding-inline: 1rem; }
+  #CartDrawer .drawer__body { padding: 1rem; }
+  #CartDrawer .drawer__footer {
+    padding: .9rem 1rem calc(.9rem + env(safe-area-inset-bottom));
+  }
+  #CartDrawer .drawer__close { margin-right: -.5rem; }
+  #CartDrawer .cart-item {
+    grid-template-columns: 48px minmax(0,1fr);
+    gap: .75rem;
+  }
+  #CartDrawer .cart-item__media { width: 48px; min-width: 48px; }
+  #CartDrawer .cart-item__media img { width: 48px; height: 64px; }
+  #CartDrawer .cart-item__row { align-items: center; }
+}
+
+/* V4.2.3 — Cart drawer stacking-context rebuild ---------------------------
+   Shopify's mobile theme preview can wrap sections in its own stacking
+   context. Keep the whole cart section above the dimmer and force a fully
+   opaque panel so the product page can never bleed through. */
+#shopify-section-cart-drawer {
+  position: relative !important;
+  z-index: 2147483646 !important;
+}
+
+[data-overlay].overlay {
+  z-index: 2147483600 !important;
+}
+
+#CartDrawer {
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: auto !important;
+  z-index: 2147483646 !important;
+  width: min(28rem, 94vw) !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background-color: rgb(247 242 232) !important;
+  color: rgb(11 11 10) !important;
+  opacity: 1 !important;
+  box-shadow: -1px 0 0 rgb(var(--color-line)) !important;
+  isolation: isolate !important;
+  contain: layout paint;
+}
+
+#CartDrawer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgb(247 242 232);
+  pointer-events: none;
+}
+
+#CartDrawer .cart-drawer__shell,
+#CartDrawer .drawer__header,
+#CartDrawer .drawer__body,
+#CartDrawer .drawer__footer {
+  background-color: rgb(247 242 232) !important;
+  opacity: 1 !important;
+}
+
+#CartDrawer .cart-drawer__shell {
+  position: relative;
+  z-index: 1;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+#CartDrawer .drawer__header {
+  min-height: 4.5rem;
+  padding: 1rem 1.1rem !important;
+}
+
+#CartDrawer .drawer__body {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 1rem 1.1rem !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+#CartDrawer .drawer__footer {
+  position: relative !important;
+  inset: auto !important;
+  width: auto !important;
+  padding: .9rem 1.1rem calc(.9rem + env(safe-area-inset-bottom)) !important;
+}
+
+#CartDrawer .cart-item,
+#CartDrawer .cart-item > div,
+#CartDrawer .cart-item__row,
+#CartDrawer .cart-footer,
+#CartDrawer .cart-footer form {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+@media (max-width: 749px) {
+  #CartDrawer {
+    width: calc(100vw - 1rem) !important;
+    max-width: calc(100vw - 1rem) !important;
+  }
+  /* Das Produktbild war hier früher ausgeblendet: Der Drawer war zu schmal,
+     um Bild und Angaben nebeneinander zu tragen. Er nimmt inzwischen fast
+     die volle Fensterbreite ein – eine schmale Bildspalte passt bequem und
+     macht aus der Liste wieder einen Warenkorb statt einer Tabelle. */
+  #CartDrawer .cart-item {
+    grid-template-columns: 52px minmax(0, 1fr) !important;
+  }
+  #CartDrawer .cart-item__media {
+    display: block !important;
+    width: 52px !important;
+    min-width: 52px !important;
+  }
+  #CartDrawer .cart-item__media img { width: 52px !important; height: 65px !important; }
+  #CartDrawer .cart-item__row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+  }
+}
+
+/* V4.2.6 — Mobile menu drawer isolation ----------------------------------
+   In Shopify's mobile preview the header section can form a stacking context.
+   The menu drawer then sits underneath the global overlay and the product page
+   appears to bleed through. Force the menu into its own opaque top layer. */
+#MenuDrawer {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: auto !important;
+  bottom: 0 !important;
+  z-index: 2147483646 !important;
+  width: min(25rem, 94vw) !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background-color: rgb(247 242 232) !important;
+  color: rgb(11 11 10) !important;
+  box-shadow: 1px 0 0 rgb(var(--color-line)) !important;
+  isolation: isolate !important;
+  contain: layout paint;
+  transform: translateX(-100%) !important;
+  visibility: hidden !important;
+}
+
+#MenuDrawer.is-open {
+  transform: translateX(0) !important;
+  visibility: visible !important;
+}
+
+#MenuDrawer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgb(247 242 232);
+  pointer-events: none;
+}
+
+#MenuDrawer .drawer__header,
+#MenuDrawer .menu-drawer__top,
+#MenuDrawer .drawer__body {
+  background-color: rgb(247 242 232) !important;
+  opacity: 1 !important;
+}
+
+#MenuDrawer .drawer__header {
+  flex: 0 0 auto;
+  min-height: 4.5rem;
+  padding: 1rem 1.1rem !important;
+}
+
+#MenuDrawer .menu-drawer__top {
+  flex: 0 0 auto;
+  padding: 1rem 1.1rem !important;
+}
+
+#MenuDrawer .drawer__body {
+  flex: 1 1 auto;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: .5rem 1.1rem calc(1rem + env(safe-area-inset-bottom)) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 749px) {
+  #MenuDrawer { width: min(23rem, 92vw) !important; }
+  #MenuDrawer .field__input { max-width: 100%; }
+  #MenuDrawer .menu-drawer__wa { width: 100%; }
+}
+
+
+/* V4.2.7 — consolidated cart polish ------------------------------------- */
+@media (max-width: 749px) {
+  #CartDrawer .drawer__header {
+    min-height: 4rem;
+    padding: .85rem 1.1rem !important;
+  }
+  #CartDrawer .drawer__body {
+    padding: .35rem 1.1rem .7rem !important;
+  }
+  #CartDrawer .cart-items { gap: 0 !important; }
+  /* Zweispaltig statt untereinander: Das Bild stand hier durch
+     „display: block" über den Angaben und die Zeile wurde dadurch doppelt so
+     hoch. Bild links, alles andere rechts – das ist die Form, die ein
+     Warenkorb haben soll. */
+  #CartDrawer .cart-item {
+    display: grid !important;
+    grid-template-columns: 52px minmax(0, 1fr) !important;
+    gap: .8rem !important;
+    align-items: start;
+    padding: .9rem 0 .8rem !important;
+    border-bottom: 1px solid rgb(var(--color-line));
+  }
+  #CartDrawer .cart-item:last-child { border-bottom: 0; }
+  #CartDrawer .cart-item__title { font-size: .95rem; line-height: 1.25; }
+  #CartDrawer .cart-item__variant { margin-top: .15rem; font-size: .8rem; }
+  #CartDrawer .cart-item__row {
+    margin-top: .65rem;
+    gap: .55rem !important;
+    flex-wrap: nowrap !important;
+  }
+  #CartDrawer .quantity button,
+  #CartDrawer .quantity input {
+    width: 2rem;
+    height: 2rem;
+  }
+  #CartDrawer .cart-item__remove {
+    min-height: 2.75rem;
+    margin-top: -.45rem;
+    font-size: .6875rem;
+  }
+  #CartDrawer .drawer__footer {
+    padding: .75rem 1.1rem calc(.75rem + env(safe-area-inset-bottom)) !important;
+  }
+  #CartDrawer .cart-footer__row { margin-bottom: .2rem; }
+  #CartDrawer .cart-footer__total { font-size: 1.15rem; }
+  #CartDrawer .cart-footer p { margin: .45rem 0 .65rem; line-height: 1.4; }
+  #CartDrawer .cart-footer .button { min-height: 3rem; margin-top: .55rem; }
+  #CartDrawer .cart-footer .link-underline { margin-top: .6rem !important; font-size: .75rem; }
+}
+
+/* V4.2.8 — usable mobile search ----------------------------------------- */
+#MenuDrawer .menu-drawer__search {
+  padding: 0 !important;
+  border: 0 !important;
+}
+#MenuDrawer .menu-drawer__search-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3rem;
+  align-items: center;
+  border-bottom: 1px solid rgb(var(--color-line));
+}
+#MenuDrawer .menu-drawer__search-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 3.4rem;
+  padding: .3rem .15rem .35rem 0;
+  border: 0 !important;
+  background: transparent !important;
+  font-family: var(--font-heading-family);
+  /* Obergrenze auf 1.45rem: Die Lade hat eine feste Breite, deshalb wächst
+     das Feld ab einer gewissen Ansichtsbreite nicht mehr mit. Bei 1.55rem
+     stand der Platzhalter 2 px über der Feldbreite und wurde beschnitten. */
+  font-size: clamp(1.15rem, 5vw, 1.45rem);
+  line-height: 1.2;
+  color: inherit;
+  text-align: left;
+}
+#MenuDrawer .menu-drawer__search-input:focus { outline: none; }
+#MenuDrawer .menu-drawer__search-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+#MenuDrawer .menu-drawer__search-submit svg { width: 1.25rem; height: 1.25rem; }
+#MenuDrawer .menu-drawer__search-help {
+  margin: .55rem 0 0;
+  font-size: .75rem;
+  line-height: 1.35;
+  color: rgb(var(--color-muted));
+}
+
+/* V4.2.12 — Suchpanel in dieselbe Ebene wie Menü und Warenkorb ------------
+   In V4.2.3 und V4.2.6 wurden Warenkorb- und Menü-Drawer über den Abdunkler
+   gehoben (z-index 2147483646) und der Abdunkler selbst auf 2147483600
+   gesetzt. Das Suchpanel blieb bei z-index 70 und lag damit UNTER dem
+   Abdunkler – die Suche erschien dadurch halbtransparent überlagert.
+   Es bekommt hier dieselbe Behandlung: eigene Ebene, deckender Grund. */
+#SearchDrawer {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: auto !important;
+  z-index: 2147483646 !important;
+  width: 100% !important;
+  max-height: 92dvh !important;
+  margin: 0 !important;
+  background-color: rgb(var(--color-background, 247 242 232)) !important;
+  color: rgb(var(--color-text, 11 11 10)) !important;
+  opacity: 1 !important;
+  box-shadow: 0 1px 0 rgb(var(--color-line)) !important;
+  isolation: isolate !important;
+  transform: translateY(-100%) !important;
+  visibility: hidden !important;
+  /* Ohne visibility in der Übergangsliste: `.drawer` blendet visibility über
+     420 ms ein, zum Zeitpunkt des ersten Frames ist der Wert daher noch
+     `hidden` – und `input.focus()` aus der Fokusfalle läuft ins Leere. Das
+     Suchfeld bekam dadurch auf dem Telefon nie den Fokus. */
+  transition: transform var(--dur-slow, 420ms) var(--ease, ease) !important;
+}
+
+#SearchDrawer.is-open {
+  transform: none !important;
+  visibility: visible !important;
+}
+
+/* Deckender Grund auch dann, wenn eine Farbvariable fehlt. */
+#SearchDrawer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgb(var(--color-background, 247 242 232));
+  pointer-events: none;
+}
+
+#SearchDrawer .search-panel {
+  position: relative;
+  z-index: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  max-height: 92dvh;
+  background-color: rgb(var(--color-background, 247 242 232)) !important;
+  opacity: 1 !important;
+}
+
+
+
+/* Legal pages — VENT CELESTE */
+.legal-document {
+  padding-block: clamp(3.5rem, 7vw, 7rem);
+}
+.legal-document__inner {
+  max-width: min(var(--w-page), 54rem);
+}
+.legal-document__title {
+  margin-top: .65rem;
+  margin-bottom: clamp(2rem, 4vw, 3.5rem);
+  max-width: 14ch;
+}
+.legal-document__content {
+  font-size: clamp(.98rem, 1.2vw, 1.06rem);
+  line-height: 1.72;
+}
+.legal-document__content h2 {
+  margin-top: clamp(2.25rem, 4vw, 3.5rem);
+  margin-bottom: .75rem;
+  font-family: var(--font-body-family);
+  font-size: .78rem;
+  line-height: 1.35;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.legal-document__content hr {
+  border: 0;
+  border-top: 1px solid rgb(var(--color-border));
+  margin-block: clamp(2.5rem, 5vw, 4rem);
+}
+.legal-document__facts {
+  border-top: 1px solid rgb(var(--color-border));
+  margin-block: 1rem 1.5rem;
+}
+.legal-document__facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-block: .85rem;
+  border-bottom: 1px solid rgb(var(--color-border));
+}
+.legal-document__facts span {
+  color: rgb(var(--color-muted));
+}
+.legal-document__updated {
+  margin-top: clamp(3rem, 6vw, 5rem);
+  padding-top: 1rem;
+  border-top: 1px solid rgb(var(--color-border));
+  font-size: .75rem;
+  color: rgb(var(--color-muted));
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.legal-document__withdrawal {
+  margin-top: .35rem;
+}
+.footer__withdrawal {
+  padding-block: 1rem;
+  border-top: 1px solid rgb(var(--color-border));
+  border-bottom: 1px solid rgb(var(--color-border));
+}
+.footer__withdrawal-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: .7rem 1rem;
+  background: rgb(var(--color-foreground));
+  color: rgb(var(--color-background));
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.footer__withdrawal-link:hover {
+  opacity: .82;
+}
+.shopify-policy__container {
+  max-width: 54rem !important;
+  margin-inline: auto !important;
+  padding: clamp(3.5rem, 7vw, 7rem) var(--page-gutter) !important;
+}
+.shopify-policy__title {
+  text-align: left !important;
+  margin-bottom: clamp(2rem, 4vw, 3.5rem) !important;
+}
+.shopify-policy__body {
+  line-height: 1.72;
+}
+@media (max-width: 749px) {
+  .legal-document { padding-block: 2.75rem 4rem; }
+  .legal-document__title { margin-bottom: 1.9rem; }
+  .legal-document__content { line-height: 1.68; }
+  .legal-document__content h2 { margin-top: 2.15rem; }
+  .legal-document__facts > div { gap: 1rem; align-items: baseline; }
+  .legal-document__facts strong { text-align: right; }
+  .footer__withdrawal-link { width: 100%; }
+}

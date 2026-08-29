@@ -1,0 +1,423 @@
+/* ==========================================================================
+   HERO — der Markenauftritt
+
+   Zwei Kompositionen, eine Bauweise:
+
+     .hero2--overlay   Bild über die volle Breite, die Schlagzeile liegt
+                       darüber. Die Lesbarkeit kommt aus einem Verlauf, der
+                       nach unten und nach links zunimmt – nicht aus einer
+                       Fläche über dem Bild.
+     .hero2--split     Schlagzeile links auf der Rasterkante, das Bild läuft
+                       rechts aus dem Innenabstand heraus.
+     .hero2--type      Ohne Bild: rein typografisch, kein Platzhalter.
+
+   Unter allen dreien liegt die Einstiegsleiste – zwei gleichwertige Wege,
+   getrennt durch eine Linie, ohne eine einzige gefüllte Schaltfläche.
+   ========================================================================== */
+
+.hero2 {
+  position: relative;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  isolation: isolate;
+  overflow: hidden;
+  /* Grundhöhe auf dem Telefon: hoch genug für einen Auftritt, niedrig genug,
+     dass die Einstiegsleiste über der Falz bleibt. */
+  min-height: min(calc(100svh - var(--header-block, 8.5rem)), 34rem);
+}
+
+/* -------------------------------------------------------------- Bild --- */
+/* Das Bild liegt hinter allem und bestimmt die Höhe des Abschnitts nicht:
+   absolut positioniert bleibt es aus dem Textfluss heraus. Sonst zöge ein
+   hochformatiges Motiv den Hero auf seine eigene Bildhöhe auf. */
+.hero2__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+.hero2__media-inner { width: 100%; height: 100%; }
+.hero2__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Verlauf statt Fläche: unten dicht, oben offen, zusätzlich von links
+   eingezogen, damit die Schlagzeile auf jedem Motiv steht. */
+.hero2__scrim {
+  position: absolute;
+  inset: 0;
+  background-image:
+    /* Senkrecht: dicht dort, wo Schlagzeile und Leiste stehen, offen oben. */
+    linear-gradient(to top,
+      rgb(var(--color-background) / calc(var(--scrim, 0.45) + 0.4)) 0%,
+      rgb(var(--color-background) / calc(var(--scrim, 0.45) + 0.22)) 34%,
+      rgb(var(--color-background) / calc(var(--scrim, 0.45) * 0.55)) 68%,
+      rgb(var(--color-background) / calc(var(--scrim, 0.45) * 0.12)) 100%),
+    /* Waagerecht: zusätzlicher Einzug von links, weil der Text dort steht. */
+    linear-gradient(to right,
+      rgb(var(--color-background) / calc(var(--scrim, 0.45) * 0.75)) 0%,
+      rgb(var(--color-background) / calc(var(--scrim, 0.45) * 0.25)) 42%,
+      rgb(var(--color-background) / 0) 78%);
+}
+
+/* --------------------------------------------------------- Schlagzeile --- */
+.hero2__inner {
+  grid-row: 1;
+  grid-column: 1 / -1;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  /* Auf dem Telefon knapper gefasst: Weißraum ja, Leerlauf nein. */
+  padding-block: var(--sect-sm) var(--space-lg);
+}
+
+.hero2__head { width: 100%; min-width: 0; }
+
+/* Champagner steht nur dort, wo er kräftig genug ist: auf dunklem Grund.
+   Auf hellen Farbstilen bleibt die gedämpfte Textfarbe. */
+.hero2__eyebrow { margin-bottom: var(--space-sm); }
+.color-scheme-3 .hero2__eyebrow,
+.color-scheme-4 .hero2__eyebrow { color: rgb(var(--color-accent)); }
+
+.hero2__title { margin-bottom: var(--space-sm); }
+
+/* Kein Umbruch innerhalb eines Wortes: „SCENT." darf nie zu „SCEN / T."
+   werden. Die Überschrift ist ihr eigener Größenbezug (container), damit die
+   Zeile ihre Schriftgröße notfalls an der tatsächlich verfügbaren
+   Spaltenbreite ausrichtet statt am Fenster. Der Deckel greift erst, wenn
+   die Zeile sonst nicht mehr passt. */
+.hero2__title { container-type: inline-size; }
+.hero2__title .display__line {
+  font-size: min(1em, 26cqi);
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  hyphens: none;
+}
+
+/* Die Erklärzeile unter der Schlagzeile. Deutlich kleiner als diese, aber
+   nie kleiner als 15 px – sie trägt die Kernaussage der Marke. */
+.hero2__lede {
+  /* Etwas breiteres Lesemaß als zuvor: Die Unterzeile erklärt jetzt das
+     Prinzip und ist dadurch länger – auf 30 Zeichen brach sie unnötig oft. */
+  max-width: 36ch;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  /* Über einem Bild muss die Unterzeile sicher lesbar bleiben – deshalb die
+     Textfarbe leicht zurückgenommen statt der gedämpften Farbe. */
+  color: rgb(var(--color-text) / 0.84);
+}
+
+/* --------------------------------------------------- Einstiegsleiste --- */
+/* --------------------------------------------- Ablauf in Kurzform --------
+   Drei Wortgruppen mit Ziffern, in einer Reihe. Sie beantworten die Frage
+   „Wie läuft das ab?" in drei Sekunden – die ausführliche Fassung steht
+   weiter unten auf der Seite und bekommt hier bewusst keine Konkurrenz.
+
+   Keine Kacheln, keine Symbole, keine Rahmen. Getrennt wird durch eine
+   senkrechte Haarlinie zwischen den Schritten. */
+.hero2__steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin-top: var(--space-lg);
+  max-width: 34rem;
+  padding-top: var(--space-sm);
+  border-top: var(--hair);
+}
+
+.hero2__step {
+  display: grid;
+  gap: 0.2rem;
+  align-content: start;
+  padding-right: var(--space-sm);
+}
+.hero2__step + .hero2__step {
+  padding-left: var(--space-sm);
+  border-left: var(--hair);
+}
+
+.hero2__step-num {
+  font-family: var(--font-display-family, var(--font-heading-family));
+  font-size: 0.75rem;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: rgb(var(--color-text) / 0.34);
+}
+
+.hero2__step-text {
+  font-size: 0.6875rem;
+  line-height: 1.35;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+  /* Bewusst ohne text-wrap: balance. Der Ausgleich brach die Beschriftungen
+     auch dann auf zwei Zeilen, wenn eine gereicht hätte. Umbrochen wird
+     jetzt nur, wo der Platz es verlangt – auf dem Telefon also sauber in
+     zwei Zeilen, ab der breiten Ansicht einzeilig. */
+}
+
+@media (min-width: 430px) {
+  .hero2__step-text { font-size: 0.75rem; letter-spacing: var(--meta-tracking); }
+  .hero2__step { padding-right: var(--space-md); }
+  .hero2__step + .hero2__step { padding-left: var(--space-md); }
+}
+
+/* Ab Tablet reicht der Platz für die Prozesszeile in einer Zeile je Schritt.
+   34rem hätten „Lieblingsduft nennen" weiter umbrochen; 41rem geben jeder
+   Spalte gut 210 px und damit genug für die längste Beschriftung. */
+@media (min-width: 750px) {
+  .hero2__steps { max-width: 41rem; }
+}
+
+.hero2__ledger {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  position: relative;
+  z-index: 2;
+  border-top: var(--hair-strong);
+  background-color: rgb(var(--color-background));
+}
+/* Über einem vollflächigen Bild bleibt die Leiste durchscheinend genug,
+   dass das Motiv weiterläuft – aber dicht genug für sicheren Kontrast. */
+.hero2--overlay .hero2__ledger { background-color: rgb(var(--color-background) / 0.9); }
+
+.hero2__ledger-inner { display: grid; }
+
+.hero2__path {
+  display: grid;
+  align-content: center;
+  gap: var(--space-xs);
+  padding-block: var(--space-md);
+  min-height: 5.25rem;
+  min-width: 0;
+}
+.hero2__path + .hero2__path { border-top: var(--hair); }
+.hero2__path-label { color: rgb(var(--color-muted)); }
+
+/* Der Beratungsweg ist die Hauptsache im Hero: gefüllte Fläche, volle
+   Breite der Spalte, keine Rundung. Die zweite Spalte – die Code-Eingabe –
+   bleibt eine Grundlinie und tritt damit sichtbar zurück. */
+.hero2__button {
+  width: 100%;
+  min-height: 3.5rem;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding-inline: var(--space-lg);
+  font-size: 0.8125rem;
+}
+.hero2__button svg { width: 18px; height: 18px; flex: none; transition: transform var(--dur-slow) var(--ease-out); }
+@media (hover: hover) {
+  .hero2__button:hover svg { transform: translateX(5px); }
+}
+
+/* Die Erklärung des Scent Codes. Voreingestellt geschlossen, ohne Overlay
+   und ohne eine Zeile JavaScript – details/summary bringt das Verhalten
+   selbst mit. */
+.hero2__explain { margin-top: var(--space-sm); }
+.hero2__explain-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  font-size: 0.75rem;
+  color: rgb(var(--color-muted));
+  text-decoration: underline;
+  text-underline-offset: 0.35em;
+  cursor: pointer;
+}
+.hero2__explain-toggle::after {
+  content: '+';
+  font-size: 0.875rem;
+  line-height: 1;
+}
+.hero2__explain[open] .hero2__explain-toggle::after { content: '–'; }
+.hero2__explain-toggle:hover { color: rgb(var(--color-text)); }
+.hero2__explain-toggle:focus-visible {
+  outline: var(--focus-width) solid rgb(var(--color-text));
+  outline-offset: var(--focus-offset);
+}
+.hero2__explain-text {
+  margin-top: 0.1rem;
+  padding-bottom: var(--space-xs);
+  max-width: 40ch;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: rgb(var(--color-muted));
+}
+
+.hero2__secondary {
+  position: relative;
+  z-index: 2;
+  padding-block: var(--space-md);
+}
+
+/* --------------------------------------------- Scent-Code in der Leiste --- */
+/* Die Eingabe ist kein Formularfeld, sondern das Markenzeichen: „VC-" in
+   Champagner, die Ziffern groß und tabellarisch, „Weiter" als Textmarke. */
+.hero2__code .code-field__row {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+  box-shadow: none;
+}
+.hero2__code .code-field__row:focus-within { box-shadow: none; }
+
+.color-scheme-3 .hero2__code .code-field__prefix,
+.color-scheme-4 .hero2__code .code-field__prefix { color: rgb(var(--color-accent)); }
+
+.hero2__code .code-field__prefix {
+  padding: 0;
+  font-family: var(--font-display-family, var(--font-heading-family));
+  font-size: 1rem;
+  letter-spacing: 0.16em;
+  color: rgb(var(--color-muted));
+  transform: translateY(-0.35em);
+}
+
+.hero2__code .code-field__input {
+  flex: 0 0 auto;
+  width: 3.6ch;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-bottom: var(--border-width) solid rgb(var(--color-text) / 0.35);
+  border-radius: 0;
+  background-color: transparent;
+  font-family: var(--font-display-family, var(--font-heading-family));
+  font-size: clamp(1.75rem, 6vw, 2.5rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: rgb(var(--color-text));
+  transition: border-color var(--dur) var(--ease);
+}
+.hero2__code .code-field__input:focus { outline: none; border-bottom-color: rgb(var(--color-text)); }
+.hero2__code .code-field__input::placeholder { color: rgb(var(--color-text) / 0.22); }
+.hero2__code .code-field__row.is-valid .code-field__input { border-bottom-color: rgb(var(--color-accent)); }
+
+.hero2__code .code-field__submit {
+  margin-left: auto;
+  align-self: center;
+  min-height: 2.75rem;
+  padding: 0 0 0 var(--space-md);
+  background-color: transparent;
+  border: 0;
+  color: rgb(var(--color-text));
+  font-size: 0.6875rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.hero2__code .code-field__submit svg {
+  width: 15px;
+  height: 15px;
+  transition: transform var(--dur) var(--ease);
+}
+.hero2__code .code-field__submit:hover svg { transform: translateX(4px); }
+.hero2__code .code-field__status { margin-top: var(--space-xs); font-size: 0.75rem; }
+
+/* ====================================================== Ab 600 px ======== */
+@media (min-width: 600px) {
+  .hero2__ledger-inner { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+  .hero2__path { padding-block: var(--space-lg); min-height: 6rem; }
+  .hero2__path + .hero2__path {
+    border-top: 0;
+    border-left: var(--hair);
+    padding-left: clamp(1.5rem, 4vw, 3.5rem);
+  }
+  .hero2__path--advice { padding-right: clamp(1.5rem, 4vw, 3.5rem); }
+}
+
+/* ====================================================== Ab 990 px ======== */
+@media (min-width: 990px) {
+  /* Die Einstiegsleiste muss auf einem 900-px-Fenster vollständig sichtbar
+     bleiben – der Abzug entspricht Ankündigungsleiste plus Kopfbereich. */
+  .hero2 { min-height: min(calc(100svh - var(--header-block, 8.5rem)), 50rem); }
+  /* Der Innenabstand oben bleibt klein: Die Höhe kommt aus min-height, und
+     der Textblock sitzt unten. Ein großer Innenabstand würde den Abschnitt
+     über den Bildschirm hinausschieben und die Einstiegsleiste abschneiden. */
+  .hero2__inner { padding-block: var(--sect-sm) var(--space-lg); }
+  .hero2__head { max-width: 72rem; }
+  .hero2__lede { max-width: 38ch; font-size: 1.125rem; }
+  .hero2__path { min-height: 7rem; }
+}
+
+/* ================================================== Komposition: split === */
+/* Ohne Bildhintergrund: Text links, Bild rechts angeschnitten. */
+.hero2--split .hero2__media {
+  position: relative;
+  inset: auto;
+  margin-inline: calc(var(--gutter) * -1);
+}
+.hero2--split .hero2__media img { aspect-ratio: var(--ratio-wide); height: auto; }
+
+@media (max-width: 989px) {
+  .hero2--split { display: block; min-height: 0; }
+  .hero2--split .hero2__inner { padding-block: var(--sect-sm) var(--space-lg); }
+  .hero2--split .hero2__media { margin-top: var(--space-lg); }
+}
+
+@media (min-width: 990px) {
+  .hero2--split {
+    display: grid;
+    grid-template-columns: minmax(0, 6.4fr) minmax(0, 5.6fr);
+    grid-template-rows: 1fr auto;
+    column-gap: clamp(2.5rem, 5vw, 5rem);
+    min-height: min(88vh, 54rem);
+  }
+  .hero2--split .hero2__inner {
+    grid-area: 1 / 1 / 2 / 2;
+    padding-right: 0;
+    padding-block: var(--sect-lg) var(--space-xl);
+  }
+  .hero2--split .hero2__media {
+    position: relative;
+    inset: auto;
+    grid-area: 1 / 2 / 3 / 3;
+    margin: 0 calc(var(--gutter) * -1) 0 0;
+    height: 100%;
+  }
+  .hero2--split .hero2__media img { aspect-ratio: auto; height: 100%; }
+  .hero2--split .hero2__ledger {
+    grid-area: 2 / 1 / 3 / 2;
+    background-color: transparent;
+  }
+  .hero2--split .hero2__ledger-inner { padding-right: 0; }
+  .hero2--split .hero2__head { max-width: none; }
+}
+
+/* =================================================== Komposition: type === */
+/* Ohne Bild bleibt eine einzige, sehr groß gesetzte Textspalte. */
+.hero2--type { min-height: 0; }
+.hero2--type .hero2__inner { padding-block: var(--sect-md) var(--space-lg); }
+@media (min-width: 990px) {
+  .hero2--type { min-height: 0; }
+  .hero2--type .hero2__inner { padding-block: var(--sect-lg) var(--sect-sm); }
+  .hero2--type .hero2__head { max-width: 62rem; }
+}
+
+/* Das Hero-Bild steht still. Kein Parallax, keine Dauerbewegung – die
+   einzige Bewegung auf der Seite ist das einmalige Aufdecken beim Scrollen. */
+.hero2__media-inner { height: 100%; }
+
+/* Sehr niedrige Geräte (iPhone SE und ähnlich): Die Schlagzeile bleibt der
+   Auftritt, gibt aber Höhe ab, damit die Einstiegsleiste erreichbar bleibt. */
+/* Sehr niedrige Geräte (iPhone SE und ähnlich): Die Schlagzeile gibt Höhe
+   ab, die Erklärzeile bleibt – sie erklärt, worum es geht. */
+@media (max-height: 720px) and (max-width: 749px) {
+  .hero2 { min-height: min(calc(100svh - var(--header-block, 8.5rem) - 5rem), 25rem); }
+  .hero2__inner { padding-block: var(--space-lg) var(--space-md); }
+  .hero2 .display { font-size: clamp(2.25rem, 13vw, 3.25rem); }
+  .hero2__eyebrow { margin-bottom: var(--space-xs); }
+  .hero2__title { margin-bottom: var(--space-xs); }
+  .hero2__lede { font-size: 0.875rem; }
+  .hero2__path { min-height: 4.25rem; padding-block: var(--space-sm); }
+}

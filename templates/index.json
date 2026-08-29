@@ -1,0 +1,309 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero-v2",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "eyebrow": "500+ Duftprofile",
+        "heading": "FIND\nYOUR\nSCENT.",
+        "text": "Nenn uns deinen Lieblingsduft – wir finden den passenden VENT CELESTE Scent Code.",
+        "show_whatsapp": true,
+        "show_code_field": true,
+        "code_label": "Code schon erhalten? Scent Code eingeben",
+        "whatsapp_hint": "Noch keinen Code?",
+        "steps": "Lieblingsduft nennen\nScent Code erhalten\nBestellen",
+        "explainer_label": "Was ist ein Scent Code?",
+        "explainer_text": "Dein Scent Code ist die VENT CELESTE Kennung für dein ausgewähltes Duftprofil. Du erhältst ihn über unsere Duftberatung und kannst ihn anschließend direkt im Shop bestellen."
+      }
+    },
+    "most_wanted": {
+      "type": "product-row",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "eyebrow": "Die meistgewählten Codes",
+        "heading": "Bestseller",
+        "collection": "bestseller",
+        "product_limit": 8,
+        "link_label": "Alle Bestseller",
+        "link": "/collections/bestseller",
+        "quick_add": true,
+        "price_context": "extrait"
+      }
+    },
+    "profiles": {
+      "type": "whatsapp-feature",
+      "settings": {
+        "color_scheme": "scheme-3",
+        "scrim": 45,
+        "eyebrow": "Persönliche Duftberatung",
+        "heading": "Dein Duft ist nicht dabei?",
+        "text": "<p>Nicht jedes unserer 500+ Duftprofile ist direkt im Shop gelistet. Schreib uns, was du suchst – wir nennen dir den passenden VENT CELESTE Scent Code.</p>",
+        "button_label": "Duftberatung starten"
+      }
+    },
+    "how": {
+      "type": "how-it-works",
+      "blocks": {
+        "s1": {
+          "type": "step",
+          "settings": {
+            "title": "Lieblingsduft nennen",
+            "text": "Schreib uns deinen Lieblingsduft per WhatsApp."
+          }
+        },
+        "s2": {
+          "type": "step",
+          "settings": {
+            "title": "Scent Code erhalten",
+            "text": "Wir nennen dir deinen passenden VENT CELESTE Code."
+          }
+        },
+        "s3": {
+          "type": "step",
+          "settings": {
+            "title": "Bestellen",
+            "text": "Code eingeben, Ausführung wählen, fertig."
+          }
+        }
+      },
+      "block_order": [
+        "s1",
+        "s2",
+        "s3"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "heading": "So funktioniert's",
+        "show_whatsapp": true
+      }
+    },
+    "discovery": {
+      "type": "editorial-feature",
+      "blocks": {
+        "p1": {
+          "type": "point",
+          "settings": {
+            "label": "Inhalt",
+            "text": "5 × 2 ml"
+          }
+        },
+        "p2": {
+          "type": "point",
+          "settings": {
+            "label": "Auswahl",
+            "text": "Fünf Scent Codes frei wählbar"
+          }
+        },
+        "p3": {
+          "type": "point",
+          "settings": {
+            "label": "Musterpreis",
+            "text": "3,90 €"
+          }
+        }
+      },
+      "block_order": [
+        "p1",
+        "p2",
+        "p3"
+      ],
+      "settings": {
+        "color_scheme": "scheme-2",
+        "media_position": "right",
+        "media_shape": "wide",
+        "eyebrow": "Erst kennenlernen",
+        "heading": "Discovery Set",
+        "text": "<p>Fünf Codes auswählen, in Ruhe tragen, Favoriten finden. Der einfachste Weg, sich zu entscheiden.</p>",
+        "show_price": false,
+        "primary_label": "Set zusammenstellen",
+        "primary_link": "/products/discovery-set",
+        "layout": "spec"
+      },
+      "disabled": true
+    },
+    "code": {
+      "type": "scent-code-entry",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "eyebrow": "Bereits beraten",
+        "heading": "Code bereits bekannt?",
+        "text": "Gib deinen Scent Code ein und wähle deine Ausführung.",
+        "whatsapp_label": "Duftberatung starten"
+      },
+      "disabled": true
+    },
+    "extrait": {
+      "type": "editorial-feature",
+      "blocks": {
+        "e1": {
+          "type": "point",
+          "settings": {
+            "label": "Konzentration",
+            "text": "30 % Parfumöl"
+          }
+        },
+        "e2": {
+          "type": "point",
+          "settings": {
+            "label": "Größe",
+            "text": "30 ml"
+          }
+        },
+        "e3": {
+          "type": "point",
+          "settings": {
+            "label": "Charakter",
+            "text": "Konzentriert, ruhig aufgebaut"
+          }
+        }
+      },
+      "block_order": [
+        "e1",
+        "e2",
+        "e3"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "media_position": "right",
+        "media_shape": "tall",
+        "eyebrow": "Die Hauptlinie",
+        "heading": "30 % Extrait",
+        "text": "<p>30 % Parfumöl geben dem Duft mehr Dichte und Präsenz. Sorgfältig ausgewählte Rohstoffe sorgen für einen konzentrierten, klar aufgebauten Charakter.</p>",
+        "show_price": false,
+        "primary_label": "Düfte ansehen",
+        "primary_link": "/collections/bestseller",
+        "layout": "spec",
+        "image_fallback": true
+      }
+    },
+    "travel": {
+      "type": "editorial-feature",
+      "blocks": {
+        "t1": {
+          "type": "point",
+          "settings": {
+            "label": "Größe",
+            "text": "10 ml"
+          }
+        },
+        "t2": {
+          "type": "point",
+          "settings": {
+            "label": "Musterpreis",
+            "text": "12,90 €"
+          }
+        }
+      },
+      "block_order": [
+        "t1",
+        "t2"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "media_position": "right",
+        "media_shape": "wide",
+        "eyebrow": "Für unterwegs",
+        "heading": "Travel 10 ml",
+        "text": "<p>Das kleine Format für Handtasche und Reise – und ein ruhiger Weg, einen Duft über mehrere Tage kennenzulernen.</p>",
+        "show_price": false,
+        "primary_label": "Travel Size ansehen",
+        "primary_link": "/collections/travel-size",
+        "layout": "spec"
+      },
+      "disabled": true
+    },
+    "essentials": {
+      "type": "quiet-link",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "heading": "Essentials · 30 ml · ab 9,90 €",
+        "text": "Eine eigene Einstiegslinie für den Alltag.",
+        "link_label": "Ansehen",
+        "link": "/collections/essentials"
+      },
+      "disabled": true
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "eyebrow": "Auf dem Laufenden bleiben",
+        "heading": "Neue Duftprofile",
+        "text": "Wir schreiben selten und nur, wenn es etwas zu berichten gibt."
+      },
+      "disabled": true
+    },
+    "offer": {
+      "type": "launch-offer",
+      "blocks": {
+        "o1": {
+          "type": "claim",
+          "settings": {
+            "eyebrow": "Willkommensvorteil",
+            "heading": "20 % auf deine\nerste Bestellung",
+            "text": "Dein Neukundenrabatt wird automatisch im Checkout angewendet.",
+            "detail": "Einmalig für deine erste Bestellung."
+          }
+        }
+      },
+      "block_order": [
+        "o1"
+      ],
+      "settings": {
+        "color_scheme": "scheme-2",
+        "show_whatsapp": false,
+        "whatsapp_label": "Duftberatung starten",
+        "accent": true
+      }
+    },
+    "trust": {
+      "type": "trust-line",
+      "blocks": {
+        "t1": {
+          "type": "point",
+          "settings": {
+            "text": "30 % Extrait"
+          }
+        },
+        "t2": {
+          "type": "point",
+          "settings": {
+            "text": "Persönliche Duftberatung"
+          }
+        },
+        "t4": {
+          "type": "point",
+          "settings": {
+            "text": "Sichere Zahlung"
+          }
+        }
+      },
+      "block_order": [
+        "t1",
+        "t2",
+        "t4"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "heading": "100 % zufrieden oder Geld zurück.",
+        "text": "Du sollst deinen Duft lieben. Wenn nicht, erstatten wir dir den Kaufpreis.",
+        "link_label": "Rückgabe und Widerruf",
+        "link": ""
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "most_wanted",
+    "offer",
+    "trust",
+    "profiles",
+    "how",
+    "extrait",
+    "newsletter",
+    "discovery",
+    "code",
+    "travel",
+    "essentials"
+  ]
+}

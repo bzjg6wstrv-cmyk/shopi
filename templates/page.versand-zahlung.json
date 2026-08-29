@@ -1,0 +1,9 @@
+{
+  "sections": {
+    "main": {
+      "type": "legal-document",
+      "settings": { "document_type": "versand" }
+    }
+  },
+  "order": ["main"]
+}
