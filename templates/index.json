@@ -165,7 +165,7 @@
         "media_shape": "tall",
         "eyebrow": "Die Hauptlinie",
         "heading": "30 % Extrait",
-        "text": "<p>Ein hoher Anteil an Parfumöl bedeutet vor allem eines: Der Duft trägt sich dichter und muss seltener nachgelegt werden. Die Rohstoffe werden sorgfältig ausgewählt, die Komposition bleibt eigenständig.</p>",
+        "text": "<p>30 % Parfumöl geben dem Duft mehr Dichte und Präsenz. Sorgfältig ausgewählte Rohstoffe sorgen für einen konzentrierten, klar aufgebauten Charakter.</p>",
         "show_price": false,
         "primary_label": "Düfte ansehen",
         "primary_link": "/collections/bestseller",
@@ -239,24 +239,14 @@
             "text": "Auf deine erste Bestellung.",
             "detail": "Für deine erste Bestellung mit bis zu 3 Düften."
           }
-        },
-        "o2": {
-          "type": "claim",
-          "settings": {
-            "eyebrow": "Persönlich beraten",
-            "heading": "Den passenden Duft\nsicherer finden",
-            "text": "Du bist unsicher, welcher Duft zu dir passt?\nWir helfen dir persönlich bei der Auswahl.",
-            "detail": "Duftberatung direkt per WhatsApp."
-          }
         }
       },
       "block_order": [
-        "o1",
-        "o2"
+        "o1"
       ],
       "settings": {
         "color_scheme": "scheme-2",
-        "show_whatsapp": true,
+        "show_whatsapp": false,
         "whatsapp_label": "Duftberatung starten"
       }
     },

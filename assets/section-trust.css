@@ -1,6 +1,6 @@
 /* Vertrauenszeile.
 
-   Ein Versprechen, ein Satz dazu, darunter vier kurze Angaben. Bewusst
+   Ein Versprechen, ein Satz dazu, darunter drei kurze Angaben. Bewusst
    typografisch: keine Symbole, keine Kacheln, keine farbigen Plaketten.
    Getrennt wird durch Haarlinien, gewichtet durch Schriftgrad. */
 .trust {
@@ -41,26 +41,44 @@
 }
 .trust__link:hover { color: rgb(var(--color-text)); }
 
-/* Die Angaben stehen auf dem Telefon untereinander, jede auf einer
-   Haarlinie. Kein Kasten – die Linie allein ordnet. Ab 600 px verteilen sie
-   sich selbst auf die Breite, egal ob es drei oder vier sind. */
+/* Die Angaben bilden eine Leiste: drei gleich breite Spalten nebeneinander,
+   auch auf dem Telefon. Das spart gegenüber einer Liste untereinander rund
+   zwei Drittel der Höhe und liest sich als eine Aussage, nicht als
+   Aufzählung.
+
+   Getrennt wird ausschließlich durch feine Linien – eine waagerechte über
+   der Leiste und senkrechte zwischen den Spalten. Keine Kacheln, keine
+   Symbole, keine Plaketten, keine Rundungen, keine Schatten. */
 .trust__points {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-md) var(--space-lg);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
   margin-top: var(--space-xs);
-}
-@media (min-width: 600px) {
-  .trust__points { grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
+  border-top: var(--hair);
 }
 .trust__point {
-  padding-top: var(--space-sm);
-  border-top: var(--hair);
-  font-size: 0.75rem;
-  line-height: 1.35;
-  letter-spacing: var(--meta-tracking);
+  padding: var(--space-sm) var(--space-sm) 0 0;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgb(var(--color-muted));
+  text-wrap: balance;
+}
+/* Die senkrechte Linie steht zwischen den Spalten, nicht außen: Sie trennt,
+   sie rahmt nicht ein. */
+.trust__point + .trust__point {
+  padding-left: var(--space-sm);
+  border-left: var(--hair);
+}
+
+@media (min-width: 430px) {
+  .trust__point {
+    font-size: 0.75rem;
+    letter-spacing: var(--meta-tracking);
+    padding-right: var(--space-md);
+  }
+  .trust__point + .trust__point { padding-left: var(--space-md); }
 }
 
 @media (min-width: 750px) {
@@ -73,7 +91,8 @@
   .trust__heading { grid-row: 1 / span 2; align-self: center; }
   .trust__points {
     grid-column: 1 / -1;
-    gap: var(--space-lg);
     margin-top: var(--space-md);
   }
+  .trust__point { padding-top: var(--space-md); padding-right: var(--space-xl); }
+  .trust__point + .trust__point { padding-left: var(--space-xl); }
 }

@@ -1,3 +1,75 @@
+# v6.4 – Finales Mobile-Polishing
+
+Grundlage ist die laufende Fassung aus dem Shop, nicht mein v6.3.1. Die ließ
+sich nicht importieren; Hauptverdächtiger ist `snippets/link-pruefen.liquid`,
+das `render` innerhalb eines `{% liquid %}`-Blocks aufrief. Das Snippet und
+seine Aufrufe sind entfallen – die laufende Fassung sichert dieselben
+Verweise auf eigene Weise ab (Anker `#bestseller` und `#duftberatung`,
+Existenzprüfungen in Header, Fußbereich, Editorial-Abschnitt und
+Vertrauenszeile). Diese Absicherungen sind unberührt geblieben.
+
+Zur Sicherheit prüft der Prüfstand jetzt zusätzlich, dass in keinem
+`{% liquid %}`-Block ein `render`, `include` oder `section` steht. Aktueller
+Stand: null Treffer.
+
+## 1 · Ziffern in „So funktioniert's"
+
+`.figure-index` geht von 14 % auf 26 % Deckung. Das ergibt rund 1,8:1 gegen
+den Seitenton – als Gliederung deutlich erkennbar und weiterhin weit unter
+der Überschrift (17,7:1) und dem gedämpften Fließtext (5,2:1).
+
+## 2 · 20-%-Bereich
+
+Der zweite Block „Persönlich beraten / Den passenden Duft sicherer finden"
+ist entfernt, ebenso der WhatsApp-Button darunter. Die persönliche Beratung
+ist auf der Seite bereits zweimal ausführlich erklärt.
+
+Neue Komposition `offer--solo` für die einzelne Zusage: Die Überschrift
+behält das Gewicht, das sie im Paar hatte (60 px auf dem Schreibtisch, 32 px
+auf dem Telefon), statt auf Fließtextgröße zurückzufallen. Nebenbei behoben:
+Die Dreispalten-Regel für drei Zusagen griff auch bei einer einzelnen – die
+Überschrift stand dann in einer 437 px schmalen Spalte und brach in drei
+Zeilen. Der Abschnitt geht auf dem Telefon von 671 px auf 264 px.
+
+## 3 · 30-%-Extrait
+
+Der Erklärungstext ist ersetzt; Überschrift, Angaben und Schaltfläche
+bleiben. Auf dem Telefon rücken Fließtext, Angabenliste und Schaltfläche
+enger zusammen – alle Größen bleiben, nur der Raum dazwischen gibt nach.
+
+## 4 · Zufriedenheitsgarantie
+
+Die drei Angaben stehen jetzt als Leiste in drei gleich breiten Spalten
+nebeneinander, auch auf dem Telefon: eine waagerechte Haarlinie darüber,
+senkrechte Haarlinien zwischen den Spalten. Das spart gegenüber der Liste
+untereinander rund zwei Drittel der Höhe. Keine Kacheln, keine Symbole,
+keine Plaketten, keine Rundungen, keine Schatten.
+
+## 5 · Fußbereich
+
+Auf dem Telefon: Signet 56 → 46 px (−18 %), Wortmarke 27,3 → 22,6 px
+(−17 %), engere Abstände in Markenzeile, Spalten und Fußzeile. Die Markenzeile
+geht von 113 px auf 87 px, der ganze Fußbereich von 432 px auf 369 px.
+Auf dem Schreibtisch bleibt alles unverändert.
+
+Das Signet wird dabei nicht über `--mark-size` verkleinert: Die Variable
+kommt aus einem `style`-Attribut und schlägt jede Regel aus dem Stylesheet.
+Höhe und Breite stehen nur im Stylesheet und rechnen den eingestellten Wert
+um 18 % herunter, statt ihn durch eine feste Zahl zu ersetzen.
+
+## Prüfungen
+
+390, 393, 430 und 1440 px: keine Überlappungen, kein waagerechter Überlauf,
+kein ungewollt abgeschnittener Text. Theme Check 39 Verstöße, keine neue Art;
+die fünf gegenüber der Basis zusätzlichen sind allesamt `LiquidTag`-Stilhinweise,
+vier davon in den Dateien der laufenden Fassung. 27 JSON-Dateien, 37
+Section-Schemas, 13 JS-Dateien fehlerfrei. Code-Normalisierung, Cart-API-
+Bestellweg und Kaufweg liefern unverändert dieselben Ergebnisse.
+
+Startseite auf dem Telefon: 4097 px → 4021 px.
+
+---
+
 # v6.3.1 – Verweise, die ins Leere führten
 
 ## Der Fehler

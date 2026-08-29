@@ -88,6 +88,19 @@
   text-align: right;
 }
 
+/* Auf dem Telefon rückt der Abschnitt enger zusammen: Der Fließtext läuft
+   eine Spur schmaler durchschossen, die Angabenliste und die Schaltfläche
+   folgen dichter. Alle Größen bleiben, nur der Raum dazwischen gibt nach –
+   der Abschnitt verliert dadurch rund ein Sechstel seiner Höhe, ohne
+   gedrängt zu wirken. */
+@media (max-width: 749px) {
+  .feature__body > * + * { margin-top: var(--space-sm); }
+  .feature__text { line-height: 1.5; }
+  .feature__points { margin-top: var(--space-md); }
+  .feature__points li { padding-block: 0.6rem; }
+  .feature__actions { margin-top: var(--space-lg); }
+}
+
 /* --------------------------------------------------- Komposition „spec" --- */
 /* Hochformatiges Bild, daneben eine ruhige Textspalte, die oben mit dem
    Bild abschließt statt mittig zu sitzen. */

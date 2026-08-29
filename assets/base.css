@@ -2142,7 +2142,11 @@ html:not(.no-js) .animations-on .display__mask:nth-of-type(4) > span { transitio
   line-height: 0.8;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums lining-nums;
-  color: rgb(var(--color-text) / 0.14);
+  /* 0,14 war zu blass – die Ziffern verschwanden fast im Seitenton. 0,26
+     ergibt rund 1,8:1 gegen Ivory: als Gliederung deutlich erkennbar und
+     immer noch weit unter der Überschrift (17,7:1) und dem gedämpften
+     Fließtext (5,2:1). Die Ziffer bleibt Auszeichnung, nicht Aussage. */
+  color: rgb(var(--color-text) / 0.26);
   user-select: none;
 }
 
@@ -2404,6 +2408,32 @@ img.brand-mark { object-fit: contain; }
   border-bottom: 0;
   flex: 1;
   min-width: 0;
+}
+
+/* Auf dem Telefon tritt der Markenblock eine Stufe zurück: Signet und
+   Wortmarke rund 18 % kleiner, die Abstände darum enger. Der Fußbereich
+   bleibt luftig, kostet aber deutlich weniger Bildschirmhöhe – vorher nahm
+   allein die Markenzeile 113 px ein. */
+@media (max-width: 749px) {
+  .footer__brand-row {
+    padding-block: var(--space-lg) var(--space-md);
+    gap: 0.75rem;
+  }
+  /* Nicht über --mark-size: Die Variable kommt aus einem style-Attribut und
+     schlägt jede Regel aus dem Stylesheet. Höhe und Breite dagegen stehen
+     nur hier – sie lassen sich überschreiben und rechnen den eingestellten
+     Wert um 18 % herunter, statt ihn durch eine feste Zahl zu ersetzen. */
+  .footer__brand-row .brand-mark {
+    height: calc(var(--mark-size, 56px) * 0.82);
+    width: calc(var(--mark-size, 56px) * 0.82 * var(--mark-ratio, 1));
+  }
+  .footer__brand-row .footer__brandline {
+    font-size: clamp(1.25rem, 5.8vw, 2.5rem);
+    letter-spacing: 0.12em;
+  }
+  .footer__top { padding-block: var(--space-lg); gap: var(--space-lg) var(--space-md); }
+  .footer__block--brand .footer__brand-text { margin-top: var(--space-xs); }
+  .footer__bottom { padding-block: var(--space-sm); }
 }
 @media (min-width: 990px) {
   .footer__brand-row { padding-block: var(--space-2xl) var(--space-xl); align-items: center; }

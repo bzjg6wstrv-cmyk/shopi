@@ -12,7 +12,7 @@
 {%- endcomment -%}
 <section class="section section--lg offer-band color-{{ section.settings.color_scheme }} color-scheme">
   <div class="page-width">
-    <div class="offer{% if section.blocks.size == 2 %} offer--pair{% endif %} reveal">
+    <div class="offer{% if section.blocks.size == 2 %} offer--pair{% elsif section.blocks.size == 1 %} offer--solo{% endif %} reveal">
       {%- for block in section.blocks -%}
         <div class="offer__item" {{ block.shopify_attributes }}>
           {%- if block.settings.eyebrow != blank -%}
