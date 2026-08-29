@@ -47,7 +47,8 @@
       "view_all": "Alle Ergebnisse ansehen",
       "popular": "Häufig gesucht",
       "eyebrow": "Suchergebnis",
-      "code_found": "{{ code }} gefunden"
+      "code_found": "{{ code }} gefunden",
+      "help": "Suche z. B. nach VC-049, Vanille, Gourmand oder holzig."
     },
     "newsletter": {
       "label": "E-Mail-Adresse",
@@ -185,7 +186,8 @@
       "free_shipping_disclaimer": "Musterwert – noch nicht final festgelegt.",
       "cross_sell_title": "Noch unsicher?",
       "update": "Warenkorb aktualisieren",
-      "discovery_choices": "Deine Auswahl"
+      "discovery_choices": "Deine Auswahl",
+      "auto_discount_note": "Automatische Rabatte werden im Checkout angewendet."
     },
     "footer": {
       "newsletter_title": "Newsletter",

@@ -355,7 +355,7 @@
         </button>
       </div>
       <input type="hidden" name="options[prefix]" value="last">
-      <p class="menu-drawer__search-help">Code, Nummer, Duftnote oder Duftcharakter</p>
+      <p class="menu-drawer__search-help">{{ 'general.search.help' | t }}</p>
     </form>
 
     {%- if settings.whatsapp_enabled -%}
@@ -821,7 +821,7 @@
       "type": "text",
       "id": "search_hint",
       "label": "Hinweis unter der Suche",
-      "default": "Suche nach Scent Code, Duftfamilie oder einzelner Duftnote."
+      "default": "Suche z. B. nach VC-049, Vanille, Gourmand oder holzig."
     }
   ],
   "enabled_on": {

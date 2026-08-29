@@ -8,7 +8,7 @@
         "announcement": {
           "type": "announcement",
           "settings": {
-            "text": "Über 120 Duftprofile · Persönliche Duftberatung per WhatsApp"
+            "text": "500+ Duftprofile · Beratung per WhatsApp"
           }
         }
       },
@@ -30,7 +30,7 @@
         "families_title": "Duftwelten",
         "feature_title": "Discovery Set",
         "feature_text": "Fünf Düfte selbst auswählen.",
-        "search_hint": "Suche nach Scent Code, Duftfamilie oder einzelner Duftnote.",
+        "search_hint": "Suche z. B. nach VC-049, Vanille, Gourmand oder holzig.",
         "families_menu": "duftfamilien",
         "feature_link": "/products/discovery-set",
         "whatsapp_parent": "Duftberatung",

@@ -181,6 +181,12 @@
             {%- endif -%}
           </p>
 
+          {%- comment -%}
+            Reiner Hinweis, keine Berechnung: Ob ein Rabatt greift, entscheidet
+            Shopify im Checkout. Das Theme prüft dafür nichts.
+          {%- endcomment -%}
+          <p class="cart-footer__hinweis">{{ 'sections.cart.auto_discount_note' | t }}</p>
+
           <button type="submit" name="checkout" class="button">{{ 'sections.cart.checkout' | t }}</button>
           <a class="link-underline cart-drawer__view" href="{{ routes.cart_url }}">
             {{ 'sections.cart.view_cart' | t }}

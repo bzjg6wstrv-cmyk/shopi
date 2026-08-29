@@ -616,7 +616,7 @@
         "type": "text",
         "id": "search_placeholder",
         "label": "Platzhaltertext",
-        "default": "Nummer, Duftfamilie oder Note"
+        "default": "Scent Code, Duftfamilie oder Note"
       }
     ]
   },

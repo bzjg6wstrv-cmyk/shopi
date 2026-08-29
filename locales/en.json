@@ -47,7 +47,8 @@
       "view_all": "View all results",
       "popular": "Frequently searched",
       "eyebrow": "Search result",
-      "code_found": "{{ code }} found"
+      "code_found": "{{ code }} found",
+      "help": "Try VC-049, vanilla, gourmand or woody."
     },
     "newsletter": {
       "label": "Email address",
@@ -185,7 +186,8 @@
       "free_shipping_disclaimer": "Sample value – not final.",
       "cross_sell_title": "Still undecided?",
       "update": "Update cart",
-      "discovery_choices": "Your selection"
+      "discovery_choices": "Your selection",
+      "auto_discount_note": "Automatic discounts are applied at checkout."
     },
     "footer": {
       "newsletter_title": "Newsletter",

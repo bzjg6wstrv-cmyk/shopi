@@ -4,7 +4,7 @@
       "type": "hero-v2",
       "settings": {
         "color_scheme": "scheme-1",
-        "eyebrow": "Über 120 Duftprofile",
+        "eyebrow": "500+ Duftprofile",
         "heading": "FIND\nYOUR\nSCENT.",
         "text": "Dein Lieblingsduft. Dein VENT CELESTE Scent Code.",
         "show_whatsapp": true,
@@ -34,7 +34,7 @@
         "scrim": 45,
         "eyebrow": "Persönliche Duftberatung",
         "heading": "Dein Duft ist nicht dabei?",
-        "text": "<p>Nicht jeder Duft ist direkt im Shop gelistet. Schreib uns deinen Lieblingsduft – wir finden den passenden VENT CELESTE Scent Code.</p>",
+        "text": "<p>Nicht jedes unserer 500+ Duftprofile ist direkt im Shop gelistet. Schreib uns, was du suchst – wir nennen dir den passenden VENT CELESTE Scent Code.</p>",
         "button_label": "Duftberatung starten"
       }
     },
@@ -226,7 +226,8 @@
         "eyebrow": "Auf dem Laufenden bleiben",
         "heading": "Neue Duftprofile",
         "text": "Wir schreiben selten und nur, wenn es etwas zu berichten gibt."
-      }
+      },
+      "disabled": true
     },
     "offer": {
       "type": "launch-offer",

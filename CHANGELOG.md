@@ -1,3 +1,92 @@
+# v6.7 – Finaler Polish
+
+Sieben Dateien. Zahlen, Reihenfolge, Texte, Warenkorb-Layout.
+
+## 1 · 500+ Duftprofile
+
+Ankündigungszeile, Hero-Vortext, Beratungstext und die Vorgaben in den
+Section-Schemas. Formuliert als VENT CELESTE Duftprofile, nicht als
+Markenparfums. Kein „Über 120" mehr im gesamten Theme.
+
+    500+ Duftprofile · Beratung per WhatsApp
+
+## 2 · Newsletter von der Startseite
+
+Der Abschnitt ist deaktiviert, nicht gelöscht: Er bleibt im Theme-Editor
+verfügbar und lässt sich jederzeit wieder einschalten. Die Newsletter- und
+Kundenfunktionen von Shopify sind unberührt; der Fußbereich trug ohnehin
+keinen Newsletter.
+
+## 3 · Endgültige Reihenfolge
+
+Ankündigung · Kopf · Hero · Bestseller · 20 % Willkommensvorteil ·
+100 % zufrieden · Duftberatung (schwarz) · So funktioniert's ·
+30 % Extrait · Fußbereich.
+
+Startseite auf dem Telefon: 4084 px → **3778 px**.
+
+## 4 · Texte vereinheitlicht
+
+Menü-Drawer und Such-Drawer zeigen jetzt denselben Satz. Der Platzhalter
+lautet überall „Scent Code, Duftfamilie oder Note", der Hilfetext „Suche
+z. B. nach VC-049, Vanille, Gourmand oder holzig." – Letzterer steht in den
+Locales, damit beide Drawer nicht wieder auseinanderlaufen können.
+
+Der Beratungstext nennt die 500+ Duftprofile und den Scent Code.
+
+## 5 · Warenkorb-Drawer
+
+Zwei alte Härtungsregeln aus der 4.2er-Reihe blendeten das Produktbild auf
+dem Telefon aus (`display: none !important`) und stellten die Zeile auf
+`display: block` – Bild und Angaben standen dadurch untereinander. Beides
+stammte aus einer Zeit, in der der Drawer deutlich schmaler war. Er nimmt
+inzwischen fast die volle Fensterbreite ein.
+
+Jetzt: Bild links (52 px, unbeschnitten), rechts Name, Ausführung, dann
+Menge und Preis auf einer Grundlinie, darunter „Entfernen" in 11 px,
+gedämpft, ohne dauerhafte Unterstreichung – die Tippfläche bleibt 44 px hoch
+und wird nur in den Abstand darüber gezogen.
+
+Die Warenkorbzeile ist damit auf dem Telefon von 217 px auf 151 px gefallen,
+der leere Bereich zwischen Liste und Fußzeile von 300 px auf 277 px.
+
+Neu darunter, sehr leise: „Automatische Rabatte werden im Checkout
+angewendet." Ein reiner Hinweis – das Theme prüft nichts.
+
+Am Warenkorb wurde ausschließlich Layout und Aussehen geändert. Die
+Cart-API, die Mengenänderung, das Entfernen, die Line Item Properties, die
+Checkout-URL und `cart-drawer.js` sind unberührt.
+
+## Prüfungen
+
+Cart-API belauscht statt des Netzverkehrs, weil eine `file://`-Seite kein
+`fetch` zulässt:
+
+| Bedienung | Aufruf |
+| --- | --- |
+| Menge + | `change {"line":1,"quantity":2}` |
+| Menge − | `change {"line":1,"quantity":0}` |
+| Entfernen | `change {"line":1,"quantity":0}` |
+
+Aufbau des Drawers gemessen: 2 Positionen, 2 Mengenfelder, 2
+Entfernen-Schaltflächen, 4 Schrittknöpfe, Checkout-Formular auf `/cart`,
+Zeilennummern 1 und 2, Scent Code als Line Item Property sichtbar.
+
+Alle drei Drawer öffnen und schließen (`aria-hidden` false → true), keine
+JS-Fehler. Bestseller-Bahn bei 390, 393 und 430 px: 12 % Vorschau, kein
+Radius, `contain`, kein Überlauf.
+
+390, 393, 430 und 1440 px: kein waagerechter Überlauf auf sechs
+Seitentypen über elf Breiten, keine Überlappungen, kein ungewollt
+abgeschnittener Text. Kein `render`, `include` oder `section` in einem
+`{% liquid %}`-Block. 27 JSON-Dateien, 37 Schemas, 13 JS-Dateien fehlerfrei.
+Theme Check 40 Verstöße, ausschließlich die drei bekannten Stilarten.
+
+Code-Normalisierung, Cart-API-Bestellweg, Kaufweg und Suche liefern
+unverändert dieselben Ergebnisse. Keine JavaScript-Datei angefasst.
+
+---
+
 # v6.6 – Willkommensvorteil
 
 Drei Dateien. Position, Text und Farbe des Rabattbereichs – sonst nichts.
