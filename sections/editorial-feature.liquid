@@ -21,6 +21,44 @@
   if feature_variant == blank
     assign feature_variant = linked_product.selected_or_first_available_variant
   endif
+
+  assign primary_url = section.settings.primary_link
+  if primary_url contains '/collections/bestseller'
+    assign safe_collection = collections['bestseller']
+    if safe_collection != blank
+      assign primary_url = safe_collection.url
+    else
+      assign primary_url = routes.all_products_collection_url
+    endif
+  elsif primary_url contains '/collections/extrait'
+    assign safe_collection = collections['extrait']
+    if safe_collection != blank
+      assign primary_url = safe_collection.url
+    else
+      assign primary_url = routes.all_products_collection_url
+    endif
+  elsif primary_url contains '/products/discovery-set'
+    assign safe_product = all_products['discovery-set']
+    if safe_product != blank
+      assign primary_url = safe_product.url
+    else
+      assign primary_url = routes.all_products_collection_url
+    endif
+  elsif primary_url contains '/pages/ueber-uns'
+    assign safe_page = pages['ueber-uns']
+    if safe_page != blank
+      assign primary_url = safe_page.url
+    else
+      assign primary_url = blank
+    endif
+  endif
+
+  if primary_url == blank and linked_product != blank
+    assign primary_url = linked_product.url
+  endif
+  if primary_url == blank and section.settings.primary_label != blank and section.settings.layout != 'statement'
+    assign primary_url = routes.all_products_collection_url
+  endif
 -%}
 <section class="section feature-section color-{{ section.settings.color_scheme }} color-scheme">
   <div class="page-width">
@@ -82,49 +120,21 @@
           <p class="demo-flag feature__note">{{ 'general.demo_notice' | t }}</p>
         {%- endif -%}
 
-        {%- comment -%}
-          Beide Ziele werden geprüft. Das Theme bringt Beispieladressen mit
-          (etwa /collections/extrait); legt ein Shop diese Kollektion nicht
-          an, entfällt die Schaltfläche, statt auf die 404-Seite zu führen.
-        {%- endcomment -%}
-        {%- liquid
-          assign feature_primary = section.settings.primary_link | default: linked_product.url
-          capture feature_primary
-            render 'link-pruefen', url: feature_primary
-          endcapture
-          assign feature_primary = feature_primary | strip
-
-          capture feature_secondary
-            render 'link-pruefen', url: section.settings.secondary_link
-          endcapture
-          assign feature_secondary = feature_secondary | strip
-
-          assign zeige_primary = false
-          if section.settings.primary_label != blank and feature_primary != blank
-            assign zeige_primary = true
-          endif
-
-          assign zeige_secondary = false
-          if section.settings.secondary_label != blank and feature_secondary != blank
-            assign zeige_secondary = true
-          endif
-        -%}
-
-        {%- if zeige_primary or zeige_secondary -%}
+        {%- if section.settings.primary_label != blank or section.settings.secondary_label != blank -%}
           <div class="feature__actions">
-            {%- if zeige_primary -%}
+            {%- if section.settings.primary_label != blank -%}
               {%- if section.settings.layout == 'statement' -%}
-                <a class="link-underline" href="{{ feature_primary }}">
+                <a class="link-underline" href="{{ primary_url }}">
                   {{ section.settings.primary_label | escape }}
                 </a>
               {%- else -%}
-                <a class="button" href="{{ feature_primary }}">
+                <a class="button" href="{{ primary_url }}">
                   {{ section.settings.primary_label | escape }}
                 </a>
               {%- endif -%}
             {%- endif -%}
-            {%- if zeige_secondary -%}
-              <a class="link-underline" href="{{ feature_secondary }}">
+            {%- if section.settings.secondary_label != blank -%}
+              <a class="link-underline" href="{{ section.settings.secondary_link }}">
                 {{ section.settings.secondary_label | escape }}
               </a>
             {%- endif -%}

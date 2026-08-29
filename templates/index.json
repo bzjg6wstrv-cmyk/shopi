@@ -167,8 +167,8 @@
         "heading": "30 % Extrait",
         "text": "<p>Ein hoher Anteil an Parfumöl bedeutet vor allem eines: Der Duft trägt sich dichter und muss seltener nachgelegt werden. Die Rohstoffe werden sorgfältig ausgewählt, die Komposition bleibt eigenständig.</p>",
         "show_price": false,
-        "primary_label": "Extrait ansehen",
-        "primary_link": "/collections/extrait",
+        "primary_label": "Düfte ansehen",
+        "primary_link": "/collections/bestseller",
         "layout": "spec"
       }
     },
@@ -216,23 +216,6 @@
         "text": "Eine eigene Einstiegslinie für den Alltag.",
         "link_label": "Ansehen",
         "link": "/collections/essentials"
-      },
-      "disabled": true
-    },
-    "brand": {
-      "type": "editorial-feature",
-      "settings": {
-        "color_scheme": "scheme-3",
-        "media_position": "right",
-        "media_shape": "wide",
-        "eyebrow": "Über uns",
-        "heading": "VENT CELESTE",
-        "text": "<p>VENT CELESTE steht für konzentrierte Duftkompositionen mit klarer Auswahl und eigenständiger Präsentation. Im Mittelpunkt stehen der Duft selbst, eine hohe Parfumkonzentration und persönliche Beratung bei der Auswahl des passenden Scent Codes.</p>",
-        "placeholder_note": false,
-        "show_price": false,
-        "primary_label": "Mehr über die Marke",
-        "primary_link": "/pages/ueber-uns",
-        "layout": "statement"
       },
       "disabled": true
     },

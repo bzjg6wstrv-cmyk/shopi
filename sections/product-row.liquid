@@ -7,8 +7,15 @@
 {%- liquid
   assign row_collection = section.settings.collection
   assign row_limit = section.settings.product_limit
+  assign row_link = section.settings.link
+
+  if row_collection != blank
+    assign row_link = row_collection.url
+  elsif row_link contains '/collections/bestseller'
+    assign row_link = routes.all_products_collection_url
+  endif
 -%}
-<section class="section section--lg color-{{ section.settings.color_scheme }} color-scheme">
+<section id="bestseller" class="section section--lg color-{{ section.settings.color_scheme }} color-scheme">
   <div class="page-width">
     <div class="row-head">
       <div class="row-head__title">
@@ -21,20 +28,8 @@
       </div>
 
       <div class="row-head__actions">
-        {%- comment -%}
-          Das Ziel wird geprüft: Zeigt die eingetragene Adresse auf eine
-          Kollektion, die es im Shop nicht gibt, entfällt der Verweis. Ein
-          Verweis auf die 404-Seite wäre schlimmer als keiner.
-        {%- endcomment -%}
-        {%- liquid
-          assign row_link = section.settings.link | default: row_collection.url
-          capture row_link
-            render 'link-pruefen', url: row_link
-          endcapture
-          assign row_link = row_link | strip
-        -%}
-        {%- if section.settings.link_label != blank and row_link != blank -%}
-          <a class="link-underline" href="{{ row_link }}">
+        {%- if section.settings.link_label != blank -%}
+          <a class="link-underline" href="{{ row_link | default: routes.all_products_collection_url }}">
             {{ section.settings.link_label | escape }}
           </a>
         {%- endif -%}

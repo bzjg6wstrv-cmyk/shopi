@@ -229,8 +229,7 @@
       "title": "Persönliche Duftberatung",
       "context_product": "Ich sehe mir gerade __CODE__ an.",
       "context_search": "Ich suche __CODE__.",
-      "close": "Beratungsleiste ausblenden",
-      "footer_link": "Duftberatung per WhatsApp"
+      "close": "Beratungsleiste ausblenden"
     },
     "scent_code": {
       "title": "Scent Code",

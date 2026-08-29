@@ -12,11 +12,18 @@
 {%- endcomment -%}
 {%- liquid
   comment
-    Ist kein Ziel gepflegt, greift die Rückgabe-Richtlinie des Shops, sofern
-    sie hinterlegt ist. So zeigt der Verweis nie ins Leere.
+    Verweise auf die Rückgabe-Richtlinie werden nur ausgegeben, wenn Shopify
+    diese Richtlinie tatsächlich bereitstellt. So kann ein eingetragener
+    Standardpfad niemals auf einer 404-Seite enden.
   endcomment
   assign trust_link = section.settings.link
-  if trust_link == blank and shop.refund_policy != blank
+  if trust_link == '/policies/refund-policy'
+    if shop.refund_policy != blank
+      assign trust_link = shop.refund_policy.url
+    else
+      assign trust_link = blank
+    endif
+  elsif trust_link == blank and shop.refund_policy != blank
     assign trust_link = shop.refund_policy.url
   endif
 -%}
