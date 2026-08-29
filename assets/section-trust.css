@@ -106,3 +106,10 @@
   .trust__point { padding-top: var(--space-md); padding-right: var(--space-xl); }
   .trust__point + .trust__point { padding-left: var(--space-xl); }
 }
+
+/* Micro-Polish · Auch hier lagen zwei Rahmen übereinander: 38 px am
+   Abschnitt und 32 px am .trust-Block. Der äußere gibt nach, der Block
+   selbst und seine Typografie bleiben, wie sie sind. */
+@media (max-width: 749px) {
+  .trust-section { padding-block-start: 1.25rem; }
+}

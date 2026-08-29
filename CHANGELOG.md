@@ -1,3 +1,78 @@
+# v6.10 – Micro-Polish der Abstände
+
+Vier CSS-Dateien, ausschließlich `padding`. Kein Liquid, kein JavaScript,
+kein JSON, kein Schema. Alle vier Regeln stehen in
+`@media (max-width: 749px)` – die breite Ansicht ist rechnerisch
+unverändert (Seitenhöhe 5622 px vorher wie nachher).
+
+## Was gemessen wurde
+
+Die Abschnitte stoßen ohne Zwischenraum aneinander; der sichtbare Abstand
+entsteht allein aus Innenrahmen. Gemessen wurde deshalb von der Unterkante
+des letzten Inhalts eines Abschnitts bis zur Oberkante des ersten Inhalts
+des nächsten. Bei 390 px ergab das:
+
+    Hero → Bestseller       81 px
+    Bestseller → 20 %      152 px   ← Ausreißer
+    20 % → Garantie        119 px   ← Ausreißer
+    Garantie → Beratung     76 px
+    Beratung → So gehts     93 px
+    So gehts → Extrait      71 px
+    Extrait → Footer       115 px   ← Ausreißer
+
+Drei Werte lagen deutlich über dem Band der übrigen. Ursache war in allen
+drei Fällen dieselbe: **zwei Rahmen lagen übereinander.** Der Abschnitt
+brachte seinen vollen Rahmen mit, obwohl der Kasten darin bereits einen
+eigenen hatte.
+
+    20 %      Abschnitt 48 px  +  .offer__item      24 px  =  72 px
+    Garantie  Abschnitt 38 px  +  .trust            32 px  =  70 px
+    Extrait   Abschnitt 38 px  +  .page-width       28 px  =  66 px
+
+## Was geändert wurde
+
+Nur der äußere Rahmen gibt nach, nie der innere Aufbau einer Komponente.
+
+    .section--lg                     48 → 38 px   (Bestseller, 20 %)
+    .section--lg:not(.offer-band)    unten → 24 px  (nur Bestseller)
+    .offer-band                      oben  → 24 px
+    .trust-section                   oben  → 20 px
+    .feature-section                 unten → 20 px
+
+Der Wert 38 px ist nicht erfunden: Es ist der Rahmen, den alle übrigen
+Abschnitte auf dem Telefon ohnehin tragen. Der große Grad war für die
+breite Ansicht gedacht.
+
+## Ergebnis bei 390 px
+
+    Hero → Bestseller       81 →  71 px
+    Bestseller → 20 %      152 → 104 px
+    20 % → Garantie        119 →  91 px
+    Garantie → Beratung     76 →  76 px   unverändert
+    Beratung → So gehts     93 →  93 px   unverändert
+    So gehts → Extrait      71 →  71 px   unverändert
+    Extrait → Footer       115 →  97 px
+
+    Seitenhöhe            4296 → 4192 px  (−2,4 %)
+
+Das Band liegt jetzt zwischen 71 und 104 px statt zwischen 71 und 152 px.
+Bei 393 px und 430 px sind die Werte deckungsgleich.
+
+## Was geprüft und bewusst nicht angefasst wurde
+
+Die übrigen Punkte der Liste wurden gemessen und lagen bereits richtig:
+
+* **Überschrift → Text → CTA** im 20-%-Bereich: 12 / 16 / 12 px. Ein
+  zunächst gemeldeter Abstand von 97 px war ein Messfehler – die große
+  Schlagzeile steht darin.
+* **So funktioniert's**: 41 px unter der Überschrift, 33 px zwischen den
+  Schritten, 53 px vor der Schaltfläche.
+* **Produktbild → Produktangaben** auf der Produktseite: 32 px.
+* **30 % Extrait** innen: in v6.9 gesetzt, unverändert (24 / 24 / 32 px,
+  Zeilen 37 px, Flakon 208 × 277).
+
+Hier wurde nichts geändert, weil nichts sichtbar zu groß war.
+
 # v6.9 – Finaler Polish
 
 Sieben Dateien. Kein Redesign: Hero, Header, Bestseller, 20-%-Fläche,

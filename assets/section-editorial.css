@@ -12,6 +12,12 @@
 @media (min-width: 750px) {
   .feature-section { padding-block: var(--sect-md) var(--sect-lg); }
 }
+/* Micro-Polish · Nach unten trägt die .page-width bereits 28 px bis zur
+   Haarlinie. Der Abschnittsrahmen kam voll dazu, wodurch zwischen
+   „Düfte ansehen" und der Wortmarke im Fußbereich 115 px standen. */
+@media (max-width: 749px) {
+  .feature-section { padding-block-end: 1.25rem; }
+}
 
 /* B6 · Abschluss zum Fußbereich: eine feine Linie auf der Rasterkante statt
    eines harten Schnitts. Sie kostet keine zusätzliche Höhe – der

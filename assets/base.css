@@ -325,6 +325,16 @@ p { text-wrap: pretty; }
 .section--sm { padding-block: var(--sect-sm); }
 .section--tight { padding-block: var(--sect-sm); }
 .section--lg { padding-block: var(--sect-lg); }
+/* Auf dem Telefon nehmen die beiden großen Abschnitte – Bestseller und
+   Willkommensvorteil – denselben Rahmen wie alle übrigen. Der große Grad
+   war für die breite Ansicht gedacht; auf 390 px standen dadurch 152 px
+   Leerraum zwischen der letzten Karte und „Willkommensvorteil". Der
+   Bestseller gibt unten zusätzlich nach, weil die Karte selbst schon
+   30 px nachlaufenden Raum mitbringt. */
+@media (max-width: 749px) {
+  .section--lg { padding-block: var(--sect-md); }
+  .section--lg:not(.offer-band) { padding-block-end: 1.5rem; }
+}
 .section--xl { padding-block: var(--sect-xl); }
 .section--flush-top { padding-block-start: 0; }
 .section--flush-bottom { padding-block-end: 0; }

@@ -210,3 +210,11 @@
   }
   .offer:not(.offer--pair):not(.offer--solo) .offer__cta { grid-column: 1 / -1; padding-bottom: var(--space-2xl); }
 }
+
+/* Micro-Polish · Der Abschnitt trägt innen bereits 24 px Rahmen am
+   .offer__item. Zusammen mit dem Abschnittsrahmen standen auf dem Telefon
+   72 px über der Zeile „Willkommensvorteil". Oben gibt der äußere Rahmen
+   deshalb nach; der innere Aufbau der Bordeaux-Fläche bleibt unberührt. */
+@media (max-width: 749px) {
+  .offer-band { padding-block-start: 1.5rem; }
+}
