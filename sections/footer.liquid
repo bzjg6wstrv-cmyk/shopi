@@ -1,0 +1,249 @@
+<footer class="footer color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width">
+    {%- comment -%}
+      Markenpräsenz: Die Wortmarke steht am Kopf des Fußbereichs im
+      Display-Register über die volle Breite. Auf dem Telefon bleibt sie
+      klein, damit der Fußbereich kompakt bleibt.
+    {%- endcomment -%}
+    <div class="footer__brand-row">
+      {% render 'brand-mark', size: settings.signet_size_footer, class: 'footer__signet', label: settings.wordmark %}
+      <p class="footer__brandline reveal reveal--mask"><span>{{ settings.wordmark | escape }}</span></p>
+    </div>
+
+    <div class="footer__top">
+      {%- for block in section.blocks -%}
+        <div class="footer__block footer__block--{{ block.type }}" {{ block.shopify_attributes }}>
+          {%- case block.type -%}
+            {%- when 'brand' -%}
+              {%- if block.settings.text != blank -%}
+                <div class="rte footer__brand-text">{{ block.settings.text }}</div>
+              {%- endif -%}
+              {%- assign has_social = false -%}
+              {%- if settings.social_instagram != blank or settings.social_tiktok != blank or settings.social_facebook != blank or settings.social_pinterest != blank or settings.social_youtube != blank -%}
+                {%- assign has_social = true -%}
+              {%- endif -%}
+              {%- if has_social -%}
+                <nav class="social-list" aria-label="{{ 'general.social.follow_us' | t }}">
+                  {%- if settings.social_instagram != blank -%}<a href="{{ settings.social_instagram }}" rel="noopener" target="_blank">{{ 'general.social.instagram' | t }}</a>{%- endif -%}
+                  {%- if settings.social_tiktok != blank -%}<a href="{{ settings.social_tiktok }}" rel="noopener" target="_blank">{{ 'general.social.tiktok' | t }}</a>{%- endif -%}
+                  {%- if settings.social_facebook != blank -%}<a href="{{ settings.social_facebook }}" rel="noopener" target="_blank">{{ 'general.social.facebook' | t }}</a>{%- endif -%}
+                  {%- if settings.social_pinterest != blank -%}<a href="{{ settings.social_pinterest }}" rel="noopener" target="_blank">{{ 'general.social.pinterest' | t }}</a>{%- endif -%}
+                  {%- if settings.social_youtube != blank -%}<a href="{{ settings.social_youtube }}" rel="noopener" target="_blank">{{ 'general.social.youtube' | t }}</a>{%- endif -%}
+                </nav>
+              {%- endif -%}
+
+            {%- when 'menu' -%}
+              {%- comment -%}
+                Die Einträge werden zuerst gesammelt und erst danach
+                ausgegeben. Bleibt die Spalte leer – etwa weil im
+                Adminbereich noch keine Rechtstexte gepflegt sind –, entfällt
+                auch ihre Überschrift. Vorher stand dort ein Titel über einer
+                leeren Liste. Die Prüfungen darunter sind unverändert.
+              {%- endcomment -%}
+              {%- assign footer_title = block.settings.title | downcase | strip -%}
+              {%- capture footer_eintraege -%}
+
+              {%- if footer_title == 'service' -%}
+                {%- assign contact_page = pages['contact'] -%}
+                {%- assign faq_page = pages['faq'] -%}
+                  {%- if contact_page != blank -%}
+                    <li><a href="{{ contact_page.url }}">Kontakt</a></li>
+                  {%- endif -%}
+                  {%- if faq_page != blank -%}
+                    <li><a href="{{ faq_page.url }}">FAQ</a></li>
+                  {%- endif -%}
+                  <li><a href="{{ routes.root_url }}#duftberatung">Duftberatung</a></li>
+
+              {%- elsif footer_title == 'rechtliches' -%}
+                {%- assign impressum_page = pages['impressum'] -%}
+                  {%- if shop.legal_notice != blank -%}
+                    <li><a href="{{ shop.legal_notice.url }}">Impressum</a></li>
+                  {%- elsif impressum_page != blank -%}
+                    <li><a href="{{ impressum_page.url }}">Impressum</a></li>
+                  {%- endif -%}
+                  {%- if shop.privacy_policy != blank -%}
+                    <li><a href="{{ shop.privacy_policy.url }}">Datenschutz</a></li>
+                  {%- endif -%}
+                  {%- if shop.refund_policy != blank -%}
+                    <li><a href="{{ shop.refund_policy.url }}">Widerruf &amp; Rückgabe</a></li>
+                  {%- endif -%}
+                  {%- if shop.terms_of_service != blank -%}
+                    <li><a href="{{ shop.terms_of_service.url }}">AGB</a></li>
+                  {%- endif -%}
+
+              {%- elsif block.settings.menu != blank and block.settings.menu.links.size > 0 -%}
+                  {%- for link in block.settings.menu.links -%}
+                    {%- assign broken_resource = false -%}
+                    {%- if link.type == 'page_link' or link.type == 'product_link' or link.type == 'collection_link' or link.type == 'blog_link' or link.type == 'article_link' -%}
+                      {%- if link.object == blank -%}{%- assign broken_resource = true -%}{%- endif -%}
+                    {%- endif -%}
+                    {%- unless broken_resource -%}
+                      <li><a href="{{ link.url }}">{{ link.title | escape }}</a></li>
+                    {%- endunless -%}
+                  {%- endfor -%}
+              {%- endif -%}
+              {%- endcapture -%}
+              {%- assign footer_eintraege = footer_eintraege | strip -%}
+              {%- if footer_eintraege != blank -%}
+                <p class="footer__heading meta meta--muted">{{ block.settings.title | escape }}</p>
+                <ul class="footer__list">{{ footer_eintraege }}</ul>
+              {%- endif -%}
+
+            {%- when 'contact' -%}
+              <p class="footer__heading meta meta--muted">{{ block.settings.title | escape }}</p>
+              <ul class="footer__list text-muted">
+                <li>{{ settings.company_name }}</li>
+                <li>{{ settings.company_address }}</li>
+                <li>USt-IdNr.: {{ settings.company_vat }}</li>
+                <li>{{ settings.contact_email }}</li>
+                <li>{{ settings.contact_phone }}</li>
+                <li>{{ settings.contact_hours }}</li>
+              </ul>
+              <p class="demo-flag footer__note">{{ 'general.demo_notice' | t }}</p>
+
+            {%- when 'newsletter' -%}
+              <p class="footer__heading meta meta--muted">{{ 'sections.footer.newsletter_title' | t }}</p>
+              {%- if block.settings.text != blank -%}
+                <p class="text-body-sm text-muted measure-narrow">{{ block.settings.text | escape }}</p>
+              {%- endif -%}
+              {%- form 'customer', class: 'footer__newsletter', id: 'FooterNewsletter' -%}
+                <input type="hidden" name="contact[tags]" value="newsletter">
+                <div class="inline-field">
+                  <label class="visually-hidden" for="FooterNewsletterEmail">{{ 'general.newsletter.label' | t }}</label>
+                  <input
+                    class="field__input"
+                    id="FooterNewsletterEmail"
+                    type="email"
+                    name="contact[email]"
+                    placeholder="{{ 'general.newsletter.placeholder' | t }}"
+                    autocomplete="email"
+                    required
+                  >
+                  <button type="submit" class="inline-field__submit">{{ 'general.newsletter.submit' | t }}</button>
+                </div>
+                {%- if form.errors -%}
+                  <p class="field__error footer__note">{{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}</p>
+                {%- elsif form.posted_successfully? -%}
+                  <p class="form-status footer__note">{{ 'general.newsletter.success' | t }}</p>
+                {%- endif -%}
+                <p class="footer__fineprint">{{ 'general.newsletter.privacy_note' | t }}</p>
+              {%- endform -%}
+          {%- endcase -%}
+        </div>
+      {%- endfor -%}
+    </div>
+
+    <div class="footer__bottom">
+      <p class="footer__fineprint">
+        &copy; {{ 'now' | date: '%Y' }} {{ settings.wordmark | escape }}. {{ 'sections.footer.copyright' | t }}
+        {%- if section.settings.show_legal_note %} {{ 'sections.footer.legal_note' | t }}{% endif -%}
+      </p>
+
+      {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+        <div class="payment-icons">
+          <span class="visually-hidden">{{ 'sections.footer.payment_methods' | t }}</span>
+          {%- for type in shop.enabled_payment_types -%}
+            {{ type | payment_type_svg_tag: class: 'payment-icon' }}
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Fußbereich",
+  "class": "footer-section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Farbstil",
+      "options": [
+        { "value": "scheme-1", "label": "Ivory" },
+        { "value": "scheme-2", "label": "Ivory dunkel" },
+        { "value": "scheme-3", "label": "Schwarz" },
+        { "value": "scheme-4", "label": "Taupe" }
+      ],
+      "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_payment_icons",
+      "label": "Zahlungsarten anzeigen",
+      "default": true,
+      "info": "Zeigt ausschließlich die im Shopify-Admin tatsächlich aktivierten Zahlungsarten."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_legal_note",
+      "label": "Hinweis auf Platzhalterdaten anzeigen",
+      "default": true,
+      "info": "Vor dem Livegang deaktivieren."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "brand",
+      "name": "Marke",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text"
+        }
+      ]
+    },
+    {
+      "type": "menu",
+      "name": "Menüspalte",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Überschrift",
+          "default": "Service"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menü"
+        }
+      ]
+    },
+    {
+      "type": "contact",
+      "name": "Kontaktdaten",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Überschrift",
+          "default": "Kontakt"
+        }
+      ]
+    },
+    {
+      "type": "newsletter",
+      "name": "Newsletter",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Neue Duftprofile und Hinweise – selten und ohne Rabattgeschrei."
+        }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "groups": [
+      "footer"
+    ]
+  }
+}
+{% endschema %}

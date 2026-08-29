@@ -1,0 +1,35 @@
+.hero { position: relative; display: grid; }
+.hero__media { position: relative; grid-area: 1 / 1; }
+.hero__media img { width: 100%; height: 100%; object-fit: cover; }
+.hero--short .hero__media { min-height: 62vh; }
+.hero--medium .hero__media { min-height: 78vh; }
+.hero--tall .hero__media { min-height: 92vh; }
+
+.hero__scrim { position: absolute; inset: 0; }
+
+.hero__content {
+  grid-area: 1 / 1;
+  position: relative;
+  display: grid;
+  align-content: end;
+  padding-block: clamp(2.5rem, 6vw, 5rem);
+}
+
+.hero--center .hero__content { align-content: center; justify-items: center; text-align: center; }
+.hero--center .hero__inner { margin-inline: auto; }
+
+.hero__inner { max-width: 46rem; }
+.hero__title { margin-bottom: var(--space-md); }
+.hero__text { max-width: 32rem; }
+.hero--center .hero__text { margin-inline: auto; }
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin-top: var(--space-xl);
+}
+.hero--center .hero__actions { justify-content: center; }
+
+/* Ohne Bild: ruhige Typo-Fläche statt Farbverlauf */
+.hero--plain { padding-block: clamp(4rem, 10vw, 9rem); }

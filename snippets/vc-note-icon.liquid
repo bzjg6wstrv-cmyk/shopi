@@ -1,0 +1,89 @@
+{%- assign n = note | downcase -%}
+<svg class="vc-note-icon" viewBox="0 0 96 96" aria-hidden="true" focusable="false">
+  {%- case n -%}
+    {%- when 'bergamot' -%}
+      <circle cx="48" cy="50" r="27" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M48 23c-4-10 2-16 11-18M53 18c9 0 14 4 18 10" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="48" cy="50" r="17" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M48 33v34M31 50h34M36 38l24 24M60 38L36 62" fill="none" stroke="currentColor" stroke-width="1"/>
+    {%- when 'tea' -%}
+      <path d="M20 63c18-13 38-20 58-21M27 70c18-10 35-14 51-14" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M35 51c-8-17 1-28 18-27-1 16-8 25-18 27Zm16 7c-6-15 3-25 18-23-2 14-8 21-18 23Z" fill="none" stroke="currentColor" stroke-width="2"/>
+    {%- when 'ginger' -%}
+      <path d="M24 58c11-4 13-12 9-21 10 3 16 0 19-10 4 10 11 13 21 9-4 9-2 15 7 20-9 2-14 8-14 18-9-5-16-4-23 3-3-10-9-14-19-12Z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M38 54c10-2 18-8 25-17" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    {%- when 'blossom' -%}
+      <circle cx="48" cy="48" r="5" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M48 43c-7-18-21-12-18-1 2 7 9 8 18 6M53 48c18-7 12-21 1-18-7 2-8 9-6 18M48 53c7 18 21 12 18 1-2-7-9-8-18-6M43 48c-18 7-12 21-1 18 7-2 8-9 6-18" fill="none" stroke="currentColor" stroke-width="2"/>
+    {%- when 'cinnamon' -%}
+      <path d="M25 64 64 25M35 70 74 31" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+      <path d="M23 62c4 5 9 7 14 8M62 23c5 4 7 9 8 14M33 68c4 5 9 7 14 8M72 29c5 4 7 9 8 14" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    {%- when 'wood' -%}
+      <path d="M28 66 39 25h30l-8 46H25Z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M43 31c10 10 9 21-3 31M56 30c8 8 8 18-2 30" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    {%- when 'amber' -%}
+      <path d="m48 17 25 22-10 35H31L21 39Z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="m48 17-8 23 23 34M21 39l19 1 23-1M40 40l-9 34" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    {%- when 'mandarin' -%}
+      <circle cx="48" cy="51" r="27" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M44 23c2-9 9-13 19-12-3 8-9 12-19 12Z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M48 24c-2-5-1-10 3-14" fill="none" stroke="currentColor" stroke-width="2"/>
+    {%- when 'elemi' -%}
+      <path d="M48 20c12 18 22 30 22 42 0 12-10 20-22 20s-22-8-22-20c0-12 10-24 22-42Z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M37 65c4 5 10 7 17 5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    {%- when 'cardamom' -%}
+      <path d="M30 63c-6-18 2-33 18-39 16 6 24 21 18 39-12 9-24 9-36 0Z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M48 25v46M36 37c7 3 17 3 24 0M32 50c10 4 22 4 32 0" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    {%- when 'vanilla' -%}
+      <path d="M35 74c5-27 12-46 21-56M49 76c3-22 9-39 18-52" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+      <path d="M30 72c12-3 25-2 36 2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    {%- when 'praline' -%}
+      <path d="m48 21 25 14v28L48 77 23 63V35Z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="m23 35 25 14 25-14M48 49v28" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    {%- when 'lychee' -%}
+      <circle cx="48" cy="53" r="26" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M48 27c1-9 8-15 18-17M39 35l4 4m8-6 4 4m-21 9 4 4m18-3 4 4M33 59l4 4m19-3 4 4M42 70l4 4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    {%- when 'cocoa' -%}
+      <path d="M24 48c8-18 24-27 48-27-1 23-12 39-33 49-11-3-16-10-15-22Z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M32 54c9-9 19-17 33-25M42 45l7 13M52 37l7 12" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    {%- when 'peony' -%}
+      <circle cx="48" cy="49" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M48 41c-4-20-19-18-18-6 1 8 8 12 18 14M55 48c18-10 25 4 16 12-6 5-14 4-23-3M45 57c-6 19-21 12-18 1 2-8 9-11 18-9M42 46c-15-14-24-1-17 8 5 6 12 7 23 2M52 43c10-18 23-8 20 3-2 7-8 10-19 10" fill="none" stroke="currentColor" stroke-width="2"/>
+    {%- when 'patchouli' -%}
+      <path d="M48 75V27M48 38c-14-13-27-7-29 7 12 6 21 3 29-7ZM48 48c14-13 27-7 29 7-12 6-21 3-29-7ZM48 59c-12-10-22-5-24 7 10 5 18 3 24-7Z" fill="none" stroke="currentColor" stroke-width="2"/>
+    {%- when 'saffron' -%}
+      <path d="M48 73V37M48 48c-14-18-24-10-18 2 4 7 10 9 18 8M48 48c14-18 24-10 18 2-4 7-10 9-18 8M48 38c-5-17 5-22 12-12 5 7 2 13-12 21M48 38c5-17-5-22-12-12-5 7-2 13 12 21" fill="none" stroke="currentColor" stroke-width="2"/>
+    {%- when 'almond' -%}
+      <path d="M48 18c18 14 25 30 18 47-5 12-31 12-36 0-7-17 0-33 18-47Z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M48 27v43" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    {%- when 'jasmine' -%}
+      <circle cx="48" cy="48" r="4" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M48 44c-5-20-19-15-16-4 2 7 8 9 16 8M52 48c20-5 15-19 4-16-7 2-9 8-8 16M48 52c5 20 19 15 16 4-2-7-8-9-16-8M44 48c-20 5-15 19-4 16 7-2 9-8 8-16" fill="none" stroke="currentColor" stroke-width="2"/>
+    {%- when 'musk' -%}
+      <path d="M25 58c10-25 36-31 49-10-4 23-25 31-43 20-5-3-7-6-6-10Z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M36 59c10-8 20-10 31-7" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    {%- when 'lemon' -%}
+      <path d="M25 51c11-24 35-32 50-11-4 25-27 36-47 21-4-3-5-7-3-10Z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M35 56c10-7 20-11 31-12" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    {%- when 'orange' -%}
+      <circle cx="48" cy="52" r="27" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M48 25c-1-8 4-14 13-17M47 26c6-7 14-9 23-5" fill="none" stroke="currentColor" stroke-width="2"/>
+    {%- when 'fruit' -%}
+      <circle cx="38" cy="54" r="18" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="58" cy="52" r="17" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M45 36c2-10 8-15 18-16M35 36c-4-8-1-14 6-19" fill="none" stroke="currentColor" stroke-width="2"/>
+    {%- when 'lavender' -%}
+      <path d="M42 76 53 20M48 60l-13-9m16-5-13-8m17-5-12-8M47 66l14-8m-11-5 14-8m-11-5 14-8" fill="none" stroke="currentColor" stroke-width="2"/>
+    {%- when 'honey' -%}
+      <path d="m48 20 22 13v27L48 74 26 60V33Z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M37 27v40M59 27v40M26 46h44" fill="none" stroke="currentColor" stroke-width="1.3"/>
+    {%- when 'tobacco' -%}
+      <path d="M48 77c-2-22-1-40 3-57M48 38c-13-12-25-7-27 7 11 6 20 3 27-7ZM49 49c14-12 26-6 27 8-11 5-20 2-27-8ZM48 61c-11-8-20-4-22 7 9 5 16 3 22-7Z" fill="none" stroke="currentColor" stroke-width="2"/>
+    {%- when 'tonka' -%}
+      <path d="M34 72c-8-20-2-39 14-54 16 15 22 34 14 54-10 6-18 6-28 0Z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M48 23v53" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    {%- else -%}
+      <circle cx="48" cy="48" r="25" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M48 24v48M24 48h48" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  {%- endcase -%}
+</svg>

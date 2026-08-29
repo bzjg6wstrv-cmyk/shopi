@@ -1,0 +1,73 @@
+{%- comment -%}
+  VENT CELESTE Signet.
+
+  Parameter:
+    size   – Höhe in px (Pflichtangabe in der Praxis, Standard 22)
+    class  – zusätzliche CSS-Klassen
+    label  – Beschriftung. Fehlt sie, gilt das Signet als Zierde und wird
+             beim Vorlesen übersprungen (etwa neben der Wortmarke).
+
+  Quelle: Ist in den Theme Settings ein Signet hinterlegt, gilt dieses.
+  Sonst greift das mitgelieferte Markenzeichen aus dem Theme
+  (assets/vc-signet.png) – dadurch steht die Marke sofort nach dem Import
+  richtig da und muss nicht erst hochgeladen werden.
+
+  Einfärbung: Ist „Signet automatisch einfärben" aktiv, wird die Datei als
+  Maske verwendet und die Fläche in der Textfarbe des jeweiligen Farbstils
+  gefüllt. Dadurch steht das Signet auf hellen Flächen in tiefem Schwarz und
+  auf dunklen Flächen in Elfenbein – aus derselben Datei, ohne zweite
+  Variante. Voraussetzung ist ein transparenter Hintergrund; das
+  mitgelieferte Signet erfüllt sie.
+
+  Ohne Einfärbung wird die Datei unverändert als Bild ausgegeben.
+{%- endcomment -%}
+{%- liquid
+  assign mark = settings.signet
+  assign mark_size = size | default: 22
+
+  assign mark_src = ''
+  assign mark_src_2x = ''
+  assign mark_ratio = 1.535
+  assign mark_w = 640
+  assign mark_h = 417
+
+  if mark != blank
+    assign mark_src = mark | image_url: width: 480
+    assign mark_src_2x = mark | image_url: width: 960
+    assign mark_ratio = mark.aspect_ratio | default: 1
+    assign mark_w = mark.width
+    assign mark_h = mark.height
+  else
+    assign mark_src = 'vc-signet.png' | asset_url
+    assign mark_src_2x = mark_src
+  endif
+-%}
+{%- comment -%}
+  Theme Check liest die Adresse aus einer Variablen und kann deshalb nicht
+  erkennen, dass sie in beiden Fällen von Shopify kommt: entweder aus
+  image_url (hochgeladenes Signet) oder aus asset_url (mitgeliefertes
+  Signet). Beide liefern eine CDN-Adresse. Die Regel wird nur für diesen
+  Block ausgesetzt.
+{%- endcomment -%}
+{% # theme-check-disable RemoteAsset %}
+{%- if mark_src != blank -%}
+  {%- if settings.signet_recolor -%}
+    <span
+      class="brand-mark brand-mark--tint {{ class }}"
+      style="--mark-size: {{ mark_size }}px; --mark-ratio: {{ mark_ratio }}; --mark-src: url({{ mark_src }});"
+      {% if label != blank %}role="img" aria-label="{{ label | escape }}"{% else %}aria-hidden="true"{% endif %}
+    ></span>
+  {%- else -%}
+    <img
+      class="brand-mark {{ class }}"
+      style="--mark-size: {{ mark_size }}px; --mark-ratio: {{ mark_ratio }};"
+      src="{{ mark_src }}"
+      srcset="{{ mark_src }} 1x, {{ mark_src_2x }} 2x"
+      width="{{ mark_w }}"
+      height="{{ mark_h }}"
+      alt="{% if label != blank %}{{ label | escape }}{% endif %}"
+      loading="lazy"
+    >
+  {%- endif -%}
+{%- endif -%}
+{% # theme-check-enable RemoteAsset %}

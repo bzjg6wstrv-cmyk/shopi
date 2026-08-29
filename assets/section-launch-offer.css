@@ -1,0 +1,212 @@
+/* Vorteil und Beratung als redaktionelle Markenfläche.
+
+   Der Abschnitt liegt auf der dritten Stufe des Farbsystems: einem warmen
+   Beige, das etwas dunkler ist als der Seitenton. Der Farbwechsel allein
+   trennt ihn vom Rest der Seite – eine Rahmenlinie oben und unten würde
+   daraus wieder einen Kasten machen und entfällt deshalb.
+
+   Kein Kasten, kein Rahmen, kein Siegel. Die beiden Zusagen sind nicht
+   gleich gewichtet: Die erste steht groß und trägt den Abschnitt, die zweite
+   antwortet darauf in ruhigerem Schriftgrad. */
+.offer { display: grid; }
+
+.offer__item { padding-block: var(--space-lg); }
+.offer__item + .offer__item { border-top: var(--hair); }
+
+.offer .eyebrow { margin-bottom: var(--space-sm); }
+
+/* Die Überschriften stehen in gemischter Schreibweise, nicht in Versalien:
+   Eine Zeile wie „20 % auf deinen ersten Duftkauf“ liest sich so in einem
+   Zug – als Satz einer Marke, nicht als Aufkleber. */
+.offer__heading {
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: clamp(1.5rem, 1.15rem + 1.5vw, 2rem);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  margin-bottom: var(--space-md);
+  text-wrap: balance;
+}
+
+/* Auch auf dem Telefon führt die erste Zusage: Sie steht eine Stufe größer
+   als die Beratungsspalte darunter. Ohne diesen Unterschied lesen sich die
+   beiden Blöcke wie zwei gleichrangige Kacheln. */
+.offer--pair .offer__item:first-child .offer__heading {
+  font-size: clamp(2rem, 1.25rem + 2.9vw, 2.75rem);
+}
+
+.offer__text {
+  color: rgb(var(--color-text));
+  max-width: 44ch;
+  font-size: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
+  line-height: 1.55;
+}
+
+.offer__detail {
+  margin-top: var(--space-sm);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: rgb(var(--color-muted));
+  max-width: 44ch;
+}
+
+.offer__cta { padding-block: 0 var(--space-lg); }
+
+/* Auf dem Telefon trägt der Abschnittsrahmen die Luft nach außen. Die erste
+   Zusage braucht darüber keinen zweiten Innenabstand mehr, sonst summieren
+   sich beide zu einer Lücke von über 100 px vor der Überschrift. */
+@media (max-width: 749px) {
+  /* Ohne Akzentlinie braucht die erste Zusage oben keinen Innenabstand –
+     der Abschnittsrahmen trägt die Luft. Mit Linie schon, sonst klebte der
+     Vortext daran. */
+  .offer:not(.offer--akzent) .offer__item:first-child { padding-top: 0; }
+  .offer--akzent .offer__item:first-child { padding-top: var(--space-md); }
+  .offer__cta { padding-bottom: 0; }
+}
+.offer__button { min-height: 3.25rem; }
+@media (max-width: 599px) { .offer__button { display: flex; width: 100%; } }
+
+/* --------------------------------------------------- Akzent Bordeaux ---
+   Der Preisvorteil und die Konzentrationsangabe „30 % Extrait" sahen sich
+   zu ähnlich: zweimal eine große Prozentzahl in derselben Schrift und
+   derselben Farbe. Der Vorteil bekommt deshalb als einziger Abschnitt der
+   Seite eine eigene Akzentfarbe.
+
+   #7A3E3A ist ein tiefes, gedecktes Bordeaux – kein Signalrot. Auf dem
+   warmen Beige der Fläche erreicht es 6,6:1 und ist damit auch als
+   Fließtext zulässig; es liegt farblich in derselben warmen Familie wie
+   Ivory, Beige und Champagner und fällt nicht heraus.
+
+   Getragen wird der Akzent von Vortext und Überschrift. Alles andere bleibt
+   dunkel. Keine Fläche, kein Verlauf, kein Rahmen, keine Plakette – der
+   Abschnitt bleibt eine redaktionelle Seite, kein Rabattschild. */
+.offer--akzent {
+  --offer-akzent: 122 62 58;
+}
+
+.offer--akzent .eyebrow,
+.offer--akzent .offer__heading {
+  color: rgb(var(--offer-akzent));
+}
+
+/* Eine sehr feine Linie in derselben Farbe schließt den Vorteil nach oben
+   ab. Sie ersetzt keinen Rahmen – sie markiert nur den Anfang. */
+.offer--akzent .offer__item:first-child {
+  border-top: var(--border-width) solid rgb(var(--offer-akzent) / 0.45);
+  padding-top: var(--space-lg);
+}
+
+/* Auf dunklen Farbstilen trüge das Bordeaux zu wenig Kontrast. Dort führt
+   der Akzent des Farbstils. */
+.color-scheme-3 .offer--akzent .eyebrow,
+.color-scheme-3 .offer--akzent .offer__heading,
+.color-scheme-4 .offer--akzent .eyebrow,
+.color-scheme-4 .offer--akzent .offer__heading {
+  color: rgb(var(--color-accent));
+}
+.color-scheme-3 .offer--akzent .offer__item:first-child,
+.color-scheme-4 .offer--akzent .offer__item:first-child {
+  border-top-color: rgb(var(--color-accent) / 0.45);
+}
+
+/* Eine einzelne Zusage. Der Abschnitt zeigt dann nur noch den Erstkauf-
+   Vorteil – die persönliche Beratung ist auf der Seite bereits ausführlich
+   erklärt und muss hier nicht wiederholt werden.
+
+   Die Überschrift behält das Gewicht, das sie im Paar hatte: Sie trägt den
+   Abschnitt allein und darf nicht auf Fließtextgröße zurückfallen. Der Text
+   bekommt eine Lesebreite, damit die Zeile auf breiten Bildschirmen nicht
+   über die halbe Seite läuft. */
+.offer--solo .offer__item { padding-block: 0; }
+.offer--solo .offer__heading {
+  font-size: clamp(2rem, 1.25rem + 2.9vw, 2.75rem);
+}
+
+@media (min-width: 750px) {
+  /* Erst auf breiten Bildschirmen braucht der Text eine Lesebreite. Auf dem
+     Telefon würde sie nur zusätzliche Umbrüche erzwingen. */
+  .offer--solo .offer__text,
+  .offer--solo .offer__detail { max-width: 38ch; }
+  .offer--solo .offer__heading {
+    font-size: clamp(2.125rem, 1rem + 3.4vw, 3.75rem);
+    letter-spacing: -0.015em;
+    /* 18ch statt 15ch: Bei 15 brach die Zeile auf großen Bildschirmen in
+       drei Teile und der Abschnitt wurde unnötig hoch. */
+    max-width: 18ch;
+  }
+  .offer--solo .offer__text {
+    font-size: clamp(1rem, 0.95rem + 0.35vw, 1.1875rem);
+  }
+}
+
+/* Zwei Zusagen: Die erste bekommt mehr Fläche und einen deutlich größeren
+   Schriftgrad, die zweite tritt zurück. Genau diese Ungleichheit hält das
+   Band davon ab, wie zwei gleiche Kacheln zu wirken. */
+@media (min-width: 750px) {
+  .offer--pair {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    column-gap: clamp(2rem, 5vw, 4.5rem);
+  }
+  .offer--pair .offer__item { padding-block: clamp(2.5rem, 5vw, 4.5rem); }
+  .offer--pair .offer__item + .offer__item {
+    border-top: 0;
+    border-left: var(--hair);
+    padding-left: clamp(2rem, 5vw, 4.5rem);
+  }
+
+  /* Die tragende Zusage steht über beide Zeilen des Bandes – dadurch
+     schließt die rechte Spalte dicht an ihren Beratungsweg an und es
+     entsteht dort keine zufällige Lücke. */
+  /* Die tragende Zusage steht mittig zur rechten Spalte, nicht oben bündig:
+     Sonst bliebe unter ihr eine große leere Fläche stehen, die wie ein
+     Fehler aussieht statt wie Ruhe. */
+  .offer--pair .offer__item:first-child {
+    grid-row: 1 / span 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .offer--pair .offer__item:first-child .offer__heading {
+    font-size: clamp(2.125rem, 1rem + 3.4vw, 3.75rem);
+    letter-spacing: -0.015em;
+    max-width: 15ch;
+  }
+  .offer--pair .offer__item:first-child .offer__text {
+    font-size: clamp(1rem, 0.95rem + 0.35vw, 1.1875rem);
+  }
+  .offer--pair .offer__item + .offer__item .offer__heading {
+    font-size: clamp(1.125rem, 0.95rem + 0.6vw, 1.4375rem);
+    letter-spacing: -0.005em;
+  }
+  .offer--pair .offer__item + .offer__item .offer__text {
+    font-size: 0.9375rem;
+    color: rgb(var(--color-muted));
+  }
+
+  /* Der Beratungsweg gehört zur rechten Zusage und sitzt deshalb in deren
+     Spalte, nicht mittig unter dem Abschnitt. Die senkrechte Haarlinie läuft
+     durch bis unter die Schaltfläche. */
+  .offer--pair .offer__item + .offer__item { padding-bottom: var(--space-lg); }
+  .offer--pair .offer__cta {
+    grid-column: 2;
+    border-left: var(--hair);
+    padding-left: clamp(2rem, 5vw, 4.5rem);
+    padding-bottom: clamp(2rem, 4vw, 3.5rem);
+  }
+}
+
+/* Drei Zusagen bleiben eine schlichte Zeilenfolge – die typografische
+   Gegenüberstellung greift nur beim Paar. */
+@media (min-width: 990px) {
+  /* Drei Zusagen bekommen drei Spalten. Eine einzelne Zusage ist davon
+     ausgenommen: Sie stand sonst im ersten Drittel und die Überschrift
+     brach auf 437 px Breite in drei Zeilen um. */
+  .offer:not(.offer--pair):not(.offer--solo) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .offer:not(.offer--pair):not(.offer--solo) .offer__item { padding-block: var(--space-2xl); padding-right: var(--space-xl); }
+  .offer:not(.offer--pair):not(.offer--solo) .offer__item + .offer__item {
+    border-top: 0;
+    border-left: var(--hair);
+    padding-left: var(--space-xl);
+  }
+  .offer:not(.offer--pair):not(.offer--solo) .offer__cta { grid-column: 1 / -1; padding-bottom: var(--space-2xl); }
+}

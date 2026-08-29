@@ -1,0 +1,191 @@
+{{ 'section-scent-worlds.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  Duftwelten. Jede Fläche verweist auf eine echte Shopify-Collection.
+  Die Produktanzahl kommt aus Shopify – es werden keine Zahlen erfunden.
+{%- endcomment -%}
+<section class="section color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width">
+    <div class="section-head">
+      <div>
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="eyebrow">{{ section.settings.eyebrow | escape }}</span>
+        {%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          <h2 class="section-head__title h2">{{ section.settings.heading | escape }}</h2>
+        {%- endif -%}
+      </div>
+      {%- if section.settings.link != blank -%}
+        <a class="link-underline" href="{{ section.settings.link }}">{{ section.settings.link_label | escape }}</a>
+      {%- endif -%}
+    </div>
+
+    {%- if section.blocks.size == 0 -%}
+      <p class="note-placeholder">Bitte im Theme-Editor Duftwelten hinzufügen und je Block eine Collection wählen.</p>
+    {%- else -%}
+      <div class="worlds{% if section.settings.asymmetric %} worlds--asymmetric{% endif %} reveal">
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign world = block.settings.collection
+            assign world_image = block.settings.image
+            if world_image == blank and world.image != blank
+              assign world_image = world.image
+            endif
+            assign world_title = block.settings.title
+            if world_title == blank
+              assign world_title = world.title
+            endif
+          -%}
+          <div class="worlds__item" {{ block.shopify_attributes }}>
+            <a class="worlds__link" href="{{ world.url | default: block.settings.link }}">
+              <div class="worlds__media">
+                {%- if world_image != blank -%}
+                  <img
+                    src="{{ world_image | image_url: width: 1200 }}"
+                    srcset="{{ world_image | image_url: width: 600 }} 600w,
+                            {{ world_image | image_url: width: 900 }} 900w,
+                            {{ world_image | image_url: width: 1200 }} 1200w"
+                    sizes="(min-width: 750px) 45vw, 100vw"
+                    alt="{{ world_image.alt | default: world_title | escape }}"
+                    width="{{ world_image.width }}"
+                    height="{{ world_image.height }}"
+                    loading="lazy"
+                  >
+                {%- else -%}
+                  {{ 'collection-1' | placeholder_svg_tag: 'full-bleed-media' }}
+                {%- endif -%}
+              </div>
+              <div class="worlds__caption">
+                <span class="worlds__title">{{ world_title | escape }}</span>
+                {%- if section.settings.show_count and world != blank -%}
+                  <span class="worlds__count">
+                    {{ 'products.facets.product_count' | t: count: world.products_count }}
+                  </span>
+                {%- endif -%}
+              </div>
+              {%- if block.settings.note != blank -%}
+                <p class="worlds__note">{{ block.settings.note | escape }}</p>
+              {%- endif -%}
+            </a>
+          </div>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Duftwelten",
+  "tag": "section",
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Farbstil",
+      "options": [
+        { "value": "scheme-1", "label": "Ivory" },
+        { "value": "scheme-2", "label": "Ivory dunkel" },
+        { "value": "scheme-3", "label": "Schwarz" },
+        { "value": "scheme-4", "label": "Taupe" }
+      ],
+      "default": "scheme-1"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Kleiner Vortext",
+      "default": "Orientierung"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Überschrift",
+      "default": "Duftwelten"
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Textlink",
+      "default": "Alle Düfte"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Ziel des Textlinks"
+    },
+    {
+      "type": "checkbox",
+      "id": "asymmetric",
+      "label": "Asymmetrisches Raster",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_count",
+      "label": "Anzahl der Düfte anzeigen",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "world",
+      "name": "Duftwelt",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Titel",
+          "info": "Leer lassen, um den Collection-Titel zu verwenden."
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Bild",
+          "info": "Leer lassen, um das Collection-Bild zu verwenden."
+        },
+        {
+          "type": "text",
+          "id": "note",
+          "label": "Kurzbeschreibung"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Alternativer Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Duftwelten",
+      "blocks": [
+        {
+          "type": "world"
+        },
+        {
+          "type": "world"
+        },
+        {
+          "type": "world"
+        },
+        {
+          "type": "world"
+        },
+        {
+          "type": "world"
+        },
+        {
+          "type": "world"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

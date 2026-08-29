@@ -1,0 +1,192 @@
+{%- comment -%}
+  Produktkarte V2.
+
+  Der Preis folgt IMMER einer konkreten Variante – niemals einem „ab"-Preis.
+  Auflösungsreihenfolge:
+    1. price_context   – explizite Vorgabe der Section ('sample', 'travel', 'edp', 'extrait')
+    2. Collection-Metafeld custom.karten_variante
+    3. Produkt-Metafeld custom.hauptvariante
+    4. erste verfügbare 30-ml-Variante
+    5. erste verfügbare Variante
+
+  Parameter:
+    product, lazy, sizes, price_context, quick_add,
+    show_family / show_concentration / show_badges (überschreiben die Theme Settings)
+{%- endcomment -%}
+{%- liquid
+  assign card_lazy = lazy | default: 'lazy'
+  assign card_sizes = sizes | default: '(min-width: 1200px) 22vw, (min-width: 750px) 30vw, 45vw'
+
+  assign show_family_final = show_family
+  if show_family == nil
+    assign show_family_final = settings.card_show_family
+  endif
+  assign show_conc_final = show_concentration
+  if show_concentration == nil
+    assign show_conc_final = settings.card_show_concentration
+  endif
+  assign show_badges_final = show_badges
+  if show_badges == nil
+    assign show_badges_final = settings.card_show_badges
+  endif
+
+  assign context_key = price_context
+  if context_key == blank
+    assign context_key = collection.metafields.custom.karten_variante.value
+  endif
+  assign context_key = context_key | downcase | strip
+
+  assign display_variant = blank
+
+  comment
+    1. Kontextvariante: sucht die Variante, deren Ausführung zum Kontext passt.
+  endcomment
+  if context_key != blank
+    assign context_needle = context_key
+    case context_key
+      when 'sample'
+        assign context_needle = 'sample'
+      when 'travel'
+        assign context_needle = 'travel'
+      when 'edp'
+        assign context_needle = 'eau de parfum'
+      when 'extrait'
+        assign context_needle = 'extrait'
+    endcase
+    for candidate in product.variants
+      assign candidate_title = candidate.title | downcase
+      if display_variant == blank and candidate_title contains context_needle
+        assign display_variant = candidate
+      endif
+    endfor
+  endif
+
+  if display_variant == blank
+    assign display_variant = product.metafields.custom.hauptvariante.value
+  endif
+
+  if display_variant == blank
+    for candidate in product.variants
+      assign candidate_title = candidate.title | downcase
+      if display_variant == blank and candidate_title contains '30 ml' and candidate.available
+        assign display_variant = candidate
+      endif
+    endfor
+  endif
+
+  if display_variant == blank
+    assign display_variant = product.selected_or_first_available_variant
+  endif
+
+  assign families = product.metafields.custom.duftfamilie.value
+  assign character = product.metafields.custom.charakter.value
+
+  assign badge_label = ''
+  if show_badges_final
+    if product.metafields.custom.bestseller.value == true or product.tags contains 'bestseller'
+      assign badge_label = 'products.product.badge_bestseller' | t
+    elsif product.tags contains 'neu' or product.tags contains 'new'
+      assign badge_label = 'products.product.badge_new' | t
+    endif
+  endif
+-%}
+<article class="card">
+  <div class="card__media card__media--{{ settings.card_image_ratio }}">
+    {%- if product.featured_media -%}
+      <img
+        src="{{ product.featured_media | image_url: width: 800 }}"
+        srcset="{{ product.featured_media | image_url: width: 400 }} 400w,
+                {{ product.featured_media | image_url: width: 600 }} 600w,
+                {{ product.featured_media | image_url: width: 800 }} 800w,
+                {{ product.featured_media | image_url: width: 1200 }} 1200w"
+        sizes="{{ card_sizes }}"
+        alt="{{ product.featured_media.alt | default: product.title | escape }}"
+        width="{{ product.featured_media.width }}"
+        height="{{ product.featured_media.height }}"
+        loading="{{ card_lazy }}"
+        class="card__image--primary"
+      >
+      {%- if settings.card_show_secondary_image and product.media[1] -%}
+        <img
+          src="{{ product.media[1] | image_url: width: 800 }}"
+          srcset="{{ product.media[1] | image_url: width: 400 }} 400w,
+                  {{ product.media[1] | image_url: width: 800 }} 800w"
+          sizes="{{ card_sizes }}"
+          alt=""
+          width="{{ product.media[1].width }}"
+          height="{{ product.media[1].height }}"
+          loading="lazy"
+          class="card__image--secondary"
+          aria-hidden="true"
+        >
+      {%- endif -%}
+    {%- else -%}
+      {{ 'product-1' | placeholder_svg_tag: 'card__placeholder' }}
+    {%- endif -%}
+
+    {%- if badge_label != blank -%}
+      <span class="card__badge">{{ badge_label }}</span>
+    {%- endif -%}
+  </div>
+
+  <div class="card__content">
+    <h3 class="card__title">
+      <a href="{{ product.url }}">{{ product.title }}</a>
+    </h3>
+
+    {%- if show_family_final -%}
+      {%- liquid
+        assign card_traits = ''
+        if families != blank
+          assign card_traits = families | join: ' · '
+        endif
+        if character != blank
+          assign character_text = character | join: ' · '
+          if card_traits != blank
+            assign card_traits = card_traits | append: ' · ' | append: character_text
+          else
+            assign card_traits = character_text
+          endif
+        endif
+      -%}
+      {%- if card_traits != blank -%}
+        <p class="card__family">{{ card_traits }}</p>
+      {%- endif -%}
+    {%- endif -%}
+
+    {%- if show_conc_final -%}
+      {%- comment -%}
+        Konzentration und Größe kommen aus der Variante – aus dem Metafeld,
+        sonst aus dem standardisierten Variantennamen abgeleitet.
+        Ein Eau de Parfum zeigt dadurch nie die Prozentzahl des Extrait.
+      {%- endcomment -%}
+      {%- capture card_variant_line -%}{% render 'variant-facts', variant: display_variant, mode: 'line' %}{%- endcapture -%}
+      {%- assign card_variant_line = card_variant_line | strip -%}
+      {%- if card_variant_line != blank -%}
+        <p class="card__meta meta">{{ card_variant_line }}</p>
+      {%- endif -%}
+    {%- endif -%}
+
+    {%- render 'product-price', variant: display_variant, product: product, class: 'card__price' -%}
+
+    {%- comment -%}
+      Schnell-hinzufügen steht bewusst UNTER den Angaben, nicht auf dem Bild:
+      Das Produktfoto bleibt frei von Bedienelementen. Die Funktion selbst –
+      Formular, Varianten-ID, Cart-Rückmeldung – ist unverändert.
+    {%- endcomment -%}
+    {%- if quick_add and display_variant.available -%}
+      <form method="post" action="{{ routes.cart_add_url }}" class="card__quick-add">
+        <input type="hidden" name="id" value="{{ display_variant.id }}">
+        <input type="hidden" name="quantity" value="1">
+        <button
+          type="submit"
+          class="card__quick-add-button"
+          aria-label="{{ 'sections.quick_add.label' | t }} – {{ product.title | escape }} {{ display_variant.title | escape }}"
+        >
+          <span class="card__quick-add-label">{{ 'sections.quick_add.label' | t }}</span>
+          {% render 'icon', name: 'plus' %}
+        </button>
+      </form>
+    {%- endif -%}
+  </div>
+</article>

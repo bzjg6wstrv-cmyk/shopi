@@ -1,0 +1,151 @@
+{{ 'section-trust.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  Vertrauenszeile.
+
+  Ein Versprechen, ein Satz dazu, darunter vier kurze Angaben. Bewusst klein
+  gehalten: keine eigene Marketingfläche, kein Symbolsatz, keine Plaketten.
+  Der Abschnitt ordnet sich der Seite unter und beantwortet die letzte offene
+  Frage vor dem Kauf.
+
+  Die Angaben stehen als Blöcke im Theme-Editor und sind damit frei
+  änderbar, ohne den Code anzufassen.
+{%- endcomment -%}
+{%- liquid
+  comment
+    Verweise auf die Rückgabe-Richtlinie werden nur ausgegeben, wenn Shopify
+    diese Richtlinie tatsächlich bereitstellt. So kann ein eingetragener
+    Standardpfad niemals auf einer 404-Seite enden.
+  endcomment
+  assign trust_link = section.settings.link
+  if trust_link == '/policies/refund-policy'
+    if shop.refund_policy != blank
+      assign trust_link = shop.refund_policy.url
+    else
+      assign trust_link = blank
+    endif
+  elsif trust_link == blank and shop.refund_policy != blank
+    assign trust_link = shop.refund_policy.url
+  endif
+-%}
+<section class="section trust-section color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width">
+    <div class="trust reveal">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="trust__heading">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+
+      {%- if section.settings.text != blank -%}
+        <p class="trust__text">{{ section.settings.text | escape }}</p>
+      {%- endif -%}
+
+      {%- if section.settings.link_label != blank and trust_link != blank -%}
+        <a class="trust__link" href="{{ trust_link }}">{{ section.settings.link_label | escape }}</a>
+      {%- endif -%}
+
+      {%- if section.blocks.size > 0 -%}
+        <ul class="trust__points">
+          {%- for block in section.blocks -%}
+            <li class="trust__point" {{ block.shopify_attributes }}>{{ block.settings.text | escape }}</li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Vertrauenszeile",
+  "tag": "section",
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Farbstil",
+      "options": [
+        {
+          "value": "scheme-1",
+          "label": "Ivory"
+        },
+        {
+          "value": "scheme-2",
+          "label": "Ivory dunkel"
+        },
+        {
+          "value": "scheme-3",
+          "label": "Schwarz"
+        },
+        {
+          "value": "scheme-4",
+          "label": "Taupe"
+        }
+      ],
+      "default": "scheme-1"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Versprechen",
+      "default": "100 % zufrieden oder Geld zurück."
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Satz darunter",
+      "default": "Du sollst deinen Duft lieben. Wenn nicht, erstatten wir dir den Kaufpreis."
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Beschriftung des Verweises",
+      "default": "Rückgabe und Widerruf"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Ziel des Verweises",
+      "info": "Führt zur Seite mit den Bedingungen. Bleibt das Feld leer, wird automatisch die Rückgabe-Richtlinie des Shops verwendet, sofern sie hinterlegt ist."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "point",
+      "name": "Angabe",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "30 % Extrait"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Vertrauenszeile",
+      "blocks": [
+        {
+          "type": "point",
+          "settings": {
+            "text": "30 % Extrait"
+          }
+        },
+        {
+          "type": "point",
+          "settings": {
+            "text": "Persönliche Duftberatung"
+          }
+        },
+        {
+          "type": "point",
+          "settings": {
+            "text": "Sichere Zahlung"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

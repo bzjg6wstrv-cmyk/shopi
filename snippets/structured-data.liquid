@@ -1,0 +1,43 @@
+{%- comment -%}
+  Strukturierte Daten. Produkt-Schema liegt bewusst auf der Produktseite
+  (sections/main-product.liquid), damit Preis und Verfügbarkeit
+  aus der tatsächlich gewählten Variante stammen.
+{%- endcomment -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": {{ shop.name | json }},
+  "url": {{ shop.url | json }}
+  {%- if settings.logo %},
+  "logo": {{ settings.logo | image_url: width: 500 | prepend: 'https:' | json }}
+  {%- endif -%}
+  {%- assign social_links = '' -%}
+  {%- if settings.social_instagram != blank %}{% assign social_links = social_links | append: settings.social_instagram | append: '|' %}{% endif -%}
+  {%- if settings.social_tiktok != blank %}{% assign social_links = social_links | append: settings.social_tiktok | append: '|' %}{% endif -%}
+  {%- if settings.social_facebook != blank %}{% assign social_links = social_links | append: settings.social_facebook | append: '|' %}{% endif -%}
+  {%- if settings.social_pinterest != blank %}{% assign social_links = social_links | append: settings.social_pinterest | append: '|' %}{% endif -%}
+  {%- if settings.social_youtube != blank %}{% assign social_links = social_links | append: settings.social_youtube | append: '|' %}{% endif -%}
+  {%- if social_links != blank %},
+  "sameAs": {{ social_links | split: '|' | json }}
+  {%- endif %}
+}
+</script>
+{%- if request.page_type == 'index' -%}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": {{ shop.name | json }},
+    "url": {{ shop.url | json }},
+    {%- assign brace_open = '{' -%}
+    {%- assign brace_close = '}' -%}
+    {%- assign search_target = shop.url | append: '/search?q=' | append: brace_open | append: 'search_term_string' | append: brace_close -%}
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {{ search_target | json }},
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+{%- endif -%}

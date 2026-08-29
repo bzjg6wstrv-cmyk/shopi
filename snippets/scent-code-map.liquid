@@ -1,0 +1,72 @@
+{%- comment -%}
+  Zuordnungstabelle Scent Code → Produkt-Handle für die öffentlich gelisteten
+  Düfte. Wird einmal je Seite gerendert und vom Scent-Code-Skript gelesen.
+
+  Enthält ausschließlich Code, Handle, Preis der Hauptvariante und deren
+  Variantennummer. Keine internen Daten – die Zuordnung zu Originaldüften
+  existiert in Shopify nicht.
+{%- endcomment -%}
+  {%- liquid
+    assign public_collection = settings.scent_code_collection
+    assign fallback_product = settings.scent_code_product
+    if fallback_product == blank
+      comment
+        Derselbe Rückfall wie im Suchtreffer, damit beide Wege dasselbe
+        Produkt ansteuern.
+      endcomment
+      assign fallback_product = all_products['vent-celeste-scent-code']
+    endif
+    assign fallback_handle = fallback_product.handle
+  -%}
+  <script type="application/json" data-scent-code-map>
+    {
+      "prefix": {{ settings.scent_code_prefix | default: 'VC' | json }},
+      {%- comment -%}
+        Liste der tatsächlich vergebenen Nummern. Ist sie leer, akzeptiert das
+        Theme jede positive Nummer – dann kann ein Kunde auch einen Code
+        bestellen, den es nicht gibt. Die Nummernkreise sind bewusst nach oben
+        offen; eine Obergrenze gibt es nicht mehr.
+      {%- endcomment -%}
+      "allowed": [
+        {%- assign allow_raw = settings.valid_scent_codes | strip -%}
+        {%- if allow_raw != blank -%}
+          {%- assign prefix_down = settings.scent_code_prefix | default: 'VC' | downcase -%}
+          {%- assign allow_entries = allow_raw | newline_to_br | replace: '<br />', ',' | split: ',' -%}
+          {%- assign allow_first = true -%}
+          {%- for entry in allow_entries -%}
+            {%- assign entry_digits = entry | downcase | remove: prefix_down | remove: '-' | remove: ' ' | remove: '#' | strip -%}
+            {%- assign entry_number = entry_digits | plus: 0 -%}
+            {%- if entry_digits != blank and entry_number > 0 -%}
+              {%- unless allow_first %},{% endunless -%}
+              {{ entry_number }}
+              {%- assign allow_first = false -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+      ],
+      "fallback": {{ fallback_handle | json }},
+      "searchUrl": {{ routes.predictive_search_url | json }},
+      "codes": {
+        {%- assign first_entry = true -%}
+        {%- for item in public_collection.products limit: 60 -%}
+          {%- liquid
+            assign item_code = item.metafields.custom.scent_code.value | default: item.title | strip | upcase
+            assign main_variant = item.metafields.custom.hauptvariante.value
+            if main_variant == blank
+              assign main_variant = item.selected_or_first_available_variant
+            endif
+          -%}
+          {%- if item_code != blank -%}
+            {%- unless first_entry %},{% endunless -%}
+            {{ item_code | json }}: {
+              "handle": {{ item.handle | json }},
+              "price": {{ main_variant.price | money | json }},
+              "variant": {{ main_variant.title | json }},
+              "available": {{ item.available | json }}
+            }
+            {%- assign first_entry = false -%}
+          {%- endif -%}
+        {%- endfor -%}
+      }
+    }
+  </script>

@@ -1,0 +1,348 @@
+/* Der Abschnittsrahmen wird nach Breite gesetzt, nicht pauschal: Auf dem
+   Telefon reicht die mittlere Dichte – zwei Abschnitte mit demselben
+   Seitenton hintereinander standen sonst mit 120 px Leerraum zwischen sich.
+   Ab Tablet bekommt der Abschnitt wieder die große Dichte. */
+/* B1 · Der Abschnitt schließt bewusster an den vorherigen an. Gemessen vom
+   Ende der Schaltfläche „Duftberatung starten" bis zur Zeile „Die
+   Hauptlinie" sinkt der Abstand auf dem Telefon von 90 px auf 65 px, also
+   um knapp 28 %. Der Wert steht bewusst fest und nicht auf --sect-xs: das
+   Merkmal ist nur für diesen Übergang gestrafft, alle anderen Abschnitte
+   behalten ihren Rhythmus. Luft bleibt, geklebt wird nicht. */
+.feature-section { padding-block: 0.8125rem var(--sect-md); }
+@media (min-width: 750px) {
+  .feature-section { padding-block: var(--sect-md) var(--sect-lg); }
+}
+
+/* B6 · Abschluss zum Fußbereich: eine feine Linie auf der Rasterkante statt
+   eines harten Schnitts. Sie kostet keine zusätzliche Höhe – der
+   Innenabstand darunter trägt sie. */
+.feature-section > .page-width { border-bottom: var(--hair); padding-bottom: var(--sect-sm); }
+@media (min-width: 750px) {
+  .feature-section > .page-width { padding-bottom: var(--sect-md); }
+}
+
+/* Gemeinsame Editorial-Bausteine: Markenversprechen, Feature-Abschnitte,
+   Duftfinder-Teaser. Bewusst ohne Karten, Schatten und Verläufe.          */
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-2xl);
+}
+.section-head__title { max-width: 24ch; }
+
+/* Markenversprechen – eine Zeile aus drei Aussagen, durch Haarlinien getrennt */
+.promise {
+  display: grid;
+  border-top: var(--border-width) solid rgb(var(--color-line));
+  border-bottom: var(--border-width) solid rgb(var(--color-line));
+}
+@media (min-width: 750px) {
+  .promise { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .promise__item + .promise__item { border-left: var(--border-width) solid rgb(var(--color-line)); }
+}
+.promise__item { padding: var(--space-xl) var(--space-lg); }
+@media (max-width: 749px) {
+  .promise__item + .promise__item { border-top: var(--border-width) solid rgb(var(--color-line)); }
+}
+.promise__value {
+  font-family: var(--font-heading-family);
+  font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.5rem);
+  line-height: 1.1;
+}
+.promise__label { margin-top: var(--space-xs); color: rgb(var(--color-muted)); font-size: .9375rem; }
+
+/* Feature-Abschnitt – zwei ausdrücklich verschiedene Kompositionen.
+   „spec" ist produktnah und präzise, „statement" markenorientiert und
+   großflächig. Sie teilen sich nur die Bausteine, nicht das Layout. */
+.feature { display: grid; gap: var(--space-xl); align-items: center; }
+.feature__media img,
+.feature__media svg { width: 100%; height: auto; }
+.feature__media--tall img,
+.feature__media--tall svg { aspect-ratio: 4 / 5; object-fit: cover; }
+.feature__media--wide img,
+.feature__media--wide svg { aspect-ratio: 4 / 3; object-fit: cover; }
+.feature__body > * + * { margin-top: var(--space-md); }
+.feature__text { line-height: 1.6; max-width: 40ch; }
+.feature__price { margin-top: var(--space-lg); }
+.feature__note { margin-top: var(--space-lg); }
+.feature__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md) var(--space-xl);
+  margin-top: var(--space-xl);
+}
+
+@media (min-width: 990px) {
+  .feature { gap: clamp(2rem, 6vw, 6rem); grid-template-columns: 7fr 5fr; }
+  .feature--reverse { grid-template-columns: 5fr 7fr; }
+  .feature--reverse .feature__media { order: 2; }
+  .feature--narrow-media { grid-template-columns: 5fr 6fr; }
+}
+
+/* Angabenliste: Bezeichnung links, Wert rechtsbündig – eine exakte
+   Aufstellung, keine Aufzählung mit Punkten. */
+.feature__points { margin-top: var(--space-lg); }
+.feature__points li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-md);
+  align-items: baseline;
+  padding-block: var(--space-sm);
+  border-top: var(--hair);
+}
+.feature__points li:last-child { border-bottom: var(--hair); }
+.feature__points .meta { color: rgb(var(--color-muted)); }
+.feature__points li > span:last-child {
+  font-size: 0.9375rem;
+  text-align: right;
+}
+
+/* Auf dem Telefon rückt der Abschnitt enger zusammen: Der Fließtext läuft
+   eine Spur schmaler durchschossen, die Angabenliste und die Schaltfläche
+   folgen dichter. Alle Größen bleiben, nur der Raum dazwischen gibt nach –
+   der Abschnitt verliert dadurch rund ein Sechstel seiner Höhe, ohne
+   gedrängt zu wirken. */
+@media (max-width: 749px) {
+  .feature__body > * + * { margin-top: var(--space-sm); }
+  .feature__text { line-height: 1.5; }
+  .feature__points { margin-top: var(--space-lg); }
+  .feature__points li { padding-block: 0.7rem; }
+  .feature__actions { margin-top: var(--space-lg); }
+}
+
+/* B4 · Drei Reihen auf Haarlinien. Links das Label zurückgenommen und
+   klein, rechts der Wert in voller Textfarbe. Keine Kacheln, keine
+   Symbole, keine Rahmen – die Linie allein ordnet. */
+.feature__points .meta {
+  font-size: 0.6875rem;
+  letter-spacing: var(--meta-tracking);
+}
+.feature__points li > span:last-child {
+  font-size: 0.9375rem;
+  color: rgb(var(--color-text));
+}
+
+/* B5 · Die Schaltfläche schließt den Abschnitt ab: eigene Breite statt
+   voller Spalte, klarer Abstand darüber und darunter. */
+.feature__actions .button {
+  min-height: 3.25rem;
+  padding-inline: var(--space-xl);
+}
+
+/* --------------------------------------------------- Komposition „spec" --- */
+/* Hochformatiges Bild, daneben eine ruhige Textspalte, die oben mit dem
+   Bild abschließt statt mittig zu sitzen. */
+@media (min-width: 990px) {
+  .feature--spec {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    align-items: start;
+    gap: clamp(2.5rem, 5vw, 5rem);
+  }
+  .feature--spec.feature--reverse { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
+  .feature--spec .feature__media img,
+  .feature--spec .feature__media svg { aspect-ratio: 4 / 5; object-fit: cover; }
+  .feature--spec .feature__body { padding-top: var(--space-xs); }
+  .feature--spec .feature__text { font-size: 1.0625rem; }
+}
+
+/* ---------------------------------------------- Komposition „statement" --- */
+/* Breites Bild, das rechts aus dem Innenabstand läuft; links eine schmale
+   Textspalte auf einer Haarlinie, unten ausgerichtet. Bewusst ohne
+   Angabenliste und ohne gefüllte Schaltfläche. */
+.feature--statement .feature__media {
+  margin-inline: calc(var(--gutter) * -1);
+}
+.feature--statement .feature__media img,
+.feature--statement .feature__media svg { aspect-ratio: 3 / 2; object-fit: cover; }
+.feature--statement .feature__body {
+  padding-top: var(--space-md);
+  border-top: var(--hair);
+}
+.feature--statement .feature__text {
+  font-size: clamp(1rem, 0.95rem + 0.35vw, 1.1875rem);
+  max-width: 44ch;
+  color: rgb(var(--color-muted));
+}
+
+@media (min-width: 750px) {
+  .feature--statement .feature__media { margin-inline: 0; }
+}
+
+@media (min-width: 990px) {
+  .feature--statement {
+    grid-template-columns: minmax(0, 4.5fr) minmax(0, 7.5fr);
+    align-items: end;
+    gap: clamp(2.5rem, 5vw, 5rem);
+  }
+  /* Bildseite und Bildformat setzt diese Komposition selbst. */
+  .feature--statement .feature__media {
+    order: 2;
+    margin-right: calc(var(--gutter) * -1);
+  }
+  .feature--statement .feature__media img,
+  .feature--statement .feature__media svg { aspect-ratio: 5 / 4; }
+  .feature--statement .feature__body { padding-bottom: clamp(1.5rem, 3vw, 3rem); }
+  .feature--statement .feature__body .h2,
+  .feature--statement .feature__body h2 {
+    font-size: clamp(2rem, 1.1rem + 2.6vw, 3.25rem);
+  }
+}
+
+/* Ohne Bild läuft der Abschnitt einspaltig. Der Text bekommt dann eine
+   Lesebreite statt der halben Seite – sonst zieht eine einzelne Zeile über
+   1400 px und die Komposition kippt.
+
+   Die frühere Komposition „Monument" ist entfallen. Eine sehr große Zahl
+   hinter dem Textblock war auf dem Telefon nicht sicher von der Überschrift
+   zu trennen: Beide standen an derselben oberen Kante und überlagerten
+   sich. Der Wert steht jetzt dort, wo er hingehört – in der Überschrift und
+   in den Angaben darunter. */
+.feature--ohne-bild { grid-template-columns: minmax(0, 1fr); }
+.feature--ohne-bild .feature__body { max-width: 48rem; }
+
+/* B3 · Das Produktfoto steht als ruhige Bildfläche neben dem Text: keine
+   Kante, keine Rundung, kein Schatten, kein Beschnitt. Auf dem Telefon
+   bleibt es bewusst kompakt und mittig – es soll den Abschnitt begleiten,
+   nicht ihn füllen. */
+.feature--spec .feature__media img {
+  width: 100%;
+  height: auto;
+  /* 13rem statt 15rem: der Flakon wird auf dem Telefon rund 13 % kleiner
+     (240 → 208 px breit, 320 → 277 px hoch) und bleibt dabei klar erkennbar.
+     Ab 990 px hebt der Zweispalter diesen Wert ohnehin auf. */
+  max-width: 13rem;
+  aspect-ratio: var(--ratio-portrait);
+  object-fit: contain;
+  margin-inline: auto;
+}
+@media (min-width: 990px) {
+  /* Auf großen Bildschirmen bekommt das Foto sein natürliches Maß, aber
+     eine Höhe gedeckelt: Ohne den Deckel wuchs es auf 750 px und die
+     Textspalte endete weit darüber – die Komposition kippte. Jetzt stehen
+     beide Spalten auf einer vergleichbaren Höhe. */
+  .feature--spec .feature__media {
+    align-self: start;
+    display: grid;
+    justify-items: center;
+  }
+  .feature--spec .feature__media img {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 30rem;
+    aspect-ratio: auto;
+    margin-inline: 0;
+  }
+}
+
+/* Auf dem Telefon steht das Bild dort, wo es hingehört: nach dem
+   Erklärungstext und vor den Angaben. Dafür löst sich der Textblock
+   layouttechnisch auf (display: contents) – seine Kinder werden damit selbst
+   zu Elementen des Abschnittsrasters und lassen sich einzeln einordnen.
+   Am Aufbau der Seite ändert das nichts, nur an der Reihenfolge. */
+@media (max-width: 989px) {
+  .feature--spec { row-gap: var(--space-sm); }
+  .feature--spec .feature__body { display: contents; }
+  .feature--spec .feature__body > * { margin-top: 0; }
+  .feature--spec .eyebrow { order: 1; }
+  .feature--spec .feature__body > h2,
+  .feature--spec .feature__body > .h2 { order: 2; }
+  .feature--spec .feature__text { order: 3; }
+  .feature--spec .feature__media { order: 4; }
+  .feature--spec .feature__price { order: 5; }
+  .feature--spec .feature__points { order: 6; }
+  .feature--spec .feature__note { order: 7; }
+  .feature--spec .feature__actions { order: 8; }
+
+  /* Punkt 11 · Der Abschnitt wird auf dem Telefon dichter gesetzt, ohne dass
+     ein Inhalt entfällt oder eine Schriftgröße nachgibt. Die Zusatzabstände
+     über den Zeilenabstand des Rasters hinaus fallen weg; die Schaltfläche
+     behält bewusst etwas mehr Luft, damit sie als Abschluss gelesen wird und
+     nicht an den Fakten klebt. Die Fakten werden über den Zeilenabstand
+     enger gesetzt – der Schriftgrad von 15 px bleibt unangetastet. */
+  .feature--spec .feature__media { margin-block: 0; }
+  .feature--spec .feature__text { margin-bottom: 0; }
+  .feature--spec .feature__points { margin-top: 0; }
+  .feature--spec .feature__points li { padding-block: 0.5rem; }
+  .feature--spec .feature__points li > span:last-child { line-height: 1.35; }
+  .feature--spec .feature__actions { margin-top: 0.5rem; }
+}
+
+/* Duftfinder-Teaser: die drei Fragen als Vorschau, nicht als Formular */
+.finder-teaser { display: grid; gap: var(--space-xl); }
+@media (min-width: 990px) { .finder-teaser { grid-template-columns: 5fr 7fr; gap: clamp(2rem, 6vw, 6rem); } }
+.finder-steps { counter-reset: step; }
+.finder-steps li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  gap: var(--space-md);
+  padding-block: var(--space-lg);
+  border-top: var(--border-width) solid rgb(var(--color-line));
+}
+.finder-steps li:last-child { border-bottom: var(--border-width) solid rgb(var(--color-line)); }
+.finder-steps li::before {
+  content: counter(step, decimal-leading-zero);
+  font-family: var(--font-heading-family);
+  color: rgb(var(--color-muted));
+}
+.finder-steps__answers { margin-top: var(--space-xs); color: rgb(var(--color-muted)); font-size: .9375rem; }
+
+/* Newsletter – zurückhaltend, kein Pop-up und keine große Fläche.
+   Links die Anrede, rechts eine einzige Eingabezeile auf einer Haarlinie. */
+.newsletter {
+  display: grid;
+  gap: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: var(--hair);
+}
+.newsletter__title { margin-bottom: var(--space-xs); }
+.newsletter__text { color: rgb(var(--color-muted)); font-size: 0.9375rem; max-width: 40ch; }
+.newsletter__form { margin: 0; }
+.newsletter__status { margin-top: var(--space-sm); }
+.newsletter__note { margin-top: var(--space-sm); font-size: 0.75rem; color: rgb(var(--color-muted)); }
+
+@media (min-width: 750px) {
+  .newsletter {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
+    align-items: end;
+    gap: var(--space-2xl);
+  }
+}
+
+/* Hinweis ausschließlich für den Theme-Editor: Er soll sich sichtbar vom
+   übrigen Entwurf abheben, damit niemand ihn für Gestaltung hält. */
+.note-placeholder {
+  padding: var(--space-lg);
+  border: var(--border-width) dashed rgb(var(--color-muted));
+  color: rgb(var(--color-muted));
+  font-size: 0.875rem;
+}
+
+/* Kontaktseite: Firmenangaben unter dem Formular */
+.contact-company { margin-top: var(--space-2xl); padding-top: var(--space-lg); border-top: var(--hair); }
+.contact-company__list { margin-top: var(--space-sm); }
+.contact-company__note { margin-top: var(--space-md); }
+
+/* Suchseite: die Eingabezeile bleibt schmal, die Trefferzahl ruhig. */
+.search-page__form { max-width: 40rem; }
+.results-count { margin-bottom: var(--space-lg); color: rgb(var(--color-muted)); }
+
+/* v4.2.11 Mobile: Der Abstand zwischen Bild und Text sowie die Zeilen der
+   Merkmalsliste (Konzentration / Groesse / Charakter) waren auf dem Telefon
+   zu grosszuegig. Bildformate bleiben unveraendert. */
+@media (max-width: 749px) {
+  .section-head { margin-bottom: var(--space-lg); }
+
+  .feature { gap: var(--space-lg); }
+  .feature__points { margin-top: var(--space-md); }
+  .feature__points li { padding-block: var(--space-xs); gap: var(--space-sm); }
+  .feature__actions { margin-top: var(--space-lg); }
+  .feature__price,
+  .feature__note { margin-top: var(--space-md); }
+}

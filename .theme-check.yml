@@ -1,0 +1,27 @@
+# Shopify Theme Check – Konfiguration VENT CELESTE
+extends: :default
+root: .
+
+TemplateLength:
+  enabled: true
+  max_length: 500
+
+UnusedAssign:
+  enabled: true
+
+UnusedSnippet:
+  enabled: true
+
+DeprecatedFilter:
+  enabled: true
+
+ImgLazyLoading:
+  enabled: true
+
+AssetSizeCSS:
+  enabled: true
+  threshold_in_bytes: 140000
+
+AssetSizeJavaScript:
+  enabled: true
+  threshold_in_bytes: 40000

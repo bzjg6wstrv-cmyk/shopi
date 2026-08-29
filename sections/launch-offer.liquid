@@ -1,0 +1,121 @@
+{{ 'section-launch-offer.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  Zweiteiliges redaktionelles Band: Kennenlernvorteil und persönliche
+  Beratung stehen einander gegenüber. Kein Kasten, kein Siegel, kein Symbol –
+  getrennt wird durch Haarlinien, gewichtet durch unterschiedliche
+  Schriftgrößen. Bei genau zwei Zusagen ist das Band bewusst asymmetrisch
+  geteilt.
+
+  Der Abschnitt rechnet bewusst keine Preise und keine Rabatte aus. Er zeigt
+  ausschließlich die hier gepflegten Texte; der eigentliche Rabatt wird später
+  im Shopify-Adminbereich eingerichtet.
+{%- endcomment -%}
+<section class="section section--lg offer-band color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width">
+    <div class="offer{% if section.blocks.size == 2 %} offer--pair{% elsif section.blocks.size == 1 %} offer--solo{% endif %}{% if section.settings.accent %} offer--akzent{% endif %} reveal">
+      {%- for block in section.blocks -%}
+        <div class="offer__item" {{ block.shopify_attributes }}>
+          {%- if block.settings.eyebrow != blank -%}
+            <span class="eyebrow">{{ block.settings.eyebrow | escape }}</span>
+          {%- endif -%}
+          {%- if block.settings.heading != blank -%}
+            <h2 class="offer__heading">{{ block.settings.heading | escape | newline_to_br }}</h2>
+          {%- endif -%}
+          {%- if block.settings.text != blank -%}
+            <p class="offer__text">{{ block.settings.text | escape | newline_to_br }}</p>
+          {%- endif -%}
+          {%- if block.settings.detail != blank -%}
+            <p class="offer__detail">{{ block.settings.detail | escape }}</p>
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
+
+      {%- if section.settings.show_whatsapp -%}
+        <div class="offer__cta">
+          {% render 'whatsapp-link',
+            class: 'button offer__button',
+            icon: true,
+            label: section.settings.whatsapp_label
+          %}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Vorteil & Garantie",
+  "tag": "section",
+  "max_blocks": 3,
+  "settings": [
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Farbstil",
+      "options": [
+        { "value": "scheme-1", "label": "Ivory" },
+        { "value": "scheme-2", "label": "Ivory dunkel" },
+        { "value": "scheme-3", "label": "Schwarz" },
+        { "value": "scheme-4", "label": "Taupe" }
+      ],
+      "default": "scheme-2"
+    },
+    {
+      "type": "checkbox",
+      "id": "accent",
+      "label": "Vorteil farblich hervorheben",
+      "default": true,
+      "info": "Setzt Vortext und Überschrift in einen gedeckten Bordeaux-Ton. So ist der Preisvorteil auf den ersten Blick von der Konzentrationsangabe „30 % Extrait\" zu unterscheiden. Der Hintergrund des Abschnitts bleibt unverändert."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_whatsapp",
+      "label": "WhatsApp-Button darunter",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_label",
+      "label": "Beschriftung des Buttons",
+      "default": "Duftberatung starten"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "claim",
+      "name": "Zusage",
+      "settings": [
+        {
+          "type": "text",
+          "id": "eyebrow",
+          "label": "Kleine Zeile darüber",
+          "default": "Ohne Risiko"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Überschrift",
+          "default": "100 % Zufriedenheitsgarantie"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text"
+        },
+        {
+          "type": "text",
+          "id": "detail",
+          "label": "Kleiner Hinweis darunter"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Vorteil & Garantie",
+      "blocks": [{ "type": "claim" }, { "type": "claim" }]
+    }
+  ]
+}
+{% endschema %}
