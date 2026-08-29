@@ -1,3 +1,69 @@
+# v6.8 – Hero verständlich, Extrait redaktionell, Wortmarke
+
+Sechs Dateien. Kein Redesign: Farbwelt, Aufbau, Typografierichtung und
+sämtliche Logik bleiben, wie sie in v6.7 funktioniert haben.
+
+## Teil A · Der Hero erklärt sich selbst
+
+Zeile für Zeile ergibt sich jetzt der Gedanke „Ich sage euch, was ich
+suche → ich bekomme einen Code → damit bestelle ich":
+
+    500+ DUFTPROFILE
+    FIND / YOUR / SCENT.
+    Nenn uns deinen Lieblingsduft – wir finden den
+    passenden VENT CELESTE Scent Code.
+    01 Lieblingsduft nennen · 02 Scent Code erhalten · 03 Bestellen
+    [ DUFTBERATUNG STARTEN → ]
+    Code schon erhalten? … VC-071 … WEITER →
+    Was ist ein Scent Code? +
+
+Eyebrow und Schlagzeile sind unangetastet. Die Prozesszeile ist reine
+Typografie auf einem Raster mit Haarlinien – keine Karten, keine Symbole.
+Auf dem Telefon stehen die drei Schritte nebeneinander und brechen sauber
+in zwei Zeilen um, ab Tablet steht jede Beschriftung einzeilig.
+
+Die Beratung ist jetzt eine durchgehend schwarze Fläche über die volle
+Spaltenbreite, 56 px hoch, ohne Rundung, Schatten oder Verlauf. Der
+WhatsApp-Link dahinter ist derselbe wie vorher – nur die Darstellung ist
+neu. Der Code-Eingang sitzt darunter, klar abgesetzt als zweiter Weg.
+
+Die Erklärung liegt in einem `<details>`. Sie ist zu, bis jemand sie
+öffnet, und kommt ohne eine Zeile JavaScript aus.
+
+## Teil B · 30 % Extrait
+
+Der Übergang vom vorherigen Abschnitt ist gestrafft: von der Schaltfläche
+„Duftberatung starten" bis zur Zeile „Die Hauptlinie" sind es auf dem
+Telefon 65 statt 90 px, knapp 28 % weniger. Luft bleibt.
+
+Das Bild kommt in drei Stufen aus dem, was bereits im Theme liegt: das im
+Theme-Editor gewählte Bild, sonst das Titelbild des verknüpften Produkts,
+sonst das erste Produkt der Bestseller-Kollektion. Es wird kein Motiv
+erfunden. Dargestellt wird es mit `object-fit: contain` – der Flakon wird
+also nie beschnitten – ohne Rahmen, Rundung oder Schatten.
+
+Auf dem Telefon steht es zwischen Text und Fakten, auf dem Schreibtisch
+rechts neben der Textspalte. Die Fakten sind drei Zeilen mit feinen
+Haarlinien, Bezeichnung links, Wert rechts. Nach unten schließt eine
+Haarlinie auf der Rasterkante den Abschnitt gegen den Fußbereich ab.
+
+## Teil C · Wortmarke im Kopf
+
+Kein Serif mehr neben dem Monogramm. Die Wortmarke steht jetzt in der
+Sans-Serif des Theme, in Versalien, Schnitt 500, mit ruhiger Sperrung –
+und damit so, wie sie auf dem Flakon und im Fußbereich steht. Monogramm
+und Schriftzug sitzen mittig auf einer Linie.
+
+## Unverändert
+
+Scent-Code-System und -Normalisierung, öffentliche und private Codes,
+Cart API, Line Item Properties, `_vc_code`, Warenkorb und Warenkorb-Lade,
+Suche und Suchlade, Bestseller, 20-%-Willkommensvorteil,
+Geld-zurück-Zusage, der schwarze Beratungsbereich, „So funktioniert's",
+Produktseiten, Scent-Code-Ergebnisseite, Fußbereich. Keine JavaScript-Datei
+wurde angefasst. Die Menge aller Verweise ist gegenüber v6.7 unverändert –
+es kam kein einziger neuer Link hinzu.
+
 # v6.7 – Finaler Polish
 
 Sieben Dateien. Zahlen, Reihenfolge, Texte, Warenkorb-Layout.

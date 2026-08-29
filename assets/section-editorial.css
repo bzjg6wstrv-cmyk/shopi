@@ -2,9 +2,23 @@
    Telefon reicht die mittlere Dichte – zwei Abschnitte mit demselben
    Seitenton hintereinander standen sonst mit 120 px Leerraum zwischen sich.
    Ab Tablet bekommt der Abschnitt wieder die große Dichte. */
-.feature-section { padding-block: var(--sect-md); }
+/* B1 · Der Abschnitt schließt bewusster an den vorherigen an. Gemessen vom
+   Ende der Schaltfläche „Duftberatung starten" bis zur Zeile „Die
+   Hauptlinie" sinkt der Abstand auf dem Telefon von 90 px auf 65 px, also
+   um knapp 28 %. Der Wert steht bewusst fest und nicht auf --sect-xs: das
+   Merkmal ist nur für diesen Übergang gestrafft, alle anderen Abschnitte
+   behalten ihren Rhythmus. Luft bleibt, geklebt wird nicht. */
+.feature-section { padding-block: 0.8125rem var(--sect-md); }
 @media (min-width: 750px) {
-  .feature-section { padding-block: var(--sect-lg); }
+  .feature-section { padding-block: var(--sect-md) var(--sect-lg); }
+}
+
+/* B6 · Abschluss zum Fußbereich: eine feine Linie auf der Rasterkante statt
+   eines harten Schnitts. Sie kostet keine zusätzliche Höhe – der
+   Innenabstand darunter trägt sie. */
+.feature-section > .page-width { border-bottom: var(--hair); padding-bottom: var(--sect-sm); }
+@media (min-width: 750px) {
+  .feature-section > .page-width { padding-bottom: var(--sect-md); }
 }
 
 /* Gemeinsame Editorial-Bausteine: Markenversprechen, Feature-Abschnitte,
@@ -96,9 +110,28 @@
 @media (max-width: 749px) {
   .feature__body > * + * { margin-top: var(--space-sm); }
   .feature__text { line-height: 1.5; }
-  .feature__points { margin-top: var(--space-md); }
-  .feature__points li { padding-block: 0.6rem; }
+  .feature__points { margin-top: var(--space-lg); }
+  .feature__points li { padding-block: 0.7rem; }
   .feature__actions { margin-top: var(--space-lg); }
+}
+
+/* B4 · Drei Reihen auf Haarlinien. Links das Label zurückgenommen und
+   klein, rechts der Wert in voller Textfarbe. Keine Kacheln, keine
+   Symbole, keine Rahmen – die Linie allein ordnet. */
+.feature__points .meta {
+  font-size: 0.6875rem;
+  letter-spacing: var(--meta-tracking);
+}
+.feature__points li > span:last-child {
+  font-size: 0.9375rem;
+  color: rgb(var(--color-text));
+}
+
+/* B5 · Die Schaltfläche schließt den Abschnitt ab: eigene Breite statt
+   voller Spalte, klarer Abstand darüber und darunter. */
+.feature__actions .button {
+  min-height: 3.25rem;
+  padding-inline: var(--space-xl);
 }
 
 /* --------------------------------------------------- Komposition „spec" --- */
@@ -171,6 +204,58 @@
    in den Angaben darunter. */
 .feature--ohne-bild { grid-template-columns: minmax(0, 1fr); }
 .feature--ohne-bild .feature__body { max-width: 48rem; }
+
+/* B3 · Das Produktfoto steht als ruhige Bildfläche neben dem Text: keine
+   Kante, keine Rundung, kein Schatten, kein Beschnitt. Auf dem Telefon
+   bleibt es bewusst kompakt und mittig – es soll den Abschnitt begleiten,
+   nicht ihn füllen. */
+.feature--spec .feature__media img {
+  width: 100%;
+  height: auto;
+  max-width: 15rem;
+  aspect-ratio: var(--ratio-portrait);
+  object-fit: contain;
+  margin-inline: auto;
+}
+@media (min-width: 990px) {
+  /* Auf großen Bildschirmen bekommt das Foto sein natürliches Maß, aber
+     eine Höhe gedeckelt: Ohne den Deckel wuchs es auf 750 px und die
+     Textspalte endete weit darüber – die Komposition kippte. Jetzt stehen
+     beide Spalten auf einer vergleichbaren Höhe. */
+  .feature--spec .feature__media {
+    align-self: start;
+    display: grid;
+    justify-items: center;
+  }
+  .feature--spec .feature__media img {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 30rem;
+    aspect-ratio: auto;
+    margin-inline: 0;
+  }
+}
+
+/* Auf dem Telefon steht das Bild dort, wo es hingehört: nach dem
+   Erklärungstext und vor den Angaben. Dafür löst sich der Textblock
+   layouttechnisch auf (display: contents) – seine Kinder werden damit selbst
+   zu Elementen des Abschnittsrasters und lassen sich einzeln einordnen.
+   Am Aufbau der Seite ändert das nichts, nur an der Reihenfolge. */
+@media (max-width: 989px) {
+  .feature--spec { row-gap: var(--space-sm); }
+  .feature--spec .feature__body { display: contents; }
+  .feature--spec .feature__body > * { margin-top: 0; }
+  .feature--spec .eyebrow { order: 1; }
+  .feature--spec .feature__body > h2,
+  .feature--spec .feature__body > .h2 { order: 2; }
+  .feature--spec .feature__text { order: 3; }
+  .feature--spec .feature__media { order: 4; margin-block: var(--space-xs); }
+  .feature--spec .feature__price { order: 5; }
+  .feature--spec .feature__points { order: 6; margin-top: var(--space-sm); }
+  .feature--spec .feature__note { order: 7; }
+  .feature--spec .feature__actions { order: 8; margin-top: var(--space-md); }
+}
 
 /* Duftfinder-Teaser: die drei Fragen als Vorschau, nicht als Formular */
 .finder-teaser { display: grid; gap: var(--space-xl); }

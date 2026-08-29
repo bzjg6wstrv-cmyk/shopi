@@ -22,6 +22,26 @@
     assign feature_variant = linked_product.selected_or_first_available_variant
   endif
 
+  comment
+    Bildquelle in drei Stufen. Es wird kein Motiv erfunden und keine
+    Illustration eingesetzt – es kommt immer ein echtes Produktfoto aus dem
+    Shop zum Einsatz:
+      1. das im Theme-Editor gewaehlte Bild
+      2. das Titelbild des verknuepften Produkts
+      3. das Titelbild des ersten Produkts der Bestseller-Kollektion
+    Gibt es nichts davon, bleibt der Abschnitt einspaltig und ohne Bild.
+  endcomment
+  assign feature_image = section.settings.image
+  if feature_image == blank and linked_product.featured_media != blank
+    assign feature_image = linked_product.featured_media
+  endif
+  if feature_image == blank and section.settings.image_fallback
+    assign fallback_collection = collections['bestseller']
+    if fallback_collection.handle != blank and fallback_collection.products.first.featured_media != blank
+      assign feature_image = fallback_collection.products.first.featured_media
+    endif
+  endif
+
   assign primary_url = section.settings.primary_link
   if primary_url contains '/collections/bestseller'
     assign safe_collection = collections['bestseller']
@@ -62,7 +82,7 @@
 -%}
 <section class="section feature-section color-{{ section.settings.color_scheme }} color-scheme">
   <div class="page-width">
-    <div class="feature feature--{{ section.settings.layout | default: 'spec' }}{% if section.settings.media_position == 'right' %} feature--reverse{% endif %}{% if section.settings.media_shape == 'tall' %} feature--narrow-media{% endif %}{% if section.settings.image == blank %} feature--ohne-bild{% endif %} reveal">
+    <div class="feature feature--{{ section.settings.layout | default: 'spec' }}{% if section.settings.media_position == 'right' %} feature--reverse{% endif %}{% if section.settings.media_shape == 'tall' %} feature--narrow-media{% endif %}{% if feature_image == blank %} feature--ohne-bild{% endif %} reveal">
 
       {%- comment -%}
         Ohne eigenes Bild wird kein Bildplatz ausgegeben. Der frühere
@@ -70,17 +90,17 @@
         die Komposition – ein Motiv, das nur Fläche füllte. Der Abschnitt
         läuft ohne Bild einspaltig und lebt von Typografie und Weißraum.
       {%- endcomment -%}
-      {%- if section.settings.image != blank -%}
+      {%- if feature_image != blank -%}
       <div class="feature__media feature__media--{{ section.settings.media_shape }}">
           <img
-            src="{{ section.settings.image | image_url: width: 1400 }}"
-            srcset="{{ section.settings.image | image_url: width: 600 }} 600w,
-                    {{ section.settings.image | image_url: width: 900 }} 900w,
-                    {{ section.settings.image | image_url: width: 1400 }} 1400w"
-            sizes="(min-width: 990px) 50vw, 100vw"
-            alt="{{ section.settings.image.alt | escape }}"
-            width="{{ section.settings.image.width }}"
-            height="{{ section.settings.image.height }}"
+            src="{{ feature_image | image_url: width: 1200 }}"
+            srcset="{{ feature_image | image_url: width: 500 }} 500w,
+                    {{ feature_image | image_url: width: 800 }} 800w,
+                    {{ feature_image | image_url: width: 1200 }} 1200w"
+            sizes="(min-width: 990px) 38vw, 62vw"
+            alt="{{ feature_image.alt | default: section.settings.heading | escape }}"
+            width="{{ feature_image.width }}"
+            height="{{ feature_image.height }}"
             loading="lazy"
           >
       </div>
@@ -178,6 +198,13 @@
       "type": "image_picker",
       "id": "image",
       "label": "Bild"
+    },
+    {
+      "type": "checkbox",
+      "id": "image_fallback",
+      "label": "Ohne eigenes Bild ein Produktfoto verwenden",
+      "default": false,
+      "info": "Greift nur, wenn oben kein Bild gewählt und kein Produkt verknüpft ist. Dann erscheint das Titelbild des ersten Produkts aus der Kollektion bestseller. Es wird kein Motiv erzeugt – immer ein vorhandenes Produktfoto."
     },
     {
       "type": "select",

@@ -6,11 +6,14 @@
         "color_scheme": "scheme-1",
         "eyebrow": "500+ Duftprofile",
         "heading": "FIND\nYOUR\nSCENT.",
-        "text": "Dein Lieblingsduft. Dein VENT CELESTE Scent Code.",
+        "text": "Nenn uns deinen Lieblingsduft – wir finden den passenden VENT CELESTE Scent Code.",
         "show_whatsapp": true,
         "show_code_field": true,
         "code_label": "Code schon erhalten? Scent Code eingeben",
-        "whatsapp_hint": "Noch keinen Code?"
+        "whatsapp_hint": "Noch keinen Code?",
+        "steps": "Lieblingsduft nennen\nScent Code erhalten\nBestellen",
+        "explainer_label": "Was ist ein Scent Code?",
+        "explainer_text": "Dein Scent Code ist die VENT CELESTE Kennung für dein ausgewähltes Duftprofil. Du erhältst ihn über unsere Duftberatung und kannst ihn anschließend direkt im Shop bestellen."
       }
     },
     "most_wanted": {
@@ -169,7 +172,8 @@
         "show_price": false,
         "primary_label": "Düfte ansehen",
         "primary_link": "/collections/bestseller",
-        "layout": "spec"
+        "layout": "spec",
+        "image_fallback": true
       }
     },
     "travel": {

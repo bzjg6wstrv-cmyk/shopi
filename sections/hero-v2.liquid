@@ -82,6 +82,28 @@
       {%- if section.settings.text != blank -%}
         <p class="hero2__lede">{{ section.settings.text | escape }}</p>
       {%- endif -%}
+
+      {%- comment -%}
+        Kurzfassung des Ablaufs. Bewusst nur drei Wortgruppen mit Ziffern –
+        die ausführliche Erklärung steht weiter unten im Abschnitt
+        „So funktioniert's" und soll hier keine Konkurrenz bekommen.
+        Eine Zeile je Schritt in der Einstellung, die Nummerierung entsteht
+        automatisch.
+      {%- endcomment -%}
+      {%- assign hero_steps = section.settings.steps | strip | newline_to_br | split: '<br />' -%}
+      {%- if hero_steps.size > 0 -%}
+        <ol class="hero2__steps">
+          {%- for step in hero_steps -%}
+            {%- assign step_text = step | strip -%}
+            {%- if step_text != blank -%}
+              <li class="hero2__step">
+                <span class="hero2__step-num" aria-hidden="true">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
+                <span class="hero2__step-text">{{ step_text }}</span>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ol>
+      {%- endif -%}
     </div>
   </div>
 
@@ -96,8 +118,13 @@
           <span class="micro hero2__path-label">
             {{ section.settings.whatsapp_hint | default: 'Noch keinen Code?' | escape }}
           </span>
+          {%- comment -%}
+            Der Beratungsweg ist für Neukunden der Haupteinstieg und steht
+            deshalb als gefüllte Fläche. Geändert wurden nur die Klassen –
+            Aufruf, Ziel und Funktion des WhatsApp-Verweises bleiben gleich.
+          {%- endcomment -%}
           {%- assign wa_label = section.settings.whatsapp_label -%}
-          {% render 'whatsapp-link', class: 'hero2__cta action-link action-link--lg', label: wa_label, arrow: true %}
+          {% render 'whatsapp-link', class: 'hero2__cta button hero2__button', label: wa_label, arrow: true %}
         </div>
       {%- endif -%}
 
@@ -109,6 +136,20 @@
           <div class="hero2__code">
             {% render 'scent-code-field', id: 'HeroScentCode', size: 'hero' %}
           </div>
+
+          {%- comment -%}
+            Erklärung als natives details/summary: geschlossen voreingestellt,
+            ohne eine Zeile JavaScript und ohne Overlay. Damit kann sie keine
+            bestehende Logik stören.
+          {%- endcomment -%}
+          {%- if section.settings.explainer_text != blank -%}
+            <details class="hero2__explain">
+              <summary class="hero2__explain-toggle">
+                {{ section.settings.explainer_label | default: 'Was ist ein Scent Code?' | escape }}
+              </summary>
+              <p class="hero2__explain-text">{{ section.settings.explainer_text | escape }}</p>
+            </details>
+          {%- endif -%}
         </div>
       {%- endif -%}
     </div>
@@ -224,7 +265,27 @@
       "type": "text",
       "id": "text",
       "label": "Unterzeile",
-      "default": "Dein Lieblingsduft. Dein VENT CELESTE Scent Code."
+      "default": "Nenn uns deinen Lieblingsduft – wir finden den passenden VENT CELESTE Scent Code."
+    },
+    {
+      "type": "textarea",
+      "id": "steps",
+      "label": "Ablauf in Kurzform",
+      "default": "Lieblingsduft nennen\nScent Code erhalten\nBestellen",
+      "info": "Eine Zeile je Schritt. Die Nummerierung entsteht automatisch. Leer lassen, wenn die Kurzfassung nicht erscheinen soll."
+    },
+    {
+      "type": "text",
+      "id": "explainer_label",
+      "label": "Beschriftung der Erklärung",
+      "default": "Was ist ein Scent Code?"
+    },
+    {
+      "type": "textarea",
+      "id": "explainer_text",
+      "label": "Text der Erklärung",
+      "default": "Dein Scent Code ist die VENT CELESTE Kennung für dein ausgewähltes Duftprofil. Du erhältst ihn über unsere Duftberatung und kannst ihn anschließend direkt im Shop bestellen.",
+      "info": "Steht als Aufklapper unter der Code-Eingabe und ist voreingestellt geschlossen. Leer lassen, um sie auszublenden."
     },
     {
       "type": "header",

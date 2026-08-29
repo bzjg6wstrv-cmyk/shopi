@@ -2387,6 +2387,29 @@ img.brand-mark { object-fit: contain; }
   min-width: 0;
   color: rgb(var(--color-text));
 }
+
+/* Die Wortmarke im Kopfbereich läuft in der Sans, nicht in der Serif: So
+   entspricht sie der Wortmarke auf dem Flakon und im Fußbereich. Versalien,
+   ruhige Sperrung, mittleres Gewicht – kompakt genug, um neben dem
+   Monogramm zu stehen, ohne es zu überstimmen.
+
+   Nur die Darstellung ändert sich; Aufbau, Verweis und Beschriftung des
+   Lockups bleiben, wie sie sind. Der Fußbereich behält sein eigenes
+   Register. */
+.brand-lockup .wordmark {
+  font-family: var(--font-body-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  /* Versalien tragen rechts eine Sperrung, die optisch als Loch erscheint.
+     Sie wird um denselben Betrag zurückgenommen, damit das Lockup mittig
+     bleibt. */
+  margin-right: -0.2em;
+}
+
+/* Monogramm und Wortmarke stehen auf einer gemeinsamen optischen Achse:
+   Das Monogramm ist ein Zeichen ohne Grundlinie, deshalb wird nicht an der
+   Schriftgrundlinie, sondern an der Mitte ausgerichtet. */
+.brand-lockup .brand-mark { align-self: center; }
 .brand-lockup .wordmark { display: inline-block; }
 
 /* Mobiles Menü: kleine Markenreferenz über der Navigation. */

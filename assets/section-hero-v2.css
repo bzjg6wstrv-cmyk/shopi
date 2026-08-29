@@ -101,7 +101,9 @@
 /* Die Erklärzeile unter der Schlagzeile. Deutlich kleiner als diese, aber
    nie kleiner als 15 px – sie trägt die Kernaussage der Marke. */
 .hero2__lede {
-  max-width: 30ch;
+  /* Etwas breiteres Lesemaß als zuvor: Die Unterzeile erklärt jetzt das
+     Prinzip und ist dadurch länger – auf 30 Zeichen brach sie unnötig oft. */
+  max-width: 36ch;
   font-size: 0.9375rem;
   line-height: 1.45;
   /* Über einem Bild muss die Unterzeile sicher lesbar bleiben – deshalb die
@@ -110,6 +112,68 @@
 }
 
 /* --------------------------------------------------- Einstiegsleiste --- */
+/* --------------------------------------------- Ablauf in Kurzform --------
+   Drei Wortgruppen mit Ziffern, in einer Reihe. Sie beantworten die Frage
+   „Wie läuft das ab?" in drei Sekunden – die ausführliche Fassung steht
+   weiter unten auf der Seite und bekommt hier bewusst keine Konkurrenz.
+
+   Keine Kacheln, keine Symbole, keine Rahmen. Getrennt wird durch eine
+   senkrechte Haarlinie zwischen den Schritten. */
+.hero2__steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin-top: var(--space-lg);
+  max-width: 34rem;
+  padding-top: var(--space-sm);
+  border-top: var(--hair);
+}
+
+.hero2__step {
+  display: grid;
+  gap: 0.2rem;
+  align-content: start;
+  padding-right: var(--space-sm);
+}
+.hero2__step + .hero2__step {
+  padding-left: var(--space-sm);
+  border-left: var(--hair);
+}
+
+.hero2__step-num {
+  font-family: var(--font-display-family, var(--font-heading-family));
+  font-size: 0.75rem;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: rgb(var(--color-text) / 0.34);
+}
+
+.hero2__step-text {
+  font-size: 0.6875rem;
+  line-height: 1.35;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+  /* Bewusst ohne text-wrap: balance. Der Ausgleich brach die Beschriftungen
+     auch dann auf zwei Zeilen, wenn eine gereicht hätte. Umbrochen wird
+     jetzt nur, wo der Platz es verlangt – auf dem Telefon also sauber in
+     zwei Zeilen, ab der breiten Ansicht einzeilig. */
+}
+
+@media (min-width: 430px) {
+  .hero2__step-text { font-size: 0.75rem; letter-spacing: var(--meta-tracking); }
+  .hero2__step { padding-right: var(--space-md); }
+  .hero2__step + .hero2__step { padding-left: var(--space-md); }
+}
+
+/* Ab Tablet reicht der Platz für die Prozesszeile in einer Zeile je Schritt.
+   34rem hätten „Lieblingsduft nennen" weiter umbrochen; 41rem geben jeder
+   Spalte gut 210 px und damit genug für die längste Beschriftung. */
+@media (min-width: 750px) {
+  .hero2__steps { max-width: 41rem; }
+}
+
 .hero2__ledger {
   grid-row: 2;
   grid-column: 1 / -1;
@@ -134,6 +198,57 @@
 }
 .hero2__path + .hero2__path { border-top: var(--hair); }
 .hero2__path-label { color: rgb(var(--color-muted)); }
+
+/* Der Beratungsweg ist die Hauptsache im Hero: gefüllte Fläche, volle
+   Breite der Spalte, keine Rundung. Die zweite Spalte – die Code-Eingabe –
+   bleibt eine Grundlinie und tritt damit sichtbar zurück. */
+.hero2__button {
+  width: 100%;
+  min-height: 3.5rem;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding-inline: var(--space-lg);
+  font-size: 0.8125rem;
+}
+.hero2__button svg { width: 18px; height: 18px; flex: none; transition: transform var(--dur-slow) var(--ease-out); }
+@media (hover: hover) {
+  .hero2__button:hover svg { transform: translateX(5px); }
+}
+
+/* Die Erklärung des Scent Codes. Voreingestellt geschlossen, ohne Overlay
+   und ohne eine Zeile JavaScript – details/summary bringt das Verhalten
+   selbst mit. */
+.hero2__explain { margin-top: var(--space-sm); }
+.hero2__explain-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  font-size: 0.75rem;
+  color: rgb(var(--color-muted));
+  text-decoration: underline;
+  text-underline-offset: 0.35em;
+  cursor: pointer;
+}
+.hero2__explain-toggle::after {
+  content: '+';
+  font-size: 0.875rem;
+  line-height: 1;
+}
+.hero2__explain[open] .hero2__explain-toggle::after { content: '–'; }
+.hero2__explain-toggle:hover { color: rgb(var(--color-text)); }
+.hero2__explain-toggle:focus-visible {
+  outline: var(--focus-width) solid rgb(var(--color-text));
+  outline-offset: var(--focus-offset);
+}
+.hero2__explain-text {
+  margin-top: 0.1rem;
+  padding-bottom: var(--space-xs);
+  max-width: 40ch;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: rgb(var(--color-muted));
+}
 
 .hero2__secondary {
   position: relative;
