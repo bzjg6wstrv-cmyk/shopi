@@ -1,3 +1,75 @@
+# v6.3.1 – Verweise, die ins Leere führten
+
+## Der Fehler
+
+Auf der 404-Seite zu landen war kein Zufall: Das Theme brachte zehn fest
+verdrahtete Adressen mit, die auf Seiten zeigten, die es in einem frischen
+Shop nicht gibt.
+
+| Ort | Adressen |
+| --- | --- |
+| Fußbereich, Spalte „Service" | `/pages/contact`, `/pages/faq`, `/pages/duftfinder` |
+| Fußbereich, Spalte „Rechtliches" | `/policies/legal-notice`, `/policies/privacy-policy`, `/policies/refund-policy`, `/policies/terms-of-service` |
+| Mobiles Menü | `/collections/bestseller`, `/pages/duftfinder`, `/pages/ueber-uns` |
+| Editorial-Abschnitt | `/collections/extrait` (aus den Theme-Einstellungen) |
+
+Die Rechtstexte sind besonders tückisch: `/policies/...` ist nur erreichbar,
+wenn der Text im Shopify-Adminbereich ausgefüllt ist. Ist er leer, führt der
+Verweis auf die 404-Seite.
+
+## Die Behebung
+
+**Kein Verweis mehr ohne geprüftes Ziel.** Neues Snippet `link-pruefen`:
+Es zerlegt eine interne Adresse und gibt sie nur zurück, wenn die Kollektion,
+die Seite, der Blog oder der Rechtstext im Shop wirklich existiert. Externe
+Adressen, `mailto:`, `tel:` und Shopify-eigene Routen laufen unverändert
+durch. Produktadressen bleiben ungeprüft, weil `all_products` pro Seite nur
+eine begrenzte Zahl von Abfragen erlaubt.
+
+Eingesetzt in der Bestseller-Reihe, im Editorial-Abschnitt und in der ruhigen
+Zeile – überall dort, wo ein Ziel aus den Theme-Einstellungen kommt.
+
+**Fußbereich.** Die Spalte „Rechtliches" wird nicht mehr aus einer festen
+Liste gebaut, sondern aus `shop.policies`. Dort stehen damit immer genau die
+Texte, die tatsächlich gepflegt sind – mit ihrer eigenen Überschrift und in
+der Sprache des Shops. Die Spalte „Service" prüft jede Seite einzeln und
+ergänzt zwei Wege, die nie ins Leere führen können: die Duftberatung per
+WhatsApp und die Suche.
+
+Beide Spalten werden erst zusammengestellt und dann ausgegeben. Bleibt eine
+leer, entfällt auch ihre Überschrift – eine Spalte mit Titel und nichts
+darunter sieht kaputt aus.
+
+**Mobiles Menü.** „Alle Düfte" und „Düfte suchen" laufen über Shopify-eigene
+Routen und können nicht ins Leere zeigen. Bestseller, Duftberatung und die
+Markenseite erscheinen nur, wenn Kollektion beziehungsweise Seite existieren;
+fehlt die Beratungsseite, tritt der WhatsApp-Weg an ihre Stelle.
+
+## Nachgewiesen
+
+Der Prüfstand rendert die Startseite jetzt in zwei Zuständen.
+
+*Frischer Shop* (nur die Bestseller-Kollektion, keine Seiten, keine
+Rechtstexte) – übrig bleiben ausschließlich Adressen, die nicht scheitern
+können:
+
+    /  ·  /collections/all  ·  /collections/bestseller  ·  /search
+    /products/vc-026 … /products/vc-080
+
+*Gepflegter Shop* – alle Beispielseiten und Rechtstexte erscheinen von selbst
+wieder, ohne eine Zeile im Theme zu ändern.
+
+Im gesamten Theme steht keine fest verdrahtete interne Adresse mehr.
+
+## Prüfungen
+
+Theme Check 34 Verstöße gegen 36 der Basis, keine neue Art. 27 JSON-Dateien,
+37 Section-Schemas, 13 JS-Dateien fehlerfrei. Sweep über 11 Breiten ohne
+waagerechten Überlauf. Code-Normalisierung, Cart-API-Bestellweg und Kaufweg
+unverändert.
+
+---
+
 # v6.3 – Premium-Finishing, Logo und Mobile
 
 Kein Redesign. Neun gezielte Eingriffe auf Grundlage der Live-Screenshots.

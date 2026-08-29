@@ -1,0 +1,64 @@
+{%- comment -%}
+  Prüft eine interne Adresse und gibt sie nur dann zurück, wenn das Ziel im
+  Shop wirklich existiert. Andernfalls kommt eine leere Zeichenkette zurück
+  und die aufrufende Section lässt den Verweis weg.
+
+  Hintergrund: Das Theme bringt Beispieladressen mit – etwa
+  /collections/extrait oder /pages/ueber-uns. Legt ein Shop diese Kollektion
+  oder Seite nicht an, führte der Verweis bisher auf die 404-Seite. Ein
+  Verweis, der ins Leere zeigt, ist schlimmer als kein Verweis.
+
+  Parameter:
+    url – die zu prüfende Adresse
+
+  Rückgabe: die Adresse oder leer. Immer mit strip verwenden:
+    {%- capture ziel -%}{% render 'link-pruefen', url: meine_url %}{%- endcapture -%}
+    {%- assign ziel = ziel | strip -%}
+
+  Nicht geprüft werden externe Adressen, mailto/tel, Shopify-eigene Routen
+  (Suche, Warenkorb, Konto) und Produktadressen. Produkte bleiben außen vor,
+  weil all_products pro Seite nur eine begrenzte Zahl von Abfragen erlaubt.
+{%- endcomment -%}
+{%- liquid
+  assign u = url | strip
+  assign ergebnis = ''
+
+  if u == blank
+    assign ergebnis = ''
+  elsif u contains '://' or u contains 'mailto:' or u contains 'tel:'
+    assign ergebnis = u
+  elsif u contains '/collections/'
+    assign rest = u | split: '/collections/' | last
+    assign handle = rest | split: '?' | first | split: '#' | first | split: '/' | first
+    if handle == 'all' or handle == blank
+      assign ergebnis = u
+    elsif collections[handle].handle != blank
+      assign ergebnis = u
+    endif
+  elsif u contains '/pages/'
+    assign rest = u | split: '/pages/' | last
+    assign handle = rest | split: '?' | first | split: '#' | first | split: '/' | first
+    if pages[handle].handle != blank
+      assign ergebnis = u
+    endif
+  elsif u contains '/blogs/'
+    assign rest = u | split: '/blogs/' | last
+    assign handle = rest | split: '?' | first | split: '#' | first | split: '/' | first
+    if blogs[handle].handle != blank
+      assign ergebnis = u
+    endif
+  elsif u contains '/policies/'
+    comment
+      Rechtstexte sind nur erreichbar, wenn sie im Shopify-Adminbereich
+      ausgefüllt sind. Geprüft wird gegen die tatsächlich gepflegten.
+    endcomment
+    for policy in shop.policies
+      if policy.url != blank and u contains policy.url
+        assign ergebnis = u
+      endif
+    endfor
+  else
+    assign ergebnis = u
+  endif
+-%}
+{{- ergebnis -}}

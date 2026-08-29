@@ -12,8 +12,14 @@
           <span class="quiet-row__text">{{ section.settings.text | escape }}</span>
         {%- endif -%}
       </div>
-      {%- if section.settings.link != blank -%}
-        <a class="link-underline" href="{{ section.settings.link }}">{{ section.settings.link_label | escape }}</a>
+      {%- liquid
+        capture quiet_link
+          render 'link-pruefen', url: section.settings.link
+        endcapture
+        assign quiet_link = quiet_link | strip
+      -%}
+      {%- if quiet_link != blank -%}
+        <a class="link-underline" href="{{ quiet_link }}">{{ section.settings.link_label | escape }}</a>
       {%- endif -%}
     </div>
   </div>

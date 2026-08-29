@@ -82,21 +82,49 @@
           <p class="demo-flag feature__note">{{ 'general.demo_notice' | t }}</p>
         {%- endif -%}
 
-        {%- if section.settings.primary_label != blank or section.settings.secondary_label != blank -%}
+        {%- comment -%}
+          Beide Ziele werden geprüft. Das Theme bringt Beispieladressen mit
+          (etwa /collections/extrait); legt ein Shop diese Kollektion nicht
+          an, entfällt die Schaltfläche, statt auf die 404-Seite zu führen.
+        {%- endcomment -%}
+        {%- liquid
+          assign feature_primary = section.settings.primary_link | default: linked_product.url
+          capture feature_primary
+            render 'link-pruefen', url: feature_primary
+          endcapture
+          assign feature_primary = feature_primary | strip
+
+          capture feature_secondary
+            render 'link-pruefen', url: section.settings.secondary_link
+          endcapture
+          assign feature_secondary = feature_secondary | strip
+
+          assign zeige_primary = false
+          if section.settings.primary_label != blank and feature_primary != blank
+            assign zeige_primary = true
+          endif
+
+          assign zeige_secondary = false
+          if section.settings.secondary_label != blank and feature_secondary != blank
+            assign zeige_secondary = true
+          endif
+        -%}
+
+        {%- if zeige_primary or zeige_secondary -%}
           <div class="feature__actions">
-            {%- if section.settings.primary_label != blank -%}
+            {%- if zeige_primary -%}
               {%- if section.settings.layout == 'statement' -%}
-                <a class="link-underline" href="{{ section.settings.primary_link | default: linked_product.url }}">
+                <a class="link-underline" href="{{ feature_primary }}">
                   {{ section.settings.primary_label | escape }}
                 </a>
               {%- else -%}
-                <a class="button" href="{{ section.settings.primary_link | default: linked_product.url }}">
+                <a class="button" href="{{ feature_primary }}">
                   {{ section.settings.primary_label | escape }}
                 </a>
               {%- endif -%}
             {%- endif -%}
-            {%- if section.settings.secondary_label != blank -%}
-              <a class="link-underline" href="{{ section.settings.secondary_link }}">
+            {%- if zeige_secondary -%}
+              <a class="link-underline" href="{{ feature_secondary }}">
                 {{ section.settings.secondary_label | escape }}
               </a>
             {%- endif -%}

@@ -21,8 +21,20 @@
       </div>
 
       <div class="row-head__actions">
-        {%- if section.settings.link_label != blank -%}
-          <a class="link-underline" href="{{ section.settings.link | default: row_collection.url }}">
+        {%- comment -%}
+          Das Ziel wird geprüft: Zeigt die eingetragene Adresse auf eine
+          Kollektion, die es im Shop nicht gibt, entfällt der Verweis. Ein
+          Verweis auf die 404-Seite wäre schlimmer als keiner.
+        {%- endcomment -%}
+        {%- liquid
+          assign row_link = section.settings.link | default: row_collection.url
+          capture row_link
+            render 'link-pruefen', url: row_link
+          endcapture
+          assign row_link = row_link | strip
+        -%}
+        {%- if section.settings.link_label != blank and row_link != blank -%}
+          <a class="link-underline" href="{{ row_link }}">
             {{ section.settings.link_label | escape }}
           </a>
         {%- endif -%}

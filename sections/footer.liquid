@@ -33,26 +33,53 @@
               {%- endif -%}
 
             {%- when 'menu' -%}
-              <p class="footer__heading meta meta--muted">{{ block.settings.title | escape }}</p>
-              {%- if block.settings.menu != blank and block.settings.menu.links.size > 0 -%}
-                <ul class="footer__list">
+              {%- comment -%}
+                Die Liste wird zuerst zusammengestellt und erst danach
+                ausgegeben. Bleibt sie leer, entfällt auch die Überschrift –
+                eine Spalte mit Titel und nichts darunter sieht kaputt aus.
+
+                Jede Adresse im Rückfall wird geprüft. Eine Seite, die es im
+                Shop nicht gibt, wird nicht verlinkt: Ein Verweis auf die
+                404-Seite ist schlimmer als eine Zeile weniger.
+              {%- endcomment -%}
+              {%- capture footer_liste -%}
+                {%- if block.settings.menu != blank and block.settings.menu.links.size > 0 -%}
                   {%- for link in block.settings.menu.links -%}
                     <li><a href="{{ link.url }}">{{ link.title | escape }}</a></li>
                   {%- endfor -%}
-                </ul>
-              {%- elsif block.settings.title == 'Service' -%}
-                <ul class="footer__list">
-                  <li><a href="/pages/contact">Kontakt</a></li>
-                  <li><a href="/pages/faq">FAQ</a></li>
-                  <li><a href="/pages/duftfinder">Duftberatung</a></li>
-                </ul>
-              {%- elsif block.settings.title == 'Rechtliches' -%}
-                <ul class="footer__list">
-                  <li><a href="/policies/legal-notice">Impressum</a></li>
-                  <li><a href="/policies/privacy-policy">Datenschutz</a></li>
-                  <li><a href="/policies/refund-policy">Widerruf &amp; Rückgabe</a></li>
-                  <li><a href="/policies/terms-of-service">AGB</a></li>
-                </ul>
+
+                {%- elsif block.settings.title == 'Service' -%}
+                  {%- assign service_seiten = 'contact,faq,duftfinder' | split: ',' -%}
+                  {%- assign service_titel = 'Kontakt,FAQ,Duftberatung' | split: ',' -%}
+                  {%- for handle in service_seiten -%}
+                    {%- if pages[handle].handle != blank -%}
+                      <li><a href="{{ pages[handle].url }}">{{ service_titel[forloop.index0] }}</a></li>
+                    {%- endif -%}
+                  {%- endfor -%}
+                  {%- if settings.whatsapp_enabled and settings.whatsapp_number != blank -%}
+                    {%- assign beratung_titel = 'sections.whatsapp.footer_link' | t -%}
+                    <li>{% render 'whatsapp-link', class: '', label: beratung_titel %}</li>
+                  {%- endif -%}
+                  <li><a href="{{ routes.search_url }}">{{ 'general.search.title' | t }}</a></li>
+
+                {%- elsif block.settings.title == 'Rechtliches' -%}
+                  {%- comment -%}
+                    Die Rechtstexte kommen aus dem Shopify-Adminbereich, nicht
+                    aus einer festen Liste im Theme. Dadurch stehen hier immer
+                    genau die Texte, die tatsächlich gepflegt sind – mit ihrer
+                    eigenen Überschrift und in der Sprache des Shops.
+                  {%- endcomment -%}
+                  {%- for policy in shop.policies -%}
+                    {%- if policy.url != blank -%}
+                      <li><a href="{{ policy.url }}">{{ policy.title | escape }}</a></li>
+                    {%- endif -%}
+                  {%- endfor -%}
+                {%- endif -%}
+              {%- endcapture -%}
+              {%- assign footer_liste = footer_liste | strip -%}
+              {%- if footer_liste != blank -%}
+                <p class="footer__heading meta meta--muted">{{ block.settings.title | escape }}</p>
+                <ul class="footer__list">{{ footer_liste }}</ul>
               {%- endif -%}
 
             {%- when 'contact' -%}

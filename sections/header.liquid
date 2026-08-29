@@ -236,6 +236,15 @@
         {%- endfor -%}
       </ul>
     {%- else -%}
+      {%- comment -%}
+        Rückfall, solange im Theme-Editor kein Menü hinterlegt ist.
+
+        „Alle Düfte" und die Suche führen über Shopify-eigene Routen und
+        können nicht ins Leere zeigen. Bestseller, Duftberatung und die
+        Markenseite sind Beispieladressen des Themes – sie erscheinen nur,
+        wenn die Kollektion beziehungsweise die Seite im Shop wirklich
+        existiert. Vorher landete ein Tipp darauf auf der 404-Seite.
+      {%- endcomment -%}
       <ul class="menu-drawer__primary">
         <li>
           <a class="menu-drawer__link" href="{{ routes.all_products_collection_url }}">
@@ -243,21 +252,42 @@
             {% render 'icon', name: 'arrow' %}
           </a>
         </li>
+        {%- if collections['bestseller'].handle != blank -%}
+          <li>
+            <a class="menu-drawer__link" href="{{ collections['bestseller'].url }}">
+              {{ 'sections.header.bestsellers' | t }}
+              {% render 'icon', name: 'arrow' %}
+            </a>
+          </li>
+        {%- endif -%}
+        {%- if pages['duftfinder'].handle != blank -%}
+          <li>
+            <a class="menu-drawer__link" href="{{ pages['duftfinder'].url }}">
+              {{ 'sections.header.advice' | t }}
+              {% render 'icon', name: 'arrow' %}
+            </a>
+          </li>
+        {%- elsif settings.whatsapp_enabled and settings.whatsapp_number != blank -%}
+          {%- assign beratung_titel = 'sections.header.advice' | t -%}
+          <li>
+            {% render 'whatsapp-link',
+              class: 'menu-drawer__link',
+              label: beratung_titel,
+              arrow: true
+            %}
+          </li>
+        {%- endif -%}
+        {%- if pages['ueber-uns'].handle != blank -%}
+          <li>
+            <a class="menu-drawer__link" href="{{ pages['ueber-uns'].url }}">
+              {{ 'sections.header.about' | t }}
+              {% render 'icon', name: 'arrow' %}
+            </a>
+          </li>
+        {%- endif -%}
         <li>
-          <a class="menu-drawer__link" href="/collections/bestseller">
-            {{ 'sections.header.bestsellers' | t }}
-            {% render 'icon', name: 'arrow' %}
-          </a>
-        </li>
-        <li>
-          <a class="menu-drawer__link" href="/pages/duftfinder">
-            {{ 'sections.header.advice' | t }}
-            {% render 'icon', name: 'arrow' %}
-          </a>
-        </li>
-        <li>
-          <a class="menu-drawer__link" href="/pages/ueber-uns">
-            {{ 'sections.header.about' | t }}
+          <a class="menu-drawer__link" href="{{ routes.search_url }}">
+            {{ 'general.search.title' | t }}
             {% render 'icon', name: 'arrow' %}
           </a>
         </li>
