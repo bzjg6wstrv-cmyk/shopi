@@ -3336,3 +3336,67 @@ body { max-width: 100%; overflow-x: clip; }
 }
 
 
+
+/* --- Shopify Inbox: Platzierung des Chatbuttons --------------------------
+   Der Chatbutton von Shopify Inbox wird zur Laufzeit als App-Embed in die
+   Seite gehaengt. Er liegt in einem eigenen iframe (#dummy-chat-button-iframe),
+   getrennt vom iframe des Chatfensters. Angefasst wird hier ausschliesslich
+   das Button-iframe: Das Chatfenster und die gesamte Funktion von Inbox
+   bleiben unberuehrt.
+
+   Was von hier aus NICHT geht: Hintergrundfarbe, Symbol, Beschriftung und
+   Eckenradius des Buttons stehen im Dokument des fremden iframes. Ein anderer
+   Ursprung ist fuer Theme-CSS nicht erreichbar. Diese vier Punkte werden in
+   den Inbox-Einstellungen gesetzt; die Schritte stehen in
+   INBOX-INTEGRATION.md.
+
+   Bewusst ohne `transform: scale()`: Ein fixiertes Element mit eigenem
+   transform legt iOS Safari in eine separate Compositing-Ebene und zeichnet
+   es beim Scrollen nicht zuverlaessig neu. Genau daran ist in diesem Theme
+   schon die Beratungsleiste gescheitert (siehe Kommentar bei .sticky-bar).
+   Ein kompakterer Button laesst sich in den Inbox-Einstellungen ueber Symbol
+   und kurze Beschriftung erreichen, ohne dieses Risiko.
+
+   `!important` ist noetig, weil Inbox die Position selbst am Element setzt. */
+
+:root {
+  /* Hoehe der Leiste, die unten gerade Platz beansprucht. Ohne Leiste 0. */
+  --inbox-bar-clearance: 0px;
+}
+
+/* Die Beratungsleiste ist 3.5rem hoch, die Warenkorb-Leiste durch Text und
+   Schaltflaeche etwas hoeher. Beide Klassen setzt theme.js. */
+body.has-whatsapp-bar { --inbox-bar-clearance: var(--whatsapp-bar-height, 3.5rem); }
+body.has-sticky-atc { --inbox-bar-clearance: 4.25rem; }
+
+.inbox-styled iframe#dummy-chat-button-iframe {
+  bottom: calc(
+    var(--inbox-gap-mobile, 16px)
+    + var(--inbox-bar-clearance)
+    + env(safe-area-inset-bottom, 0px)
+  ) !important;
+
+  /* Unter Abdunkler (60) und Schubladen (70), damit geoeffnete Theme-Flaechen
+     den Button verdecken statt umgekehrt. Ueber dem Kopfbereich (40). */
+  z-index: var(--z-sticky-bar, 50) !important;
+}
+
+/* Seitlicher Abstand nur, wenn die Ecke im Theme-Editor ausdruecklich gesetzt
+   wurde. Ohne diese Angabe bleibt die in Inbox gewaehlte Ecke unangetastet -
+   ein blindes `right` wuerde einen links platzierten Button verschieben. */
+.inbox-corner-right iframe#dummy-chat-button-iframe {
+  right: calc(var(--inbox-side, 16px) + env(safe-area-inset-right, 0px)) !important;
+  left: auto !important;
+}
+
+.inbox-corner-left iframe#dummy-chat-button-iframe {
+  left: calc(var(--inbox-side, 16px) + env(safe-area-inset-left, 0px)) !important;
+  right: auto !important;
+}
+
+@media (min-width: 990px) {
+  /* Am Schreibtisch gibt es keine Leisten am unteren Rand. */
+  .inbox-styled iframe#dummy-chat-button-iframe {
+    bottom: calc(var(--inbox-gap-desktop, 24px) + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}

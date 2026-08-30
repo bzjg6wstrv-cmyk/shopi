@@ -199,4 +199,14 @@
   --button-radius: {{ button_radius }}px;
   --button-padding: {{ settings.button_padding }}px;
   --button-transform: {{ button_transform }};
+
+  {%- comment -%}
+    Abstaende fuer den Chatbutton von Shopify Inbox. Der Button liegt in einem
+    fremden iframe; von hier aus laesst sich nur seine Platzierung steuern,
+    nicht sein Inneres. Farbe, Symbol und Beschriftung kommen aus den
+    Inbox-Einstellungen.
+  {%- endcomment -%}
+  --inbox-gap-mobile: {{ settings.inbox_gap_mobile | default: 16 }}px;
+  --inbox-gap-desktop: {{ settings.inbox_gap_desktop | default: 24 }}px;
+  --inbox-side: {{ settings.inbox_side | default: 16 }}px;
 }

@@ -708,6 +708,75 @@
     ]
   },
   {
+    "name": "Chatbutton (Shopify Inbox)",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Der Chatbutton von Shopify Inbox liegt in einem fremden iframe. Farbe, Symbol und Beschriftung sind deshalb nur in den Inbox-Einstellungen aenderbar (Vertriebskanaele -> Inbox -> Chat-Einstellungen). Hier laesst sich ausschliesslich die Platzierung im Theme steuern."
+      },
+      {
+        "type": "checkbox",
+        "id": "inbox_enabled",
+        "label": "Platzierung durch das Theme steuern",
+        "default": true,
+        "info": "Ausschalten, falls Shopify Inbox seinen Aufbau aendert und der Button dadurch verrutscht."
+      },
+      {
+        "type": "range",
+        "id": "inbox_gap_mobile",
+        "min": 0,
+        "max": 48,
+        "step": 2,
+        "unit": "px",
+        "label": "Abstand nach unten (Mobil)",
+        "default": 16,
+        "info": "Zusaetzlich zur Beratungs- bzw. Warenkorb-Leiste, die das Theme automatisch beruecksichtigt."
+      },
+      {
+        "type": "range",
+        "id": "inbox_gap_desktop",
+        "min": 0,
+        "max": 64,
+        "step": 2,
+        "unit": "px",
+        "label": "Abstand nach unten (Desktop)",
+        "default": 24
+      },
+      {
+        "type": "select",
+        "id": "inbox_corner",
+        "label": "Seitlicher Abstand",
+        "options": [
+          {
+            "value": "keep",
+            "label": "Nicht veraendern (empfohlen)"
+          },
+          {
+            "value": "right",
+            "label": "Button steht unten rechts"
+          },
+          {
+            "value": "left",
+            "label": "Button steht unten links"
+          }
+        ],
+        "default": "keep",
+        "info": "Nur setzen, wenn die Ecke bekannt ist. Eine falsche Angabe schiebt den Button auf die andere Seite."
+      },
+      {
+        "type": "range",
+        "id": "inbox_side",
+        "min": 0,
+        "max": 48,
+        "step": 2,
+        "unit": "px",
+        "label": "Abstand zum Seitenrand",
+        "default": 16,
+        "info": "Wirkt nur, wenn oben eine Ecke gewaehlt ist."
+      }
+    ]
+  },
+  {
     "name": "Rechtliche Hinweise",
     "settings": [
       {

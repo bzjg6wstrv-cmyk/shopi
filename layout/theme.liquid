@@ -1,5 +1,21 @@
 <!doctype html>
-<html lang="{{ request.locale.iso_code }}" class="no-js">
+{%- liquid
+  comment
+    Klassen fuer die Platzierung des Shopify-Inbox-Chatbuttons. Sie schalten
+    nur Theme-CSS frei und beruehren die App-Einbettung selbst nicht.
+  endcomment
+  assign inbox_class = ''
+  if settings.inbox_enabled
+    assign inbox_class = ' inbox-styled'
+    case settings.inbox_corner
+      when 'right'
+        assign inbox_class = inbox_class | append: ' inbox-corner-right'
+      when 'left'
+        assign inbox_class = inbox_class | append: ' inbox-corner-left'
+    endcase
+  endif
+-%}
+<html lang="{{ request.locale.iso_code }}" class="no-js{{ inbox_class }}">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
