@@ -59,7 +59,7 @@
                   Die Ziele kommen aus 'legal-url', damit Kopf- und Fußbereich
                   bei gleicher Beschriftung dasselbe Dokument öffnen.
                 {%- endcomment -%}
-                {%- assign legal_labels = 'Impressum,Datenschutz,Widerruf & Rückgabe,AGB,Versand & Zahlung,Zufriedenheitsgarantie' | split: ',' -%}
+                {%- assign legal_labels = 'Impressum,Datenschutz,AGB,Widerrufsbelehrung,Versand & Zahlung,Zufriedenheitsgarantie' | split: ',' -%}
                 {%- for legal_label in legal_labels -%}
                   {%- capture legal_url -%}{% render 'legal-url', title: legal_label %}{%- endcapture -%}
                   {%- assign legal_url = legal_url | strip -%}
@@ -132,11 +132,10 @@
       {%- endfor -%}
     </div>
 
-    {% render 'legal-status' %}
-
-    {%- if settings.withdrawal_url != blank -%}
+    {%- assign withdrawal_target = settings.withdrawal_url | strip -%}
+    {%- if withdrawal_target != blank -%}
       <div class="footer__withdrawal">
-        <a class="footer__withdrawal-link" href="{{ settings.withdrawal_url }}">Vertrag widerrufen</a>
+        <a class="footer__withdrawal-link" href="{{ withdrawal_target }}">Vertrag widerrufen</a>
       </div>
     {%- endif -%}
 

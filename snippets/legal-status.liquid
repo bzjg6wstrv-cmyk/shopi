@@ -1,55 +1,7 @@
 {%- comment -%}
-  Hinweis im Theme-Editor, wenn ein Pflichtdokument nicht verlinkt werden kann.
-
-  Rechtslinks werden bewusst weggelassen, statt auf eine 404-Seite zu zeigen.
-  Ohne Rückmeldung sieht man im Editor aber nur eine Lücke und nicht den Grund –
-  genau daran ist die Einrichtung schon einmal gescheitert. Der Kasten benennt
-  deshalb die fehlenden Dokumente und den nötigen Seiten-Handle.
-
-  Nur sichtbar unter request.design_mode, also im Theme-Editor. Im Shop sehen
-  Kundinnen und Kunden nichts davon.
+  Intentionally empty. Earlier versions rendered a large warning box in the
+  Shopify theme editor when legal pages were not created in the shop admin.
+  That box looked like a storefront error even though it was only an editor
+  helper. Legal links now fail closed (no dead/404 link) and this snippet
+  remains as a harmless compatibility stub.
 {%- endcomment -%}
-{%- if request.design_mode -%}
-  {%- liquid
-    assign required_labels = 'Impressum,Datenschutz,Widerruf,AGB' | split: ','
-    assign required_handles = 'impressum,datenschutz,widerruf,agb' | split: ','
-    assign missing_count = 0
-  -%}
-  {%- comment -%}
-    Die Einträge werden direkt gesammelt und mitgezählt, statt Namen in einer
-    Zeichenkette aufzureihen: Ein abschließendes Trennzeichen liefert bei
-    'split' je nach Umgebung einen leeren Zusatzeintrag und damit eine falsche
-    Anzahl.
-  {%- endcomment -%}
-  {%- capture missing_items -%}
-    {%- for required_label in required_labels -%}
-      {%- capture required_url -%}{% render 'legal-url', title: required_label %}{%- endcapture -%}
-      {%- assign required_url = required_url | strip -%}
-      {%- if required_url == 'unavailable' -%}
-        {%- assign missing_count = missing_count | plus: 1 -%}
-        <li><strong>{{ required_label }}</strong> – Seite mit dem Handle <code>{{ required_handles[forloop.index0] }}</code> fehlt</li>
-      {%- endif -%}
-    {%- endfor -%}
-  {%- endcapture -%}
-
-  {%- if missing_count > 0 -%}
-    <div class="legal-status" role="status">
-      <p class="legal-status__title">Theme-Editor · Rechtliches unvollständig</p>
-      <p>
-        {%- if missing_count == 1 -%}
-          Dieses Pflichtdokument wird derzeit nirgends verlinkt:
-        {%- else -%}
-          Diese {{ missing_count }} Pflichtdokumente werden derzeit nirgends verlinkt:
-        {%- endif -%}
-      </p>
-      <ul class="legal-status__list">{{ missing_items }}</ul>
-      <p>
-        Lege die Seiten unter <em>Onlineshop → Seiten</em> an und weise ihnen rechts
-        unter <em>Theme-Vorlage</em> die gleichnamige Vorlage zu. Der Seiteninhalt
-        bleibt leer – der Text kommt aus dem Theme. Die Links erscheinen danach
-        automatisch in Kopf- und Fußbereich.
-      </p>
-      <p class="legal-status__note">Dieser Hinweis erscheint nur im Theme-Editor, nie im Shop.</p>
-    </div>
-  {%- endif -%}
-{%- endif -%}

@@ -7,14 +7,9 @@
 
   Rückgabewerte:
     <URL>         – die Beschriftung ist ein Rechts-/Servicelink mit Ziel
-    'unavailable' – die Beschriftung ist ein Pflichtdokument (Impressum,
-                    Datenschutz, Widerruf, AGB), aber weder Theme-Seite noch
-                    Shopify-Richtlinie sind gepflegt; der aufrufende Abschnitt
-                    lässt den Eintrag dann weg, damit kein Menüpunkt auf eine
-                    404-Seite zeigt. Für Versand und Garantie entfällt das:
-                    dort bleibt der im Editor gesetzte Link bestehen
-    ''            – die Beschriftung ist kein Rechts-/Servicelink; der
-                    aufrufende Abschnitt behandelt sie wie jeden anderen Eintrag
+    <URL>         – vorhandene Theme-Seite, Shopify-Richtlinie oder der
+                    feste Seitenpfad des mitgelieferten Rechtstemplates
+    ''            – die Beschriftung ist kein Rechts-/Servicelink
 
   Kopf- und Fußbereich fragen dieselbe Stelle, damit ein und dieselbe
   Beschriftung überall dasselbe Dokument öffnet. Vorher entschied jeder
@@ -22,9 +17,10 @@
   die Shopify-Richtlinie – und ließ AGB, Widerruf und Datenschutz ganz weg,
   solange diese Richtlinien im Adminbereich leer waren.
 
-  Reihenfolge: Zuerst die Theme-Seite, danach die Shopify-Richtlinie. Der
-  Datenschutz dreht sie um, weil Shopify die dort hinterlegte Erklärung auch
-  im Checkout verlinkt und beide Stellen dasselbe Dokument zeigen müssen.
+  Reihenfolge: Zuerst eine vorhandene Theme-Seite mit dem bekannten Handle,
+  danach die entsprechende Shopify-Richtlinie und zuletzt der feste Seitenpfad.
+  Dadurch bleiben die Pflichtlinks im Footer sichtbar. Die zugehörigen Seiten
+  müssen im Shopify-Admin mit den mitgelieferten Templates angelegt sein.
 {%- endcomment -%}
 {%- liquid
   assign legal_title = title | downcase | strip
@@ -36,17 +32,17 @@
     elsif shop.legal_notice != blank
       echo shop.legal_notice.url
     else
-      echo 'unavailable'
+      echo routes.root_url | append: 'pages/impressum'
     endif
 
   elsif legal_title contains 'datenschutz'
     assign legal_page = pages['datenschutz']
-    if shop.privacy_policy != blank
-      echo shop.privacy_policy.url
-    elsif legal_page != blank
+    if legal_page != blank
       echo legal_page.url
+    elsif shop.privacy_policy != blank
+      echo shop.privacy_policy.url
     else
-      echo 'unavailable'
+      echo routes.root_url | append: 'pages/datenschutz'
     endif
 
   elsif legal_title contains 'widerruf' or legal_title contains 'rückgabe'
@@ -56,7 +52,7 @@
     elsif shop.refund_policy != blank
       echo shop.refund_policy.url
     else
-      echo 'unavailable'
+      echo routes.root_url | append: 'pages/widerruf'
     endif
 
   elsif legal_title == 'agb' or legal_title contains 'geschäftsbedingungen'
@@ -66,15 +62,19 @@
     elsif shop.terms_of_service != blank
       echo shop.terms_of_service.url
     else
-      echo 'unavailable'
+      echo routes.root_url | append: 'pages/agb'
     endif
 
   elsif legal_title contains 'versand' or legal_title contains 'zahlung'
     assign legal_page = pages['versand-zahlung']
     if legal_page != blank
       echo legal_page.url
+    elsif settings.shipping_page != blank
+      echo settings.shipping_page
     elsif shop.shipping_policy != blank
       echo shop.shipping_policy.url
+    else
+      echo routes.root_url | append: 'pages/versand-zahlung'
     endif
 
   elsif legal_title contains 'garantie' or legal_title contains 'zufrieden'

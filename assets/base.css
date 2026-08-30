@@ -3335,48 +3335,4 @@ body { max-width: 100%; overflow-x: clip; }
   .footer__withdrawal-link { width: 100%; }
 }
 
-/* --- Editor-Hinweis zu fehlenden Rechtsseiten ---------------------------
-   Wird ausschliesslich unter request.design_mode ausgegeben. */
-.legal-status {
-  margin: var(--space-xl) 0;
-  padding: 1rem 1.25rem;
-  border: var(--border-width) dashed rgb(var(--color-text));
-  font-size: 0.8125rem;
-  line-height: 1.55;
-}
 
-.legal-status__title {
-  margin: 0 0 0.5rem;
-  font-size: 0.625rem;
-  letter-spacing: var(--meta-tracking);
-  text-transform: uppercase;
-}
-
-.legal-status p {
-  margin: 0 0 0.5rem;
-}
-
-/* Die globale Regel in Zeile 37 nimmt Listen ihre Punkte. Hier gehoeren sie
-   zurueck, sonst laufen die fehlenden Dokumente zu einem Block zusammen. */
-.legal-status__list {
-  margin: 0 0 0.75rem;
-  padding-left: 1.25rem;
-  list-style: disc;
-}
-
-.legal-status__list li {
-  margin-bottom: 0.35rem;
-}
-
-.legal-status code {
-  padding: 0.05rem 0.3rem;
-  border: var(--border-width) solid rgb(var(--color-muted));
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.75rem;
-  white-space: nowrap;
-}
-
-.legal-status__note {
-  margin: 0;
-  color: rgb(var(--color-muted));
-}

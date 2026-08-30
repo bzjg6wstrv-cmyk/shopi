@@ -31,9 +31,6 @@
 
           <h2>Umsatzsteuer</h2>
           <p>Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG: {{ company_vat | escape }}</p>
-
-          <h2>Verbraucherstreitbeilegung</h2>
-          <p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen (§ 36 VSBG).</p>
         </div>
 
       {%- when 'datenschutz' -%}
@@ -42,73 +39,79 @@
         {%- assign dsg_n = 0 -%}
         <div class="legal-document__content rte">
           {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Verantwortlicher</h2>
-          <p>Verantwortlich für die Datenverarbeitung auf dieser Website im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:</p>
+          <p>Verantwortlich für die Verarbeitung personenbezogener Daten auf dieser Website ist:</p>
           <p><strong>{{ company_name | escape }}</strong><br>{{ company_address | escape }}<br>
           Vertreten durch: {{ company_representative | escape }}<br>
           Telefon: <a href="tel:{{ contact_phone | remove: ' ' | escape }}">{{ contact_phone | escape }}</a><br>
           E-Mail: <a href="mailto:{{ contact_email | escape }}">{{ contact_email | escape }}</a></p>
 
-          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Hosting und Shop-System</h2>
-          <p>Diese Website wird auf der Plattform von Shopify betrieben. Anbieter ist die Shopify International Ltd., Victoria Buildings, 2. Etage, 1-2 Haddington Road, Dublin 4, D04 XN32, Irland. Shopify verarbeitet in unserem Auftrag die über die Website erhobenen Daten und ist als Auftragsverarbeiter vertraglich gebunden (Art. 28 DSGVO). Dabei können Daten auch an die Shopify Inc. in Kanada sowie an Server in den USA übermittelt werden; die Übermittlung wird auf Standardvertragsklauseln der EU-Kommission gestützt. Rechtsgrundlage ist unser berechtigtes Interesse an einem sicheren und effizienten Betrieb unseres Online-Shops (Art. 6 Abs. 1 lit. f DSGVO) sowie, soweit ein Vertrag angebahnt oder erfüllt wird, Art. 6 Abs. 1 lit. b DSGVO.</p>
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Shopify als Shop- und Hosting-Plattform</h2>
+          <p>Unser Online-Shop wird mit Shopify betrieben. Für Händler im Europäischen Wirtschaftsraum ist grundsätzlich Shopify International Limited, Irland, die zentrale Shopify-Gesellschaft. Shopify verarbeitet für den Betrieb des Shops unter anderem technische Nutzungsdaten, Bestell- und Kundendaten und setzt hierfür verbundene Unternehmen und Unterauftragsverarbeiter ein. Daten können dabei auch außerhalb des Europäischen Wirtschaftsraums verarbeitet werden. Shopify beschreibt die hierfür eingesetzten Schutzmechanismen und internationalen Datenübermittlungen in seinen Datenschutz- und Vertragsunterlagen. Rechtsgrundlagen unserer Nutzung von Shopify sind Art. 6 Abs. 1 lit. b DSGVO, soweit die Verarbeitung zur Vertragsanbahnung oder Vertragserfüllung erforderlich ist, sowie Art. 6 Abs. 1 lit. f DSGVO für den sicheren und wirtschaftlichen Betrieb unseres Shops.</p>
+          <p><a href="https://www.shopify.com/de/legal/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutzhinweise von Shopify</a></p>
 
-          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Server-Logfiles</h2>
-          <p>Beim Aufruf unserer Website werden automatisch Informationen erfasst, die Ihr Browser übermittelt: Browsertyp und -version, verwendetes Betriebssystem, Referrer-URL, Hostname des zugreifenden Rechners, Uhrzeit der Serveranfrage und IP-Adresse. Diese Daten werden nicht mit anderen Datenquellen zusammengeführt. Die Erfassung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO zur technisch fehlerfreien Darstellung und zur Sicherheit unserer Systeme.</p>
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Server-Logdaten</h2>
+          <p>Beim Aufruf unseres Shops werden technisch erforderliche Informationen verarbeitet, insbesondere IP-Adresse, Datum und Uhrzeit des Zugriffs, aufgerufene Adresse, Browser- und Geräteinformationen sowie gegebenenfalls Referrer-Daten. Die Verarbeitung dient der Auslieferung, Stabilität und Sicherheit des Shops. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO.</p>
 
-          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Cookies und Einwilligungen</h2>
-          <p>Unsere Website verwendet Cookies. Technisch notwendige Cookies – etwa für den Warenkorb, die Sitzungsverwaltung und Sicherheitsfunktionen – setzen wir auf Grundlage von § 25 Abs. 2 TDDDG sowie Art. 6 Abs. 1 lit. f DSGVO ein. Alle nicht notwendigen Cookies, insbesondere solche für Reichweitenmessung und Marketing, werden erst nach Ihrer ausdrücklichen Einwilligung gesetzt (§ 25 Abs. 1 TDDDG, Art. 6 Abs. 1 lit. a DSGVO). Ihre Einwilligung können Sie jederzeit mit Wirkung für die Zukunft über die Cookie-Einstellungen auf dieser Website widerrufen.</p>
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Cookies, ähnliche Technologien und Einwilligungsverwaltung</h2>
+          <p>Für technisch erforderliche Funktionen wie Warenkorb, Checkout, Sicherheit und Sitzungsverwaltung können Cookies oder ähnliche Technologien eingesetzt werden, soweit dies nach § 25 Abs. 2 TDDDG ohne Einwilligung zulässig ist. Analyse- und Marketingtechnologien werden nur eingesetzt, wenn Sie zuvor über die auf unserer Website bereitgestellten Datenschutzeinstellungen eingewilligt haben. Rechtsgrundlagen sind § 25 Abs. 1 TDDDG und Art. 6 Abs. 1 lit. a DSGVO. Eine erteilte Einwilligung können Sie jederzeit mit Wirkung für die Zukunft über die Datenschutzeinstellungen widerrufen.</p>
 
-          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Bestellabwicklung</h2>
-          <p>Wenn Sie bei uns bestellen, verarbeiten wir die von Ihnen angegebenen Bestands- und Bestelldaten (Name, Rechnungs- und Lieferanschrift, E-Mail-Adresse, ggf. Telefonnummer, Zahlungsdaten, bestellte Artikel) zur Durchführung des Vertrags gemäß Art. 6 Abs. 1 lit. b DSGVO. Ihre Daten geben wir dabei an die mit der Lieferung beauftragten Versanddienstleister und an das von Ihnen gewählte Zahlungsunternehmen weiter, soweit dies zur Vertragserfüllung erforderlich ist. Nach vollständiger Abwicklung werden die Daten für die Dauer der handels- und steuerrechtlichen Aufbewahrungsfristen (in der Regel sechs bzw. zehn Jahre nach § 257 HGB, § 147 AO) gespeichert und danach gelöscht. Rechtsgrundlage hierfür ist Art. 6 Abs. 1 lit. c DSGVO.</p>
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Bestellungen, Lieferung und gesetzliche Aufbewahrung</h2>
+          <p>Bei einer Bestellung verarbeiten wir insbesondere Name, Rechnungs- und Lieferanschrift, Kontaktdaten, bestellte Artikel, Bestell- und Zahlungsinformationen. Die Verarbeitung erfolgt zur Durchführung des Vertrags auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO. Soweit erforderlich, übermitteln wir Daten an Versand- und Zahlungsdienstleister. Steuer- und handelsrechtlich relevante Unterlagen speichern wir entsprechend den jeweils geltenden gesetzlichen Fristen; je nach Unterlagenart können diese insbesondere sechs, acht oder zehn Jahre betragen. Rechtsgrundlage hierfür ist Art. 6 Abs. 1 lit. c DSGVO.</p>
 
-          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Zahlungsdienstleister</h2>
-          <p>Je nach gewählter Zahlungsart geben wir die zur Zahlungsabwicklung erforderlichen Daten an den jeweiligen Zahlungsdienstleister weiter. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO. Die Zahlungsdienstleister verarbeiten Ihre Daten teilweise auch in eigener Verantwortung nach ihren eigenen Datenschutzbestimmungen; bei einer Zahlung auf Rechnung oder per Ratenkauf kann eine Bonitätsprüfung erfolgen. Die im Shop verfügbaren Zahlungsarten und die dazugehörigen Anbieter werden Ihnen im Bestellvorgang angezeigt.</p>
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Zahlungsarten</h2>
+          <p>Im Checkout können je nach Verfügbarkeit insbesondere Kreditkarte, Apple Pay, PayPal, Klarna und Vorkasse angeboten werden. Für die Zahlungsabwicklung werden die dafür erforderlichen Daten an den jeweils ausgewählten Zahlungsdienstleister übermittelt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO.</p>
+          <p><strong>Shopify Payments / Kreditkarte / Apple Pay:</strong> Soweit eine Zahlung über Shopify Payments abgewickelt wird, erfolgt die Zahlungsabwicklung über die hierfür von Shopify eingesetzten Zahlungsdienste. Welche Zahlungsart und welcher Zahlungsdienstleister konkret verwendet wird, wird Ihnen im Checkout angezeigt.</p>
+          <p><strong>PayPal:</strong> Bei Auswahl von PayPal werden die für die Zahlung erforderlichen Daten an PayPal (Europe) S.à r.l. et Cie, S.C.A., Luxemburg, übermittelt. <a href="https://www.paypal.com/de/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutzhinweise von PayPal</a>.</p>
+          <p><strong>Klarna:</strong> Bei Auswahl einer Klarna-Zahlungsart werden die erforderlichen Zahlungs- und Bestelldaten an Klarna Bank AB (publ), Schweden, übermittelt. Klarna kann im Rahmen einzelner Zahlungsarten Bonitäts-, Identitäts- oder Betrugsprüfungen in eigener Verantwortung durchführen. <a href="https://www.klarna.com/de/datenschutz/" target="_blank" rel="noopener noreferrer">Datenschutzhinweise von Klarna</a>.</p>
+          <p><strong>Vorkasse:</strong> Bei Vorkasse verarbeiten wir die zur Zuordnung Ihrer Zahlung erforderlichen Bank- und Bestelldaten.</p>
 
           {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Kundenkonto</h2>
-          <p>Sie können bei uns ein Kundenkonto anlegen. Die dabei angegebenen Daten verarbeiten wir zur Verwaltung Ihres Kontos und zur vereinfachten Abwicklung künftiger Bestellungen auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO. Sie können Ihr Kundenkonto jederzeit löschen lassen; gesetzliche Aufbewahrungsfristen bleiben davon unberührt.</p>
+          <p>Wenn Sie ein Kundenkonto nutzen, verarbeiten wir die hierfür erforderlichen Konto-, Kontakt- und Bestelldaten. Die Verarbeitung erfolgt zur Bereitstellung des Kontos und zur Vertragsabwicklung auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO. Gesetzliche Aufbewahrungspflichten bleiben unberührt.</p>
 
-          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Kontaktaufnahme</h2>
-          <p>Wenn Sie uns über das Kontaktformular, per E-Mail oder telefonisch kontaktieren, verarbeiten wir Ihre Angaben zur Bearbeitung Ihrer Anfrage. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO, sofern Ihre Anfrage der Erfüllung eines Vertrags oder vorvertraglichen Maßnahmen dient, ansonsten unser berechtigtes Interesse an der Beantwortung von Anfragen (Art. 6 Abs. 1 lit. f DSGVO) bzw. Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Ihre Anfrage löschen wir, sobald sie erledigt ist und keine gesetzlichen Aufbewahrungspflichten entgegenstehen.</p>
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Kontakt und Live-Chat mit Shopify Inbox</h2>
+          <p>Wenn Sie uns per E-Mail, Telefon, Kontaktformular oder Live-Chat kontaktieren, verarbeiten wir Ihre Angaben zur Bearbeitung der Anfrage. Für den Live-Chat verwenden wir Shopify Inbox. Dabei können insbesondere Chat-Inhalte, Kontaktdaten sowie technische Informationen verarbeitet und durch Shopify in unserem Auftrag bereitgestellt werden. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO, wenn die Anfrage einen Vertrag oder vorvertragliche Maßnahmen betrifft, ansonsten Art. 6 Abs. 1 lit. f DSGVO. Sofern eine Verarbeitung auf einer Einwilligung beruht, ist Art. 6 Abs. 1 lit. a DSGVO die Rechtsgrundlage.</p>
 
           {%- if settings.whatsapp_enabled and settings.whatsapp_number != blank -%}
             {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Duftberatung über WhatsApp</h2>
-            <p>Auf unserer Website bieten wir Ihnen die Möglichkeit, uns über WhatsApp zu kontaktieren. Klicken Sie auf die entsprechende Schaltfläche, öffnet sich WhatsApp mit einer vorbereiteten Nachricht an uns; erst mit dem Absenden dieser Nachricht werden Daten übertragen. Anbieter des Dienstes ist die WhatsApp Ireland Limited, Merrion Road, Ballsbridge, Dublin 4, Irland. Bei der Nutzung von WhatsApp werden Ihre Telefonnummer, Ihre Nachrichteninhalte und weitere Nutzungsdaten verarbeitet; dabei können Daten auch außerhalb der Europäischen Union, insbesondere in die USA, übermittelt werden. Auf diese Verarbeitung durch WhatsApp haben wir keinen Einfluss. Wir verarbeiten die uns über WhatsApp übermittelten Daten ausschließlich zur Beantwortung Ihrer Anfrage. Rechtsgrundlage ist Ihre durch die Kontaktaufnahme erteilte Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) bzw. Art. 6 Abs. 1 lit. b DSGVO. Wenn Sie diese Verarbeitung vermeiden möchten, nutzen Sie bitte die übrigen Kontaktwege. Nähere Informationen finden Sie in den Datenschutzhinweisen von WhatsApp.</p>
+            <p>Wir bieten eine Kontaktaufnahme über WhatsApp an. Beim Anklicken eines WhatsApp-Links wird WhatsApp bzw. die WhatsApp-Webseite geöffnet; dabei kann WhatsApp bereits technische Verbindungs- und Gerätedaten verarbeiten. Wenn Sie uns anschließend eine Nachricht senden, werden insbesondere Ihre Telefonnummer, Nachrichteninhalte und gegebenenfalls weitere von Ihnen übermittelte Daten verarbeitet. Anbieter für Nutzer im EWR ist WhatsApp Ireland Limited, Irland. Wir verarbeiten die an uns übermittelten Daten zur Bearbeitung Ihrer Anfrage auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO beziehungsweise Art. 6 Abs. 1 lit. f DSGVO. Wenn Sie WhatsApp nicht nutzen möchten, können Sie uns per E-Mail oder Telefon kontaktieren.</p>
           {%- endif -%}
 
-          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Newsletter</h2>
-          <p>Wenn Sie unseren Newsletter abonnieren möchten, benötigen wir Ihre E-Mail-Adresse. Die Anmeldung erfolgt im Double-Opt-in-Verfahren: Nach Ihrer Eintragung senden wir Ihnen eine Bestätigungsmail, mit der Sie die Anmeldung bestätigen. Rechtsgrundlage ist Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Sie können Ihre Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen, etwa über den Abmeldelink in jeder Newsletter-Mail oder per Nachricht an uns. Nach der Abmeldung wird Ihre E-Mail-Adresse aus dem Newsletter-Verteiler gelöscht.</p>
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Google Analytics</h2>
+          <p>Nach Ihrer Einwilligung können wir Google Analytics zur Reichweitenmessung und Analyse der Nutzung unseres Shops einsetzen. Dabei können insbesondere Geräte- und Browserinformationen, IP-bezogene Informationen, Nutzungsereignisse, besuchte Seiten und Interaktionen verarbeitet werden. Anbieter ist Google Ireland Limited, Irland. Die Verarbeitung erfolgt auf Grundlage Ihrer Einwilligung gemäß Art. 6 Abs. 1 lit. a DSGVO und § 25 Abs. 1 TDDDG. Sie können Ihre Einwilligung jederzeit über unsere Datenschutzeinstellungen widerrufen. Google kann Daten auch außerhalb des EWR verarbeiten und beschreibt die hierfür eingesetzten Schutzmechanismen in seinen Datenschutzinformationen.</p>
+          <p><a href="https://policies.google.com/privacy?hl=de" target="_blank" rel="noopener noreferrer">Datenschutzhinweise von Google</a></p>
 
-          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Produktbewertungen</h2>
-          <p>Sofern Sie eine Bewertung abgeben, verarbeiten wir die dabei angegebenen Daten zur Veröffentlichung der Bewertung. Rechtsgrundlage ist Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO), die Sie jederzeit mit Wirkung für die Zukunft widerrufen können.</p>
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Google Ads</h2>
+          <p>Nach Ihrer Einwilligung können wir Google Ads einschließlich Conversion-Messung einsetzen, um den Erfolg unserer Werbeanzeigen zu messen und Werbung zielgerichteter auszuspielen. Hierbei können Informationen über Seitenaufrufe, Interaktionen, Geräte, Browser und Conversions an Google übermittelt und mit dort vorhandenen Informationen verknüpft werden. Anbieter ist Google Ireland Limited, Irland. Rechtsgrundlage ist Ihre Einwilligung gemäß Art. 6 Abs. 1 lit. a DSGVO und § 25 Abs. 1 TDDDG.</p>
 
-          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Empfänger und Drittlandsübermittlung</h2>
-          <p>Eine Übermittlung Ihrer Daten findet nur statt, soweit dies zur Vertragserfüllung erforderlich ist, wir gesetzlich dazu verpflichtet sind, Sie eingewilligt haben oder ein berechtigtes Interesse besteht. Empfänger sind insbesondere unser Shop- und Hosting-Dienstleister, Zahlungs- und Versanddienstleister sowie gegebenenfalls Steuerberatung und Behörden. Soweit dabei Daten in Staaten außerhalb der EU bzw. des EWR übermittelt werden, stellen wir ein angemessenes Datenschutzniveau durch einen Angemessenheitsbeschluss der EU-Kommission oder durch Standardvertragsklauseln nebst ergänzenden Maßnahmen sicher.</p>
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Meta Pixel</h2>
+          <p>Nach Ihrer Einwilligung können wir das Meta Pixel einsetzen, um die Nutzung unseres Shops und den Erfolg von Werbeanzeigen auf Facebook und Instagram zu messen. Dabei können insbesondere Browser- und Gerätedaten, IP-bezogene Informationen, aufgerufene Seiten, Interaktionen sowie Bestell- und Conversion-Ereignisse verarbeitet werden. Anbieter für Nutzer im EWR ist Meta Platforms Ireland Limited, Irland. Meta kann die erhaltenen Informationen nach Maßgabe seiner Datenschutzbedingungen mit Daten aus Meta-Diensten verbinden und für Messung, Zielgruppenbildung und Werbezwecke verwenden. Rechtsgrundlage ist Ihre Einwilligung gemäß Art. 6 Abs. 1 lit. a DSGVO und § 25 Abs. 1 TDDDG.</p>
+          <p><a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer">Datenschutzhinweise von Meta</a></p>
+
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. TikTok Pixel</h2>
+          <p>Nach Ihrer Einwilligung können wir das TikTok Pixel einsetzen, um Conversions und die Nutzung unseres Shops im Zusammenhang mit TikTok-Werbung zu messen. Dabei können insbesondere technische Geräte- und Browserinformationen, IP-bezogene Informationen, Seitenaufrufe, Interaktionen und Conversion-Ereignisse verarbeitet werden. Anbieter für Nutzer im EWR ist TikTok Technology Limited, Irland. Rechtsgrundlage ist Ihre Einwilligung gemäß Art. 6 Abs. 1 lit. a DSGVO und § 25 Abs. 1 TDDDG. TikTok kann Daten auch außerhalb des EWR verarbeiten und erläutert die eingesetzten Schutzmechanismen in seinen Datenschutzinformationen.</p>
+          <p><a href="https://www.tiktok.com/legal/page/eea/privacy-policy/de" target="_blank" rel="noopener noreferrer">Datenschutzhinweise von TikTok</a></p>
+
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Empfänger und Übermittlungen in Drittländer</h2>
+          <p>Personenbezogene Daten werden nur an Empfänger übermittelt, soweit dies für die genannten Zwecke erforderlich ist, eine gesetzliche Pflicht besteht, Sie eingewilligt haben oder eine sonstige Rechtsgrundlage vorliegt. Empfänger können insbesondere Shopify und dessen Unterauftragsverarbeiter, Zahlungs- und Versanddienstleister, Kommunikationsdienste sowie die oben genannten Analyse- und Marketinganbieter sein. Soweit Daten außerhalb des EWR verarbeitet werden, stützen die jeweiligen Anbieter Übermittlungen nach ihren Angaben auf die nach der DSGVO vorgesehenen Mechanismen, insbesondere Angemessenheitsbeschlüsse, das EU-US Data Privacy Framework, soweit anwendbar, oder Standardvertragsklauseln.</p>
 
           {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Speicherdauer</h2>
-          <p>Wir speichern personenbezogene Daten nur so lange, wie es für die jeweiligen Zwecke erforderlich ist oder gesetzliche Aufbewahrungsfristen bestehen. Danach werden die Daten gelöscht oder eingeschränkt verarbeitet.</p>
+          <p>Wir speichern personenbezogene Daten nur so lange, wie dies für den jeweiligen Zweck erforderlich ist oder gesetzliche Aufbewahrungspflichten bestehen. Danach werden die Daten gelöscht oder ihre Verarbeitung wird eingeschränkt. Die Speicherdauer bei externen Anbietern richtet sich zusätzlich nach deren jeweiligen Datenschutzbestimmungen.</p>
 
-          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Ihre Rechte</h2>
-          <p>Sie haben uns gegenüber folgende Rechte hinsichtlich der Sie betreffenden personenbezogenen Daten:</p>
-          <ul>
-            <li>Recht auf Auskunft (Art. 15 DSGVO)</li>
-            <li>Recht auf Berichtigung (Art. 16 DSGVO)</li>
-            <li>Recht auf Löschung (Art. 17 DSGVO)</li>
-            <li>Recht auf Einschränkung der Verarbeitung (Art. 18 DSGVO)</li>
-            <li>Recht auf Datenübertragbarkeit (Art. 20 DSGVO)</li>
-            <li>Recht auf Widerruf erteilter Einwilligungen mit Wirkung für die Zukunft (Art. 7 Abs. 3 DSGVO)</li>
-          </ul>
-          <p>Zur Ausübung Ihrer Rechte genügt eine formlose Nachricht an <a href="mailto:{{ contact_email | escape }}">{{ contact_email | escape }}</a>.</p>
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Ihre Datenschutzrechte</h2>
+          <p>Unter den gesetzlichen Voraussetzungen haben Sie insbesondere das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16 DSGVO), Löschung (Art. 17 DSGVO), Einschränkung der Verarbeitung (Art. 18 DSGVO), Datenübertragbarkeit (Art. 20 DSGVO) sowie den Widerruf erteilter Einwilligungen mit Wirkung für die Zukunft (Art. 7 Abs. 3 DSGVO).</p>
+          <p>Zur Ausübung Ihrer Rechte können Sie sich an <a href="mailto:{{ contact_email | escape }}">{{ contact_email | escape }}</a> wenden.</p>
 
           {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Widerspruchsrecht</h2>
-          <p><strong>Sie haben das Recht, aus Gründen, die sich aus Ihrer besonderen Situation ergeben, jederzeit gegen die Verarbeitung Sie betreffender personenbezogener Daten, die aufgrund von Art. 6 Abs. 1 lit. f DSGVO erfolgt, Widerspruch einzulegen (Art. 21 Abs. 1 DSGVO). Werden Ihre Daten zum Zweck der Direktwerbung verarbeitet, haben Sie das Recht, jederzeit ohne Angabe von Gründen Widerspruch einzulegen; die Daten werden anschließend nicht mehr zu diesem Zweck verwendet (Art. 21 Abs. 2 und 3 DSGVO).</strong></p>
+          <p><strong>Sie haben nach Art. 21 DSGVO das Recht, aus Gründen, die sich aus Ihrer besonderen Situation ergeben, gegen eine Verarbeitung auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO Widerspruch einzulegen. Gegen die Verarbeitung personenbezogener Daten zum Zweck der Direktwerbung können Sie jederzeit ohne Angabe von Gründen Widerspruch einlegen.</strong></p>
 
-          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Beschwerderecht bei der Aufsichtsbehörde</h2>
-          <p>Unbeschadet anderweitiger Rechtsbehelfe haben Sie das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren, insbesondere in dem Mitgliedstaat Ihres Aufenthaltsorts, Ihres Arbeitsplatzes oder des Orts des mutmaßlichen Verstoßes (Art. 77 DSGVO).</p>
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Beschwerderecht</h2>
+          <p>Sie haben nach Art. 77 DSGVO das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren, insbesondere in dem Mitgliedstaat Ihres gewöhnlichen Aufenthalts, Ihres Arbeitsplatzes oder des Orts des mutmaßlichen Verstoßes.</p>
 
-          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Erforderlichkeit der Bereitstellung</h2>
-          <p>Die Bereitstellung Ihrer personenbezogenen Daten ist weder gesetzlich noch vertraglich vorgeschrieben. Ohne die zur Vertragsabwicklung erforderlichen Angaben können wir einen Vertrag mit Ihnen jedoch nicht schließen und nicht erfüllen. Eine automatisierte Entscheidungsfindung einschließlich Profiling findet nicht statt.</p>
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Erforderlichkeit von Angaben und automatisierte Entscheidungen</h2>
+          <p>Bestimmte Angaben sind für Bestellung, Zahlung und Lieferung erforderlich. Ohne diese Daten kann der jeweilige Vertrag nicht oder nicht vollständig durchgeführt werden. Wir treffen selbst keine ausschließlich auf automatisierter Verarbeitung beruhenden Entscheidungen, die Ihnen gegenüber rechtliche Wirkung entfalten oder Sie in ähnlich erheblicher Weise beeinträchtigen. Einzelne Zahlungsdienstleister, insbesondere bei Rechnungskauf oder vergleichbaren Zahlungsarten, können jedoch in eigener Verantwortung automatisierte Risiko-, Identitäts- oder Bonitätsprüfungen durchführen. Analyse- und Marketinganbieter können nach Ihrer Einwilligung Nutzungsprofile für Mess- und Werbezwecke bilden.</p>
 
-          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. SSL-/TLS-Verschlüsselung</h2>
-          <p>Diese Website nutzt aus Sicherheitsgründen eine SSL- bzw. TLS-Verschlüsselung. Eine verschlüsselte Verbindung erkennen Sie daran, dass die Adresszeile des Browsers von „http://“ auf „https://“ wechselt.</p>
+          {%- assign dsg_n = dsg_n | plus: 1 -%}<h2>{{ dsg_n }}. Verschlüsselung</h2>
+          <p>Unser Shop wird verschlüsselt über HTTPS übertragen. Dadurch werden Daten, die Sie an uns übermitteln, während der Übertragung gegen unbefugtes Mitlesen geschützt.</p>
         </div>
 
       {%- when 'versand' -%}
@@ -127,8 +130,8 @@
 
           <h2>Lieferzeiten</h2>
           <div class="legal-document__facts">
-            <div><span>Deutschland</span><strong>ca. 2–4 Werktage</strong></div>
-            <div><span>EU</span><strong>ca. 7–10 Werktage</strong></div>
+            <div><span>Deutschland</span><strong>2–4 Werktage</strong></div>
+            <div><span>EU</span><strong>7–10 Werktage</strong></div>
           </div>
           <p>Bei Zahlung per Vorkasse beginnt die Lieferzeit nach Eingang der Zahlung. Werktage sind Montag bis Freitag, gesetzliche Feiertage ausgenommen. Sollte es im Einzelfall zu Verzögerungen kommen, informieren wir dich schnellstmöglich.</p>
 
@@ -143,30 +146,30 @@
         <p class="meta meta--muted">VENT CELESTE VERSPRECHEN</p>
         <h1 class="h2 legal-document__title">30 Tage zufrieden oder Geld zurück</h1>
         <div class="legal-document__content rte">
-          <p>Wir möchten, dass du deinen VENT CELESTE Duft gerne trägst. Deshalb bieten wir dir zusätzlich zu deinen gesetzlichen Rechten eine freiwillige 30-Tage-Zufriedenheitsgarantie.</p>
+          <p>Zusätzlich zu Ihren gesetzlichen Rechten gewährt Ihnen VENT CELESTE für Ihre erste Bestellung die nachfolgende freiwillige 30-Tage-Zufriedenheitsgarantie.</p>
 
-          <h2>1. Geltungsbereich</h2>
-          <p>Die Garantie gilt einmalig für die erste Bestellung eines Kunden und für Lieferungen innerhalb unseres Liefergebiets. Sie gilt für alle Duftprodukte dieser ersten Bestellung.</p>
+          <h2>1. Gesetzliche Rechte bleiben unberührt</h2>
+          <p>Ihre gesetzlichen Rechte bei Mängeln sowie Ihr gesetzliches Widerrufsrecht, soweit es im Einzelfall besteht, werden durch diese Garantie nicht eingeschränkt. Die Inanspruchnahme Ihrer gesetzlichen Mängelrechte ist unentgeltlich.</p>
 
-          <h2>2. Dauer</h2>
-          <p>Die Garantiefrist beträgt 30 Tage ab Erhalt der Bestellung. Bei einer auf mehrere Sendungen aufgeteilten Bestellung beginnt die Frist mit Erhalt der letzten zur Bestellung gehörenden Ware.</p>
-
-          <h2>3. Testen erlaubt</h2>
-          <p>Die Parfums dürfen innerhalb der Garantiefrist geöffnet und getestet werden. Wenn du mit einem oder mehreren Düften aus deiner ersten Bestellung nicht zufrieden bist, kannst du diese zurücksenden. Du kannst auch alle Düfte deiner ersten Bestellung zurückgeben.</p>
-
-          <h2>4. Rücksendung</h2>
-          <p>Bitte informiere uns vor der Rücksendung per E-Mail an <a href="mailto:{{ contact_email | escape }}">{{ contact_email | escape }}</a>. Die Ware ist an folgende Adresse zurückzusenden:</p>
-          <p><strong>{{ company_name | escape }}</strong><br>{{ company_address | escape }}</p>
-          <p>Die unmittelbaren Kosten der Rücksendung trägt der Kunde.</p>
-
-          <h2>5. Erstattung</h2>
-          <p>Nach Eingang der zurückgesendeten Produkte erstatten wir den tatsächlich für diese Produkte gezahlten Kaufpreis über das ursprünglich verwendete Zahlungsmittel. Im Rahmen dieser freiwilligen Garantie werden die ursprünglichen Versandkosten nicht erstattet. Gesetzliche Ansprüche, insbesondere im Rahmen eines wirksamen Widerrufs, bleiben davon unberührt.</p>
-
-          <h2>6. Verhältnis zu gesetzlichen Rechten</h2>
-          <p>Diese Zufriedenheitsgarantie ist eine freiwillige zusätzliche Leistung. Deine gesetzlichen Rechte, insbesondere dein gesetzliches Widerrufsrecht und deine gesetzlichen Mängelrechte, werden durch diese Garantie nicht eingeschränkt.</p>
-
-          <h2>Garantiegeber</h2>
+          <h2>2. Garantiegeber</h2>
           <p><strong>{{ company_name | escape }}</strong><br>{{ company_address | escape }}<br>E-Mail: <a href="mailto:{{ contact_email | escape }}">{{ contact_email | escape }}</a></p>
+
+          <h2>3. Erfasste Waren und räumlicher Geltungsbereich</h2>
+          <p>Die Garantie gilt einmalig für alle VENT CELESTE Duftprodukte der ersten Bestellung eines Kunden. Sie gilt für Bestellungen, die innerhalb unseres Liefergebiets in Deutschland oder in einen Mitgliedstaat der Europäischen Union geliefert wurden.</p>
+
+          <h2>4. Garantiedauer</h2>
+          <p>Die Garantiefrist beträgt 30 Tage ab Erhalt der Bestellung. Wird eine Bestellung in mehreren Sendungen geliefert, beginnt die Garantiefrist mit Erhalt der letzten zur Bestellung gehörenden Ware.</p>
+
+          <h2>5. Öffnen und Testen ist erlaubt</h2>
+          <p>Die Duftprodukte dürfen innerhalb der Garantiefrist geöffnet und getestet werden. Wenn Sie mit einem oder mehreren Düften aus Ihrer ersten Bestellung nicht zufrieden sind, können Sie diese zurücksenden. Sie können auch alle Duftprodukte Ihrer ersten Bestellung zurückgeben.</p>
+
+          <h2>6. So machen Sie die Garantie geltend</h2>
+          <p>Schreiben Sie uns innerhalb der 30-tägigen Garantiefrist an <a href="mailto:{{ contact_email | escape }}">{{ contact_email | escape }}</a> und nennen Sie bitte Ihre Bestellnummer sowie die Produkte, die Sie zurückgeben möchten. Senden Sie die betreffenden Produkte anschließend an:</p>
+          <p><strong>{{ company_name | escape }}</strong><br>{{ company_address | escape }}</p>
+          <p>Die unmittelbaren Kosten der Rücksendung im Rahmen dieser freiwilligen Garantie trägt der Kunde.</p>
+
+          <h2>7. Erstattung</h2>
+          <p>Nach Eingang der zurückgesendeten Produkte erstatten wir den tatsächlich für diese Produkte gezahlten Kaufpreis grundsätzlich über das bei der Bestellung verwendete Zahlungsmittel. Die ursprünglichen Versandkosten werden im Rahmen dieser freiwilligen Garantie nicht erstattet. Davon unberührt bleiben Erstattungsansprüche, die Ihnen aufgrund eines wirksamen gesetzlichen Widerrufs oder anderer gesetzlicher Rechte zustehen.</p>
         </div>
 
       {%- when 'widerruf' -%}
@@ -183,9 +186,10 @@
           E-Mail: <a href="mailto:{{ contact_email | escape }}">{{ contact_email | escape }}</a></p>
           <p>mittels einer eindeutigen Erklärung (z. B. ein mit der Post versandter Brief oder eine E-Mail) über Ihren Entschluss, diesen Vertrag zu widerrufen, informieren. Sie können dafür das unten aufgeführte Muster-Widerrufsformular verwenden, das jedoch nicht vorgeschrieben ist.</p>
 
-          {%- if settings.withdrawal_url != blank -%}
-            <p>Sie können Ihr Widerrufsrecht auch online über unsere elektronische Widerrufsfunktion ausüben. Wenn Sie diese Online-Funktion nutzen, erhalten Sie unverzüglich auf einem dauerhaften Datenträger (z. B. per E-Mail) eine Eingangsbestätigung mit Informationen zum Inhalt Ihrer Widerrufserklärung sowie dem Datum und der Uhrzeit ihres Eingangs.</p>
-            <p><a class="button button--primary legal-document__withdrawal" href="{{ settings.withdrawal_url }}">Vertrag widerrufen</a></p>
+          {%- assign withdrawal_target = settings.withdrawal_url | strip -%}
+          {%- if withdrawal_target != blank -%}
+            <p>Sie können Ihr Widerrufsrecht auch über die von uns bereitgestellte elektronische Widerrufsfunktion ausüben. Nach der Übermittlung über diese Funktion erhalten Sie eine elektronische Eingangsbestätigung mit dem Inhalt Ihrer Widerrufserklärung sowie Datum und Uhrzeit des Eingangs.</p>
+            <p><a class="button button--primary legal-document__withdrawal" href="{{ withdrawal_target }}">Vertrag widerrufen</a></p>
           {%- endif -%}
 
           <p>Zur Wahrung der Widerrufsfrist reicht es aus, dass Sie die Mitteilung über die Ausübung des Widerrufsrechts vor Ablauf der Widerrufsfrist absenden.</p>
@@ -234,7 +238,7 @@
           <p>Die im Shop verfügbaren Zahlungsmethoden werden im Checkout angezeigt. Je nach Verfügbarkeit können insbesondere Apple Pay, PayPal, Klarna, Kreditkarte und Vorkasse angeboten werden. Bei Nutzung eines externen Zahlungsdienstleisters können ergänzend dessen Bedingungen gelten. Bei Vorkasse wird die Bestellung nach Zahlungseingang bearbeitet.</p>
 
           <h2>6. Lieferung</h2>
-          <p>Die Lieferung erfolgt innerhalb Deutschlands sowie in Mitgliedstaaten der Europäischen Union. Die reguläre Lieferzeit beträgt innerhalb Deutschlands ca. 2–4 Werktage und innerhalb der EU ca. 7–10 Werktage. Bei Vorkasse beginnt die Lieferzeit nach Zahlungseingang.</p>
+          <p>Die Lieferung erfolgt innerhalb Deutschlands sowie in Mitgliedstaaten der Europäischen Union. Die reguläre Lieferzeit beträgt innerhalb Deutschlands 2–4 Werktage und innerhalb der EU 7–10 Werktage. Bei Vorkasse beginnt die Lieferzeit nach Zahlungseingang.</p>
 
           <h2>7. Eigentumsvorbehalt</h2>
           <p>Die Ware bleibt bis zur vollständigen Zahlung unser Eigentum.</p>
@@ -283,9 +287,6 @@
           <p><strong>{{ company_name | escape }}</strong><br>{{ company_address | escape }}<br>
           E-Mail: <a href="mailto:{{ contact_email | escape }}">{{ contact_email | escape }}</a><br>
           Telefon: <a href="tel:{{ contact_phone | remove: ' ' | escape }}">{{ contact_phone | escape }}</a></p>
-
-          <h2>Online-Streitbeilegung und Verbraucherschlichtung</h2>
-          <p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
         </div>
 
       {%- else -%}
