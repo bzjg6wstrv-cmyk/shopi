@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#141B22">
+<title>TWISTLOCK — Dispo</title>
+<link rel="stylesheet" href="/stil.css">
+</head>
+<body>
+<div class="wrap wide">
+  <div class="top">
+    <div class="brand">TWIST<span>LOCK</span></div>
+    <div class="who" id="wer"></div>
+    <a class="exit" href="#" id="raus">Abmelden</a>
+  </div>
+
+  <div id="meldungen"></div>
+
+  <div class="daybar">
+    <div class="d" id="tagText"></div>
+    <button class="btn ghost small" id="vor">‹ Tag</button>
+    <button class="btn ghost small" id="zur">Tag ›</button>
+    <button class="btn small" id="neu">+ Auftrag</button>
+  </div>
+
+  <div id="liste"></div>
+  <div id="formular"></div>
+
+  <div class="form" style="border-top:1px solid var(--rule);margin-top:20px">
+    <h2>Einstellungen</h2>
+    <div class="two">
+      <div class="fld"><label>Fahrzeit Standard (Min.)</label><input id="eFz" type="number"></div>
+      <div class="fld"><label>Rüstzeit (Min.)</label><input id="eRz" type="number"></div>
+    </div>
+    <div class="two">
+      <div class="fld"><label>Grün ab Puffer (Min.)</label><input id="eGr" type="number"></div>
+      <div class="fld"><label>Meldung ab Verzug (Min.)</label><input id="eVs" type="number"></div>
+    </div>
+    <div class="two">
+      <div class="fld"><label>Freie Wartezeit (Min.)</label><input id="eFr" type="number"></div>
+      <div class="fld"><label>Warnung ab Abstand (km)</label><input id="eKm" type="number"></div>
+    </div>
+    <button class="btn ghost small" id="eSpeichern">Einstellungen speichern</button>
+
+    <h2 style="margin-top:24px">Fahrer</h2>
+    <div id="fahrerListe"></div>
+    <div class="two" style="margin-top:8px">
+      <div class="fld"><label>Neuer Fahrer</label><input id="nfName" placeholder="Name"></div>
+      <div class="fld"><label>PIN</label><input id="nfPin" inputmode="numeric" placeholder="1111"></div>
+    </div>
+    <button class="btn ghost small" id="nfAdd">Fahrer anlegen</button>
+    <p class="hint" style="margin-top:14px">
+      Der Fahrer meldet sich mit genau diesem Namen und der PIN an.
+    </p>
+  </div>
+</div>
+
+<script>
+"use strict";
+const uhr = iso => new Date(iso).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
+const el  = (t,c,h)=>{const n=document.createElement(t); if(c)n.className=c; if(h!==undefined)n.innerHTML=h; return n;};
+const tagText = d => new Date(d+"T12:00:00").toLocaleDateString("de-DE",
+                   {weekday:"long", day:"2-digit", month:"2-digit"});
+
+let tag = new Date().toLocaleDateString("sv-SE");
+let d = null, bearbeite = null, letzteMeldung = null;
+
+function verschiebe(n){
+  const x = new Date(tag+"T12:00:00"); x.setDate(x.getDate()+n);
+  tag = x.toLocaleDateString("sv-SE"); bearbeite = null; laden();
+}
+document.getElementById("vor").onclick = () => verschiebe(-1);
+document.getElementById("zur").onclick = () => verschiebe(1);
+document.getElementById("neu").onclick = () => { bearbeite = {}; zeichne(); };
+
+async function laden(){
+  const r = await fetch("/api/dispo/uebersicht?von="+tag+"&bis="+tag);
+  if (r.status === 401) { location.href = "/"; return; }
+  d = await r.json();
+  eFz.value = d.einst.fahrzeitStandard; eRz.value = d.einst.ruestzeit;
+  eGr.value = d.einst.gruenAb;          eVs.value = d.einst.verspaetungAb;
+  eFr.value = d.einst.freiMin;         eKm.value = d.einst.maxAbstandKm;
+  zeichne();
+  pieps();
+}
+
+/* ---------- Ton und Hinweis bei neuer Meldung ---------- */
+function pieps(){
+  const neuste = d.meldungen[0];
+  if (!neuste) return;
+  if (letzteMeldung === null) { letzteMeldung = neuste.id; return; }
+  if (neuste.id === letzteMeldung) return;
+  letzteMeldung = neuste.id;
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.frequency.value = 880; o.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(.18, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + .5);
+    o.start(); o.stop(ctx.currentTime + .5);
+  } catch {}
+  if ("Notification" in window && Notification.permission === "granted")
+    new Notification("TWISTLOCK", { body: neuste.text });
+}
+if ("Notification" in window && Notification.permission === "default")
+  document.addEventListener("click", () => Notification.requestPermission(), { once:true });
+
+/* ---------- Aufbau ---------- */
+function zeichne(){
+  document.getElementById("tagText").textContent = tagText(tag);
+
+  const M = document.getElementById("meldungen");
+  M.innerHTML = "";
+  const offen = d.meldungen.filter(m => !m.gelesen).slice(0,5);
+  offen.forEach(m => M.appendChild(el("div","alert"+(m.art==="warn"?" warn":""),
+    '<div class="tm">'+uhr(m.zeit)+'</div><div>'+m.text+'</div>')));
+  if (offen.length) {
+    const b = el("button","btn ghost small","Meldungen als gelesen markieren");
+    b.style.margin = "8px 16px";
+    b.onclick = async () => { await fetch("/api/dispo/gelesen",{method:"POST"}); laden(); };
+    M.appendChild(b);
+  }
+
+  const L = document.getElementById("liste");
+  L.innerHTML = "";
+  if (!d.auftraege.length) L.appendChild(el("div","empty","Für diesen Tag ist noch nichts geplant."));
+
+  d.auftraege.forEach(a => {
+    const r = a.rechnung;
+    const kl = a.status === "entwurf" ? "entwurf"
+             : a.status === "fertig"  ? "fertig" : r.ampel;
+    const t = el("div","tour "+kl);
+    let meta;
+    if (a.status === "fertig")
+      meta = "Abgegeben " + uhr(a.abgabeZeit) +
+             (r.verzug > 0 ? " · " + r.verzug + " Min. zu spät" : " · pünktlich") +
+             (r.wartetSeit != null ? " · Wartezeit " + r.wartetSeit + " Min."
+               + (r.berechenbar > 0 ? " (" + r.berechenbar + " berechenbar)" : "") : "");
+    else if (a.status === "angekommen")
+      meta = "Wartet seit " + uhr(a.ankunftZeit) + " · " + (r.wartetSeit || 0) + " Min."
+             + (r.berechenbar > 0 ? " · " + r.berechenbar + " Min. berechenbar" : "");
+    else if (a.status === "entwurf")
+      meta = "Entwurf — der Fahrer sieht diesen Auftrag noch nicht";
+    else
+      meta = "Ankunft " + uhr(r.ankunft) + " · " +
+             (r.puffer >= 0 ? "Puffer " + r.puffer + " Min." : "Rückstand " + Math.abs(r.puffer) + " Min.") +
+             " · los bis " + uhr(r.losBis);
+
+    const fahrer = (d.fahrer.find(f => f.id === a.fahrerId) || {}).name || "kein Fahrer";
+    t.innerHTML =
+      '<div class="tt num">'+a.termin+'</div><div class="body">'+
+      '<div class="ort">'+a.zielOrt+' · '+a.nummer+'</div>'+
+      '<div class="meta">'+meta+'</div>'+
+      '<div class="meta">'+(a.container||"—")+' · '+(a.chassis||"—")+' · '+fahrer+'</div></div>';
+
+    const tools = el("div","tools");
+    if (a.status === "entwurf") {
+      const b = el("button","btn small","An Fahrer senden");
+      b.onclick = async () => { await speichere({ id:a.id, status:"freigegeben" }); };
+      tools.appendChild(b);
+    }
+    if (a.ankunftZeit) {
+      const pdf = el("a","btn ghost small","Wartezeitprotokoll");
+      pdf.href = "/wartezeit/" + a.id; pdf.target = "_blank";
+      tools.appendChild(pdf);
+    }
+    const nt = el("button","btn ghost small","Zeiten nachtragen");
+    nt.onclick = () => nachtragen(a);
+    tools.appendChild(nt);
+    const kp = el("button","btn ghost small","Kopieren");
+    kp.onclick = () => {
+      const k = {...a};
+      delete k.id; delete k.nummer; delete k.abholZeit; delete k.ankunftZeit;
+      delete k.abgabeZeit; delete k.fotoAbhol; delete k.fotoAbgabe; delete k.rechnung;
+      k.status = "entwurf";
+      bearbeite = k; zeichne(); window.scrollTo(0, document.body.scrollHeight);
+    };
+    tools.appendChild(kp);
+    const be = el("button","btn ghost small","Ändern");
+    be.onclick = () => { bearbeite = {...a}; zeichne(); window.scrollTo(0,document.body.scrollHeight); };
+    tools.appendChild(be);
+    const lo = el("button","btn ghost small","Löschen");
+    lo.onclick = async () => {
+      if (!confirm("Auftrag "+a.nummer+" wirklich löschen?")) return;
+      await fetch("/api/dispo/loeschen",{method:"POST",headers:{"Content-Type":"application/json"},
+                                         body:JSON.stringify({id:a.id})});
+      laden();
+    };
+    tools.appendChild(lo);
+    t.querySelector(".body").appendChild(tools);
+
+    const weit = [a.abholWeit && "Abholung " + a.abholWeit + " km entfernt",
+                  a.ankunftWeit && "Ankunft " + a.ankunftWeit + " km entfernt",
+                  a.abgabeWeit && "Abgabe " + a.abgabeWeit + " km entfernt"].filter(Boolean);
+    if (weit.length || a.nachgetragen) {
+      const hw = el("div","meta");
+      hw.style.color = "var(--rot)"; hw.style.fontWeight = "600";
+      hw.textContent = weit.concat(a.nachgetragen ? ["Zeiten nachgetragen von " + a.nachgetragen.von] : []).join(" · ");
+      t.querySelector(".body").appendChild(hw);
+    }
+    if (a.fotoAbhol || a.fotoAbgabe) {
+      const th = el("div","thumbs");
+      [a.fotoAbhol, a.fotoAbgabe].filter(Boolean).forEach(f => {
+        const link = document.createElement("a");
+        link.href = "/foto/"+f; link.target = "_blank";
+        link.innerHTML = '<img src="/foto/'+f+'" alt="">';
+        th.appendChild(link);
+      });
+      t.querySelector(".body").appendChild(th);
+    }
+    L.appendChild(t);
+  });
+
+  zeichneFormular();
+  zeichneFahrer();
+}
+
+function zeichneFormular(){
+  const F = document.getElementById("formular");
+  F.innerHTML = "";
+  if (!bearbeite) return;
+  const a = bearbeite;
+  const opt = d.fahrer.map(f =>
+    '<option value="'+f.id+'"'+(a.fahrerId===f.id?" selected":"")+'>'+f.name+'</option>').join("");
+
+  const box = el("div","form");
+  box.innerHTML =
+    '<h2>'+(a.id ? "Auftrag "+a.nummer+" ändern" : "Neuer Auftrag")+'</h2>'+
+    fld("Datum","datum","date",a.datum||tag)+
+    '<div class="two">'+fld("Kunde","kunde","text",a.kunde||"")+
+                        fld("Fahrer","fahrerId","select",opt)+'</div>'+
+    '<div class="two">'+fld("Abholort","abholOrt","text",a.abholOrt||"Bremen")+
+                        fld("Abholung ab","abholAb","time",a.abholAb||"05:00")+'</div>'+
+    '<div class="two">'+fld("Zielort","zielOrt","text",a.zielOrt||"Walsrode")+
+                        fld("Termin beim Kunden","termin","time",a.termin||"06:30")+'</div>'+
+    '<div class="two">'+fld("Container","container","text",a.container||"")+
+                        fld("Siegel","siegel","text",a.siegel||"")+'</div>'+
+    '<div class="two">'+fld("Chassis","chassis","text",a.chassis||"")+
+                        fld("Zugmaschine","zugmaschine","text",a.zugmaschine||"")+'</div>'+
+    '<div class="two">'+fld("Fahrzeit (Min.)","fahrzeitMin","number",a.fahrzeitMin||d.einst.fahrzeitStandard)+
+                        fld("Rüstzeit (Min.)","ruestzeitMin","number",a.ruestzeitMin ?? d.einst.ruestzeit)+'</div>'+
+    '<div class="two">'+fld("Freie Wartezeit (Min.)","freiMin","number",a.freiMin ?? d.einst.freiMin)+
+                        '<div class="fld"></div></div>'+
+    '<div class="fld"><label>Notiz für den Fahrer (erscheint groß in seiner App)</label>'+
+    '<input data-f="notiz" type="text" value="'+String(a.notiz||"").replace(/"/g,"&quot;")+
+    '" placeholder="z. B. Tor 3, nicht Tor 1"></div>'+
+    '<p class="hint">Aufträge kannst du für jeden Tag im Voraus anlegen. Der Fahrer sieht sie erst, '+
+    'wenn du auf „An Fahrer senden“ drückst — und immer nur den heutigen Tag.</p>';
+
+  const sp = el("button","btn","Speichern");
+  sp.style.marginTop = "10px";
+  sp.onclick = async () => {
+    const w = {};
+    box.querySelectorAll("[data-f]").forEach(i => {
+      let v = i.value;
+      if (i.type === "number") v = v === "" ? null : Number(v);
+      w[i.dataset.f] = v;
+    });
+    if (a.id) w.id = a.id;
+    await speichere(w);
+  };
+  const ab = el("button","btn ghost small","Abbrechen");
+  ab.style.marginTop = "8px";
+  ab.onclick = () => { bearbeite = null; zeichne(); };
+  box.appendChild(sp); box.appendChild(ab);
+  F.appendChild(box);
+}
+
+function fld(label, name, typ, wert){
+  if (typ === "select")
+    return '<div class="fld"><label>'+label+'</label><select data-f="'+name+'">'+
+           '<option value="">— kein Fahrer —</option>'+wert+'</select></div>';
+  return '<div class="fld"><label>'+label+'</label>'+
+         '<input data-f="'+name+'" type="'+typ+'" value="'+(wert==null?"":String(wert).replace(/"/g,"&quot;"))+'"></div>';
+}
+
+async function nachtragen(a){
+  const frage = (t, alt) => {
+    const v = prompt(t + " (HH:MM, leer lassen = nicht ändern)",
+      alt ? uhr(alt) : "");
+    return v && /^\d{1,2}:\d{2}$/.test(v.trim()) ? v.trim().padStart(5,"0") : null;
+  };
+  const abhol   = frage("Abholung Auftrag " + a.nummer, a.abholZeit);
+  const ankunft = frage("Ankunft am Ziel", a.ankunftZeit);
+  const abgabe  = frage("Abgabe", a.abgabeZeit);
+  if (!abhol && !ankunft && !abgabe) return;
+  await fetch("/api/dispo/nachtragen", { method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ id:a.id, abhol, ankunft, abgabe }) });
+  laden();
+}
+
+async function speichere(w){
+  const r = await fetch("/api/dispo/auftrag",{method:"POST",
+    headers:{"Content-Type":"application/json"}, body:JSON.stringify(w)});
+  if (!r.ok) { alert("Speichern hat nicht geklappt."); return; }
+  bearbeite = null; await laden();
+}
+
+function zeichneFahrer(){
+  const F = document.getElementById("fahrerListe");
+  F.innerHTML = "";
+  d.fahrer.forEach(f => {
+    const r = el("div","two");
+    r.style.alignItems = "flex-end";
+    r.innerHTML = '<div class="fld" style="margin-bottom:6px"><label>'+f.name+'</label>'+
+                  '<input placeholder="neue PIN" inputmode="numeric" id="p_'+f.id+'"></div>';
+    const b = el("button","btn ghost small","PIN setzen");
+    b.style.marginBottom = "6px";
+    b.onclick = async () => {
+      const v = document.getElementById("p_"+f.id).value.trim();
+      if (!v) return;
+      await fetch("/api/dispo/fahrer",{method:"POST",headers:{"Content-Type":"application/json"},
+                                       body:JSON.stringify({id:f.id,pin:v})});
+      alert("PIN geändert.");
+      laden();
+    };
+    r.appendChild(b);
+    F.appendChild(r);
+  });
+}
+
+document.getElementById("eSpeichern").onclick = async () => {
+  await fetch("/api/dispo/einstellungen",{method:"POST",headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ fahrzeitStandard:+eFz.value, ruestzeit:+eRz.value,
+                           gruenAb:+eGr.value, verspaetungAb:+eVs.value,
+                           freiMin:+eFr.value, maxAbstandKm:+eKm.value })});
+  laden();
+};
+document.getElementById("nfAdd").onclick = async () => {
+  if (!nfName.value.trim()) return;
+  await fetch("/api/dispo/fahrer",{method:"POST",headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ neu:nfName.value.trim(), pin:nfPin.value.trim()||"1111" })});
+  nfName.value = ""; nfPin.value = ""; laden();
+};
+document.getElementById("raus").onclick = async e => {
+  e.preventDefault(); await fetch("/api/abmelden"); location.href = "/";
+};
+
+fetch("/api/ich").then(r => r.json()).then(x => wer.textContent = x.name);
+laden();
+setInterval(() => { if (!bearbeite) laden(); }, 30000);
+</script>
+</body>
+</html>

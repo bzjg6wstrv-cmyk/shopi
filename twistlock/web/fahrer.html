@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#141B22">
+<title>TWISTLOCK</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="stylesheet" href="/einfach.css">
+</head>
+<body>
+<div class="shell"><div id="screen"><div class="laedt">…</div></div></div>
+<input type="file" accept="image/*" capture="environment" id="cam"
+       style="position:absolute;width:0;height:0;opacity:0">
+
+<script src="/sprache.js"></script>
+<script>
+"use strict";
+const V = document.getElementById("screen");
+let daten = null, laeuft = false, gps = null, vollbild = null, offen = 0;
+
+const uhr = iso => new Date(iso).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
+const lueckig = s => (s||"").replace(/[\s-]/g,"").replace(/(.{4})/g,"$1 ").trim();
+
+/* ============ Offline-Warteschlange ============================
+   Ohne Netz wird alles auf dem Handy zwischengelagert und später
+   von allein gesendet. Nichts geht verloren.                     */
+const DB = "twistlock", LADEN = "warteschlange";
+function db(){
+  return new Promise((ok, nein) => {
+    const a = indexedDB.open(DB, 1);
+    a.onupgradeneeded = () => a.result.createObjectStore(LADEN, { keyPath:"id", autoIncrement:true });
+    a.onsuccess = () => ok(a.result);
+    a.onerror   = () => nein(a.error);
+  });
+}
+async function inWarteschlange(eintrag){
+  const d = await db();
+  await new Promise(ok => {
+    const t = d.transaction(LADEN,"readwrite");
+    t.objectStore(LADEN).add(eintrag); t.oncomplete = ok;
+  });
+  await zaehleOffen();
+}
+async function warteschlange(){
+  const d = await db();
+  return new Promise(ok => {
+    const a = d.transaction(LADEN,"readonly").objectStore(LADEN).getAll();
+    a.onsuccess = () => ok(a.result || []); a.onerror = () => ok([]);
+  });
+}
+async function ausWarteschlange(id){
+  const d = await db();
+  await new Promise(ok => {
+    const t = d.transaction(LADEN,"readwrite");
+    t.objectStore(LADEN).delete(id); t.oncomplete = ok;
+  });
+  await zaehleOffen();
+}
+async function zaehleOffen(){ try { offen = (await warteschlange()).length; } catch { offen = 0; } }
+
+async function warteschlangeSenden(){
+  let liste = [];
+  try { liste = await warteschlange(); } catch { return; }
+  for (const e of liste) {
+    try {
+      const r = await fetch("/api/fahrer/ereignis", {
+        method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(e.nutzlast) });
+      if (r.ok || r.status === 404 || r.status === 400) await ausWarteschlange(e.id);
+      else break;                       // Server hakt — später nochmal
+    } catch { break; }                  // kein Netz — später nochmal
+  }
+}
+window.addEventListener("online", () => warteschlangeSenden().then(holen));
+setInterval(() => { if (navigator.onLine) warteschlangeSenden(); }, 45000);
+
+/* ============ Standort ============ */
+if (navigator.geolocation) {
+  navigator.geolocation.watchPosition(
+    p => gps = { lat:p.coords.latitude, lon:p.coords.longitude },
+    () => {}, { enableHighAccuracy:true, maximumAge:30000, timeout:20000 });
+  setInterval(() => {
+    if (gps && navigator.onLine) fetch("/api/position",{method:"POST",
+      headers:{"Content-Type":"application/json"}, body:JSON.stringify(gps)}).catch(()=>{});
+  }, 60000);
+}
+
+/* ============ Foto ============ */
+const cam = document.getElementById("cam");
+let camCb = null;
+cam.addEventListener("change", () => {
+  const f = cam.files && cam.files[0]; cam.value = "";
+  if (!f || !camCb) { camCb = null; return; }
+  const cb = camCb; camCb = null;
+  const leser = new FileReader();
+  leser.onload = () => {
+    const bild = new Image();
+    bild.onload = () => {
+      const k = Math.min(1, 1400 / Math.max(bild.width, bild.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(bild.width*k); c.height = Math.round(bild.height*k);
+      c.getContext("2d").drawImage(bild,0,0,c.width,c.height);
+      cb(c.toDataURL("image/jpeg", 0.72));
+    };
+    bild.onerror = () => cb(leser.result);
+    bild.src = leser.result;
+  };
+  leser.readAsDataURL(f);
+});
+
+/* ============ Daten ============ */
+async function holen(){
+  await zaehleOffen();
+  try {
+    const r = await fetch("/api/fahrer/tag");
+    if (r.status === 401) { location.href = "/"; return; }
+    daten = await r.json();
+  } catch {
+    if (!daten) { V.innerHTML = kopfleiste() + '<div class="warnung">'+W[L].keinnetz+'</div>';
+                  binde(()=>W[L].keinnetz); return; }
+  }
+  neuZeichnen();
+}
+
+/* ============ Buchen ============ */
+async function buchen(auftrag, art){
+  if (laeuft) return;
+  const senden = async foto => {
+    laeuft = true; neuZeichnen();
+    const nutzlast = { auftragId:auftrag.id, art, foto,
+                       lat:gps&&gps.lat, lon:gps&&gps.lon };
+    try {
+      const r = await fetch("/api/fahrer/ereignis",{ method:"POST",
+        headers:{"Content-Type":"application/json"}, body:JSON.stringify(nutzlast) });
+      const d = await r.json();
+      laeuft = false;
+      if (!r.ok) { alert(d.fehler || W[L].keinnetz); await holen(); return; }
+      await holen();
+      if (art === "abgabe")        vollbild = { typ:"naechster", n:d.naechster };
+      else if (art === "abholung") vollbild = { typ:"ok", zeit:new Date().toISOString() };
+      neuZeichnen();
+    } catch {
+      // Kein Netz: merken und sofort weiterarbeiten lassen
+      await inWarteschlange({ nutzlast });
+      oertlichVormerken(auftrag, art);
+      laeuft = false;
+      vollbild = { typ:"gemerkt", zeit:new Date().toISOString() };
+      neuZeichnen();
+    }
+  };
+  if (art === "ankunft") return senden(null);
+  camCb = foto => { if (foto) senden(foto); };
+  cam.click();
+}
+
+// Damit der Bildschirm auch ohne Netz sofort weitergeht
+function oertlichVormerken(a, art){
+  const jetzt = new Date().toISOString();
+  if (art === "abholung") { a.status = "geladen";    a.abholZeit   = jetzt; }
+  if (art === "ankunft")  { a.status = "angekommen"; a.ankunftZeit = jetzt; }
+  if (art === "abgabe")   { a.status = "fertig";     a.abgabeZeit  = jetzt; }
+}
+
+/* ============ Bildschirm ============ */
+function neuZeichnen(){
+  if (!daten) return;
+  if (vollbild) return zeichneVollbild();
+  const rest = daten.heute.filter(a => a.status !== "fertig");
+  if (!rest.length) return zeichneFeierabend();
+
+  const a = rest[0], r = a.rechnung || {};
+  const wartet = a.status === "angekommen";
+  const schritt = a.status === "geladen" ? 2 : (wartet ? 3 : 1);
+  const farbe = wartet ? "gruen" : (r.ampel || "gruen");
+  const wort  = wartet ? W[L].wartet : { gruen:W[L].gut, gelb:W[L].knapp, rot:W[L].spaet }[farbe];
+
+  let mitte;
+  if (wartet) {
+    const min = Math.max(0, Math.round((Date.now() - new Date(a.ankunftZeit)) / 60000));
+    mitte = zeile(I.uhr(), W[L].wartetSeit, min + " min", min > (r.frei ?? 60) ? "wichtig" : "");
+  } else if (schritt === 2) {
+    mitte = zeile(I.pfeil(), W[L].ankunft, r.ankunft ? uhr(r.ankunft) : "—");
+  } else {
+    mitte = zeile(I.wecker(), W[L].los, r.losBis ? uhr(r.losBis) : "—", "wichtig");
+  }
+
+  const knopf = { 1:W[L].abholen, 2:W[L].angekommen, 3:W[L].abgeben }[schritt];
+  const art   = { 1:"abholung", 2:"ankunft", 3:"abgabe" }[schritt];
+
+  V.innerHTML = kopfleiste() +
+    (offen ? `<div class="offline">${offen} ${W[L].wartenAufNetz}</div>` : "") +
+    `<div class="signal ${farbe}">${I.ampel(farbe)}<div class="wort">${wort}</div></div>` +
+    zeile(I.pfeil(), "", (a.zielOrt||"").toUpperCase()) +
+    zeile(I.uhr(), W[L].termin, a.termin) +
+    mitte +
+    (a.notiz ? `<div class="notiz">${I.info(28)}<div>${a.notiz}</div></div>` : "") +
+    `<div class="rig">
+       ${a.zugmaschine ? rigZeile(I.lkw(), a.zugmaschine) : ""}
+       ${a.container   ? rigZeile(I.box(), lueckig(a.container)) : ""}
+     </div>` +
+    schritte(schritt) +
+    `<button class="gross-btn ${schritt===2?"gruen":""}" id="tun" ${laeuft?"disabled":""}>
+       ${schritt===2 ? I.haken(44) : I.kamera()} ${laeuft ? W[L].warte : knopf}</button>
+     <a class="klein-btn" href="tel:+490000000000">${I.telefon()} ${W[L].anrufen}</a>
+     <button class="install" id="install" onclick="installieren()"></button>`;
+
+  binde(() => satz(a, r, wort, schritt));
+  const t = document.getElementById("tun");
+  if (t) t.onclick = () => buchen(a, art);
+}
+
+function satz(a, r, wort, schritt){
+  let s = wort + ". " + W[L].termin + " " + a.termin + " " + (a.zielOrt||"") + ". ";
+  if (schritt === 1 && r.losBis) s += W[L].los + " " + uhr(r.losBis) + ". ";
+  if (schritt === 2 && r.ankunft) s += W[L].ankunft + " " + uhr(r.ankunft) + ". ";
+  if (a.notiz) s += a.notiz;
+  return s;
+}
+function zeile(icon, klein, gross, extra){
+  return `<div class="zeile ${extra||""}"><div class="ico">${icon}</div><div class="txt">
+    ${klein ? '<div class="klein">'+klein+'</div>' : ''}
+    <div class="gross num">${gross}</div></div></div>`;
+}
+function rigZeile(icon, code){ return `<div class="r">${icon}<div class="code">${code}</div></div>`; }
+function schritte(aktiv){
+  const p = n => `<div class="punkt ${aktiv>n?"fertig":(aktiv===n?"aktiv":"")}">${n}</div>`;
+  const s = n => `<div class="strich ${aktiv>n?"fertig":""}"></div>`;
+  return `<div class="schritte">${p(1)}${s(1)}${p(2)}${s(2)}${p(3)}</div>`;
+}
+
+function zeichneVollbild(){
+  const v = vollbild;
+  const weiter = `<button id="weiter">${W[L].weiter}</button>`;
+  if (v.typ === "ok" || v.typ === "gemerkt") {
+    const gemerkt = v.typ === "gemerkt";
+    V.innerHTML = `<div class="voll ${gemerkt?"gelb":"gruen"}">${I.haken(110)}
+      <div class="w">${gemerkt ? W[L].gemerkt : W[L].gespeichert}</div>
+      <div class="z num">${uhr(v.zeit)}</div>
+      ${gemerkt ? '<div class="u">'+W[L].sendetspaeter+'</div>' : ''}
+      ${weiter}</div>`;
+    binde(() => gemerkt ? W[L].gemerkt : W[L].gespeichert);
+  } else if (v.n) {
+    const f = v.n.ampel;
+    V.innerHTML = `<div class="voll ${f}">${I.ampel(f,62)}
+      <div class="w">${W[L].naechster}</div>
+      <div class="z num">${v.n.termin}</div>
+      <div class="u">${W[L].ankunft} ${uhr(v.n.ankunft)}</div>
+      ${f==="rot" ? '<div class="u" style="margin-top:14px;font-weight:700">'+W[L].chefweiss+'</div>' : ''}
+      ${weiter}</div>`;
+    binde(() => W[L].naechster + " " + v.n.termin + ". " + W[L].ankunft + " " + uhr(v.n.ankunft) +
+                (f==="rot" ? ". " + W[L].chefweiss : ""));
+  } else { vollbild = null; return neuZeichnen(); }
+  const t = document.querySelector(".voll .w");
+  if (t) sprich(t.textContent);
+  const b = document.getElementById("weiter");
+  if (b) b.onclick = () => { vollbild = null; neuZeichnen(); };
+}
+
+function zeichneFeierabend(){
+  const m = daten.morgen || [];
+  let losText = "";
+  if (m.length) {
+    const e = m[0];
+    const los = new Date(new Date(e.datum+"T"+e.termin+":00").getTime()
+      - ((e.fahrzeitMin || daten.einst.fahrzeitStandard)
+      +  (e.ruestzeitMin ?? daten.einst.ruestzeit)) * 60000);
+    losText = los.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
+  }
+  V.innerHTML = kopfleiste() +
+    (offen ? `<div class="offline">${offen} ${W[L].wartenAufNetz}</div>` : "") +
+    `<div class="voll gruen" style="min-height:auto;padding:26px 22px">${I.haken(90)}
+       <div class="w">${W[L].allesfertig}</div></div><div class="morgen">` +
+    (m.length
+      ? `<div class="zeile wichtig" style="border:0;padding:14px 0">
+           <div class="ico">${I.wecker()}</div><div class="txt">
+           <div class="klein">${W[L].morgen} · ${W[L].los}</div>
+           <div class="gross num">${losText}</div></div></div>` +
+        m.map(x => `<div class="mrow"><div class="mt num">${x.termin}</div>${I.box(30)}
+           <div class="code" style="font-size:22px">${lueckig(x.container)}</div></div>`).join("")
+      : `<div class="zeile" style="border:0"><div class="ico">${I.uhr()}</div>
+         <div class="txt"><div class="gross">${W[L].nichts}</div></div></div>`) +
+    `</div><button class="install" id="install" onclick="installieren()"></button>`;
+  binde(() => W[L].allesfertig + (m.length ? ". " + W[L].morgen + " " + W[L].los + " " + losText : ""));
+}
+
+warteschlangeSenden().then(holen);
+setInterval(() => { if (!laeuft && !vollbild) holen(); }, 60000);
+</script>
+</body>
+</html>

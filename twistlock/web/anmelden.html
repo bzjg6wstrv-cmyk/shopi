@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#141B22">
+<title>TWISTLOCK</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="stylesheet" href="/einfach.css">
+</head>
+<body>
+<div class="shell"><div id="screen"></div></div>
+
+<script src="/sprache.js"></script>
+<script>
+"use strict";
+const V = document.getElementById("screen");
+let leute = [], gewaehlt = null, pin = "";
+
+fetch("/api/ich").then(r => r.ok ? r.json() : null).then(d => {
+  if (d) location.href = d.rolle === "dispo" ? "/dispo.html" : "/fahrer.html";
+  else laden();
+}).catch(laden);
+
+async function laden(){
+  try {
+    const r = await fetch("/api/fahrerliste");
+    leute = await r.json();
+  } catch { leute = []; }
+  namen();
+}
+
+function namen(){
+  V.innerHTML = kopfleiste() + `
+    <div class="wer">
+      <h1>${W[L].wer}</h1>
+      ${leute.length ? leute.map(p => `<button class="person" data-name="${p.name}">
+         <span class="kreis">${p.name.trim()[0].toUpperCase()}</span>${p.name}</button>`).join("")
+       : '<p style="text-align:center;color:var(--soft)">Kein Zugang gefunden.</p>'}
+    </div>`;
+  binde(() => W[L].wer);
+  V.querySelectorAll("[data-name]").forEach(b => b.onclick = () => {
+    gewaehlt = b.dataset.name; pin = ""; pinfeld(false);
+  });
+}
+
+function pinfeld(fehler){
+  V.innerHTML = kopfleiste() + `
+    <div class="wer" style="padding-bottom:0">
+      <h1>${gewaehlt}</h1>
+      <div class="punkte">${[0,1,2,3].map(n =>
+        `<i class="${n < pin.length ? "voll" : ""}"></i>`).join("")}</div>
+      ${fehler ? '<p style="text-align:center;color:var(--rot);font-weight:700;margin-top:12px;font-size:22px">'
+                 + W[L].falsch + '</p>' : ''}
+    </div>
+    <div class="pad">
+      ${[1,2,3,4,5,6,7,8,9].map(n => `<button data-z="${n}">${n}</button>`).join("")}
+      <button class="tief" data-z="weg">←</button>
+      <button data-z="0">0</button>
+      <button class="tief" data-z="zurueck">${W[L].zurueck}</button>
+    </div>`;
+  binde(() => gewaehlt + ". " + W[L].pin);
+  V.querySelectorAll("[data-z]").forEach(b => b.onclick = () => taste(b.dataset.z));
+}
+
+async function taste(z){
+  if (z === "zurueck") return namen();
+  if (z === "weg") { pin = pin.slice(0, -1); return pinfeld(false); }
+  if (pin.length >= 4) return;
+  pin += z;
+  pinfeld(false);
+  if (pin.length === 4) {
+    try {
+      const r = await fetch("/api/anmelden", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: gewaehlt, pin })
+      });
+      if (r.ok) {
+        const d = await r.json();
+        location.href = d.rolle === "dispo" ? "/dispo.html" : "/fahrer.html";
+        return;
+      }
+    } catch {}
+    pin = ""; pinfeld(true); sprich(W[L].falsch);
+  }
+}
+</script>
+</body>
+</html>
