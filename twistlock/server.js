@@ -66,7 +66,8 @@ let einst = lade("einstellungen", {
   handlingRueck: 30,      // Minuten Handling nach der Rückkehr
   fahrzeitRueck: 75,      // Minuten Rückfahrt
   freiMin: 60,            // Minuten Wartezeit, die vertraglich frei sind
-  maxAbstandKm: 3         // ab so viel Abstand zum Zielort: Warnung
+  maxAbstandKm: 3,        // ab so viel Abstand zum Zielort: Warnung
+  bueroTelefon: ""        // Nummer für „Büro anrufen“ in der Fahrer-App
 });
 sichere("einstellungen", einst);
 
@@ -175,10 +176,11 @@ function ortPruefen(ortsname, gps) {
   return Math.round(km);
 }
 
-function melde(art, text, auftragId) {
+function melde(art, text, auftragId, zusatz) {
   meldungen.unshift({
     id: crypto.randomUUID(), zeit: new Date().toISOString(),
-    art, text, auftragId: auftragId || null, gelesen: false
+    art, text, auftragId: auftragId || null, gelesen: false,
+    ...(zusatz || {})
   });
   if (meldungen.length > 400) meldungen.length = 400;
   sichere("meldungen", meldungen);
@@ -307,6 +309,14 @@ const server = http.createServer(async (req, res) => {
       const brauchtFoto = b.art !== "ankunft";
       if (brauchtFoto && !b.foto) return json(res, 400, { fehler: "Ohne Foto geht es nicht." });
 
+      // Schon gebucht? Dann nichts überschreiben (Doppeltipp, zweiter Versuch
+      // aus der Warteschlange). Die Antwort bleibt freundlich.
+      const schonDa = { abholung: a.abholZeit, ankunft: a.ankunftZeit, abgabe: a.abgabeZeit }[b.art];
+      if (schonDa) {
+        notiere(nutzer.name, `${b.art} Auftrag ${a.nummer} doppelt gesendet, ignoriert`);
+        return json(res, 200, { ok: true, doppelt: true, naechster: null });
+      }
+
       const datei = brauchtFoto ? fotoSpeichern(b.foto) : null;
       const jetzt = new Date().toISOString();
       const gps   = (b.lat && b.lon) ? { lat: b.lat, lon: b.lon } : null;
@@ -366,6 +376,49 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, { ok: true, naechster });
     }
 
+    /* --- Fahrer: Problem melden ----------------------------------
+       Geht in dieselbe Meldungsliste wie die Verspätungsmeldungen.
+       Nichts wird erfunden: „gesendet“ heißt, der Server hat es. */
+    if (weg === "/api/fahrer/meldung" && req.method === "POST") {
+      const b = await koerper(req);
+      const ARTEN = {
+        stau:           { wort: "Stau",                  stufe: "warn" },
+        warten:         { wort: "Fahrer muss warten",    stufe: "warn" },
+        containerFehlt: { wort: "Container fehlt",       stufe: "rot"  },
+        panne:          { wort: "Panne",                 stufe: "rot"  }
+      };
+      const k = ARTEN[b.art];
+      if (!k) return json(res, 400, { fehler: "unbekannte Meldung" });
+      const a = b.auftragId ? auftraege.find(x => x.id === b.auftragId && x.fahrerId === nutzer.id) : null;
+      const wo = a ? ` · Auftrag ${a.nummer} (${a.zielOrt || ""} ${a.termin || ""})` : "";
+      melde(k.stufe, `${k.wort} — ${nutzer.name}${wo}`, a ? a.id : null,
+            { fahrerId: nutzer.id, grund: b.art,
+              gps: (b.lat && b.lon) ? { lat: +b.lat, lon: +b.lon } : null });
+      notiere(nutzer.name, "Meldung " + b.art);
+      return json(res, 200, { ok: true, id: meldungen[0].id });
+    }
+
+    /* --- Fahrer: eigene Meldungen und ihr Lesestand --------------- */
+    if (weg === "/api/fahrer/meldungen") {
+      return json(res, 200, {
+        meldungen: meldungen
+          .filter(m => m.fahrerId === nutzer.id)
+          .slice(0, 20)
+          .map(m => ({ id: m.id, zeit: m.zeit, grund: m.grund || null, gelesen: !!m.gelesen }))
+      });
+    }
+
+    /* --- Fahrer: Änderung gesehen und bestätigt ------------------- */
+    if (weg === "/api/fahrer/gesehen" && req.method === "POST") {
+      const b = await koerper(req);
+      const a = auftraege.find(x => x.id === b.auftragId && x.fahrerId === nutzer.id);
+      if (!a) return json(res, 404, { fehler: "Auftrag nicht gefunden" });
+      a.aenderungGesehen = { zeit: new Date().toISOString(), von: nutzer.name };
+      sichere("auftraege", auftraege);
+      notiere(nutzer.name, "Änderung bestätigt bei Auftrag " + a.nummer);
+      return json(res, 200, { ok: true });
+    }
+
     /* --- Position (Fahrerhandy oder später Traccar) --------------- */
     if (weg === "/api/position" && req.method === "POST") {
       const b = await koerper(req);
@@ -412,12 +465,29 @@ const server = http.createServer(async (req, res) => {
               fotoAbhol: null, fotoAbgabe: null };
         auftraege.push(a);
       }
-      for (const f of ["datum","kunde","abholOrt","abholAb","zielOrt","termin",
-                       "container","chassis","siegel","zugmaschine","fahrerId",
-                       "fahrzeitMin","ruestzeitMin","notiz","freiMin"]) {
-        if (b[f] !== undefined) a[f] = b[f];
+      const FELDER = ["datum","kunde","abholOrt","abholAb","zielOrt","termin",
+                      "container","chassis","siegel","zugmaschine","fahrerId",
+                      "fahrzeitMin","ruestzeitMin","notiz","freiMin",
+                      "abholFirma","abholAdresse","abholTor","zielAdresse","zielTor"];
+      // Was sich für den Fahrer sichtbar ändert, wird gemerkt:
+      // er bekommt es als „Neu: Tor 3 statt Tor 1“ angezeigt.
+      const WICHTIG = { termin:"termin", zielOrt:"ziel", zielAdresse:"ziel", zielTor:"tor",
+                        abholOrt:"abholenBei", abholAdresse:"abholenBei", abholTor:"tor",
+                        abholAb:"abholzeitAb", container:"container", chassis:"chassis",
+                        notiz:"" };
+      const punkte = [];
+      for (const f of FELDER) {
+        if (b[f] === undefined) continue;
+        if (!neu && WICHTIG[f] !== undefined && String(a[f] ?? "") !== String(b[f] ?? "")) {
+          punkte.push({ feld: WICHTIG[f], von: a[f] ? String(a[f]) : null, nach: String(b[f] ?? "") });
+        }
+        a[f] = b[f];
       }
       if (b.status) a.status = b.status;
+      if (punkte.length) {
+        a.aenderung = { zeit: new Date().toISOString(), punkte };
+        a.aenderungGesehen = null;              // muss neu bestätigt werden
+      }
       a.gemeldet = false;                       // nach Änderung neu bewerten
       sichere("auftraege", auftraege);
       notiere(nutzer.name, (neu ? "Auftrag angelegt " : "Auftrag geändert ") + a.nummer);

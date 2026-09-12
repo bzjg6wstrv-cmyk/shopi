@@ -3,20 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#141B22">
+<meta name="theme-color" content="#15202B">
 <title>TWISTLOCK</title>
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="icon" href="/icon-192.png">
 <link rel="stylesheet" href="/einfach.css">
 </head>
 <body>
-<div class="shell"><div id="screen"></div></div>
+<div class="app" id="app"><div class="inhalt"><div class="laedt">…</div></div></div>
 
 <script src="/sprache.js"></script>
 <script>
 "use strict";
-const V = document.getElementById("screen");
-let leute = [], gewaehlt = null, pin = "";
+const APP = document.getElementById("app");
+let leute = [], gewaehlt = null, pin = "", ansicht = "namen";
+
+const esc = x => String(x == null ? "" : x).replace(/&/g,"&amp;").replace(/</g,"&lt;")
+  .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 
 fetch("/api/ich").then(r => r.ok ? r.json() : null).then(d => {
   if (d) location.href = d.rolle === "dispo" ? "/dispo.html" : "/fahrer.html";
@@ -24,56 +28,83 @@ fetch("/api/ich").then(r => r.ok ? r.json() : null).then(d => {
 }).catch(laden);
 
 async function laden(){
-  try {
-    const r = await fetch("/api/fahrerliste");
-    leute = await r.json();
-  } catch { leute = []; }
-  namen();
+  try { leute = await (await fetch("/api/fahrerliste")).json(); } catch { leute = []; }
+  zeichne();
 }
 
-function namen(){
-  V.innerHTML = kopfleiste() + `
+function kopf(){
+  return `<div class="kopf">
+    <button class="zweit-btn" data-tun="sprache">${I.globus(26)} ${esc(SPRACHNAME[L])}</button>
+    ${vorlesenMoeglich()
+      ? `<button class="zweit-btn" data-tun="vorlesen">${I.ton(26)} ${esc(t("vorlesen"))}</button>`
+      : ""}</div>`;
+}
+
+function zeichne(fehler){
+  if (ansicht === "sprache") {
+    APP.innerHTML = kopf() + `<div class="inhalt">
+      <h1 class="titel">${esc(t("spracheWaehlen"))}</h1>
+      ${Object.keys(SPRACHNAME).map(k => `<button class="sprach-btn" data-tun="spracheSetzen"
+        data-k="${k}" aria-pressed="${k === L}" lang="${k}">
+        <span class="fl" aria-hidden="true">${FLAGGE[k]}</span> ${esc(SPRACHNAME[k])}
+        ${k === L ? `<span class="ha">${I.haken(26)}</span>` : ""}</button>`).join("")}
+    </div><div class="leiste">
+      <button class="haupt-btn" data-tun="zurueck">${I.zurueck(30)} ${esc(t("zurueck"))}</button>
+    </div>`;
+    return;
+  }
+  if (ansicht === "pin") {
+    APP.innerHTML = kopf() + `<div class="inhalt">
+      <div class="wer">
+        <h1>${esc(gewaehlt)} · ${esc(t("pin"))}</h1>
+        <div class="punkte" role="img" aria-label="${pin.length} / 4">${
+          [0,1,2,3].map(n => `<i class="${n < pin.length ? "voll" : ""}"></i>`).join("")}</div>
+        ${fehler ? `<p style="text-align:center;color:var(--rot);font-weight:700;font-size:22px">
+          ${esc(t("falsch"))}</p>` : ""}
+      </div>
+      <div class="pad">
+        ${[1,2,3,4,5,6,7,8,9].map(n => `<button data-tun="taste" data-z="${n}">${n}</button>`).join("")}
+        <button class="tief" data-tun="taste" data-z="weg" aria-label="${esc(t("zurueck"))}">←</button>
+        <button data-tun="taste" data-z="0">0</button>
+        <button class="tief" data-tun="taste" data-z="zurueck">${esc(t("zurueck"))}</button>
+      </div>
+    </div>`;
+    return;
+  }
+  APP.innerHTML = kopf() + `<div class="inhalt">
     <div class="wer">
-      <h1>${W[L].wer}</h1>
-      ${leute.length ? leute.map(p => `<button class="person" data-name="${p.name}">
-         <span class="kreis">${p.name.trim()[0].toUpperCase()}</span>${p.name}</button>`).join("")
-       : '<p style="text-align:center;color:var(--soft)">Kein Zugang gefunden.</p>'}
-    </div>`;
-  binde(() => W[L].wer);
-  V.querySelectorAll("[data-name]").forEach(b => b.onclick = () => {
-    gewaehlt = b.dataset.name; pin = ""; pinfeld(false);
-  });
+      <h1>${esc(t("wer"))}</h1>
+      ${leute.length ? leute.map(p => `<button class="person" data-tun="person" data-name="${esc(p.name)}">
+         <span class="kreis" aria-hidden="true">${esc(p.name.trim()[0].toUpperCase())}</span>
+         ${esc(p.name)}</button>`).join("")
+       : `<p class="hinweis">${esc(t("keinNetzLaden"))}</p>`}
+    </div>
+  </div>`;
 }
 
-function pinfeld(fehler){
-  V.innerHTML = kopfleiste() + `
-    <div class="wer" style="padding-bottom:0">
-      <h1>${gewaehlt}</h1>
-      <div class="punkte">${[0,1,2,3].map(n =>
-        `<i class="${n < pin.length ? "voll" : ""}"></i>`).join("")}</div>
-      ${fehler ? '<p style="text-align:center;color:var(--rot);font-weight:700;margin-top:12px;font-size:22px">'
-                 + W[L].falsch + '</p>' : ''}
-    </div>
-    <div class="pad">
-      ${[1,2,3,4,5,6,7,8,9].map(n => `<button data-z="${n}">${n}</button>`).join("")}
-      <button class="tief" data-z="weg">←</button>
-      <button data-z="0">0</button>
-      <button class="tief" data-z="zurueck">${W[L].zurueck}</button>
-    </div>`;
-  binde(() => gewaehlt + ". " + W[L].pin);
-  V.querySelectorAll("[data-z]").forEach(b => b.onclick = () => taste(b.dataset.z));
-}
+const A = {
+  vorlesen(){ sprich(ansicht === "pin" ? gewaehlt + ". " + t("pin") : t("wer")); },
+  sprache(){ ansicht = "sprache"; zeichne(); },
+  spracheSetzen(d){ setzeSprache(d.k); ansicht = "namen"; zeichne(); },
+  zurueck(){ ansicht = gewaehlt ? "pin" : "namen"; zeichne(); },
+  person(d){ gewaehlt = d.name; pin = ""; ansicht = "pin"; zeichne(); },
+  taste(d){ taste(d.z); }
+};
+APP.addEventListener("click", e => {
+  const b = e.target.closest("[data-tun]");
+  if (b && A[b.dataset.tun]) A[b.dataset.tun](b.dataset);
+});
 
 async function taste(z){
-  if (z === "zurueck") return namen();
-  if (z === "weg") { pin = pin.slice(0, -1); return pinfeld(false); }
+  if (z === "zurueck") { gewaehlt = null; pin = ""; ansicht = "namen"; return zeichne(); }
+  if (z === "weg") { pin = pin.slice(0, -1); return zeichne(); }
   if (pin.length >= 4) return;
   pin += z;
-  pinfeld(false);
+  zeichne();
   if (pin.length === 4) {
     try {
       const r = await fetch("/api/anmelden", {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method:"POST", headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({ name: gewaehlt, pin })
       });
       if (r.ok) {
@@ -82,7 +113,7 @@ async function taste(z){
         return;
       }
     } catch {}
-    pin = ""; pinfeld(true); sprich(W[L].falsch);
+    pin = ""; zeichne(true); sprich(t("falsch"));
   }
 }
 </script>

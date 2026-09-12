@@ -250,6 +250,105 @@ const TESTFOTO = "data:image/jpeg;base64," + Buffer.from([
   const pr2 = await fetch(BASIS + "/wartezeit/" + wid2, { headers:{ Cookie: keks } });
   pruefe("Fahrer kommt nicht an das Protokoll", pr2.status === 403);
 
+
+  // 19 Fahrerdateien der neuen Oberflaeche
+  for (const f of ["fahreransicht.js","vorschau.html"]) {
+    pruefe("Datei " + f + " liegt bereit", fs.existsSync(path.join(__dirname,"web",f)));
+  }
+
+  // 20 Abholort mit Firma, Adresse und Tor — getrennt vom Lieferziel
+  keks = ""; await ruf("/api/anmelden","POST",{name:"Ahmed",pin:"1234"});
+  let uo = (await ruf("/api/dispo/uebersicht")).daten;
+  const f3 = uo.fahrer[0];
+  const heute3 = new Date().toLocaleDateString("sv-SE");
+  r = await ruf("/api/dispo/auftrag","POST",{
+    datum:heute3, status:"freigegeben", fahrerId:f3.id,
+    abholFirma:"Hansa Terminal Bremen", abholOrt:"Bremen",
+    abholAdresse:"Am Speicher 12, 28197 Bremen", abholTor:"2", abholAb:"08:30",
+    kunde:"Moeller Baustoffe GmbH", zielOrt:"Walsrode",
+    zielAdresse:"Lange Strasse 4, 29664 Walsrode", zielTor:"3", termin:"11:00",
+    container:"MSCU1234567", chassis:"CH-01"});
+  const aid = r.daten.id;
+  pruefe("Abholfirma, Abholadresse und Tor werden gespeichert",
+    r.daten.abholFirma === "Hansa Terminal Bremen" && r.daten.abholTor === "2" &&
+    r.daten.zielTor === "3", r.daten.abholAdresse);
+
+  // 21 Aenderung wird im Klartext gemerkt und kann bestaetigt werden
+  r = await ruf("/api/dispo/auftrag","POST",{ id:aid, zielTor:"5", termin:"11:30" });
+  pruefe("Aenderung wird gemerkt",
+    r.daten.aenderung && r.daten.aenderung.punkte.length === 2,
+    JSON.stringify((r.daten.aenderung||{}).punkte));
+  pruefe("Aenderung gilt zuerst als unbestaetigt", !r.daten.aenderungGesehen);
+
+  keks = ""; await ruf("/api/anmelden","POST",{name:f3.name,pin:"1111"});
+  let mein = (await ruf("/api/fahrer/tag")).daten;
+  let ma = mein.heute.find(x => x.id === aid);
+  pruefe("Fahrer sieht Abholort getrennt vom Ziel",
+    ma.abholFirma === "Hansa Terminal Bremen" && ma.zielOrt === "Walsrode");
+  pruefe("Fahrer sieht die Aenderung", ma.aenderung && ma.aenderung.punkte.length === 2);
+  pruefe("Bueronummer kommt mit den Einstellungen mit", mein.einst.bueroTelefon !== undefined);
+
+  r = await ruf("/api/fahrer/gesehen","POST",{ auftragId:aid });
+  pruefe("Fahrer kann die Aenderung bestaetigen", r.status === 200);
+  ma = (await ruf("/api/fahrer/tag")).daten.heute.find(x => x.id === aid);
+  pruefe("Bestaetigung ist gespeichert", !!ma.aenderungGesehen);
+
+  // 22 Problem melden
+  r = await ruf("/api/fahrer/meldung","POST",{ art:"quatsch" });
+  pruefe("Unbekannte Meldeart wird abgelehnt", r.status === 400);
+  r = await ruf("/api/fahrer/meldung","POST",{ art:"stau", auftragId:aid });
+  pruefe("Stau kann gemeldet werden", r.status === 200 && !!r.daten.id);
+  const mid = r.daten.id;
+  r = await ruf("/api/fahrer/meldungen");
+  pruefe("Fahrer sieht seine Meldung als noch nicht gelesen",
+    r.daten.meldungen.some(m => m.id === mid && m.gelesen === false));
+
+  keks = ""; await ruf("/api/anmelden","POST",{name:"Ahmed",pin:"1234"});
+  uo = (await ruf("/api/dispo/uebersicht")).daten;
+  pruefe("Meldung kommt im Buero an", uo.meldungen.some(m => m.id === mid),
+    (uo.meldungen.find(m => m.id === mid)||{}).text);
+  await ruf("/api/dispo/gelesen","POST",{});
+  keks = ""; await ruf("/api/anmelden","POST",{name:f3.name,pin:"1111"});
+  r = await ruf("/api/fahrer/meldungen");
+  pruefe("Lesebestaetigung erst nach echtem Lesen",
+    r.daten.meldungen.some(m => m.id === mid && m.gelesen === true));
+
+  // 23 Doppeltipp erzeugt kein zweites Ereignis und kein zweites Foto
+  const vorher = fs.readdirSync(path.join(__dirname,"fotos")).length;
+  r = await ruf("/api/fahrer/ereignis","POST",{ auftragId:aid, art:"abholung", foto:TESTFOTO });
+  pruefe("Erste Abholung wird gebucht", r.status === 200 && !r.daten.doppelt);
+  const zeit1 = (await ruf("/api/fahrer/tag")).daten.heute.find(x => x.id === aid).abholZeit;
+  r = await ruf("/api/fahrer/ereignis","POST",{ auftragId:aid, art:"abholung", foto:TESTFOTO });
+  pruefe("Zweiter gleicher Tipp wird ignoriert", r.status === 200 && r.daten.doppelt === true);
+  const zeit2 = (await ruf("/api/fahrer/tag")).daten.heute.find(x => x.id === aid).abholZeit;
+  pruefe("Abholzeit bleibt unveraendert", zeit1 === zeit2);
+  pruefe("Kein zweites Foto auf der Platte",
+    fs.readdirSync(path.join(__dirname,"fotos")).length === vorher + 1);
+
+
+  // 24 Farbkontraste der Fahreransicht (WCAG AA, mindestens 4,5:1)
+  {
+    const css = fs.readFileSync(path.join(__dirname,"web","einfach.css"), "utf8");
+    const wert = name => (css.match(new RegExp("--" + name + ":\\s*(#[0-9A-Fa-f]{6})")) || [])[1];
+    const hell = h => { const c = [1,3,5].map(i => parseInt(h.slice(i,i+2),16)/255)
+      .map(v => v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4));
+      return 0.2126*c[0] + 0.7152*c[1] + 0.0722*c[2]; };
+    const abstand = (a,b) => (Math.max(hell(a),hell(b))+0.05) / (Math.min(hell(a),hell(b))+0.05);
+    const paare = [
+      ["Text auf Weiss", wert("ink"), "#FFFFFF"],
+      ["Nebentext auf Weiss", wert("soft"), "#FFFFFF"],
+      ["Gruener Status", wert("gruen"), wert("gruen-flaeche")],
+      ["Gelber Status", wert("gelb"), wert("gelb-flaeche")],
+      ["Roter Status", wert("rot"), wert("rot-flaeche")],
+      ["Blauer Kasten", wert("marine"), wert("marine-flaeche")],
+      ["Hauptaktion", "#FFFFFF", wert("ink")]
+    ];
+    for (const [name, v, b] of paare) {
+      const r = v && b ? abstand(v,b) : 0;
+      pruefe("Kontrast " + name + " mindestens 4,5:1", r >= 4.5, r.toFixed(2) + ":1");
+    }
+  }
+
   console.log("\n" + (fehler === 0 ? "Alle Tests bestanden." : fehler + " Test(s) fehlgeschlagen."));
   srv.kill();
   process.exit(fehler === 0 ? 0 : 1);

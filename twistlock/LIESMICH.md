@@ -61,14 +61,66 @@ Ab jetzt steht er beim Fahrer auf dem Handy — aber nur, wenn das Datum heute i
 
 ## Was der Fahrer macht
 
-- Er meldet sich einmal an, danach bleibt er angemeldet
-- Er sieht oben eine **große Farbfläche**: Grün, Gelb oder Rot
-- Er drückt **Abgeholt** → Kamera geht auf → Foto → gespeichert
-- Er fährt, drückt am Ziel **Abgegeben** → Foto → gespeichert
-- Danach kommt sofort ein Vollbild: *Schaffe ich den nächsten Termin, und wann bin ich da?*
-- Sind alle Aufträge erledigt, sieht er die Aufträge von **morgen** und wann er losfahren muss
+Jede Ansicht beantwortet drei Fragen: **Wo muss ich hin? Wann muss ich dort sein?
+Was muss ich jetzt machen?** Unten steht immer genau eine hervorgehobene Hauptaktion.
+
+| Ansicht | Überschrift | Hauptaktion |
+|---|---|---|
+| A | „Jetzt: Container abholen“ — Abholfirma, Adresse, Tor, Abholzeit, Containernummer | „Abgeholt? Foto machen“ |
+| B | „Jetzt: Zum Kunden fahren“ — Ziel, Tor, Termin, Ankunft etwa | „Am Ziel angekommen“ |
+| C | „Beim Kunden angekommen“ — Ankunft, Termin, „Seit 25 Minuten vor Ort“ | „Abgegeben? Foto machen“ |
+| D | „Auftrag abgeschlossen“ — nächster Auftrag mit Termin und Ankunft | „Nächsten Auftrag ansehen“ |
+
+Weiteres in der Fahreransicht:
+
+- **Vorlesen** auf jeder wichtigen Ansicht: erklärt Ziel, Termin, Zeitstatus und nächste
+  Handlung in kurzen Sätzen. Nie von allein, immer nur auf Knopfdruck.
+- **Sprache** wird einmal gewählt (mit Namen, nicht nur mit Flagge) und bleibt gemerkt.
+- **Foto**: erst eine kurze Anweisung, dann Aufnahme, dann Vorschau mit „Foto verwenden“
+  und „Neu machen“. Abbrechen schließt den Auftrag **nicht** ab. Danach steht klar da,
+  ob das Foto **gespeichert** oder **noch nicht gesendet** ist.
+- **Problem melden** beginnt sofort mit „Was ist passiert?“: Stau, Ich muss warten,
+  Container fehlt, Panne, Büro anrufen. Dann eine kurze Rückfrage, dann das Ergebnis.
+  „Vom Büro gelesen“ erscheint erst, wenn die Dispo die Meldung wirklich gelesen hat.
+- **Heute: 3 Aufträge** öffnet die Tagesliste mit Uhrzeit, Ort und Status.
+  Aufträge von morgen erscheinen erst, wenn heute alles fertig ist — mit Datum und
+  ausdrücklich als Vorschau.
+- **Geänderte Aufträge** zeigt die App im Klartext: „Neu: Tor 3 statt Tor 1“.
+  Der Fahrer bestätigt sie im sicheren Stand mit „Gesehen und bestätigt“.
+- Vor Foto und Bestätigung fragt die App einmal: **„Steht der Lkw sicher?“**
+  Die App kann nicht messen, ob jemand fährt — das sagt sie auch so.
 
 Die Uhrzeiten kommen vom Server, nicht vom Handy. Der Fahrer kann sie nicht verstellen.
+
+### Was die App sagt und was sie nicht sagt
+
+- Grün: „Du bist voraussichtlich rechtzeitig“ · Gelb: „Es wird knapp. Noch 10 Minuten
+  Reserve.“ · Rot: „Voraussichtlich 24 Minuten zu spät“.
+- Alle Ankunftszeiten sind mit „Geschätzt aus der geplanten Fahrzeit, ohne Verkehrslage“
+  gekennzeichnet. Ohne Verbindung steht dort **„Ankunft gerade nicht verfügbar“** —
+  keine falsche grüne Sicherheit.
+- Der Aufenthalt beim Kunden wird **nicht** als abrechenbare Wartezeit ausgegeben.
+  Was berechenbar ist, entscheidet das Wartezeitprotokoll in der Dispo.
+- Die App schätzt **keine** gesetzliche Restlenkzeit und behauptet keine Fahrsperre.
+
+### Vorschau ohne echte Daten
+
+`http://localhost:3000/vorschau.html` zeigt alle Fahreransichten mit festen
+Beispieldaten: Normalfall, Verspätung, kein Internet, fehlgeschlagener Fotoversand,
+geänderter Auftrag. Alles dort ist als **Demo** gekennzeichnet, es wird nichts
+gesendet. Gut zum Zeigen und zum Üben, ohne einen echten Auftrag anzufassen.
+
+### Bürotelefon eintragen
+
+Damit „Büro anrufen“ wählt, muss die Nummer hinterlegt sein. Sie steht in
+`daten/einstellungen.json` unter `bueroTelefon`, zum Beispiel `"+49421123456"`.
+Ohne Nummer zeigt die App die Schaltfläche, sagt aber, dass keine Nummer hinterlegt ist.
+
+### Zusätzliche Felder für den Auftrag
+
+Der Fahrer sieht den **Abholort getrennt vom Lieferziel**. Dafür kennt ein Auftrag
+neben `abholOrt` und `zielOrt` auch: `abholFirma`, `abholAdresse`, `abholTor`,
+`zielAdresse`, `zielTor`. Sie sind freiwillig; fehlen sie, zeigt die App den Ortsnamen.
 
 ---
 
@@ -103,7 +155,7 @@ Damit auch ein Fenster aufploppt, erlaube dem Browser einmal Benachrichtigungen.
 | Browser zeigt nichts | Läuft das schwarze Fenster noch? Sonst neu starten |
 | Fahrer kommt nicht rein | Name muss **genau** stimmen, auch Groß- und Kleinschreibung ist egal, aber Leerzeichen zählen |
 | Alles zurücksetzen | Ordner `daten` und `fotos` löschen und neu starten |
-| Prüfen, ob alles funktioniert | Im Ordner `node test.js` ausführen — macht 33 automatische Tests |
+| Prüfen, ob alles funktioniert | Im Ordner `node test.js` ausführen — macht über 60 automatische Tests, inklusive Farbkontrasten |
 | App-Symbol fehlt auf dem Handy | Geht nur mit https. Siehe `APP-MACHEN.md` |
 
 ---

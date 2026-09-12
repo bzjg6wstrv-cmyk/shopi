@@ -3,25 +3,53 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#141B22">
+<meta name="theme-color" content="#15202B">
 <title>TWISTLOCK</title>
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="icon" href="/icon-192.png">
 <link rel="stylesheet" href="/einfach.css">
 </head>
 <body>
-<div class="shell"><div id="screen"><div class="laedt">…</div></div></div>
+<div class="app" id="app"><div class="inhalt"><div class="laedt">…</div></div></div>
+
+<!-- Kamera des Handys. Wird nur durch die Schaltfläche „Kamera öffnen“ ausgelöst. -->
 <input type="file" accept="image/*" capture="environment" id="cam"
-       style="position:absolute;width:0;height:0;opacity:0">
+       style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"
+       tabindex="-1" aria-hidden="true">
 
 <script src="/sprache.js"></script>
+<script src="/fahreransicht.js"></script>
 <script>
 "use strict";
-const V = document.getElementById("screen");
-let daten = null, laeuft = false, gps = null, vollbild = null, offen = 0;
 
-const uhr = iso => new Date(iso).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
-const lueckig = s => (s||"").replace(/[\s-]/g,"").replace(/(.{4})/g,"$1 ").trim();
+const APP = document.getElementById("app");
+
+/* ============ Zustand ============
+   Alles, was der Bildschirm braucht, steht hier an einer Stelle. */
+const Z = {
+  ansicht:"laden", auftrag:null, heute:[], morgen:[], einst:{},
+  online:navigator.onLine, datenZeit:null, offen:0,
+  laeuft:false, fahrzeugOffen:false,
+  foto:null, ergebnis:null, abschluss:null,
+  problem:null, problemErgebnis:null,
+  stand:null, vorher:"auftrag"
+};
+let daten = null;                       // letzte Antwort von /api/fahrer/tag
+const gebucht = new Set();              // gegen doppelte Ereignisse bei Doppeltipp
+let standBis = 0;                       // „Lkw steht sicher“ gilt 5 Minuten
+let gps = null;
+
+function neuZeichnen(){
+  APP.innerHTML = FA.zeichne(Z);
+  installKnopf();
+}
+function installKnopf(){
+  const b = document.getElementById("install");
+  if (b && typeof installEvent !== "undefined" && installEvent) {
+    b.style.display = "flex"; b.textContent = t("installieren");
+  }
+}
 
 /* ============ Offline-Warteschlange ============================
    Ohne Netz wird alles auf dem Handy zwischengelagert und später
@@ -38,8 +66,8 @@ function db(){
 async function inWarteschlange(eintrag){
   const d = await db();
   await new Promise(ok => {
-    const t = d.transaction(LADEN,"readwrite");
-    t.objectStore(LADEN).add(eintrag); t.oncomplete = ok;
+    const t2 = d.transaction(LADEN,"readwrite");
+    t2.objectStore(LADEN).add(eintrag); t2.oncomplete = ok;
   });
   await zaehleOffen();
 }
@@ -53,29 +81,37 @@ async function warteschlange(){
 async function ausWarteschlange(id){
   const d = await db();
   await new Promise(ok => {
-    const t = d.transaction(LADEN,"readwrite");
-    t.objectStore(LADEN).delete(id); t.oncomplete = ok;
+    const t2 = d.transaction(LADEN,"readwrite");
+    t2.objectStore(LADEN).delete(id); t2.oncomplete = ok;
   });
   await zaehleOffen();
 }
-async function zaehleOffen(){ try { offen = (await warteschlange()).length; } catch { offen = 0; } }
+async function zaehleOffen(){
+  try { Z.offen = (await warteschlange()).length; } catch { Z.offen = 0; }
+}
 
+/* Sendet die Warteschlange. Gibt zurück, ob alles weg ist. */
 async function warteschlangeSenden(){
   let liste = [];
-  try { liste = await warteschlange(); } catch { return; }
+  try { liste = await warteschlange(); } catch { return false; }
   for (const e of liste) {
     try {
-      const r = await fetch("/api/fahrer/ereignis", {
-        method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(e.nutzlast) });
+      const r = await fetch(e.weg || "/api/fahrer/ereignis", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify(e.nutzlast) });
       if (r.ok || r.status === 404 || r.status === 400) await ausWarteschlange(e.id);
-      else break;                       // Server hakt — später nochmal
-    } catch { break; }                  // kein Netz — später nochmal
+      else return false;                 // Server hakt — später nochmal
+    } catch { return false; }            // kein Netz — später nochmal
   }
+  await zaehleOffen();
+  return Z.offen === 0;
 }
-window.addEventListener("online", () => warteschlangeSenden().then(holen));
-setInterval(() => { if (navigator.onLine) warteschlangeSenden(); }, 45000);
+window.addEventListener("online",  () => { Z.online = true;  warteschlangeSenden().then(holen); });
+window.addEventListener("offline", () => { Z.online = false; neuZeichnen(); });
+setInterval(() => { if (navigator.onLine) warteschlangeSenden().then(() => neuZeichnen()); }, 45000);
 
-/* ============ Standort ============ */
+/* ============ Standort ============
+   Nur als Nachweis für das Büro. Funktioniert nur mit https. */
 if (navigator.geolocation) {
   navigator.geolocation.watchPosition(
     p => gps = { lat:p.coords.latitude, lon:p.coords.longitude },
@@ -86,13 +122,13 @@ if (navigator.geolocation) {
   }, 60000);
 }
 
-/* ============ Foto ============ */
+/* ============ Kamera ============
+   Das Bild wird verkleinert, damit es auch mit schlechtem Netz ankommt. */
 const cam = document.getElementById("cam");
-let camCb = null;
 cam.addEventListener("change", () => {
-  const f = cam.files && cam.files[0]; cam.value = "";
-  if (!f || !camCb) { camCb = null; return; }
-  const cb = camCb; camCb = null;
+  const f = cam.files && cam.files[0];
+  cam.value = "";
+  if (!f) return;                       // abgebrochen: Ansicht bleibt, nichts passiert
   const leser = new FileReader();
   leser.onload = () => {
     const bild = new Image();
@@ -101,191 +137,267 @@ cam.addEventListener("change", () => {
       const c = document.createElement("canvas");
       c.width = Math.round(bild.width*k); c.height = Math.round(bild.height*k);
       c.getContext("2d").drawImage(bild,0,0,c.width,c.height);
-      cb(c.toDataURL("image/jpeg", 0.72));
+      fotoFertig(c.toDataURL("image/jpeg", 0.72));
     };
-    bild.onerror = () => cb(leser.result);
+    bild.onerror = () => fotoFertig(leser.result);
     bild.src = leser.result;
   };
+  leser.onerror = () => { Z.ansicht = "kamerahilfe"; neuZeichnen(); };
   leser.readAsDataURL(f);
 });
+function fotoFertig(bild){
+  if (!Z.foto) return;
+  Z.foto.bild = bild;                   // erst Vorschau, nichts wird gesendet
+  Z.ansicht = "foto";
+  neuZeichnen();
+}
 
-/* ============ Daten ============ */
+/* ============ Daten vom Büro ============ */
 async function holen(){
   await zaehleOffen();
   try {
-    const r = await fetch("/api/fahrer/tag");
+    const r = await fetch("/api/fahrer/tag", { cache:"no-store" });
     if (r.status === 401) { location.href = "/"; return; }
     daten = await r.json();
+    Z.datenZeit = new Date().toISOString();
+    Z.online = true;
   } catch {
-    if (!daten) { V.innerHTML = kopfleiste() + '<div class="warnung">'+W[L].keinnetz+'</div>';
-                  binde(()=>W[L].keinnetz); return; }
+    Z.online = false;
+    if (!daten) { Z.ansicht = "keinNetz"; neuZeichnen(); return; }
+  }
+  uebernehmen();
+  neuZeichnen();
+}
+/* Daten in den Zustand übertragen, ohne die laufende Ansicht zu stören */
+function uebernehmen(){
+  if (!daten) return;
+  Z.heute  = daten.heute  || [];
+  Z.morgen = daten.morgen || [];
+  Z.einst  = daten.einst  || {};
+  const offeneListe = Z.heute.filter(a => a.status !== "fertig");
+  Z.auftrag = offeneListe[0] || null;
+  const feste = ["foto","ergebnis","abschluss","problem","problemFrage","problemErgebnis",
+                 "tagesplan","sprache","stand","kamerahilfe"];
+  if (feste.includes(Z.ansicht)) return;          // Fahrer ist mitten in einem Schritt
+  Z.ansicht = Z.auftrag ? "auftrag" : (Z.heute.length ? "feierabend" : "feierabend");
+}
+
+/* ============ Ereignis senden (Abholung, Ankunft, Abgabe) ============ */
+async function ereignisSenden(auftrag, art, foto){
+  const schluessel = auftrag.id + ":" + art;
+  if (Z.laeuft || gebucht.has(schluessel)) return;   // Doppeltipp läuft ins Leere
+  gebucht.add(schluessel);
+  Z.laeuft = true; neuZeichnen();
+
+  const nutzlast = { auftragId:auftrag.id, art, foto, schluessel,
+                     lat:gps&&gps.lat, lon:gps&&gps.lon };
+  let antwort = null, fehlerText = null, netzfehler = false;
+  try {
+    const r = await fetch("/api/fahrer/ereignis",{ method:"POST",
+      headers:{"Content-Type":"application/json"}, body:JSON.stringify(nutzlast) });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok) antwort = d;
+    else if (r.status === 400 || r.status === 404) fehlerText = d.fehler || null;
+    else { netzfehler = true; await inWarteschlange({ nutzlast, schluessel }); }
+  } catch {
+    netzfehler = true;
+    await inWarteschlange({ nutzlast, schluessel });
+  }
+  Z.laeuft = false;
+  const jetzt = new Date().toISOString();
+
+  if (antwort) {
+    Z.online = true;
+    await holen();
+    if (art === "abgabe") {
+      Z.abschluss = { ort: auftrag.kunde || auftrag.zielOrt, zeit: jetzt,
+                      naechster: antwort.naechster || null };
+      Z.ansicht = "abschluss";
+    } else {
+      Z.ergebnis = { typ:"gespeichert", art, zeit:jetzt };
+      Z.ansicht = "ergebnis";
+    }
+  } else if (netzfehler) {
+    // Aufnahme ist gesichert. Der Bildschirm geht weiter, damit der Fahrer
+    // weiterarbeiten kann — aber er sieht, dass noch nichts gesendet ist.
+    oertlichVormerken(auftrag, art, jetzt);
+    Z.online = navigator.onLine;
+    Z.ergebnis = { typ: navigator.onLine ? "fehler" : "wartet", art, zeit:jetzt };
+    Z.ansicht = "ergebnis";
+  } else {
+    gebucht.delete(schluessel);
+    Z.ergebnis = { typ:"fehler", art, zeit:jetzt, text:fehlerText };
+    Z.ansicht = "ergebnis";
+  }
+  Z.foto = null;
+  neuZeichnen();
+}
+/* Damit der Bildschirm auch ohne Netz sofort weitergeht */
+function oertlichVormerken(a, art, jetzt){
+  if (art === "abholung") { a.status = "geladen";    a.abholZeit   = jetzt; }
+  if (art === "ankunft")  { a.status = "angekommen"; a.ankunftZeit = jetzt; }
+  if (art === "abgabe")   { a.status = "fertig";     a.abgabeZeit  = jetzt; }
+  Z.auftrag = (Z.heute || []).filter(x => x.status !== "fertig")[0] || null;
+}
+
+/* ============ Problem melden ============ */
+async function problemSenden(){
+  const art = (Z.problem || {}).art;
+  if (!art || Z.laeuft) return;
+  Z.laeuft = true; neuZeichnen();
+  const nutzlast = { art, auftragId: Z.auftrag ? Z.auftrag.id : null,
+                     lat:gps&&gps.lat, lon:gps&&gps.lon };
+  const jetzt = new Date().toISOString();
+  let erg;
+  try {
+    const r = await fetch("/api/fahrer/meldung",{ method:"POST",
+      headers:{"Content-Type":"application/json"}, body:JSON.stringify(nutzlast) });
+    if (r.ok) {
+      const d = await r.json().catch(() => ({}));
+      erg = { art, typ:"gesendet", zeit:jetzt, gelesen:false, id:d.id || null };
+    } else {
+      erg = { art, typ:"fehler", zeit:jetzt };
+    }
+  } catch {
+    await inWarteschlange({ weg:"/api/fahrer/meldung", nutzlast, schluessel:"meldung:"+art+":"+jetzt });
+    erg = { art, typ:"wartet", zeit:jetzt };
+    Z.online = navigator.onLine;
+  }
+  Z.laeuft = false;
+  Z.problemErgebnis = erg;
+  Z.ansicht = "problemErgebnis";
+  neuZeichnen();
+  if (erg.typ === "gesendet") leseBestaetigungHolen();
+}
+/* „Vom Büro gelesen“ wird nur angezeigt, wenn das Büro die Meldung
+   wirklich gelesen hat. Solange nichts kommt, bleibt es „noch nicht“. */
+let leseUhr = null;
+function leseBestaetigungHolen(){
+  clearInterval(leseUhr);
+  leseUhr = setInterval(async () => {
+    const e = Z.problemErgebnis;
+    if (Z.ansicht !== "problemErgebnis" || !e || !e.id || e.gelesen) { clearInterval(leseUhr); return; }
+    try {
+      const r = await fetch("/api/fahrer/meldungen", { cache:"no-store" });
+      if (!r.ok) return;
+      const d = await r.json();
+      const m = (d.meldungen || []).find(x => x.id === e.id);
+      if (m && m.gelesen) { e.gelesen = true; neuZeichnen(); clearInterval(leseUhr); }
+    } catch {}
+  }, 15000);
+}
+
+/* ============ Änderung bestätigen ============ */
+async function aenderungBestaetigen(){
+  const a = Z.auftrag; if (!a) return;
+  try {
+    const r = await fetch("/api/fahrer/gesehen",{ method:"POST",
+      headers:{"Content-Type":"application/json"}, body:JSON.stringify({ auftragId:a.id }) });
+    if (r.ok) a.aenderungGesehen = { zeit:new Date().toISOString() };
+  } catch {
+    await inWarteschlange({ weg:"/api/fahrer/gesehen",
+      nutzlast:{ auftragId:a.id }, schluessel:"gesehen:"+a.id });
+    a.aenderungGesehen = { zeit:new Date().toISOString() };
   }
   neuZeichnen();
 }
 
-/* ============ Buchen ============ */
-async function buchen(auftrag, art){
-  if (laeuft) return;
-  const senden = async foto => {
-    laeuft = true; neuZeichnen();
-    const nutzlast = { auftragId:auftrag.id, art, foto,
-                       lat:gps&&gps.lat, lon:gps&&gps.lon };
-    try {
-      const r = await fetch("/api/fahrer/ereignis",{ method:"POST",
-        headers:{"Content-Type":"application/json"}, body:JSON.stringify(nutzlast) });
-      const d = await r.json();
-      laeuft = false;
-      if (!r.ok) { alert(d.fehler || W[L].keinnetz); await holen(); return; }
+/* ============ Sicherer Stand ============
+   Die App kann nicht messen, ob der Lkw fährt. Darum fragt sie
+   einmal nach und merkt die Antwort fünf Minuten.                */
+function imStand(){ return Date.now() < standBis; }
+function mitStand(aktion){
+  if (imStand()) return aktion();
+  Z.stand = { aktion };
+  Z.vorher = Z.ansicht;
+  Z.ansicht = "stand";
+  neuZeichnen();
+}
+
+/* ============ Aktionen ============ */
+const A = {
+  vorlesen(){ sprich(FA.vorlesetext(Z)); },
+
+  tagesplan(){ Z.vorher = Z.ansicht === "tagesplan" ? "auftrag" : Z.ansicht;
+               Z.ansicht = "tagesplan"; neuZeichnen(); },
+  sprache(){   Z.vorher = "tagesplan"; Z.ansicht = "sprache"; neuZeichnen(); },
+  spracheSetzen(d){ setzeSprache(d.k); Z.ansicht = "tagesplan"; neuZeichnen(); },
+
+  zurueck(){
+    if (Z.ansicht === "sprache")  { Z.ansicht = "tagesplan"; return neuZeichnen(); }
+    if (Z.ansicht === "stand")    { Z.ansicht = Z.vorher || "auftrag"; Z.stand = null; return neuZeichnen(); }
+    if (Z.ansicht === "kamerahilfe") { Z.ansicht = "foto"; return neuZeichnen(); }
+    Z.ansicht = "auftrag"; Z.foto = null; Z.ergebnis = null;
+    Z.problem = null; Z.problemErgebnis = null;
+    uebernehmen(); neuZeichnen();
+  },
+  nochmalLaden(){ Z.ansicht = "laden"; neuZeichnen(); holen(); },
+  fahrzeug(){ Z.fahrzeugOffen = !Z.fahrzeugOffen; neuZeichnen(); },
+  aenderungGesehen(){ mitStand(aenderungBestaetigen); },
+
+  /* Foto */
+  fotoAbholung(){ Z.foto = { art:"abholung", bild:null }; Z.ansicht = "foto"; neuZeichnen(); },
+  fotoAbgabe(){   Z.foto = { art:"abgabe",   bild:null }; Z.ansicht = "foto"; neuZeichnen(); },
+  kamera(){ mitStand(() => cam.click()); },
+  fotoNeu(){ if (Z.foto) Z.foto.bild = null; neuZeichnen(); cam.click(); },
+  fotoVerwenden(){
+    if (!Z.foto || !Z.foto.bild || !Z.auftrag) return;
+    ereignisSenden(Z.auftrag, Z.foto.art, Z.foto.bild);
+  },
+  fotoAbbrechen(){ Z.foto = null; Z.ansicht = "auftrag"; neuZeichnen(); },   // schließt nichts ab
+  kamerahilfe(){ Z.ansicht = "kamerahilfe"; neuZeichnen(); },
+
+  /* Ankunft */
+  ankunft(){ mitStand(() => { if (Z.auftrag) ereignisSenden(Z.auftrag, "ankunft", null); }); },
+
+  /* Sicherer Stand bestätigt */
+  standJa(){
+    standBis = Date.now() + 5*60000;
+    const f = Z.stand && Z.stand.aktion; Z.stand = null;
+    Z.ansicht = Z.vorher || "auftrag";
+    neuZeichnen();
+    if (f) f();
+  },
+
+  /* Senden wiederholen */
+  async nochmalSenden(){
+    Z.laeuft = true; neuZeichnen();
+    const fertig = await warteschlangeSenden();
+    Z.laeuft = false;
+    if (fertig) {
+      if (Z.ergebnis) Z.ergebnis.typ = "gespeichert";
       await holen();
-      if (art === "abgabe")        vollbild = { typ:"naechster", n:d.naechster };
-      else if (art === "abholung") vollbild = { typ:"ok", zeit:new Date().toISOString() };
-      neuZeichnen();
-    } catch {
-      // Kein Netz: merken und sofort weiterarbeiten lassen
-      await inWarteschlange({ nutzlast });
-      oertlichVormerken(auftrag, art);
-      laeuft = false;
-      vollbild = { typ:"gemerkt", zeit:new Date().toISOString() };
-      neuZeichnen();
+    } else if (Z.ergebnis) {
+      Z.ergebnis.typ = navigator.onLine ? "fehler" : "wartet";
     }
-  };
-  if (art === "ankunft") return senden(null);
-  camCb = foto => { if (foto) senden(foto); };
-  cam.click();
-}
+    neuZeichnen();
+  },
 
-// Damit der Bildschirm auch ohne Netz sofort weitergeht
-function oertlichVormerken(a, art){
-  const jetzt = new Date().toISOString();
-  if (art === "abholung") { a.status = "geladen";    a.abholZeit   = jetzt; }
-  if (art === "ankunft")  { a.status = "angekommen"; a.ankunftZeit = jetzt; }
-  if (art === "abgabe")   { a.status = "fertig";     a.abgabeZeit  = jetzt; }
-}
+  /* Problem melden */
+  problem(){ Z.problem = null; Z.ansicht = "problem"; neuZeichnen(); },
+  problemWahl(d){ Z.problem = { art:d.art }; Z.ansicht = "problemFrage"; neuZeichnen(); },
+  problemSenden(){ problemSenden(); },
 
-/* ============ Bildschirm ============ */
-function neuZeichnen(){
-  if (!daten) return;
-  if (vollbild) return zeichneVollbild();
-  const rest = daten.heute.filter(a => a.status !== "fertig");
-  if (!rest.length) return zeichneFeierabend();
+  /* Abschluss */
+  naechster(){ Z.abschluss = null; Z.ansicht = "auftrag"; uebernehmen(); neuZeichnen(); },
 
-  const a = rest[0], r = a.rechnung || {};
-  const wartet = a.status === "angekommen";
-  const schritt = a.status === "geladen" ? 2 : (wartet ? 3 : 1);
-  const farbe = wartet ? "gruen" : (r.ampel || "gruen");
-  const wort  = wartet ? W[L].wartet : { gruen:W[L].gut, gelb:W[L].knapp, rot:W[L].spaet }[farbe];
+  navi(){ /* der Link öffnet die Karten-App des Handys */ }
+};
 
-  let mitte;
-  if (wartet) {
-    const min = Math.max(0, Math.round((Date.now() - new Date(a.ankunftZeit)) / 60000));
-    mitte = zeile(I.uhr(), W[L].wartetSeit, min + " min", min > (r.frei ?? 60) ? "wichtig" : "");
-  } else if (schritt === 2) {
-    mitte = zeile(I.pfeil(), W[L].ankunft, r.ankunft ? uhr(r.ankunft) : "—");
-  } else {
-    mitte = zeile(I.wecker(), W[L].los, r.losBis ? uhr(r.losBis) : "—", "wichtig");
-  }
+/* Ein Klickempfänger für alles. Kein Wischen, kein langes Drücken, kein Doppeltipp. */
+APP.addEventListener("click", e => {
+  const b = e.target.closest("[data-tun]");
+  if (!b) return;
+  const f = A[b.dataset.tun];
+  if (typeof f === "function") f(b.dataset);
+});
 
-  const knopf = { 1:W[L].abholen, 2:W[L].angekommen, 3:W[L].abgeben }[schritt];
-  const art   = { 1:"abholung", 2:"ankunft", 3:"abgabe" }[schritt];
-
-  V.innerHTML = kopfleiste() +
-    (offen ? `<div class="offline">${offen} ${W[L].wartenAufNetz}</div>` : "") +
-    `<div class="signal ${farbe}">${I.ampel(farbe)}<div class="wort">${wort}</div></div>` +
-    zeile(I.pfeil(), "", (a.zielOrt||"").toUpperCase()) +
-    zeile(I.uhr(), W[L].termin, a.termin) +
-    mitte +
-    (a.notiz ? `<div class="notiz">${I.info(28)}<div>${a.notiz}</div></div>` : "") +
-    `<div class="rig">
-       ${a.zugmaschine ? rigZeile(I.lkw(), a.zugmaschine) : ""}
-       ${a.container   ? rigZeile(I.box(), lueckig(a.container)) : ""}
-     </div>` +
-    schritte(schritt) +
-    `<button class="gross-btn ${schritt===2?"gruen":""}" id="tun" ${laeuft?"disabled":""}>
-       ${schritt===2 ? I.haken(44) : I.kamera()} ${laeuft ? W[L].warte : knopf}</button>
-     <a class="klein-btn" href="tel:+490000000000">${I.telefon()} ${W[L].anrufen}</a>
-     <button class="install" id="install" onclick="installieren()"></button>`;
-
-  binde(() => satz(a, r, wort, schritt));
-  const t = document.getElementById("tun");
-  if (t) t.onclick = () => buchen(a, art);
-}
-
-function satz(a, r, wort, schritt){
-  let s = wort + ". " + W[L].termin + " " + a.termin + " " + (a.zielOrt||"") + ". ";
-  if (schritt === 1 && r.losBis) s += W[L].los + " " + uhr(r.losBis) + ". ";
-  if (schritt === 2 && r.ankunft) s += W[L].ankunft + " " + uhr(r.ankunft) + ". ";
-  if (a.notiz) s += a.notiz;
-  return s;
-}
-function zeile(icon, klein, gross, extra){
-  return `<div class="zeile ${extra||""}"><div class="ico">${icon}</div><div class="txt">
-    ${klein ? '<div class="klein">'+klein+'</div>' : ''}
-    <div class="gross num">${gross}</div></div></div>`;
-}
-function rigZeile(icon, code){ return `<div class="r">${icon}<div class="code">${code}</div></div>`; }
-function schritte(aktiv){
-  const p = n => `<div class="punkt ${aktiv>n?"fertig":(aktiv===n?"aktiv":"")}">${n}</div>`;
-  const s = n => `<div class="strich ${aktiv>n?"fertig":""}"></div>`;
-  return `<div class="schritte">${p(1)}${s(1)}${p(2)}${s(2)}${p(3)}</div>`;
-}
-
-function zeichneVollbild(){
-  const v = vollbild;
-  const weiter = `<button id="weiter">${W[L].weiter}</button>`;
-  if (v.typ === "ok" || v.typ === "gemerkt") {
-    const gemerkt = v.typ === "gemerkt";
-    V.innerHTML = `<div class="voll ${gemerkt?"gelb":"gruen"}">${I.haken(110)}
-      <div class="w">${gemerkt ? W[L].gemerkt : W[L].gespeichert}</div>
-      <div class="z num">${uhr(v.zeit)}</div>
-      ${gemerkt ? '<div class="u">'+W[L].sendetspaeter+'</div>' : ''}
-      ${weiter}</div>`;
-    binde(() => gemerkt ? W[L].gemerkt : W[L].gespeichert);
-  } else if (v.n) {
-    const f = v.n.ampel;
-    V.innerHTML = `<div class="voll ${f}">${I.ampel(f,62)}
-      <div class="w">${W[L].naechster}</div>
-      <div class="z num">${v.n.termin}</div>
-      <div class="u">${W[L].ankunft} ${uhr(v.n.ankunft)}</div>
-      ${f==="rot" ? '<div class="u" style="margin-top:14px;font-weight:700">'+W[L].chefweiss+'</div>' : ''}
-      ${weiter}</div>`;
-    binde(() => W[L].naechster + " " + v.n.termin + ". " + W[L].ankunft + " " + uhr(v.n.ankunft) +
-                (f==="rot" ? ". " + W[L].chefweiss : ""));
-  } else { vollbild = null; return neuZeichnen(); }
-  const t = document.querySelector(".voll .w");
-  if (t) sprich(t.textContent);
-  const b = document.getElementById("weiter");
-  if (b) b.onclick = () => { vollbild = null; neuZeichnen(); };
-}
-
-function zeichneFeierabend(){
-  const m = daten.morgen || [];
-  let losText = "";
-  if (m.length) {
-    const e = m[0];
-    const los = new Date(new Date(e.datum+"T"+e.termin+":00").getTime()
-      - ((e.fahrzeitMin || daten.einst.fahrzeitStandard)
-      +  (e.ruestzeitMin ?? daten.einst.ruestzeit)) * 60000);
-    losText = los.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
-  }
-  V.innerHTML = kopfleiste() +
-    (offen ? `<div class="offline">${offen} ${W[L].wartenAufNetz}</div>` : "") +
-    `<div class="voll gruen" style="min-height:auto;padding:26px 22px">${I.haken(90)}
-       <div class="w">${W[L].allesfertig}</div></div><div class="morgen">` +
-    (m.length
-      ? `<div class="zeile wichtig" style="border:0;padding:14px 0">
-           <div class="ico">${I.wecker()}</div><div class="txt">
-           <div class="klein">${W[L].morgen} · ${W[L].los}</div>
-           <div class="gross num">${losText}</div></div></div>` +
-        m.map(x => `<div class="mrow"><div class="mt num">${x.termin}</div>${I.box(30)}
-           <div class="code" style="font-size:22px">${lueckig(x.container)}</div></div>`).join("")
-      : `<div class="zeile" style="border:0"><div class="ico">${I.uhr()}</div>
-         <div class="txt"><div class="gross">${W[L].nichts}</div></div></div>`) +
-    `</div><button class="install" id="install" onclick="installieren()"></button>`;
-  binde(() => W[L].allesfertig + (m.length ? ". " + W[L].morgen + " " + W[L].los + " " + losText : ""));
-}
-
+/* ============ Start ============ */
 warteschlangeSenden().then(holen);
-setInterval(() => { if (!laeuft && !vollbild) holen(); }, 60000);
+setInterval(() => {
+  const fest = ["foto","ergebnis","stand","kamerahilfe","problem","problemFrage","problemErgebnis"];
+  if (!Z.laeuft && !fest.includes(Z.ansicht)) holen();
+}, 60000);
 </script>
 </body>
 </html>
