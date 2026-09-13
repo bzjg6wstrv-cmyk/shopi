@@ -1,0 +1,116 @@
+{{ 'section-scent-code.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  Der Ablauf in drei Schritten.
+
+  Keine Karten, keine Symbole, keine Kacheln: drei sehr große Ziffern, unter
+  jeder ein kurzer Titel und ein Satz. Auf dem Desktop stehen sie
+  nebeneinander und werden durch senkrechte Haarlinien geteilt, auf dem
+  Telefon untereinander mit der Ziffer links neben dem Text.
+{%- endcomment -%}
+<section class="section color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width">
+    {%- if section.settings.heading != blank -%}
+      <div class="sec-head sec-head--no-index">
+        <h2 class="h2 sec-head__title">{{ section.settings.heading | escape }}</h2>
+        {%- if section.settings.intro != blank -%}
+          <p class="sec-head__aside">{{ section.settings.intro | escape }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <ol class="steps reveal reveal--stagger">
+      {%- for block in section.blocks -%}
+        <li class="steps__item" {{ block.shopify_attributes }}>
+          <span class="steps__number figure-index" aria-hidden="true">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
+          <div class="steps__body">
+            <h3 class="steps__title h3">{{ block.settings.title | escape }}</h3>
+            <p class="steps__text">{{ block.settings.text | escape }}</p>
+          </div>
+        </li>
+      {%- endfor -%}
+    </ol>
+
+    {%- if section.settings.show_whatsapp -%}
+      <div class="steps__cta">
+        {% render 'whatsapp-link', class: 'action-link action-link--inline steps__button', arrow: true %}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "So funktioniert's",
+  "tag": "section",
+  "max_blocks": 5,
+  "settings": [
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Farbstil",
+      "options": [
+        { "value": "scheme-1", "label": "Ivory" },
+        { "value": "scheme-2", "label": "Ivory dunkel" },
+        { "value": "scheme-3", "label": "Schwarz" },
+        { "value": "scheme-4", "label": "Taupe" }
+      ],
+      "default": "scheme-1"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Überschrift",
+      "default": "So funktioniert's"
+    },
+    {
+      "type": "text",
+      "id": "intro",
+      "label": "Beitext rechts neben der Überschrift",
+      "info": "Ein kurzer Satz. Leer lassen blendet ihn aus.",
+      "default": "Von der Beratung bis zur Bestellung in drei Schritten."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_whatsapp",
+      "label": "WhatsApp-Button darunter",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "step",
+      "name": "Schritt",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Titel",
+          "default": "Lieblingsduft nennen"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Schreib uns deinen Lieblingsduft per WhatsApp."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "So funktioniert's",
+      "blocks": [
+        {
+          "type": "step"
+        },
+        {
+          "type": "step"
+        },
+        {
+          "type": "step"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

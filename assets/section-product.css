@@ -1,0 +1,274 @@
+/* Produktseite – Duftprofil, Angaben, Ergänzungen.
+
+   Diese Datei war über mehrere Ausbaustufen mit angehängten Korrekturblöcken
+   gewachsen. Sie ist hier zu einem Stand zusammengeführt: ein Regelsatz je
+   Bauteil, mobil zuerst, danach die Erweiterungen für größere Schirme.
+
+   Grundsätze: Haarlinien statt Kästen, keine Textpillen, keine Zusatzfarben.
+   Alle Anteilsbalken benutzen ausschließlich Text- und Linienfarbe des
+   Farbstils. */
+
+.product-block + .product-block { margin-top: var(--space-xl); }
+
+/* Angabenliste – Bezeichnung links, Wert rechts, dazwischen nichts als
+   Weißraum. Ersetzt die früheren Merkmals-Pillen. */
+.spec-list { margin-top: var(--space-md); }
+.spec-list__row {
+  display: grid;
+  grid-template-columns: minmax(6rem, auto) minmax(0, 1fr);
+  gap: var(--space-md);
+  align-items: baseline;
+  padding-block: var(--space-sm);
+  border-top: var(--hair);
+}
+.spec-list__row:last-child { border-bottom: var(--hair); }
+.spec-list dt { color: rgb(var(--color-muted)); }
+.spec-list dd { margin: 0; font-size: 0.9375rem; text-align: right; }
+
+/* Duftpyramide – dieselbe Aufstellung wie die Angabenliste. */
+.pyramid { margin-top: var(--space-md); }
+.pyramid__row {
+  display: grid;
+  grid-template-columns: minmax(6rem, 7rem) minmax(0, 1fr);
+  gap: var(--space-md);
+  align-items: baseline;
+  padding-block: var(--space-sm);
+  border-top: var(--hair);
+}
+.pyramid__row:last-child { border-bottom: var(--hair); }
+.pyramid__label { color: rgb(var(--color-muted)); }
+
+/* Hinweis zur Konzentration: eine Aussage auf einer Haarlinie, keine
+   eingefärbte Fläche. */
+.concentration-note {
+  padding-top: var(--space-md);
+  border-top: var(--hair-strong);
+}
+.concentration-note__text { margin-top: var(--space-sm); max-width: 52ch; }
+
+/* Ergänzungen (Probe, Travel, Beratung): eine Zeile auf Haarlinien statt
+   einer gerahmten Kachel. */
+.addon {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  gap: var(--space-md);
+  align-items: center;
+  padding-block: var(--space-md);
+  border-top: var(--hair);
+}
+.addon:last-child { border-bottom: var(--hair); }
+.addon + .addon { border-top: var(--hair); }
+.addon img { width: 3.5rem; height: 4.5rem; object-fit: cover; }
+.addon__body { grid-column: 1 / -1; }
+.addon__title { font-family: var(--font-heading-family); font-size: 1rem; line-height: 1.25; }
+.addon__text { margin-top: 0.15rem; font-size: 0.8125rem; color: rgb(var(--color-muted)); }
+.addon__button {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 2.875rem;
+  padding-inline: var(--space-md);
+  font-size: 0.6875rem;
+}
+
+@media (min-width: 600px) {
+  .addon { grid-template-columns: 4rem minmax(0, 1fr) auto; }
+  .addon img { width: 4rem; height: 5rem; }
+  .addon__body { grid-column: auto; }
+  .addon__button { grid-column: auto; width: auto; }
+}
+
+.reviews-summary { display: flex; align-items: center; gap: var(--space-sm); margin-top: var(--space-xs); }
+.reviews-summary__stars { letter-spacing: 0.1em; }
+
+.product-recommendations { margin-top: var(--space-3xl); }
+@media (min-width: 990px) { .product-recommendations { margin-top: var(--space-4xl); } }
+
+/* ====================================================================== */
+/* Duftprofil der Launch-Codes                                            */
+/* ====================================================================== */
+.vc-profile {
+  margin-top: var(--space-2xl);
+  padding-top: var(--space-lg);
+  border-top: var(--hair-strong);
+}
+.vc-profile,
+.vc-profile__head,
+.vc-profile__section,
+.vc-profile__analytics,
+.vc-stat-card,
+.vc-profile__description { min-width: 0; max-width: 100%; }
+
+.vc-profile__head { display: grid; gap: var(--space-sm); }
+.vc-profile__code {
+  margin: 0.15rem 0 0;
+  font-family: var(--font-heading-family);
+  font-size: clamp(1.75rem, 1.2rem + 2.2vw, 2.75rem);
+  font-weight: var(--font-heading-weight);
+  letter-spacing: 0.04em;
+  line-height: 1.05;
+}
+.vc-profile__kicker { margin-top: 0.3rem; font-size: 1rem; }
+
+/* Angaben als Zeile, nicht als Pillen. */
+.vc-profile__facts {
+  font-size: 0.6875rem;
+  letter-spacing: var(--meta-tracking);
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+}
+
+.vc-profile__section { margin-top: var(--space-xl); }
+
+/* Anteile: ein einziger Farbton, Länge trägt die Aussage. */
+.vc-traits { display: grid; gap: 0.55rem; margin-top: var(--space-md); max-width: 46rem; }
+/* Die Balkenlänge entspricht exakt dem angegebenen Wert – der Balken wird
+   nicht auf den größten Wert der Gruppe normiert. Damit 8 % und 29 % sich
+   sichtbar unterscheiden, bekommt die Bahn so viel Breite wie möglich:
+   Bezeichnung schmal, Wert schmal, alles dazwischen ist Bahn. */
+.vc-trait-meter,
+.vc-meter {
+  display: grid;
+  grid-template-columns: minmax(4.5rem, 6rem) minmax(0, 1fr) 2.5rem;
+  gap: var(--space-sm);
+  align-items: center;
+  margin: 0;
+  font-size: 0.8125rem;
+}
+.vc-trait-meter > span,
+.vc-meter > span { min-width: 0; overflow-wrap: anywhere; }
+.vc-trait-meter strong,
+.vc-meter strong {
+  font-weight: 400;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: rgb(var(--color-muted));
+}
+.vc-trait-meter__track,
+.vc-meter > div {
+  height: 3px;
+  background-color: rgb(var(--color-line));
+  overflow: hidden;
+}
+.vc-trait-meter__track i,
+.vc-meter > div > i {
+  display: block;
+  width: var(--vc-pct, auto);
+  height: 100%;
+  background-color: rgb(var(--color-text));
+}
+
+/* Duftnoten: die Zeichnungen stehen frei auf dem Seitenton, ohne Kreis und
+   ohne Kachel. Auf dem Telefon eine Bahn zum Wischen. */
+.vc-profile__notes-section { margin-top: var(--space-2xl); }
+.vc-notes__title {
+  margin-bottom: var(--space-md);
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: 1.25rem;
+}
+/* Duftnoten als echte Wischbahn: drei Noten vollständig, dazu dieselbe
+   12-%-Vorschau wie in der Bestseller-Reihe. Die Bahn läuft bis an beide
+   Bildschirmkanten, damit keine Beschriftung am Rand abgeschnitten wird. */
+.vc-notes {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc(
+    (100% + var(--gutter) - (var(--space-md) * 2)) / calc(3 + var(--row-peek-ratio, 1.12) - 1)
+  );
+  gap: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: var(--hair);
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: var(--gutter);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+  width: calc(100% + (var(--gutter) * 2));
+  max-width: none;
+  margin-inline: calc(var(--gutter) * -1);
+  padding-inline: var(--gutter);
+}
+.vc-notes::-webkit-scrollbar { display: none; }
+.vc-note {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: var(--space-sm);
+  scroll-snap-align: start;
+  text-align: center;
+  min-width: 0;
+}
+.vc-note__art { color: rgb(var(--color-text)); }
+.vc-note-icon { width: 52px; height: 52px; }
+.vc-note p {
+  margin: 0;
+  /* Namen wie „Bittermandel" müssen vollständig lesbar bleiben: Der Text
+     darf umbrechen und wird nie abgeschnitten. */
+  font-size: 0.625rem;
+  line-height: 1.35;
+  text-transform: uppercase;
+  letter-spacing: var(--meta-tracking);
+  color: rgb(var(--color-muted));
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.vc-profile__analytics { display: grid; gap: var(--space-xl); margin-top: var(--space-2xl); }
+.vc-stat-card { padding-top: var(--space-md); border-top: var(--hair); }
+.vc-stat-card .vc-meter { margin-top: 0.55rem; }
+.vc-style-text { margin-top: 0.55rem; color: rgb(var(--color-muted)); font-size: 0.875rem; line-height: 1.55; }
+
+.vc-profile__description {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-md);
+  border-top: var(--hair);
+}
+.vc-profile__description h3 {
+  margin: 0.4rem 0 0.4rem;
+  font-family: var(--font-heading-family);
+  font-size: 1.1875rem;
+  font-weight: var(--font-heading-weight);
+  line-height: 1.25;
+}
+.vc-profile__description > p:last-child {
+  margin: 0;
+  color: rgb(var(--color-muted));
+  line-height: 1.6;
+  max-width: 62ch;
+}
+
+@media (min-width: 750px) {
+  .vc-profile { margin-top: var(--space-3xl); padding-top: var(--space-2xl); }
+  .vc-profile__head {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: var(--space-xl);
+  }
+  .vc-profile__facts { text-align: right; padding-bottom: 0.35rem; }
+  .vc-profile__section { margin-top: var(--space-2xl); }
+  .vc-trait-meter,
+  .vc-meter { grid-template-columns: minmax(6rem, 8rem) minmax(0, 1fr) 3rem; font-size: 0.8125rem; }
+  /* Ab Tablet keine Bahn mehr, sondern ein umbrechendes Raster: Die
+     Duftnoten stehen in der schmalen Kaufspalte und dürfen dort nicht
+     seitlich herauslaufen. */
+  .vc-notes {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
+    gap: var(--space-lg) var(--space-md);
+    overflow-x: visible;
+    scroll-snap-type: none;
+    width: 100%;
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+  .vc-profile__analytics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2xl); }
+  .vc-stat-card--style { grid-column: 1 / -1; }
+}
+
+@media (min-width: 990px) {
+  .vc-profile__analytics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .vc-stat-card--style { grid-column: auto; }
+}

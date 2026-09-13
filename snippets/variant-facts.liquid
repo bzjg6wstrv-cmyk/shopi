@@ -1,0 +1,109 @@
+{%- comment -%}
+  Ermittelt Konzentration, Prozentwert und Füllmenge einer Variante und gibt
+  genau einen Wert als Text aus (kein Markup).
+
+  Reihenfolge:
+    1. Varianten-Metafeld, falls gepflegt
+    2. Ableitung aus dem standardisierten Variantennamen
+
+  Hintergrund: Shopify überträgt Varianten-Metafelder nicht über den normalen
+  Produkt-CSV-Import. Damit der Shop direkt nach dem Import stimmt, leitet das
+  Theme die Werte aus dem Variantennamen ab. Die Zuordnung steht in den Theme
+  Settings unter „Ausführungen & Konzentration" und ist dort änderbar.
+
+  Parameter:
+    variant – Variantenobjekt
+    mode    – 'line' (Standard), 'conc', 'pct' oder 'size'
+
+  Verwendung in einer Variablen:
+    {%- capture text -%}{% render 'variant-facts', variant: v, mode: 'line' %}{%- endcapture -%}
+{%- endcomment -%}
+{%- liquid
+  assign vf_mode = mode | default: 'line'
+  assign vf_title = variant.title | downcase
+
+  assign vf_conc = variant.metafields.custom.konzentration.value
+  assign vf_pct = variant.metafields.custom.konzentration_prozent.value
+  assign vf_size = variant.metafields.custom.fuellmenge.value
+
+  assign edp_keyword = settings.conc_edp_keyword | default: 'eau de parfum' | downcase
+
+  if vf_conc == blank or vf_pct == blank
+    assign is_edp = false
+    if edp_keyword != blank and vf_title contains edp_keyword
+      assign is_edp = true
+    endif
+
+    if vf_conc == blank
+      if is_edp
+        assign vf_conc = settings.conc_edp_label | default: 'Eau de Parfum'
+      else
+        assign vf_conc = settings.conc_extrait_label | default: 'Extrait'
+      endif
+    endif
+
+    if vf_pct == blank
+      if is_edp
+        assign vf_pct = settings.conc_edp_percent | default: '20'
+      else
+        assign vf_pct = settings.conc_extrait_percent | default: '30'
+      endif
+    endif
+  endif
+
+  comment
+    Füllmenge aus dem Variantennamen: „Extrait 30 ml" ergibt „30 ml",
+    „Travel 10ml" ebenfalls „10 ml".
+  endcomment
+  if vf_size == blank
+    assign vf_tokens = vf_title | split: ' '
+    assign vf_previous = ''
+    for token in vf_tokens
+      if token == 'ml' and vf_previous != ''
+        assign vf_size = vf_previous | append: ' ml'
+      elsif token contains 'ml' and token != 'ml' and vf_size == blank
+        assign vf_candidate = token | replace: 'ml', '' | strip
+        assign vf_candidate_number = vf_candidate | plus: 0
+        if vf_candidate_number > 0
+          assign vf_size = vf_candidate | append: ' ml'
+        endif
+      endif
+      assign vf_previous = token
+    endfor
+  endif
+
+  comment
+    Ein Produkt ohne echte Varianten bekommt keine erfundenen Angaben.
+  endcomment
+  if vf_title == 'default title'
+    assign vf_conc = ''
+    assign vf_pct = ''
+    assign vf_size = ''
+  endif
+
+  assign vf_line = ''
+  if vf_conc != blank
+    assign vf_line = vf_conc
+  endif
+  if vf_size != blank
+    if vf_line != blank
+      assign vf_line = vf_line | append: ' · ' | append: vf_size
+    else
+      assign vf_line = vf_size
+    endif
+  endif
+  if vf_pct != blank
+    assign vf_pct_text = vf_pct | append: ' %'
+    if vf_line != blank
+      assign vf_line = vf_line | append: ' · ' | append: vf_pct_text
+    else
+      assign vf_line = vf_pct_text
+    endif
+  endif
+-%}
+{%- case vf_mode -%}
+  {%- when 'conc' -%}{{ vf_conc }}
+  {%- when 'pct' -%}{{ vf_pct }}
+  {%- when 'size' -%}{{ vf_size }}
+  {%- else -%}{{ vf_line }}
+{%- endcase -%}

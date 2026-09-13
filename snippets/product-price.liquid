@@ -1,0 +1,49 @@
+{%- comment -%}
+  Preisausgabe.
+  Parameter:
+    variant   – Variantenobjekt (bevorzugt), sonst wird product genutzt
+    product   – Produktobjekt
+    show_unit – Grundpreis nach PAngV ausgeben (Standard: Theme Setting)
+    class     – zusätzliche CSS-Klasse
+
+  Es werden bewusst keine „ab"-Preise ausgegeben – der Preis gehört immer zu
+  einer konkreten Ausführung. Die Elemente für Streichpreis und Grundpreis
+  stehen auch dann im Markup, wenn sie leer sind: So kann der
+  Variantenwechsel sie ohne Neuaufbau befüllen.
+{%- endcomment -%}
+{%- liquid
+  assign target = variant
+  if target == blank and product != blank
+    assign target = product.selected_or_first_available_variant
+  endif
+
+  assign price_value = target.price
+  assign compare_value = target.compare_at_price
+  assign on_sale = false
+  if compare_value > price_value
+    assign on_sale = true
+  endif
+
+  assign show_unit_price = show_unit
+  if show_unit == nil
+    assign show_unit_price = settings.show_unit_price
+  endif
+
+  assign unit_text = ''
+  if show_unit_price and target.unit_price_measurement
+    assign unit_amount = target.unit_price | money
+    assign unit_text = unit_amount | append: ' / '
+    if target.unit_price_measurement.reference_value != 1
+      assign unit_text = unit_text | append: target.unit_price_measurement.reference_value
+    endif
+    assign unit_text = unit_text | append: target.unit_price_measurement.reference_unit
+  endif
+-%}
+<div class="price {% if on_sale %}price--on-sale{% endif %} {{ class }}">
+  <span class="visually-hidden">{{ 'products.product.price' | t }}</span>
+  <s class="price__regular"{% unless on_sale %} hidden{% endunless %}>
+    {%- if on_sale %}{{ compare_value | money }}{% endif -%}
+  </s>
+  <span class="price__current">{{ price_value | money }}</span>
+  <span class="card__unit-price"{% if unit_text == blank %} hidden{% endif %}>{{ unit_text }}</span>
+</div>

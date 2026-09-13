@@ -1,0 +1,13 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "show_placeholder_note": true
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

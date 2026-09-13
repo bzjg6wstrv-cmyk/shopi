@@ -1,0 +1,14 @@
+{
+  "sections": {
+    "main": {
+      "type": "discovery-set",
+      "settings": {
+        "max_picks": 5,
+        "families": "Frisch\nZitrisch\nFruchtig\nFloral\nSüß\nGourmand\nHolzig\nWürzig\nAmber\nMoschus\nLeder\nOud"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

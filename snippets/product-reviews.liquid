@@ -1,0 +1,24 @@
+{%- comment -%}
+  Bewertungen. Das Theme liest ausschließlich das Standard-Metafeld
+  reviews.rating, das u. a. Judge.me und vergleichbare Apps schreiben.
+  Liegen keine echten Daten vor, wird nichts ausgegeben – es werden
+  unter keinen Umständen Beispielbewertungen erzeugt.
+{%- endcomment -%}
+{%- if settings.reviews_enabled and product.metafields.reviews.rating.value != blank -%}
+  {%- liquid
+    assign rating = product.metafields.reviews.rating.value
+    assign count = product.metafields.reviews.rating_count | default: 0
+    assign rounded = rating.rating | round
+  -%}
+  <div class="reviews-summary">
+    <span class="reviews-summary__stars" aria-hidden="true">
+      {%- for i in (1..rating.scale_max) -%}
+        {%- if i <= rounded -%}★{%- else -%}☆{%- endif -%}
+      {%- endfor -%}
+    </span>
+    <span class="text-body-sm text-muted">
+      {{ rating.rating }} / {{ rating.scale_max }}
+      {%- if count > 0 %} · {{ count }}{% endif -%}
+    </span>
+  </div>
+{%- endif -%}

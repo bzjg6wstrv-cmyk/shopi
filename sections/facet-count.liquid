@@ -1,0 +1,16 @@
+{%- comment -%}
+  Reine Zähl-Section für die Vorabprüfung des Duftfinders.
+  Wird nur über die Section Rendering API abgerufen
+  (…/collections/x?filter…&section_id=facet-count) und gibt nichts
+  als die Trefferzahl aus.
+{%- endcomment -%}
+<span data-facet-count>{{ collection.products_count }}</span>
+
+{% schema %}
+{
+  "name": "Trefferzahl",
+  "settings": [
+
+  ]
+}
+{% endschema %}

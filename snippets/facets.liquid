@@ -1,0 +1,100 @@
+{%- comment -%}
+  Filterformular.
+  Parameter:
+    results  – collection oder search
+    context  – 'desktop' oder 'mobile' (nur für eindeutige IDs)
+    section_id – ID der Section für die Section Rendering API
+
+  Die Filter stammen aus Shopify Storefront Filtering. Sind keine Filter
+  eingerichtet, erscheint statt einer leeren Leiste ein Hinweis.
+{%- endcomment -%}
+<form
+  data-facet-form
+  data-section-id="{{ section_id }}"
+  class="facets"
+  {% if results.url %}action="{{ results.url }}"{% endif %}
+  method="get"
+>
+  {%- if results.terms -%}
+    <input type="hidden" name="q" value="{{ results.terms | escape }}">
+    <input type="hidden" name="options[prefix]" value="last">
+  {%- endif -%}
+  {%- if results.sort_by != blank -%}
+    <input type="hidden" name="sort_by" value="{{ results.sort_by }}">
+  {%- endif -%}
+
+  {%- if results.filters.size == 0 -%}
+    <p class="facet-note">{{ 'products.facets.unavailable_note' | t }}</p>
+  {%- else -%}
+    {%- for filter in results.filters -%}
+      <details class="facet" data-accordion {% if filter.active_values.size > 0 or forloop.index <= 3 %}open{% endif %}>
+        <summary class="facet__summary">
+          {{ filter.label | escape }}
+          {% render 'icon', name: 'chevron' %}
+        </summary>
+
+        {%- case filter.type -%}
+          {%- when 'price_range' -%}
+            <div class="facet__price">
+              <div class="field">
+                <label class="visually-hidden" for="Price-From-{{ context }}">{{ 'products.facets.from' | t }}</label>
+                <input
+                  class="field__input"
+                  id="Price-From-{{ context }}"
+                  type="number"
+                  inputmode="decimal"
+                  name="{{ filter.min_value.param_name }}"
+                  {% if filter.min_value.value %}value="{{ filter.min_value.value | money_without_currency | replace: ',', '.' }}"{% endif %}
+                  min="0"
+                  max="{{ filter.range_max | money_without_currency | replace: ',', '.' }}"
+                  placeholder="0"
+                >
+              </div>
+              <span aria-hidden="true">–</span>
+              <div class="field">
+                <label class="visually-hidden" for="Price-To-{{ context }}">{{ 'products.facets.to' | t }}</label>
+                <input
+                  class="field__input"
+                  id="Price-To-{{ context }}"
+                  type="number"
+                  inputmode="decimal"
+                  name="{{ filter.max_value.param_name }}"
+                  {% if filter.max_value.value %}value="{{ filter.max_value.value | money_without_currency | replace: ',', '.' }}"{% endif %}
+                  min="0"
+                  max="{{ filter.range_max | money_without_currency | replace: ',', '.' }}"
+                  placeholder="{{ filter.range_max | money_without_currency | replace: ',', '.' }}"
+                >
+              </div>
+            </div>
+
+          {%- else -%}
+            <ul class="facet__list">
+              {%- for value in filter.values -%}
+                <li>
+                  <label class="facet__option" for="Filter-{{ context }}-{{ filter.param_name | escape }}-{{ forloop.index }}">
+                    <input
+                      type="checkbox"
+                      id="Filter-{{ context }}-{{ filter.param_name | escape }}-{{ forloop.index }}"
+                      name="{{ value.param_name }}"
+                      value="{{ value.value | escape }}"
+                      {% if value.active %}checked{% endif %}
+                      {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                    >
+                    <span class="facet__option-label">{{ value.label | escape }}</span>
+                    <span class="facet__count">{{ value.count }}</span>
+                  </label>
+                </li>
+              {%- endfor -%}
+            </ul>
+        {%- endcase -%}
+      </details>
+    {%- endfor -%}
+  {%- endif -%}
+
+  <noscript>
+    <div class="facet__price-actions">
+      <button type="submit" class="button">{{ 'products.facets.apply' | t }}</button>
+      <a class="button button--secondary" href="{{ results.url }}">{{ 'products.facets.clear_all' | t }}</a>
+    </div>
+  </noscript>
+</form>

@@ -1,0 +1,34 @@
+{{ 'section-scent-code.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  Scent-Code-Eingabe innerhalb des normalen Produktformulars.
+
+  Wird ausschließlich für das zentrale Produkt „VENT CELESTE Scent Code"
+  gerendert. Damit funktioniert der Bestellweg auch dann, wenn dem Produkt im
+  Adminbereich noch die Standard-Produktvorlage zugewiesen ist und nicht
+  `product.scent-code`.
+
+  Der Code kommt aus der Adresszeile (?code=VC-071) oder aus dem Feld und wird
+  als Positionsangabe an dasselbe Formular gehängt, das Shopify ohnehin
+  absendet. Preis, Varianten und Warenkorb bleiben unberührt.
+
+  Das Eingabefeld ist selbst ein <form> und steht deshalb bewusst VOR dem
+  Produktformular – verschachtelte Formulare wären ungültiges HTML, der
+  Browser würde das innere Formular verwerfen.
+{%- endcomment -%}
+<div class="code-inline" data-scent-code-inline>
+  <p class="eyebrow code-inline__label">{{ 'sections.scent_code.your_code' | t }}</p>
+
+  {%- assign inline_check_label = 'sections.scent_code.check' | t -%}
+  {% render 'scent-code-field',
+    id: 'InlineScentCode',
+    size: 'compact',
+    mode: 'local',
+    submit: inline_check_label
+  %}
+
+  <p class="code-order__badge" data-code-badge hidden>
+    <span data-code-badge-value></span>
+  </p>
+
+  <p class="code-order__note">{{ 'sections.scent_code.code_help' | t }}</p>
+</div>

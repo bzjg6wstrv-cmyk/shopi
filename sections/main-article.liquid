@@ -1,0 +1,25 @@
+<article class="section">
+  <div class="page-width page-width--narrow">
+    <h1 class="h2">{{ article.title }}</h1>
+    <p class="meta meta--muted mt-sm">{{ article.published_at | date: '%d.%m.%Y' }}</p>
+    {%- if article.image -%}
+      <img src="{{ article.image | image_url: width: 1400 }}" alt="{{ article.image.alt | escape }}"
+           width="{{ article.image.width }}" height="{{ article.image.height }}" loading="eager"
+           class="article__cover">
+    {%- endif -%}
+    <div class="rte measure">{{ article.content }}</div>
+    <p class="mt-2xl">
+      <a class="link-underline" href="{{ blog.url }}">{{ 'blogs.article.back_to_blog' | t }}</a>
+    </p>
+  </div>
+</article>
+
+{% schema %}
+{
+  "name": "Artikel",
+  "tag": "section",
+  "settings": [
+
+  ]
+}
+{% endschema %}

@@ -1,0 +1,56 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "blocks": {
+        "pyramid": {
+          "type": "scent_pyramid"
+        },
+        "character": {
+          "type": "character"
+        },
+        "wear": {
+          "type": "when_to_wear"
+        },
+        "description": {
+          "type": "description",
+          "settings": {
+            "heading": "Duftbeschreibung",
+            "open": false
+          }
+        },
+        "ingredients": {
+          "type": "ingredients"
+        },
+        "whatsapp": {
+          "type": "whatsapp",
+          "settings": {
+            "heading": "Unsicher, ob dieser Duft passt?",
+            "text": "Schreib uns deinen Lieblingsduft – der Code dieser Seite fährt automatisch mit.",
+            "button_label": "Duftberatung starten"
+          }
+        }
+      },
+      "block_order": [
+        "pyramid",
+        "character",
+        "wear",
+        "whatsapp",
+        "description",
+        "ingredients"
+      ]
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "heading": "Das könnte dir auch gefallen",
+        "intent": "related",
+        "limit": 4
+      }
+    }
+  },
+  "order": [
+    "main",
+    "recommendations"
+  ]
+}

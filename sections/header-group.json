@@ -1,0 +1,48 @@
+{
+  "type": "header",
+  "name": "Kopfbereich",
+  "sections": {
+    "announcement-bar": {
+      "type": "announcement-bar",
+      "blocks": {
+        "announcement": {
+          "type": "announcement",
+          "settings": {
+            "text": "500+ Duftprofile · Beratung per WhatsApp"
+          }
+        }
+      },
+      "block_order": [
+        "announcement"
+      ],
+      "settings": {
+        "color_scheme": "scheme-3"
+      }
+    },
+    "header": {
+      "type": "header",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "menu": "main-menu",
+        "sticky": true,
+        "show_account": true,
+        "families_parent": "Duftberatung",
+        "families_title": "Duftwelten",
+        "feature_title": "Discovery Set",
+        "feature_text": "Fünf Düfte selbst auswählen.",
+        "search_hint": "Suche z. B. nach VC-049, Vanille, Gourmand oder holzig.",
+        "families_menu": "duftfamilien",
+        "feature_link": "/products/discovery-set",
+        "whatsapp_parent": "Duftberatung",
+        "whatsapp_teaser": "Nenn uns deinen Lieblingsduft – wir finden deinen Scent Code.",
+        "mobile_primary_menu": "mobile-hauptziele",
+        "mobile_secondary_menu": "mobile-nebenziele",
+        "mobile_footer_menu": "mobile-service"
+      }
+    }
+  },
+  "order": [
+    "announcement-bar",
+    "header"
+  ]
+}

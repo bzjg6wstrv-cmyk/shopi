@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#F5F2ED">
+
+    <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+    {%- if settings.favicon != blank -%}
+      <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 48, height: 48 }}">
+    {%- endif -%}
+
+    {%- render 'meta-tags' -%}
+
+    <style data-theme-tokens>
+      {%- render 'css-variables' -%}
+    </style>
+
+    {{ 'base.css' | asset_url | stylesheet_tag: preload: true }}
+
+    <script>
+      document.documentElement.classList.remove('no-js');
+      window.VCRoutes = {
+        root_url: {{ routes.root_url | json }},
+        cart_url: {{ routes.cart_url | json }},
+        cart_add_url: {{ routes.cart_add_url | json }},
+        cart_change_url: {{ routes.cart_change_url | json }},
+        cart_update_url: {{ routes.cart_update_url | json }},
+        predictive_search_url: {{ routes.predictive_search_url | json }},
+        search_url: {{ routes.search_url | json }}
+      };
+      window.VCCodeStrings = {
+        checking: {{ 'sections.scent_code.checking' | t | json }},
+        found: {{ 'sections.scent_code.found' | t | json }},
+        order: {{ 'sections.scent_code.order' | t | json }},
+        invalid: {{ 'sections.scent_code.invalid' | t | json }}
+      };
+      window.VCStrings = {
+        error: {{ 'general.accessibility.error' | t | json }},
+        loading: {{ 'general.accessibility.loading' | t | json }},
+        adding: {{ 'products.product.adding' | t | json }},
+        added: {{ 'products.product.added' | t | json }},
+        addToCart: {{ 'products.product.add_to_cart' | t | json }},
+        soldOut: {{ 'products.product.sold_out' | t | json }},
+        unavailable: {{ 'products.product.unavailable' | t | json }}
+      };
+    </script>
+    <script src="{{ 'theme.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'scent-code.js' | asset_url }}" defer="defer"></script>
+
+    {{ content_for_header }}
+
+    {%- render 'structured-data' -%}
+  </head>
+
+  <body class="template-{{ request.page_type | handle }} color-scheme-1 color-scheme{% if settings.animations_enabled %} animations-on{% endif %}">
+    <a class="skip-link" href="#MainContent">{{ 'general.accessibility.skip_to_content' | t }}</a>
+
+    {% sections 'header-group' %}
+
+    <main id="MainContent" role="main" tabindex="-1">
+      {{ content_for_layout }}
+    </main>
+
+    {% sections 'footer-group' %}
+
+    {%- if settings.cart_type == 'drawer' -%}
+      {% section 'cart-drawer' %}
+    {%- endif -%}
+
+    {% render 'whatsapp-sticky' %}
+    {% render 'scent-code-map' %}
+
+    <div class="overlay" data-overlay hidden></div>
+
+    <ul hidden>
+      <li id="a11y-refresh-page-message">{{ 'general.accessibility.refresh_page' | t }}</li>
+    </ul>
+  </body>
+</html>

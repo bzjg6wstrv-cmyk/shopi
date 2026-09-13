@@ -1,0 +1,85 @@
+{{ 'section-scent-code.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  Scent-Code-Eingabe als eigener Abschnitt.
+
+  Der Code ist das Alleinstellungsmerkmal der Marke – deshalb ist dieser
+  Abschnitt kein Formular, sondern ein Auftritt: das Präfix und die Ziffern
+  stehen sehr groß auf einer Grundlinie, links daneben die Erklärung. Ohne
+  JavaScript bleibt es ein gewöhnliches Suchformular.
+{%- endcomment -%}
+<section class="section code-section color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width code-section__inner">
+    <div class="code-section__intro reveal">
+      {%- if section.settings.eyebrow != blank -%}
+        <span class="eyebrow">{{ section.settings.eyebrow | escape }}</span>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h2 class="code-section__title h2">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+      {%- if section.settings.text != blank -%}
+        <p class="code-section__text">{{ section.settings.text | escape }}</p>
+      {%- endif -%}
+
+      {%- if settings.whatsapp_enabled -%}
+        <p class="code-section__alt">
+          {{ 'sections.scent_code.no_code_yet' | t }}
+          {% render 'whatsapp-link', class: 'link-underline', label: section.settings.whatsapp_label %}
+        </p>
+      {%- endif -%}
+    </div>
+
+    <div class="code-section__field reveal" data-reveal-delay="2">
+      {% render 'scent-code-field', id: 'SectionScentCode', size: 'monument' %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Scent Code eingeben",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Farbstil",
+      "options": [
+        { "value": "scheme-1", "label": "Ivory" },
+        { "value": "scheme-2", "label": "Ivory dunkel" },
+        { "value": "scheme-3", "label": "Schwarz" },
+        { "value": "scheme-4", "label": "Taupe" }
+      ],
+      "default": "scheme-1"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Kleiner Vortext",
+      "default": "Bereits beraten"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Überschrift",
+      "default": "Code bereits bekannt?"
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Text",
+      "default": "Gib deinen Scent Code ein und wähle deine Ausführung."
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_label",
+      "label": "Textlink zur Beratung",
+      "default": "Duftberatung starten"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Scent Code eingeben"
+    }
+  ]
+}
+{% endschema %}

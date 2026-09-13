@@ -1,0 +1,51 @@
+{
+  "sections": {
+    "finder": {
+      "type": "scent-finder",
+      "blocks": {
+        "q1": {
+          "type": "question",
+          "settings": {
+            "question": "Welche Richtung suchst du?",
+            "filter_param": "filter.p.m.custom.duftfamilie",
+            "answers": "Frisch\nSüß\nHolzig\nGourmand\nFloral\nOud",
+            "optional": false
+          }
+        },
+        "q2": {
+          "type": "question",
+          "settings": {
+            "question": "Wann möchtest du den Duft tragen?",
+            "filter_param": "filter.p.m.custom.anlass",
+            "answers": "Alltag\nBüro\nAbend\nDate\nAnlass",
+            "optional": true
+          }
+        },
+        "q3": {
+          "type": "question",
+          "settings": {
+            "question": "Wie intensiv?",
+            "filter_param": "filter.p.m.custom.intensitaet",
+            "answers": "Dezent | leicht\nMittel | mittel\nIntensiv | intensiv",
+            "optional": true
+          }
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "eyebrow": "Drei Fragen",
+        "heading": "Duftfinder",
+        "text": "<p>Richtung, Anlass, Intensität. Danach zeigen wir dir die Düfte, die dazu passen.</p>",
+        "mode": "metafield"
+      }
+    }
+  },
+  "order": [
+    "finder"
+  ]
+}

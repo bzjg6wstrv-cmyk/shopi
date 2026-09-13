@@ -1,0 +1,175 @@
+{{ 'section-product-row.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  Horizontale Produktreihe (MOST WANTED).
+  Nutzt CSS Scroll Snap statt einer Slider-Library – das spart rund 45 KB
+  und liefert natives Wischverhalten auf Mobilgeräten.
+{%- endcomment -%}
+{%- liquid
+  assign row_collection = section.settings.collection
+  assign row_limit = section.settings.product_limit
+  assign row_link = section.settings.link
+
+  if row_collection != blank
+    assign row_link = row_collection.url
+  elsif row_link contains '/collections/bestseller'
+    assign row_link = routes.all_products_collection_url
+  endif
+-%}
+<section id="bestseller" class="section section--lg color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width">
+    <div class="row-head">
+      <div class="row-head__title">
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="eyebrow">{{ section.settings.eyebrow | escape }}</span>
+        {%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          <h2 class="h2">{{ section.settings.heading | escape }}</h2>
+        {%- endif -%}
+      </div>
+
+      <div class="row-head__actions">
+        {%- if section.settings.link_label != blank -%}
+          <a class="link-underline" href="{{ row_link | default: routes.all_products_collection_url }}">
+            {{ section.settings.link_label | escape }}
+          </a>
+        {%- endif -%}
+        <div class="row-arrows" data-row-arrows hidden>
+          <button type="button" class="row-arrow row-arrow--prev" data-row-prev aria-label="{{ 'sections.product_row.previous' | t }}">
+            {% render 'icon', name: 'arrow' %}
+          </button>
+          <button type="button" class="row-arrow row-arrow--next" data-row-next aria-label="{{ 'sections.product_row.next' | t }}">
+            {% render 'icon', name: 'arrow' %}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {%- if row_collection == blank or row_collection.products.size == 0 -%}
+      <p class="note-placeholder">
+        Bitte im Theme-Editor eine Collection mit echten Produkten zuweisen.
+        Dieser Abschnitt zeigt bewusst keine Beispielprodukte.
+      </p>
+    {%- else -%}
+      <div class="product-row" data-product-row>
+        <ul class="row-track" data-row-track tabindex="0" role="list" aria-label="{{ section.settings.heading | escape }}">
+          {%- for product in row_collection.products limit: row_limit -%}
+            <li>
+              {%- if forloop.index <= 2 -%}
+                {% render 'product-card', product: product, lazy: 'eager', quick_add: section.settings.quick_add, price_context: section.settings.price_context, sizes: '(min-width: 990px) 20vw, 72vw' %}
+              {%- else -%}
+                {% render 'product-card', product: product, lazy: 'lazy', quick_add: section.settings.quick_add, price_context: section.settings.price_context, sizes: '(min-width: 990px) 20vw, 72vw' %}
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+        {%- comment -%}
+          Fortschritt als feine Linie statt als Punktreihe – ein sehr
+          zurückgenommener Hinweis darauf, wie weit die Reihe reicht.
+          Ohne JavaScript bleibt die Linie unsichtbar.
+        {%- endcomment -%}
+        <div class="row-progress" data-row-progress aria-hidden="true" hidden>
+          <span class="row-progress__bar" data-row-progress-bar></span>
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+<script src="{{ 'product-card-swipe.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Produktreihe (Swipe)",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Farbstil",
+      "options": [
+        { "value": "scheme-1", "label": "Ivory" },
+        { "value": "scheme-2", "label": "Ivory dunkel" },
+        { "value": "scheme-3", "label": "Schwarz" },
+        { "value": "scheme-4", "label": "Taupe" }
+      ],
+      "default": "scheme-1"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Kleiner Vortext"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Überschrift",
+      "default": "Most Wanted"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "range",
+      "id": "product_limit",
+      "min": 4,
+      "max": 12,
+      "step": 1,
+      "label": "Anzahl",
+      "default": 8
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Textlink",
+      "default": "Alle Bestseller"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Ziel des Textlinks"
+    },
+    {
+      "type": "checkbox",
+      "id": "quick_add",
+      "label": "Schnell-hinzufügen anbieten",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "price_context",
+      "label": "Welcher Preis wird gezeigt",
+      "options": [
+        {
+          "value": "",
+          "label": "Hauptvariante des Produkts"
+        },
+        {
+          "value": "extrait",
+          "label": "Extrait"
+        },
+        {
+          "value": "edp",
+          "label": "Eau de Parfum"
+        },
+        {
+          "value": "travel",
+          "label": "Travel"
+        },
+        {
+          "value": "sample",
+          "label": "Probe"
+        }
+      ],
+      "default": "extrait",
+      "info": "Verhindert, dass günstige Proben den Kartenpreis bestimmen."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Produktreihe (Swipe)"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,22 @@
+{%- comment -%}
+  Mobile Beratungsleiste. Erscheint erst nach etwas Scrollen und weicht auf
+  Produktseiten dem Warenkorb-Button – es liegen nie zwei Leisten übereinander.
+  Der Kunde kann sie für die Sitzung ausblenden.
+{%- endcomment -%}
+{%- if settings.whatsapp_enabled and settings.whatsapp_sticky_mobile -%}
+  <div
+    class="sticky-bar whatsapp-bar"
+    data-whatsapp-bar
+    data-threshold="{{ settings.whatsapp_sticky_threshold | default: 40 }}"
+    hidden
+  >
+    {% render 'whatsapp-link',
+      class: 'whatsapp-bar__link',
+      icon: true,
+      label: settings.whatsapp_sticky_label
+    %}
+    <button type="button" class="whatsapp-bar__close" data-whatsapp-dismiss aria-label="{{ 'sections.whatsapp.close' | t }}">
+      {% render 'icon', name: 'close' %}
+    </button>
+  </div>
+{%- endif -%}

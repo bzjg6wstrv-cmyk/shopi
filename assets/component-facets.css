@@ -1,0 +1,84 @@
+/* Filter für Collections. Basiert auf Shopify Storefront Filtering
+   (Search & Discovery). Ohne JavaScript bleibt alles ein normales Formular. */
+
+.collection__layout { display: grid; gap: var(--space-xl); }
+@media (min-width: 990px) {
+  .collection__layout { grid-template-columns: 15rem minmax(0, 1fr); gap: clamp(2rem, 4vw, 4rem); align-items: start; }
+}
+
+.facets-aside { display: none; }
+@media (min-width: 990px) {
+  .facets-aside { display: block; position: sticky; top: 7rem; max-height: calc(100vh - 9rem); overflow-y: auto; }
+}
+
+.facet { border-bottom: var(--hair); }
+.facet:first-child { border-top: var(--hair); }
+
+.facet__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  min-height: 3.25rem;
+  font-size: .6875rem;
+  text-transform: uppercase;
+  letter-spacing: var(--meta-tracking);
+}
+.facet__summary svg { width: 12px; height: 12px; flex: none; transition: transform var(--dur) var(--ease); }
+.facet[open] .facet__summary svg { transform: rotate(180deg); }
+
+.facet__list { padding-bottom: var(--space-md); max-height: 17rem; overflow-y: auto; }
+.facet__option { display: flex; align-items: center; gap: var(--space-sm); min-height: 2.5rem; cursor: pointer; }
+.facet__option input { width: 1rem; height: 1rem; accent-color: rgb(var(--color-text)); flex: none; }
+.facet__option-label { font-size: .9375rem; }
+.facet__count { margin-left: auto; font-size: .75rem; color: rgb(var(--color-muted)); font-variant-numeric: tabular-nums; }
+.facet__option input:disabled + .facet__option-label { color: rgb(var(--color-muted)); }
+
+.facet__price { display: flex; align-items: center; gap: var(--space-sm); padding-bottom: var(--space-md); }
+.facet__price .field__input { min-height: 2.75rem; }
+
+.facets__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+/* Aktive Filter: keine gerahmten Kapseln, sondern beschriftete Marken auf
+   einer Haarlinie. Das Kreuz zeigt, dass sie sich entfernen lassen. */
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+.active-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  min-height: 2.5rem;
+  padding-bottom: 2px;
+  border-bottom: var(--border-width) solid rgb(var(--color-text) / .3);
+  font-size: .8125rem;
+  transition: border-color var(--dur) var(--ease);
+}
+.active-filter svg { width: 11px; height: 11px; color: rgb(var(--color-muted)); }
+.active-filter:hover { border-bottom-color: rgb(var(--color-text)); }
+
+.facets__clear { font-size: .6875rem; }
+
+.facets-toggle { display: inline-flex; align-items: center; gap: .5rem; min-height: 2.75rem; }
+@media (min-width: 990px) { .facets-toggle { display: none; } }
+
+.facets-drawer__actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm); }
+
+.collection-results { transition: opacity var(--dur) var(--ease); }
+.collection-results[aria-busy='true'] { opacity: .5; }
+
+.facet-note {
+  padding: var(--space-md);
+  border: var(--border-width) dashed rgb(var(--color-muted));
+  font-size: .875rem;
+  color: rgb(var(--color-muted));
+}

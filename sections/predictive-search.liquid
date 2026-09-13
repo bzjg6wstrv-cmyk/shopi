@@ -1,0 +1,113 @@
+{%- comment -%}
+  Ergebnisse der Shopify-Sofortsuche (Predictive Search).
+  Wird ausschließlich per fetch mit ?section_id=predictive-search geladen.
+  Die Suche selbst ist eine native Shopify-Funktion – keine externe App.
+{%- endcomment -%}
+{%- if predictive_search.performed -%}
+  {%- comment -%}
+    Erst erzeugen, dann ausgeben: Nur so lässt sich unten prüfen, ob ein
+    Scent-Code-Treffer vorliegt. Sonst stand darunter gleichzeitig
+    „Keine Treffer".
+  {%- endcomment -%}
+  {%- capture vc_code_hit -%}{% render 'scent-code-hit', terms: predictive_search.terms, results: predictive_search.resources.products %}{%- endcapture -%}
+  {%- assign vc_code_hit = vc_code_hit | strip -%}
+  {{ vc_code_hit }}
+
+  {%- if vc_code_hit == blank
+    and predictive_search.resources.products.size == 0
+    and predictive_search.resources.collections.size == 0
+    and predictive_search.resources.pages.size == 0
+    and predictive_search.resources.queries.size == 0
+  -%}
+    <p class="predictive__status">{{ 'general.search.no_results' | t: terms: predictive_search.terms }}</p>
+    <p class="predictive__status">{{ 'general.search.no_results_help' | t }}</p>
+    {%- if settings.whatsapp_enabled -%}
+      {%- assign wa_context = 'sections.whatsapp.context_search' | t | replace: '__CODE__', predictive_search.terms -%}
+      <p class="predictive__group">
+        {% render 'whatsapp-link', class: 'link-underline', context: wa_context %}
+      </p>
+    {%- endif -%}
+  {%- else -%}
+    {%- if predictive_search.resources.queries.size > 0 -%}
+      <div class="predictive__group">
+        <p class="predictive__heading meta meta--muted">{{ 'general.search.suggestions' | t }}</p>
+        <ul class="predictive__links">
+          {%- for query in predictive_search.resources.queries -%}
+            <li><a href="{{ query.url }}" role="option">{{ query.styled_text }}</a></li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+
+    {%- if predictive_search.resources.products.size > 0 -%}
+      <div class="predictive__group">
+        <p class="predictive__heading meta meta--muted">{{ 'general.search.products' | t }}</p>
+        <div class="predictive__products">
+          {%- for item in predictive_search.resources.products -%}
+            {%- liquid
+              assign item_families = item.metafields.custom.duftfamilie.value
+              assign item_conc = item.metafields.custom.konzentration.value
+            -%}
+            <a class="predictive__item" href="{{ item.url }}" role="option">
+              {%- if item.featured_media -%}
+                <img
+                  src="{{ item.featured_media | image_url: width: 120 }}"
+                  alt=""
+                  width="56"
+                  height="72"
+                  loading="lazy"
+                >
+              {%- endif -%}
+              <span>
+                <span class="predictive__item-title">{{ item.title }}</span>
+                {%- if item_families != blank -%}
+                  <span class="predictive__item-meta">{{ item_families | join: ' · ' }}</span>
+                {%- endif -%}
+                {%- if item_conc != blank -%}
+                  <span class="predictive__item-meta">{{ item_conc | join: ' · ' }}</span>
+                {%- endif -%}
+              </span>
+            </a>
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if predictive_search.resources.collections.size > 0 -%}
+      <div class="predictive__group">
+        <p class="predictive__heading meta meta--muted">{{ 'general.search.collections' | t }}</p>
+        <ul class="predictive__links">
+          {%- for item in predictive_search.resources.collections -%}
+            <li><a href="{{ item.url }}" role="option">{{ item.title }}</a></li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+
+    {%- if predictive_search.resources.pages.size > 0 -%}
+      <div class="predictive__group">
+        <p class="predictive__heading meta meta--muted">{{ 'general.search.pages' | t }}</p>
+        <ul class="predictive__links">
+          {%- for item in predictive_search.resources.pages -%}
+            <li><a href="{{ item.url }}" role="option">{{ item.title }}</a></li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+
+    <p class="predictive__group">
+      <a class="link-underline" href="{{ routes.search_url }}?q={{ predictive_search.terms | url_encode }}">
+        {{ 'general.search.view_all' | t }}
+      </a>
+    </p>
+  {%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Sofortsuche",
+  "settings": [
+
+  ]
+}
+{% endschema %}

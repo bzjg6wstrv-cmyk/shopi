@@ -1,0 +1,92 @@
+/* Discovery Set – fünf Scent Codes eingeben.
+   Bewusst dieselbe Eingabelogik wie überall sonst im Shop. */
+
+.discovery { display: grid; gap: var(--space-2xl); }
+@media (min-width: 990px) {
+  .discovery { grid-template-columns: 5fr 6fr; gap: clamp(2rem, 5vw, 5rem); align-items: start; }
+  .discovery__intro { position: sticky; top: 7rem; }
+}
+
+.discovery__media img { width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; }
+
+/* Zähler 0 / 5 – die zentrale Rückmeldung beim Zusammenstellen. */
+.picker__counter {
+  display: flex;
+  align-items: baseline;
+  gap: .35rem;
+  margin-top: var(--space-lg);
+  font-family: var(--font-heading-family);
+  line-height: 1;
+}
+.picker__counter-value {
+  font-size: clamp(2.5rem, 2rem + 2.5vw, 4rem);
+  font-variant-numeric: tabular-nums;
+}
+.picker__counter-sep,
+.picker__counter-max {
+  font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+  color: rgb(var(--color-muted));
+  font-variant-numeric: tabular-nums;
+}
+
+.code-list { display: grid; gap: var(--space-sm); }
+.code-slot__label {
+  display: block;
+  margin-bottom: .3rem;
+  font-size: .6875rem;
+  text-transform: uppercase;
+  letter-spacing: var(--meta-tracking);
+  color: rgb(var(--color-muted));
+}
+
+.code-slot__row {
+  display: flex;
+  align-items: stretch;
+  border: var(--border-width) solid rgb(var(--color-line));
+  border-radius: var(--input-radius);
+  transition: border-color var(--dur) var(--ease);
+}
+.code-slot__row:focus-within { border-color: rgb(var(--color-text)); }
+.code-slot__row[data-state='valid'] { border-color: rgb(var(--color-accent)); }
+.code-slot__row[data-state='error'] { border-color: rgb(var(--color-text)); }
+
+.code-slot__prefix {
+  display: flex;
+  align-items: center;
+  padding-left: var(--space-md);
+  font-family: var(--font-heading-family);
+  font-size: 1.0625rem;
+  color: rgb(var(--color-muted));
+  user-select: none;
+}
+.code-slot__input {
+  flex: 1;
+  min-width: 0;
+  min-height: 3.25rem;
+  padding: 0 var(--space-sm);
+  border: 0;
+  background: none;
+  font-family: var(--font-heading-family);
+  font-size: 1.0625rem;
+  letter-spacing: .18em;
+  color: rgb(var(--color-text));
+}
+.code-slot__input:focus { outline: none; }
+.code-slot__mark {
+  display: flex;
+  align-items: center;
+  padding-right: var(--space-md);
+  color: rgb(var(--color-accent));
+}
+.code-slot__mark svg { width: 16px; height: 16px; }
+.code-slot__mark[hidden] { display: none; }
+
+.code-slot__hint {
+  margin-top: .25rem;
+  font-size: .75rem;
+  color: rgb(var(--color-muted));
+  min-height: 1em;
+}
+
+.discovery__status { margin-top: var(--space-md); font-size: .875rem; color: rgb(var(--color-muted)); }
+.discovery__note { margin-top: var(--space-lg); font-size: .8125rem; color: rgb(var(--color-muted)); }

@@ -1,0 +1,185 @@
+/* MOST WANTED – horizontale Reihe mit CSS Scroll Snap.
+   Keine Slider-Library: Momentum-Scrolling, Wischen und Tastaturbedienung
+   kommen vom Browser. Ohne JavaScript bleibt die Reihe voll benutzbar. */
+
+/* Abschnittskopf: Kennziffer links, Titel darunter, Ziel und Steuerung
+   rechts auf der Grundlinie. Dieselbe Bauform wie der Abschnittskopf des
+   Themes, nur mit Steuerung. */
+.row-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-sm) var(--space-md);
+  padding-top: var(--space-md);
+  border-top: var(--hair);
+  margin-bottom: var(--space-lg);
+}
+.row-head__title { min-width: 0; }
+.row-head__title .h2 { margin-top: 0.15rem; }
+.row-head__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  justify-self: end;
+}
+
+/* Die Pfeile sind reine Zeichen ohne Rahmen – nichts an dieser Reihe soll
+   nach einem eingebundenen Slider aussehen. */
+.row-arrows { display: none; }
+@media (min-width: 990px) {
+  .row-arrows { display: flex; gap: var(--space-xs); }
+}
+.row-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: rgb(var(--color-muted));
+  transition: color var(--dur) var(--ease), opacity var(--dur) var(--ease);
+}
+.row-arrow:hover { color: rgb(var(--color-text)); }
+.row-arrow:hover svg { transform: translateX(3px); }
+.row-arrow--prev:hover svg { transform: rotate(180deg) translateX(3px); }
+.row-arrow[disabled] { opacity: .25; cursor: default; }
+.row-arrow[disabled]:hover { color: rgb(var(--color-muted)); }
+.row-arrow[disabled]:hover svg { transform: none; }
+.row-arrow--prev[disabled]:hover svg { transform: rotate(180deg); }
+.row-arrow svg { width: 17px; height: 17px; transition: transform var(--dur) var(--ease); }
+.row-arrow--prev svg { transform: rotate(180deg); }
+
+/* Die Vorschau auf die nächste Karte ist der Wisch-Hinweis. Sie wird nicht
+   in Pixeln festgelegt, sondern als Anteil einer Kartenbreite: Die aktive
+   Karte belegt die Bahn abzüglich Spaltenabstand geteilt durch diesen Wert.
+   1.12 ergibt rund 12 % Vorschau – genug als Hinweis, wenig genug, dass die
+   angeschnittene Karte nicht wie ein Fehler aussieht. */
+:root { --row-peek-ratio: 1.12; }
+
+.row-track {
+  display: grid;
+  grid-auto-flow: column;
+  /* Eine Karte plus Vorschau. Sichtbar ist die Bahn einschließlich ihrer
+     seitlichen Innenabstände, deshalb geht ein Seitenrand in die Rechnung
+     ein: sichtbar = 100 % + Seitenrand. Davon Spaltenabstand abziehen und
+     durch 1.12 teilen ergibt rund 12 % Vorschau auf die nächste Karte. */
+  grid-auto-columns: min(
+    calc((100% + var(--gutter) - var(--space-md)) / var(--row-peek-ratio, 1.12)),
+    22rem
+  );
+  gap: var(--space-md);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--gutter);
+  padding-inline: var(--gutter);
+  margin-inline: calc(var(--gutter) * -1);
+  padding-bottom: var(--space-xs);
+  scrollbar-width: none;
+}
+.row-track::-webkit-scrollbar { display: none; }
+.row-track > * { scroll-snap-align: start; }
+
+@media (min-width: 600px) and (max-width: 989px) {
+  /* Zwei Karten nebeneinander, dieselbe Vorschau-Regel. */
+  .row-track {
+    grid-auto-columns: calc(
+      (100% + var(--gutter) - (var(--space-md) * 2)) / calc(2 + var(--row-peek-ratio, 1.12) - 1)
+    );
+  }
+}
+@media (min-width: 990px) {
+  .row-track {
+    /* Feste Spaltenbreite, kein minmax mit 0 als Minimum: Sonst schrumpfen
+       alle Karten so weit, bis sie gemeinsam in die Bahn passen – die Reihe
+       ließe sich dann gar nicht mehr scrollen. */
+    grid-auto-columns: calc((100% - (var(--space-lg) * 4)) / 5);
+    gap: var(--space-lg);
+    padding-inline: 0;
+    margin-inline: 0;
+    scroll-padding-inline: 0;
+  }
+}
+
+/* Fortschritt als Haarlinie: Die Bahn ist die Gesamtbreite der Reihe, der
+   dunkle Abschnitt darauf der gerade sichtbare Ausschnitt. Kein Punktmuster,
+   keine Zahlen, keine Animation im Ruhezustand. */
+.row-progress {
+  position: relative;
+  height: var(--border-width);
+  margin-top: var(--space-lg);
+  background-color: rgb(var(--color-line));
+  overflow: hidden;
+}
+.row-progress[hidden] { display: none; }
+.row-progress__bar {
+  display: block;
+  width: 30%;
+  height: 100%;
+  background-color: rgb(var(--color-text));
+  transform: translateX(0);
+  transition: transform var(--dur-fast) linear;
+}
+@media (prefers-reduced-motion: reduce) {
+  .row-progress__bar { transition: none; }
+}
+
+/* v4.2.10 mobile cleanup: keep the swipe rail inside the viewport. */
+@media (max-width: 599px) {
+  /* Ohne overflow: hidden. Die Regel beschnitt die Bahn auf die Breite des
+     Textrasters – die Vorschau der nächsten Karte brach dadurch schon 20 px
+     vor dem Bildschirmrand hart ab, mitten im Text. Die Bahn ist ein eigener
+     Scroll-Bereich und ragt durch die negativen Außenabstände genau bis an
+     die Bildschirmkanten, nicht darüber hinaus: Die Seite bekommt dadurch
+     keine waagerechte Bildlaufleiste. */
+  .product-row { min-width: 0; max-width: 100%; }
+  .row-track {
+    box-sizing: border-box;
+    width: calc(100% + (var(--gutter) * 2));
+    max-width: none;
+  }
+  /* Kein overflow:hidden mehr an der einzelnen Karte – dort wurden Titel,
+     Ausführungszeile und Preis abgeschnitten, sobald sie ein paar Pixel
+     breiter waren als die Karte. Die Reihe selbst bleibt begrenzt, damit die
+     Seite weiterhin nicht seitlich scrollt. */
+  .row-track > li { min-width: 0; }
+}
+
+/* v4.2.11 Mobile: Die Reihe nahm auf dem Telefon 647 px ein, davon 374 px
+   allein das Bild einer Karte. Schmalere Karten und ein etwas flacheres
+   Bildformat machen sie kompakter, ohne den Bildausschnitt umzustellen –
+   das Hochformat bleibt erhalten, es wird nur weniger hoch.
+   Alles ausschließlich innerhalb der Reihe; die Karten in Kollektionen und
+   Suchergebnissen sind nicht betroffen. */
+@media (max-width: 749px) {
+  .row-head { margin-bottom: var(--space-md); }
+
+  .row-track {
+    /* Die Kartenbreite wird aus der Bahn selbst abgeleitet, nicht aus vw:
+       verfügbare Breite minus Vorschau minus Spaltenabstand. Dadurch kann
+       keine Rundung gegenüber dem Fenster entstehen und die aktive Karte
+       passt immer vollständig zwischen die beiden Seitenränder.
+       100 % = Fensterbreite minus 2 × Seitenrand. */
+    /* Nach oben gedeckelt, damit die Karte auf breiten Telefonen nicht
+       die halbe Seite einnimmt – dort werden wie bisher zwei Karten
+       gleichzeitig sichtbar. */
+    padding-bottom: 0;
+  }
+
+  /* Ein schneller Wisch überspringt keine Karte mehr – jede kommt einzeln
+     zum Stehen und ist dann vollständig sichtbar. */
+  .row-track > * { scroll-snap-stop: always; }
+
+  /* Die Textzeilen dürfen umbrechen statt abgeschnitten zu werden. */
+  .product-row .card__title,
+  .product-row .card__meta,
+  .product-row .card__price { white-space: normal; }
+
+  /* Ohne height:100% entsteht unter kurzen Karten kein Leerraum mehr,
+     wenn eine andere Karte in der Reihe zwei Titelzeilen hat. */
+  .product-row .card { height: auto; }
+  .product-row .card__media { aspect-ratio: 4 / 5; margin-bottom: var(--space-sm); }
+
+  .row-progress { margin-top: var(--space-md); }
+}
+
+

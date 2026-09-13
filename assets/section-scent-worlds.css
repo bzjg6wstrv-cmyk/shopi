@@ -1,0 +1,51 @@
+/* Duftwelten – großzügige Editorial-Flächen, bewusst asymmetrisch.
+   Keine gleichförmige Kartenwand, keine Icons.                        */
+.worlds { display: grid; gap: var(--space-md); }
+
+@media (min-width: 750px) {
+  .worlds {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--space-lg);
+  }
+  .worlds__item { grid-column: span 6; }
+  .worlds--asymmetric .worlds__item:nth-child(4n + 1) { grid-column: span 7; }
+  .worlds--asymmetric .worlds__item:nth-child(4n + 2) { grid-column: span 5; }
+  .worlds--asymmetric .worlds__item:nth-child(4n + 3) { grid-column: span 5; }
+  .worlds--asymmetric .worlds__item:nth-child(4n + 4) { grid-column: span 7; }
+}
+
+.worlds__link { display: block; position: relative; height: 100%; }
+
+.worlds__media {
+  position: relative;
+  overflow: hidden;
+  background-color: rgb(var(--color-line) / 0.4);
+  aspect-ratio: 4 / 3;
+}
+@media (min-width: 750px) {
+  .worlds--asymmetric .worlds__item:nth-child(4n + 1) .worlds__media,
+  .worlds--asymmetric .worlds__item:nth-child(4n + 4) .worlds__media { aspect-ratio: 16 / 10; }
+  .worlds--asymmetric .worlds__item:nth-child(4n + 2) .worlds__media,
+  .worlds--asymmetric .worlds__item:nth-child(4n + 3) .worlds__media { aspect-ratio: 4 / 5; }
+}
+
+.worlds__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--dur-slow) var(--ease);
+}
+.worlds__link:hover .worlds__media img { transform: scale(1.02); }
+
+.worlds__caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding-top: var(--space-sm);
+  border-top: var(--border-width) solid rgb(var(--color-line));
+  margin-top: var(--space-sm);
+}
+.worlds__title { font-family: var(--font-heading-family); font-size: clamp(1.125rem, 1rem + 0.6vw, 1.5rem); }
+.worlds__count { font-size: .8125rem; color: rgb(var(--color-muted)); font-variant-numeric: tabular-nums; }
+.worlds__note { font-size: .875rem; color: rgb(var(--color-muted)); margin-top: .25rem; }

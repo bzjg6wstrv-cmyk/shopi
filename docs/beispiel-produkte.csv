@@ -1,0 +1,87 @@
+Handle,Title,Body (HTML),Vendor,Type,Tags,Published,Option1 Name,Option1 Value,Variant SKU,Variant Grams,Variant Inventory Tracker,Variant Inventory Qty,Variant Inventory Policy,Variant Fulfillment Service,Variant Price,Variant Requires Shipping,Variant Taxable,Variant Weight Unit,Status,Metafield: custom.scent_code [single_line_text_field],Metafield: custom.duftfamilie [list.single_line_text_field],Metafield: custom.charakter [list.single_line_text_field],Metafield: custom.intensitaet [single_line_text_field],Metafield: custom.jahreszeit [list.single_line_text_field],Metafield: custom.anlass [list.single_line_text_field],Metafield: custom.geschlecht [single_line_text_field],Metafield: custom.konzentration [list.single_line_text_field],Metafield: custom.linie [single_line_text_field],Metafield: custom.kopfnoten [list.single_line_text_field],Metafield: custom.herznoten [list.single_line_text_field],Metafield: custom.basisnoten [list.single_line_text_field],Metafield: custom.sample_verfuegbar [boolean],Metafield: custom.travel_verfuegbar [boolean],Metafield: custom.bestseller [boolean]
+vc-047,VC-047,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-047-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-047,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-047,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-047-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-047,,,,,,,Ausführung,Travel 10 ml,VC-047-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-047,,,,,,,Ausführung,Sample 2 ml,VC-047-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-049,VC-049,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-049-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-049,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-049,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-049-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-049,,,,,,,Ausführung,Travel 10 ml,VC-049-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-049,,,,,,,Ausführung,Sample 2 ml,VC-049-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-026,VC-026,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-026-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-026,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-026,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-026-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-026,,,,,,,Ausführung,Travel 10 ml,VC-026-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-026,,,,,,,Ausführung,Sample 2 ml,VC-026-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-035,VC-035,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-035-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-035,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-035,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-035-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-035,,,,,,,Ausführung,Travel 10 ml,VC-035-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-035,,,,,,,Ausführung,Sample 2 ml,VC-035-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-040,VC-040,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-040-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-040,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-040,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-040-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-040,,,,,,,Ausführung,Travel 10 ml,VC-040-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-040,,,,,,,Ausführung,Sample 2 ml,VC-040-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-022,VC-022,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-022-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-022,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-022,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-022-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-022,,,,,,,Ausführung,Travel 10 ml,VC-022-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-022,,,,,,,Ausführung,Sample 2 ml,VC-022-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-078,VC-078,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-078-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-078,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-078,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-078-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-078,,,,,,,Ausführung,Travel 10 ml,VC-078-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-078,,,,,,,Ausführung,Sample 2 ml,VC-078-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-108,VC-108,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-108-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-108,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-108,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-108-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-108,,,,,,,Ausführung,Travel 10 ml,VC-108-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-108,,,,,,,Ausführung,Sample 2 ml,VC-108-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-102,VC-102,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-102-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-102,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-102,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-102-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-102,,,,,,,Ausführung,Travel 10 ml,VC-102-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-102,,,,,,,Ausführung,Sample 2 ml,VC-102-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-081,VC-081,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-081-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-081,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-081,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-081-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-081,,,,,,,Ausführung,Travel 10 ml,VC-081-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-081,,,,,,,Ausführung,Sample 2 ml,VC-081-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-029,VC-029,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-029-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-029,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-029,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-029-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-029,,,,,,,Ausführung,Travel 10 ml,VC-029-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-029,,,,,,,Ausführung,Sample 2 ml,VC-029-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-071,VC-071,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-071-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-071,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-071,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-071-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-071,,,,,,,Ausführung,Travel 10 ml,VC-071-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-071,,,,,,,Ausführung,Sample 2 ml,VC-071-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-091,VC-091,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-091-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-091,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-091,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-091-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-091,,,,,,,Ausführung,Travel 10 ml,VC-091-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-091,,,,,,,Ausführung,Sample 2 ml,VC-091-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-085,VC-085,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-085-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-085,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-085,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-085-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-085,,,,,,,Ausführung,Travel 10 ml,VC-085-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-085,,,,,,,Ausführung,Sample 2 ml,VC-085-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-024,VC-024,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-024-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-024,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-024,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-024-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-024,,,,,,,Ausführung,Travel 10 ml,VC-024-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-024,,,,,,,Ausführung,Sample 2 ml,VC-024-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-121,VC-121,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-121-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-121,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-121,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-121-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-121,,,,,,,Ausführung,Travel 10 ml,VC-121-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-121,,,,,,,Ausführung,Sample 2 ml,VC-121-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-027,VC-027,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-027-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-027,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-027,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-027-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-027,,,,,,,Ausführung,Travel 10 ml,VC-027-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-027,,,,,,,Ausführung,Sample 2 ml,VC-027-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-051,VC-051,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-051-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-051,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-051,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-051-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-051,,,,,,,Ausführung,Travel 10 ml,VC-051-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-051,,,,,,,Ausführung,Sample 2 ml,VC-051-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-080,VC-080,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-080-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-080,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-080,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-080-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-080,,,,,,,Ausführung,Travel 10 ml,VC-080-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-080,,,,,,,Ausführung,Sample 2 ml,VC-080-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-096,VC-096,<p><strong>DEMO – Beispieldatensatz. Duftbeschreibung und Duftnoten werden mit echten VENT-CELESTE-Daten ergänzt.</strong></p>,VENT CELESTE,Duft,"bestseller, oeffentlich, linie:hauptlinie, konzentration:extrait, konzentration:edp, travel, sample",TRUE,Ausführung,Extrait 30 ml,VC-096-EXT,120,shopify,50,deny,manual,29.90,TRUE,TRUE,g,active,VC-096,,,,,,,"Extrait,Eau de Parfum",Hauptlinie,,,,TRUE,TRUE,TRUE
+vc-096,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-096-EDP,120,shopify,50,deny,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-096,,,,,,,Ausführung,Travel 10 ml,VC-096-TRV,60,shopify,50,deny,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+vc-096,,,,,,,Ausführung,Sample 2 ml,VC-096-SMP,15,shopify,50,deny,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+scent-code,VENT CELESTE Scent Code,<p>Du hast deinen Scent Code per WhatsApp erhalten? Gib ihn hier ein und wähle deine Ausführung.</p>,VENT CELESTE,Duft,scent-code,TRUE,Ausführung,Extrait 30 ml,VC-CODE-EXT,120,,0,continue,manual,29.90,TRUE,TRUE,g,active,,,,,,,,,Hauptlinie,,,,,,
+scent-code,,,,,,,Ausführung,Eau de Parfum 30 ml,VC-CODE-EDP,120,,0,continue,manual,22.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+scent-code,,,,,,,Ausführung,Travel 10 ml,VC-CODE-TRV,60,,0,continue,manual,12.90,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+scent-code,,,,,,,Ausführung,Sample 2 ml,VC-CODE-SMP,15,,0,continue,manual,1.00,TRUE,TRUE,g,,,,,,,,,,,,,,,,
+discovery-set,Discovery Set – 5 × 2 ml,<p>Fünf Scent Codes selbst eingeben und in Ruhe kennenlernen.</p>,VENT CELESTE,Set,discovery-set,TRUE,Title,Default Title,VC-DISC-5x2,80,shopify,100,deny,manual,3.90,TRUE,TRUE,g,active,,,,,,,,,,,,,,,
+essentials-001,Essentials No. 001,<p><strong>DEMO – Beispieldatensatz.</strong></p><p>Eigenständige Einstiegslinie mit anderem Rohstoffaufbau als die Hauptlinie.</p>,VENT CELESTE,Duft,linie:essentials,TRUE,Ausführung,Essentials 30 ml,VC-ESS-001-30,120,shopify,80,deny,manual,9.90,TRUE,TRUE,g,active,,,,,,,,,Essentials,,,,,,

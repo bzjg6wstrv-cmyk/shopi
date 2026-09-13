@@ -1,0 +1,44 @@
+{
+  "type": "footer",
+  "name": "Fußbereich",
+  "sections": {
+    "footer": {
+      "type": "footer",
+      "blocks": {
+        "brand": {
+          "type": "brand",
+          "settings": {
+            "text": "<p>Konzentrierte Duftkompositionen in eigenständiger Präsentation.</p>"
+          }
+        },
+        "menu_service": {
+          "type": "menu",
+          "settings": {
+            "title": "Service",
+            "menu": "footer-service"
+          }
+        },
+        "menu_legal": {
+          "type": "menu",
+          "settings": {
+            "title": "Rechtliches",
+            "menu": "footer-rechtliches"
+          }
+        }
+      },
+      "block_order": [
+        "brand",
+        "menu_service",
+        "menu_legal"
+      ],
+      "settings": {
+        "color_scheme": "scheme-2",
+        "show_payment_icons": true,
+        "show_legal_note": false
+      }
+    }
+  },
+  "order": [
+    "footer"
+  ]
+}

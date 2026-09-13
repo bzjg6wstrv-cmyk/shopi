@@ -1,0 +1,159 @@
+{{ 'section-scent-code.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  Duftberatung – der Premium-Moment der Startseite.
+
+  Vollflächiges Bild über die ganze Fensterbreite, dunkler Farbstil, sehr
+  hohe Fläche. Der Text sitzt unten links auf der Rasterkante, rechts unten
+  steht die Antwortzeit auf derselben Grundlinie. Der Weg in die Beratung ist
+  eine Textmarke mit Pfeil, keine gefüllte Schaltfläche – die Beratung soll
+  wie ein Service wirken, nicht wie eine Werbefläche.
+{%- endcomment -%}
+{%- comment -%}
+  Ohne eigenes Bild bleibt die Fläche leer und damit ruhig. Der frühere
+  Shopify-Platzhalter „lifestyle-2" zeichnete eine Strichgrafik aus Taschen,
+  Schuhen, Brillen und Kameras in den Beratungsbereich – Mode-Objekte, die
+  mit VENT CELESTE nichts zu tun haben und den Abschnitt wie eine fremde
+  Vorlage aussehen ließen. Er ist ersatzlos entfernt: Lieber Schwarz,
+  Typografie und Weißraum als ein Motiv, das nur Fläche füllt.
+{%- endcomment -%}
+<section id="duftberatung" class="wa{% if section.settings.image == blank %} wa--ohne-bild{% endif %} color-{{ section.settings.color_scheme }} color-scheme">
+  {%- if section.settings.image != blank -%}
+  <div class="wa__media">
+      <img
+        src="{{ section.settings.image | image_url: width: 2400 }}"
+        srcset="{{ section.settings.image | image_url: width: 750 }} 750w,
+                {{ section.settings.image | image_url: width: 1100 }} 1100w,
+                {{ section.settings.image | image_url: width: 1600 }} 1600w,
+                {{ section.settings.image | image_url: width: 2400 }} 2400w"
+        sizes="100vw"
+        alt="{{ section.settings.image.alt | escape }}"
+        width="{{ section.settings.image.width }}"
+        height="{{ section.settings.image.height }}"
+        loading="lazy"
+        style="object-position: {{ section.settings.image_position | default: 'center' }};"
+      >
+    <div class="wa__scrim" style="--scrim: {{ section.settings.scrim | divided_by: 100.0 }};"></div>
+  </div>
+  {%- endif -%}
+
+  <div class="wa__content page-width">
+    <div class="wa__body reveal">
+      {%- if section.settings.eyebrow != blank -%}
+        <span class="eyebrow wa__eyebrow">{{ section.settings.eyebrow | escape }}</span>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h2 class="wa__title display">
+          <span class="reveal reveal--mask"><span>{{ section.settings.heading | escape }}</span></span>
+        </h2>
+      {%- endif -%}
+      {%- if section.settings.text != blank -%}
+        <div class="wa__text rte">{{ section.settings.text }}</div>
+      {%- endif -%}
+
+      <div class="wa__actions">
+        {% render 'whatsapp-link',
+          class: 'action-link action-link--lg wa__cta',
+          label: section.settings.button_label,
+          arrow: true
+        %}
+        {%- if section.settings.secondary_label != blank and section.settings.secondary_link != blank -%}
+          <a class="link-underline wa__alt" href="{{ section.settings.secondary_link }}">
+            {{ section.settings.secondary_label | escape }}
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
+
+    {%- if settings.whatsapp_response_time != blank -%}
+      <p class="micro wa__note reveal">{{ settings.whatsapp_response_time | escape }}</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Beratung (vollflächig)",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Farbstil",
+      "options": [
+        { "value": "scheme-1", "label": "Ivory" },
+        { "value": "scheme-2", "label": "Ivory dunkel" },
+        { "value": "scheme-3", "label": "Schwarz" },
+        { "value": "scheme-4", "label": "Taupe" }
+      ],
+      "default": "scheme-1"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Bild"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Bildausschnitt",
+      "options": [
+        { "value": "center", "label": "Mitte" },
+        { "value": "top", "label": "Oben" },
+        { "value": "bottom", "label": "Unten" },
+        { "value": "left", "label": "Links" },
+        { "value": "right", "label": "Rechts" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "scrim",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "label": "Abdunklung",
+      "default": 45
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Kleiner Vortext",
+      "default": "500+ Duftprofile"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Überschrift",
+      "default": "Dein Duft ist nicht dabei?"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Nicht jedes unserer 500+ Duftprofile ist direkt im Shop gelistet. Schreib uns, was du suchst – wir nennen dir den passenden VENT CELESTE Scent Code.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Beschriftung WhatsApp-Button",
+      "default": "Duftberatung starten"
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "Sekundärer Button"
+    },
+    {
+      "type": "url",
+      "id": "secondary_link",
+      "label": "Link sekundärer Button"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Beratung (vollflächig)"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,334 @@
+{{ 'section-editorial.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  Wiederverwendbarer Editorial-Abschnitt: Bild plus Text.
+
+  Zwei ausdrücklich verschiedene Kompositionen, damit zwei Abschnitte
+  hintereinander nie wie dieselbe Vorlage zweimal wirken:
+
+    „spec"      – produktnah und präzise. Hochformatiges Bild links, Text
+                  rechts, die Merkmale als exakte Angabenliste mit
+                  Haarlinien und rechtsbündigen Werten.
+    „statement" – markenorientiert. Breites Bild, das rechts aus dem
+                  Innenabstand herausläuft, daneben eine schmale Textspalte
+                  auf einer Haarlinie, größerer Schriftgrad, kein
+                  Angabenblock, kein gefüllter Button.
+
+  Preise stammen bei Bedarf aus einem echten Shopify-Produkt.
+{%- endcomment -%}
+{%- liquid
+  assign linked_product = section.settings.product
+  assign feature_variant = linked_product.metafields.custom.hauptvariante.value
+  if feature_variant == blank
+    assign feature_variant = linked_product.selected_or_first_available_variant
+  endif
+
+  comment
+    Bildquelle in drei Stufen. Es wird kein Motiv erfunden und keine
+    Illustration eingesetzt – es kommt immer ein echtes Produktfoto aus dem
+    Shop zum Einsatz:
+      1. das im Theme-Editor gewaehlte Bild
+      2. das Titelbild des verknuepften Produkts
+      3. das Titelbild des ersten Produkts der Bestseller-Kollektion
+    Gibt es nichts davon, bleibt der Abschnitt einspaltig und ohne Bild.
+  endcomment
+  assign feature_image = section.settings.image
+  if feature_image == blank and linked_product.featured_media != blank
+    assign feature_image = linked_product.featured_media
+  endif
+  if feature_image == blank and section.settings.image_fallback
+    assign fallback_collection = collections['bestseller']
+    if fallback_collection.handle != blank and fallback_collection.products.first.featured_media != blank
+      assign feature_image = fallback_collection.products.first.featured_media
+    endif
+  endif
+
+  assign primary_url = section.settings.primary_link
+  if primary_url contains '/collections/bestseller'
+    assign safe_collection = collections['bestseller']
+    if safe_collection != blank
+      assign primary_url = safe_collection.url
+    else
+      assign primary_url = routes.all_products_collection_url
+    endif
+  elsif primary_url contains '/collections/extrait'
+    assign safe_collection = collections['extrait']
+    if safe_collection != blank
+      assign primary_url = safe_collection.url
+    else
+      assign primary_url = routes.all_products_collection_url
+    endif
+  elsif primary_url contains '/products/discovery-set'
+    assign safe_product = all_products['discovery-set']
+    if safe_product != blank
+      assign primary_url = safe_product.url
+    else
+      assign primary_url = routes.all_products_collection_url
+    endif
+  elsif primary_url contains '/pages/ueber-uns'
+    assign safe_page = pages['ueber-uns']
+    if safe_page != blank
+      assign primary_url = safe_page.url
+    else
+      assign primary_url = blank
+    endif
+  endif
+
+  if primary_url == blank and linked_product != blank
+    assign primary_url = linked_product.url
+  endif
+  if primary_url == blank and section.settings.primary_label != blank and section.settings.layout != 'statement'
+    assign primary_url = routes.all_products_collection_url
+  endif
+-%}
+<section class="section feature-section color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width">
+    <div class="feature feature--{{ section.settings.layout | default: 'spec' }}{% if section.settings.media_position == 'right' %} feature--reverse{% endif %}{% if section.settings.media_shape == 'tall' %} feature--narrow-media{% endif %}{% if feature_image == blank %} feature--ohne-bild{% endif %} reveal">
+
+      {%- comment -%}
+        Ohne eigenes Bild wird kein Bildplatz ausgegeben. Der frühere
+        Shopify-Platzhalter „lifestyle-1" setzte eine fremde Strichgrafik in
+        die Komposition – ein Motiv, das nur Fläche füllte. Der Abschnitt
+        läuft ohne Bild einspaltig und lebt von Typografie und Weißraum.
+      {%- endcomment -%}
+      {%- if feature_image != blank -%}
+      <div class="feature__media feature__media--{{ section.settings.media_shape }}">
+          <img
+            src="{{ feature_image | image_url: width: 1200 }}"
+            srcset="{{ feature_image | image_url: width: 500 }} 500w,
+                    {{ feature_image | image_url: width: 800 }} 800w,
+                    {{ feature_image | image_url: width: 1200 }} 1200w"
+            sizes="(min-width: 990px) 38vw, 62vw"
+            alt="{{ feature_image.alt | default: section.settings.heading | escape }}"
+            width="{{ feature_image.width }}"
+            height="{{ feature_image.height }}"
+            loading="lazy"
+          >
+      </div>
+      {%- endif -%}
+
+      <div class="feature__body">
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="eyebrow">{{ section.settings.eyebrow | escape }}</span>
+        {%- endif -%}
+
+        {%- if section.settings.heading != blank -%}
+          <h2 class="h2">{{ section.settings.heading | escape }}</h2>
+        {%- endif -%}
+
+        {%- if section.settings.text != blank -%}
+          <div class="rte feature__text">{{ section.settings.text }}</div>
+        {%- endif -%}
+
+        {%- if section.blocks.size > 0 -%}
+          <ul class="feature__points">
+            {%- for block in section.blocks -%}
+              <li {{ block.shopify_attributes }}>
+                <span class="meta">{{ block.settings.label | escape }}</span>
+                <span>{{ block.settings.text | escape }}</span>
+              </li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+
+        {%- if linked_product != blank and section.settings.show_price -%}
+          <div class="feature__price">
+            {% render 'product-price', variant: feature_variant, product: linked_product %}
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.placeholder_note -%}
+          <p class="demo-flag feature__note">{{ 'general.demo_notice' | t }}</p>
+        {%- endif -%}
+
+        {%- if section.settings.primary_label != blank or section.settings.secondary_label != blank -%}
+          <div class="feature__actions">
+            {%- if section.settings.primary_label != blank -%}
+              {%- if section.settings.layout == 'statement' -%}
+                <a class="link-underline" href="{{ primary_url }}">
+                  {{ section.settings.primary_label | escape }}
+                </a>
+              {%- else -%}
+                <a class="button" href="{{ primary_url }}">
+                  {{ section.settings.primary_label | escape }}
+                </a>
+              {%- endif -%}
+            {%- endif -%}
+            {%- if section.settings.secondary_label != blank -%}
+              <a class="link-underline" href="{{ section.settings.secondary_link }}">
+                {{ section.settings.secondary_label | escape }}
+              </a>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Editorial-Abschnitt",
+  "tag": "section",
+  "max_blocks": 5,
+  "settings": [
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Farbstil",
+      "options": [
+        { "value": "scheme-1", "label": "Ivory" },
+        { "value": "scheme-2", "label": "Ivory dunkel" },
+        { "value": "scheme-3", "label": "Schwarz" },
+        { "value": "scheme-4", "label": "Taupe" }
+      ],
+      "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Komposition",
+      "options": [
+        { "value": "spec", "label": "Produktnah – Bild hochformatig, Angaben rechts" },
+        { "value": "statement", "label": "Markenauftritt – breites Bild, schmale Textspalte" }
+      ],
+      "default": "spec",
+      "info": "Der Markenauftritt setzt Bildseite und Bildformat selbst; Position und Format unten wirken dann nicht."
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Bild"
+    },
+    {
+      "type": "checkbox",
+      "id": "image_fallback",
+      "label": "Ohne eigenes Bild ein Produktfoto verwenden",
+      "default": false,
+      "info": "Greift nur, wenn oben kein Bild gewählt und kein Produkt verknüpft ist. Dann erscheint das Titelbild des ersten Produkts aus der Kollektion bestseller. Es wird kein Motiv erzeugt – immer ein vorhandenes Produktfoto."
+    },
+    {
+      "type": "select",
+      "id": "media_position",
+      "label": "Bildposition",
+      "options": [
+        {
+          "value": "left",
+          "label": "Links"
+        },
+        {
+          "value": "right",
+          "label": "Rechts"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "media_shape",
+      "label": "Bildformat",
+      "options": [
+        {
+          "value": "wide",
+          "label": "Breit 4:3"
+        },
+        {
+          "value": "tall",
+          "label": "Hoch 4:5"
+        }
+      ],
+      "default": "wide"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Kleiner Vortext"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Überschrift"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text"
+    },
+    {
+      "type": "header",
+      "content": "Produktbezug"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Verknüpftes Produkt",
+      "info": "Optional. Der Preis wird direkt aus Shopify gelesen, nicht im Theme hinterlegt."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_price",
+      "label": "Preis anzeigen",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Buttons"
+    },
+    {
+      "type": "text",
+      "id": "primary_label",
+      "label": "Primärer Button"
+    },
+    {
+      "type": "url",
+      "id": "primary_link",
+      "label": "Link primärer Button"
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "Sekundärer Button"
+    },
+    {
+      "type": "url",
+      "id": "secondary_link",
+      "label": "Link sekundärer Button"
+    },
+    {
+      "type": "header",
+      "content": "Hinweis"
+    },
+    {
+      "type": "checkbox",
+      "id": "placeholder_note",
+      "label": "Als Platzhaltertext kennzeichnen",
+      "default": false,
+      "info": "Für Abschnitte mit Mustertext, etwa „Über VENT CELESTE“."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "point",
+      "name": "Detailzeile",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Bezeichnung",
+          "default": "Konzentration"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Wert",
+          "default": "30 % Extrait"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Editorial-Abschnitt"
+    }
+  ]
+}
+{% endschema %}

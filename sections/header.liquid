@@ -1,0 +1,833 @@
+{%- liquid
+  assign menu = section.settings.menu
+  assign families_menu = section.settings.families_menu
+  assign families_parent = section.settings.families_parent | downcase
+  assign wa_parent = section.settings.whatsapp_parent | downcase
+  assign bestseller_collection = collections['bestseller']
+  assign about_page = pages['ueber-uns']
+  assign contact_page = pages['contact']
+  assign faq_page = pages['faq']
+  assign impressum_page = pages['impressum']
+  assign discovery_product = all_products['discovery-set']
+-%}
+<header class="header color-{{ section.settings.color_scheme }} color-scheme"{% unless section.settings.sticky %} style="position: relative;"{% endunless %}>
+  <div class="page-width header__inner">
+    <div class="header__lead">
+      <button
+        type="button"
+        class="header__icon header__menu-toggle"
+        data-drawer-open="MenuDrawer"
+        aria-controls="MenuDrawer"
+        aria-label="{{ 'general.accessibility.open_menu' | t }}"
+      >
+        {% render 'icon', name: 'menu' %}
+      </button>
+
+      <nav class="header__nav" aria-label="{{ 'general.accessibility.menu' | t }}">
+        <ul>
+          {%- for link in menu.links -%}
+            <li class="nav__item">
+              {%- if link.links.size > 0 -%}
+                {%- liquid
+                  assign link_title_down = link.title | downcase
+                  assign is_families = false
+                  assign is_wa = false
+                  if families_parent != blank and link_title_down == families_parent
+                    assign is_families = true
+                  endif
+                  if wa_parent != blank and link_title_down == wa_parent
+                    assign is_wa = true
+                  endif
+                  assign is_wide = false
+                  if is_families or is_wa
+                    assign is_wide = true
+                  endif
+                -%}
+                <details data-nav-dropdown>
+                  <summary>
+                    <span class="nav__link">
+                      {{ link.title | escape }}
+                      {% render 'icon', name: 'chevron' %}
+                    </span>
+                  </summary>
+                  <div class="mega{% if is_wide %} mega--wide{% endif %}">
+                    <div>
+                      <p class="mega__title meta meta--muted">{{ link.title | escape }}</p>
+                      <ul class="mega__list">
+                        {%- for child in link.links -%}
+                          {%- liquid
+                            assign child_title = child.title | downcase | strip
+                            assign child_url = child.url
+                            assign child_broken = false
+                            if child_title contains 'duftberatung'
+                              assign child_url = routes.root_url | append: '#duftberatung'
+                            elsif child_title contains 'bestseller'
+                              if bestseller_collection != blank
+                                assign child_url = bestseller_collection.url
+                              else
+                                assign child_url = routes.all_products_collection_url
+                              endif
+                            elsif child_title contains 'über uns' or child_title contains 'ueber uns'
+                              if about_page != blank
+                                assign child_url = about_page.url
+                              else
+                                assign child_broken = true
+                              endif
+                            elsif child_title contains 'kontakt'
+                              if contact_page != blank
+                                assign child_url = contact_page.url
+                              else
+                                assign child_broken = true
+                              endif
+                            elsif child_title == 'faq' or child_title contains 'fragen'
+                              if faq_page != blank
+                                assign child_url = faq_page.url
+                              else
+                                assign child_broken = true
+                              endif
+                            elsif child_title contains 'impressum'
+                              if shop.legal_notice != blank
+                                assign child_url = shop.legal_notice.url
+                              elsif impressum_page != blank
+                                assign child_url = impressum_page.url
+                              else
+                                assign child_broken = true
+                              endif
+                            elsif child_title contains 'datenschutz'
+                              if shop.privacy_policy != blank
+                                assign child_url = shop.privacy_policy.url
+                              else
+                                assign child_broken = true
+                              endif
+                            elsif child_title contains 'widerruf' or child_title contains 'rückgabe'
+                              if shop.refund_policy != blank
+                                assign child_url = shop.refund_policy.url
+                              else
+                                assign child_broken = true
+                              endif
+                            elsif child_title == 'agb' or child_title contains 'geschäftsbedingungen'
+                              if shop.terms_of_service != blank
+                                assign child_url = shop.terms_of_service.url
+                              else
+                                assign child_broken = true
+                              endif
+                            elsif child.type == 'page_link' or child.type == 'product_link' or child.type == 'collection_link' or child.type == 'blog_link' or child.type == 'article_link'
+                              if child.object == blank
+                                assign child_broken = true
+                              endif
+                            endif
+                          -%}
+                          {%- unless child_broken -%}<li><a href="{{ child_url }}">{{ child.title | escape }}</a></li>{%- endunless -%}
+                        {%- endfor -%}
+                      </ul>
+                    </div>
+
+                    {%- if is_families and families_menu.links.size > 0 -%}
+                      <div>
+                        <p class="mega__title meta meta--muted">{{ section.settings.families_title | escape }}</p>
+                        <ul class="mega__list mega__list--split">
+                          {%- for family in families_menu.links -%}
+                            {%- assign family_broken = false -%}
+                            {%- if family.type == 'page_link' or family.type == 'product_link' or family.type == 'collection_link' -%}
+                              {%- if family.object == blank -%}{%- assign family_broken = true -%}{%- endif -%}
+                            {%- endif -%}
+                            {%- unless family_broken -%}<li><a href="{{ family.url }}">{{ family.title | escape }}</a></li>{%- endunless -%}
+                          {%- endfor -%}
+                        </ul>
+                      </div>
+                    {%- endif -%}
+
+                    {%- if is_wa and settings.whatsapp_enabled -%}
+                      <div class="mega__wa">
+                        <p class="mega__title meta meta--muted">{{ 'sections.whatsapp.title' | t }}</p>
+                        <p class="mega__wa-text">{{ section.settings.whatsapp_teaser | escape }}</p>
+                        {% render 'whatsapp-link', class: 'button button--whatsapp', icon: true %}
+                        {%- if settings.whatsapp_response_time != blank -%}
+                          <p class="mega__wa-note">{{ settings.whatsapp_response_time | escape }}</p>
+                        {%- endif -%}
+                      </div>
+                    {%- elsif is_wide and section.settings.feature_link != blank -%}
+                      {%- assign feature_url = section.settings.feature_link -%}
+                      {%- assign show_feature = true -%}
+                      {%- if feature_url contains '/products/discovery-set' -%}
+                        {%- if discovery_product != blank -%}
+                          {%- assign feature_url = discovery_product.url -%}
+                        {%- else -%}
+                          {%- assign show_feature = false -%}
+                        {%- endif -%}
+                      {%- endif -%}
+                      {%- if show_feature -%}
+                      <a class="mega__feature" href="{{ feature_url }}">
+                        {%- if section.settings.feature_image -%}
+                          <img
+                            src="{{ section.settings.feature_image | image_url: width: 600 }}"
+                            srcset="{{ section.settings.feature_image | image_url: width: 400 }} 400w,
+                                    {{ section.settings.feature_image | image_url: width: 800 }} 800w"
+                            sizes="20vw"
+                            alt="{{ section.settings.feature_image.alt | escape }}"
+                            width="{{ section.settings.feature_image.width }}"
+                            height="{{ section.settings.feature_image.height }}"
+                            loading="lazy"
+                          >
+                        {%- endif -%}
+                        <p class="mega__title mega__title--plain meta">
+                          {{ section.settings.feature_title | escape }}
+                        </p>
+                        <p class="text-muted text-body-sm">{{ section.settings.feature_text | escape }}</p>
+                      </a>
+                      {%- endif -%}
+                    {%- endif -%}
+                  </div>
+                </details>
+              {%- else -%}
+                {%- liquid
+                  assign nav_title = link.title | downcase | strip
+                  assign nav_url = link.url
+                  assign nav_skip = false
+                  if nav_title contains 'duftberatung'
+                    assign nav_url = routes.root_url | append: '#duftberatung'
+                  elsif nav_title contains 'bestseller'
+                    if bestseller_collection != blank
+                      assign nav_url = bestseller_collection.url
+                    else
+                      assign nav_url = routes.all_products_collection_url
+                    endif
+                  elsif nav_title contains 'über uns' or nav_title contains 'ueber uns'
+                    if about_page != blank
+                      assign nav_url = about_page.url
+                    else
+                      assign nav_skip = true
+                    endif
+                  elsif nav_title contains 'kontakt'
+                    if contact_page != blank
+                      assign nav_url = contact_page.url
+                    else
+                      assign nav_skip = true
+                    endif
+                  elsif nav_title == 'faq' or nav_title contains 'fragen'
+                    if faq_page != blank
+                      assign nav_url = faq_page.url
+                    else
+                      assign nav_skip = true
+                    endif
+                  elsif nav_title contains 'impressum'
+                    if shop.legal_notice != blank
+                      assign nav_url = shop.legal_notice.url
+                    elsif impressum_page != blank
+                      assign nav_url = impressum_page.url
+                    else
+                      assign nav_skip = true
+                    endif
+                  elsif nav_title contains 'datenschutz'
+                    if shop.privacy_policy != blank
+                      assign nav_url = shop.privacy_policy.url
+                    else
+                      assign nav_skip = true
+                    endif
+                  elsif nav_title contains 'widerruf' or nav_title contains 'rückgabe'
+                    if shop.refund_policy != blank
+                      assign nav_url = shop.refund_policy.url
+                    else
+                      assign nav_skip = true
+                    endif
+                  elsif nav_title == 'agb' or nav_title contains 'geschäftsbedingungen'
+                    if shop.terms_of_service != blank
+                      assign nav_url = shop.terms_of_service.url
+                    else
+                      assign nav_skip = true
+                    endif
+                  elsif link.type == 'page_link' or link.type == 'product_link' or link.type == 'collection_link' or link.type == 'blog_link' or link.type == 'article_link'
+                    if link.object == blank
+                      assign nav_skip = true
+                    endif
+                  endif
+                -%}
+                {%- unless nav_skip -%}<a class="nav__link" href="{{ nav_url }}">{{ link.title | escape }}</a>{%- endunless -%}
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+    </div>
+
+    <div class="header__brand">
+      {%- if request.page_type == 'index' -%}<h1 class="header__brand-heading">{%- endif -%}
+      <a class="brand-lockup" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
+        {%- comment -%}
+          Signet und Wortmarke bilden ein Paar. Das Signet ist Zierde – die
+          Beschriftung des Verweises trägt bereits den Shopnamen.
+        {%- endcomment -%}
+        {% render 'brand-mark', size: settings.signet_size_header, class: 'brand-lockup__mark' %}
+        {%- if settings.logo_svg != blank -%}
+          <span class="header__logo-svg" style="width: {{ settings.logo_width_mobile }}px;">
+            {{ settings.logo_svg }}
+          </span>
+        {%- elsif settings.logo != blank -%}
+          <img
+            src="{{ settings.logo | image_url: width: 600 }}"
+            srcset="{{ settings.logo | image_url: width: 300 }} 300w, {{ settings.logo | image_url: width: 600 }} 600w"
+            sizes="(min-width: 990px) {{ settings.logo_width }}px, {{ settings.logo_width_mobile }}px"
+            alt="{{ shop.name | escape }}"
+            width="{{ settings.logo.width }}"
+            height="{{ settings.logo.height }}"
+            style="width: {{ settings.logo_width_mobile }}px; height: auto;"
+            class="header__logo"
+            loading="eager"
+          >
+        {%- else -%}
+          <span class="wordmark">{{ settings.wordmark | escape }}</span>
+        {%- endif -%}
+      </a>
+      {%- if request.page_type == 'index' -%}</h1>{%- endif -%}
+    </div>
+
+    <div class="header__actions">
+      <button
+        type="button"
+        class="header__icon"
+        data-drawer-open="SearchDrawer"
+        aria-controls="SearchDrawer"
+        aria-label="{{ 'general.accessibility.open_search' | t }}"
+      >
+        {% render 'icon', name: 'search' %}
+      </button>
+
+      {%- if shop.customer_accounts_enabled and section.settings.show_account -%}
+        <a class="header__icon header__icon--desktop" href="{{ routes.account_url }}" aria-label="{{ 'sections.header.account' | t }}">
+          {% render 'icon', name: 'account' %}
+        </a>
+      {%- endif -%}
+
+      {%- if settings.cart_type == 'drawer' -%}
+        <button
+          type="button"
+          class="header__icon"
+          data-drawer-open="CartDrawer"
+          aria-controls="CartDrawer"
+          aria-label="{{ 'general.accessibility.open_cart' | t }}"
+        >
+          {% render 'icon', name: 'cart' %}
+          <span class="cart-count" data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span>
+        </button>
+      {%- else -%}
+        <a class="header__icon" href="{{ routes.cart_url }}" aria-label="{{ 'general.accessibility.open_cart' | t }}">
+          {% render 'icon', name: 'cart' %}
+          <span class="cart-count" data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span>
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+</header>
+
+{%- comment -%}
+  Mobiles Menü – bewusst flacher als das Desktop-Menü.
+  Die vier wichtigsten Ziele stehen ohne Aufklappen da.
+{%- endcomment -%}
+<vc-drawer id="MenuDrawer" class="drawer drawer--left color-{{ section.settings.color_scheme }} color-scheme" aria-label="{{ 'general.accessibility.menu' | t }}">
+  <div class="drawer__header">
+    <span class="menu-drawer__brand">
+      {% render 'brand-mark', size: 20 %}
+      <span class="wordmark">{{ settings.wordmark | escape }}</span>
+    </span>
+    <button type="button" class="drawer__close" data-drawer-close aria-label="{{ 'general.accessibility.close_menu' | t }}">
+      {% render 'icon', name: 'close' %}
+    </button>
+  </div>
+
+  <div class="menu-drawer__top">
+    <form action="{{ routes.search_url }}" method="get" role="search" class="menu-drawer__search" data-vc-search-form>
+      <label class="visually-hidden" for="MenuDrawerSearch">{{ 'general.search.title' | t }}</label>
+      <div class="menu-drawer__search-row">
+        <input
+          id="MenuDrawerSearch"
+          class="field__input menu-drawer__search-input"
+          type="search"
+          name="q"
+          data-drawer-initial-focus
+          placeholder="{{ settings.search_placeholder | escape }}"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          inputmode="search"
+        >
+        <button type="submit" class="menu-drawer__search-submit" aria-label="{{ 'general.search.submit' | t }}">
+          {% render 'icon', name: 'search' %}
+        </button>
+      </div>
+      <input type="hidden" name="options[prefix]" value="last">
+      <p class="menu-drawer__search-help">{{ 'general.search.help' | t }}</p>
+    </form>
+
+    {%- if settings.whatsapp_enabled -%}
+      {% render 'whatsapp-link', class: 'button button--whatsapp menu-drawer__wa', icon: true %}
+    {%- endif -%}
+  </div>
+
+  <div class="drawer__body">
+    {%- comment -%}
+      Hauptnavigation. Ist im Theme-Editor ein Menü zugewiesen, gilt dieses.
+      Solange keines gepflegt ist, greift eine bewusst kurze Grundfassung –
+      sonst stünde der Drawer leer da.
+    {%- endcomment -%}
+    {%- if section.settings.mobile_primary_menu.links.size > 0 -%}
+      <ul class="menu-drawer__primary">
+        {%- for link in section.settings.mobile_primary_menu.links -%}
+          {%- liquid
+            assign mobile_title = link.title | downcase | strip
+            assign mobile_url = link.url
+            assign mobile_skip = false
+            if mobile_title contains 'duftberatung'
+              assign mobile_url = routes.root_url | append: '#duftberatung'
+            elsif mobile_title contains 'bestseller'
+              if bestseller_collection != blank
+                assign mobile_url = bestseller_collection.url
+              else
+                assign mobile_url = routes.all_products_collection_url
+              endif
+            elsif mobile_title contains 'über uns' or mobile_title contains 'ueber uns'
+              if about_page != blank
+                assign mobile_url = about_page.url
+              else
+                assign mobile_skip = true
+              endif
+            elsif mobile_title contains 'kontakt'
+              if contact_page != blank
+                assign mobile_url = contact_page.url
+              else
+                assign mobile_skip = true
+              endif
+            elsif mobile_title == 'faq' or mobile_title contains 'fragen'
+              if faq_page != blank
+                assign mobile_url = faq_page.url
+              else
+                assign mobile_skip = true
+              endif
+            elsif mobile_title contains 'impressum'
+              if shop.legal_notice != blank
+                assign mobile_url = shop.legal_notice.url
+              elsif impressum_page != blank
+                assign mobile_url = impressum_page.url
+              else
+                assign mobile_skip = true
+              endif
+            elsif mobile_title contains 'datenschutz'
+              if shop.privacy_policy != blank
+                assign mobile_url = shop.privacy_policy.url
+              else
+                assign mobile_skip = true
+              endif
+            elsif mobile_title contains 'widerruf' or mobile_title contains 'rückgabe'
+              if shop.refund_policy != blank
+                assign mobile_url = shop.refund_policy.url
+              else
+                assign mobile_skip = true
+              endif
+            elsif mobile_title == 'agb' or mobile_title contains 'geschäftsbedingungen'
+              if shop.terms_of_service != blank
+                assign mobile_url = shop.terms_of_service.url
+              else
+                assign mobile_skip = true
+              endif
+            elsif link.type == 'page_link' or link.type == 'product_link' or link.type == 'collection_link' or link.type == 'blog_link' or link.type == 'article_link'
+              if link.object == blank
+                assign mobile_skip = true
+              endif
+            endif
+          -%}
+          {%- unless mobile_skip -%}
+            <li>
+              <a class="menu-drawer__link" href="{{ mobile_url }}">
+                {{ link.title | escape }}
+                {% render 'icon', name: 'arrow' %}
+              </a>
+            </li>
+          {%- endunless -%}
+        {%- endfor -%}
+      </ul>
+    {%- else -%}
+      <ul class="menu-drawer__primary">
+        <li>
+          <a class="menu-drawer__link" href="{{ routes.all_products_collection_url }}">
+            {{ 'sections.header.all_scents' | t }}
+            {% render 'icon', name: 'arrow' %}
+          </a>
+        </li>
+        <li>
+          <a class="menu-drawer__link" href="{% if bestseller_collection != blank %}{{ bestseller_collection.url }}{% else %}{{ routes.all_products_collection_url }}{% endif %}">
+            {{ 'sections.header.bestsellers' | t }}
+            {% render 'icon', name: 'arrow' %}
+          </a>
+        </li>
+        <li>
+          <a class="menu-drawer__link" href="{{ routes.root_url }}#duftberatung">
+            {{ 'sections.header.advice' | t }}
+            {% render 'icon', name: 'arrow' %}
+          </a>
+        </li>
+      </ul>
+    {%- endif -%}
+
+    {%- if section.settings.mobile_secondary_menu.links.size > 0 -%}
+      <div class="menu-drawer__secondary">
+        {%- for link in section.settings.mobile_secondary_menu.links -%}
+          {%- liquid
+            assign aux_title = link.title | downcase | strip
+            assign aux_url = link.url
+            assign aux_skip = false
+            if aux_title contains 'duftberatung'
+              assign aux_url = routes.root_url | append: '#duftberatung'
+            elsif aux_title contains 'über uns' or aux_title contains 'ueber uns'
+              if about_page != blank
+                assign aux_url = about_page.url
+              else
+                assign aux_skip = true
+              endif
+            elsif aux_title contains 'kontakt'
+              if contact_page != blank
+                assign aux_url = contact_page.url
+              else
+                assign aux_skip = true
+              endif
+            elsif aux_title == 'faq' or aux_title contains 'fragen'
+              if faq_page != blank
+                assign aux_url = faq_page.url
+              else
+                assign aux_skip = true
+              endif
+            elsif aux_title contains 'impressum'
+              if shop.legal_notice != blank
+                assign aux_url = shop.legal_notice.url
+              elsif impressum_page != blank
+                assign aux_url = impressum_page.url
+              else
+                assign aux_skip = true
+              endif
+            elsif aux_title contains 'datenschutz'
+              if shop.privacy_policy != blank
+                assign aux_url = shop.privacy_policy.url
+              else
+                assign aux_skip = true
+              endif
+            elsif aux_title contains 'widerruf' or aux_title contains 'rückgabe'
+              if shop.refund_policy != blank
+                assign aux_url = shop.refund_policy.url
+              else
+                assign aux_skip = true
+              endif
+            elsif aux_title == 'agb' or aux_title contains 'geschäftsbedingungen'
+              if shop.terms_of_service != blank
+                assign aux_url = shop.terms_of_service.url
+              else
+                assign aux_skip = true
+              endif
+            elsif link.type == 'page_link' or link.type == 'product_link' or link.type == 'collection_link' or link.type == 'blog_link' or link.type == 'article_link'
+              if link.object == blank
+                assign aux_skip = true
+              endif
+            endif
+          -%}
+          {%- unless aux_skip -%}<a href="{{ aux_url }}">{{ link.title | escape }}</a>{%- endunless -%}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if families_menu.links.size > 0 -%}
+      <details class="menu-drawer__item" data-accordion>
+        <summary class="menu-drawer__summary">
+          {{ section.settings.families_title | escape }}
+          {% render 'icon', name: 'chevron' %}
+        </summary>
+        <div class="menu-drawer__families">
+          {%- for family in families_menu.links -%}
+            {%- assign family_broken = false -%}
+            {%- if family.type == 'page_link' or family.type == 'product_link' or family.type == 'collection_link' -%}
+              {%- if family.object == blank -%}{%- assign family_broken = true -%}{%- endif -%}
+            {%- endif -%}
+            {%- unless family_broken -%}<a href="{{ family.url }}">{{ family.title | escape }}</a>{%- endunless -%}
+          {%- endfor -%}
+        </div>
+      </details>
+    {%- endif -%}
+
+    {%- if section.settings.mobile_footer_menu.links.size > 0 -%}
+      <div class="menu-drawer__tertiary">
+        {%- for link in section.settings.mobile_footer_menu.links -%}
+          {%- liquid
+            assign aux_title = link.title | downcase | strip
+            assign aux_url = link.url
+            assign aux_skip = false
+            if aux_title contains 'duftberatung'
+              assign aux_url = routes.root_url | append: '#duftberatung'
+            elsif aux_title contains 'über uns' or aux_title contains 'ueber uns'
+              if about_page != blank
+                assign aux_url = about_page.url
+              else
+                assign aux_skip = true
+              endif
+            elsif aux_title contains 'kontakt'
+              if contact_page != blank
+                assign aux_url = contact_page.url
+              else
+                assign aux_skip = true
+              endif
+            elsif aux_title == 'faq' or aux_title contains 'fragen'
+              if faq_page != blank
+                assign aux_url = faq_page.url
+              else
+                assign aux_skip = true
+              endif
+            elsif aux_title contains 'impressum'
+              if shop.legal_notice != blank
+                assign aux_url = shop.legal_notice.url
+              elsif impressum_page != blank
+                assign aux_url = impressum_page.url
+              else
+                assign aux_skip = true
+              endif
+            elsif aux_title contains 'datenschutz'
+              if shop.privacy_policy != blank
+                assign aux_url = shop.privacy_policy.url
+              else
+                assign aux_skip = true
+              endif
+            elsif aux_title contains 'widerruf' or aux_title contains 'rückgabe'
+              if shop.refund_policy != blank
+                assign aux_url = shop.refund_policy.url
+              else
+                assign aux_skip = true
+              endif
+            elsif aux_title == 'agb' or aux_title contains 'geschäftsbedingungen'
+              if shop.terms_of_service != blank
+                assign aux_url = shop.terms_of_service.url
+              else
+                assign aux_skip = true
+              endif
+            elsif link.type == 'page_link' or link.type == 'product_link' or link.type == 'collection_link' or link.type == 'blog_link' or link.type == 'article_link'
+              if link.object == blank
+                assign aux_skip = true
+              endif
+            endif
+          -%}
+          {%- unless aux_skip -%}<a href="{{ aux_url }}">{{ link.title | escape }}</a>{%- endunless -%}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if shop.customer_accounts_enabled and section.settings.show_account -%}
+      <a class="menu-drawer__link menu-drawer__account" href="{{ routes.account_url }}">
+        {{ 'sections.header.account' | t }}
+        {% render 'icon', name: 'arrow' %}
+      </a>
+    {%- endif -%}
+  </div>
+</vc-drawer>
+
+{%- comment -%}
+  Suchpanel – ausschließlich Suche.
+  Die Scent-Code-Eingabe gehört zur Beratung und steht bewusst nur im Hero
+  und auf der Bestellseite, nicht hier. Suche und Duftberatung sind zwei
+  getrennte Wege.
+{%- endcomment -%}
+<vc-drawer id="SearchDrawer" class="drawer drawer--top color-{{ section.settings.color_scheme }} color-scheme" aria-label="{{ 'general.search.title' | t }}">
+  <div class="search-panel">
+    <div class="page-width search-panel__inner">
+      <div class="search-panel__head">
+        <span class="meta meta--muted">{{ 'general.search.title' | t }}</span>
+        <button type="button" class="drawer__close" data-drawer-close aria-label="{{ 'general.accessibility.close_search' | t }}">
+          {% render 'icon', name: 'close' %}
+        </button>
+      </div>
+
+      <form
+        action="{{ routes.search_url }}"
+        method="get"
+        role="search"
+        class="search-panel__form"
+        data-vc-search-form
+        data-predictive-search{% unless settings.predictive_search_enabled %}-off{% endunless %}
+      >
+        <label class="visually-hidden" for="SearchPanelInput">{{ 'general.search.title' | t }}</label>
+        <input
+          id="SearchPanelInput"
+          class="search-panel__input"
+          type="search"
+          name="q"
+          data-drawer-initial-focus
+          placeholder="{{ settings.search_placeholder | escape }}"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          aria-expanded="false"
+          aria-owns="PredictiveResults"
+          role="combobox"
+          aria-controls="PredictiveResults"
+          aria-autocomplete="list"
+        >
+        <input type="hidden" name="options[prefix]" value="last">
+        <button type="submit" class="search-panel__submit">
+          <span>{{ 'general.search.submit' | t }}</span>
+          {% render 'icon', name: 'arrow' %}
+        </button>
+      </form>
+
+      {%- if section.settings.search_hint != blank -%}
+        <p class="search-panel__hint">{{ section.settings.search_hint | escape }}</p>
+      {%- endif -%}
+
+      <div id="PredictiveResults" class="search-panel__results" data-predictive-results role="listbox"></div>
+      <p class="visually-hidden" role="status" aria-live="polite" data-predictive-status></p>
+    </div>
+  </div>
+</vc-drawer>
+
+<script src="{{ 'vc-search.js' | asset_url }}" defer="defer"></script>
+{%- comment -%}
+  Legt Scent Codes ohne eigene Produktseite aus dem Suchtreffer in den
+  Warenkorb. Liegt hier, weil die Sofortsuche auf jeder Seite erreichbar ist.
+{%- endcomment -%}
+<script src="{{ 'scent-code-add.js' | asset_url }}" defer="defer"></script>
+{%- if settings.predictive_search_enabled -%}
+  <script src="{{ 'predictive-search.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Kopfbereich",
+  "class": "header-section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Farbstil",
+      "options": [
+        { "value": "scheme-1", "label": "Ivory" },
+        { "value": "scheme-2", "label": "Ivory dunkel" },
+        { "value": "scheme-3", "label": "Schwarz" },
+        { "value": "scheme-4", "label": "Taupe" }
+      ],
+      "default": "scheme-1"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Hauptmenü (Desktop)",
+      "default": "main-menu"
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky",
+      "label": "Kopfbereich beim Scrollen fixieren",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_account",
+      "label": "Konto anzeigen",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Beratung im Menü"
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_parent",
+      "label": "Menüpunkt für die Beratungsfläche",
+      "default": "Duftberatung",
+      "info": "Muss exakt dem Titel des Menüpunkts entsprechen. Dort erscheint der WhatsApp-Block."
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_teaser",
+      "label": "Teasertext",
+      "default": "Nenn uns deinen Lieblingsduft – wir finden deinen Scent Code."
+    },
+    {
+      "type": "header",
+      "content": "Duftfamilien im Menü"
+    },
+    {
+      "type": "text",
+      "id": "families_parent",
+      "label": "Menüpunkt für die Duftfamilien",
+      "default": "Duftberatung",
+      "info": "Leer lassen, um die Duftfamilien nicht im Desktop-Menü zu zeigen."
+    },
+    {
+      "type": "text",
+      "id": "families_title",
+      "label": "Überschrift",
+      "default": "Duftwelten"
+    },
+    {
+      "type": "link_list",
+      "id": "families_menu",
+      "label": "Menü mit den Duftfamilien"
+    },
+    {
+      "type": "header",
+      "content": "Redaktionelle Fläche im Menü"
+    },
+    {
+      "type": "image_picker",
+      "id": "feature_image",
+      "label": "Bild"
+    },
+    {
+      "type": "text",
+      "id": "feature_title",
+      "label": "Titel",
+      "default": "Discovery Set"
+    },
+    {
+      "type": "text",
+      "id": "feature_text",
+      "label": "Text",
+      "default": "Fünf Düfte selbst auswählen."
+    },
+    {
+      "type": "url",
+      "id": "feature_link",
+      "label": "Link"
+    },
+    {
+      "type": "header",
+      "content": "Mobiles Menü"
+    },
+    {
+      "type": "paragraph",
+      "content": "Das mobile Menü ist bewusst flacher: Die wichtigsten Ziele stehen ohne Aufklappen da."
+    },
+    {
+      "type": "link_list",
+      "id": "mobile_primary_menu",
+      "label": "Hauptziele (untereinander)"
+    },
+    {
+      "type": "link_list",
+      "id": "mobile_secondary_menu",
+      "label": "Nebenziele (zweispaltig)"
+    },
+    {
+      "type": "link_list",
+      "id": "mobile_footer_menu",
+      "label": "Über uns, FAQ, Kontakt"
+    },
+    {
+      "type": "header",
+      "content": "Suche"
+    },
+    {
+      "type": "text",
+      "id": "search_hint",
+      "label": "Hinweis unter der Suche",
+      "default": "Suche z. B. nach VC-049, Vanille, Gourmand oder holzig."
+    }
+  ],
+  "enabled_on": {
+    "groups": [
+      "header"
+    ]
+  }
+}
+{% endschema %}

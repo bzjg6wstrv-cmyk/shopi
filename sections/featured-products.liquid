@@ -1,0 +1,96 @@
+{%- liquid
+  assign products_to_show = section.settings.collection.products
+  assign limit = section.settings.product_limit
+-%}
+<section class="section color-{{ section.settings.color_scheme }} color-scheme">
+  <div class="page-width">
+    <div class="section-head">
+      <div>
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="eyebrow">{{ section.settings.eyebrow | escape }}</span>
+        {%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          <h2 class="section-head__title h2">{{ section.settings.heading | escape }}</h2>
+        {%- endif -%}
+      </div>
+      {%- if section.settings.collection != blank -%}
+        <a class="link-underline" href="{{ section.settings.collection.url }}">{{ section.settings.link_label | escape }}</a>
+      {%- endif -%}
+    </div>
+
+    {%- if section.settings.collection == blank -%}
+      <p class="note-placeholder">
+        Keine Collection ausgewählt. Bitte im Theme-Editor eine echte Shopify-Collection zuweisen –
+        dieser Abschnitt zeigt bewusst keine erfundenen Produkte.
+      </p>
+    {%- elsif products_to_show.size == 0 -%}
+      <p class="note-placeholder">Diese Collection enthält derzeit keine Produkte.</p>
+    {%- else -%}
+      <ul class="grid grid--products reveal">
+        {%- for product in products_to_show limit: limit -%}
+          <li>
+            {% render 'product-card', product: product, lazy: 'lazy' %}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Produktreihe",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Farbstil",
+      "options": [
+        { "value": "scheme-1", "label": "Ivory" },
+        { "value": "scheme-2", "label": "Ivory dunkel" },
+        { "value": "scheme-3", "label": "Schwarz" },
+        { "value": "scheme-4", "label": "Taupe" }
+      ],
+      "default": "scheme-1"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Kleiner Vortext",
+      "default": "Auswahl"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Überschrift",
+      "default": "Bestseller"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "range",
+      "id": "product_limit",
+      "min": 4,
+      "max": 12,
+      "step": 1,
+      "label": "Anzahl Produkte",
+      "default": 4
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Textlink",
+      "default": "Alle ansehen"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Produktreihe"
+    }
+  ]
+}
+{% endschema %}

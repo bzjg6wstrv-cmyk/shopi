@@ -1,0 +1,224 @@
+{%- liquid
+  assign vc_term = search.terms | strip | downcase
+  assign vc_alias_codes = ''
+
+  comment
+    Numeric / VC-code normalization. This makes 49, 049 and VC-049 equivalent.
+  endcomment
+  assign vc_code_candidate = vc_term | remove: 'vc-' | remove: 'vc_' | remove: 'vc '
+  assign vc_non_digits = vc_code_candidate
+  assign vc_non_digits = vc_non_digits | remove: '0' | remove: '1' | remove: '2' | remove: '3' | remove: '4'
+  assign vc_non_digits = vc_non_digits | remove: '5' | remove: '6' | remove: '7' | remove: '8' | remove: '9'
+  if vc_code_candidate != blank and vc_non_digits == blank and vc_code_candidate.size <= 3
+    if vc_code_candidate.size == 1
+      assign vc_alias_codes = '00' | append: vc_code_candidate
+    elsif vc_code_candidate.size == 2
+      assign vc_alias_codes = '0' | append: vc_code_candidate
+    else
+      assign vc_alias_codes = vc_code_candidate
+    endif
+  endif
+
+  comment
+    Launch scent search index. These aliases deliberately mirror the visible
+    scent-profile data, so customers can search by note or character even
+    before Shopify product tags/metafields have been indexed for storefront search.
+  endcomment
+  if vc_alias_codes == blank
+    case vc_term
+      when 'imagination', 'schwarztee', 'schwarzer tee', 'tee', 'neroli', 'ambrox', 'aquatisch', 'grün', 'gruen'
+        assign vc_alias_codes = '047'
+      when 'althair', 'althaïr', 'elemi', 'orangenblüte', 'orangenbluete', 'kardamom', 'bourbon-vanille', 'bourbon vanille', 'guajakholz', 'praline'
+        assign vc_alias_codes = '078'
+      when 'attrape-rêves', 'attrape-reves', 'attrap reve', 'litschi', 'pfingstrose', 'kakao', 'patschuli'
+        assign vc_alias_codes = '080'
+      when 'baccarat', 'safran', 'jasmin', 'bittermandel', 'mandel', 'zedernholz'
+        assign vc_alias_codes = '026'
+      when 'erba pura', 'erba', 'sizilianische orange', 'orange', 'mediterrane früchte', 'mediterrane fruechte'
+        assign vc_alias_codes = '040'
+      when 'naxos', 'lavendel', 'honig', 'tabak', 'tabakblatt', 'tonkabohne', 'tonka'
+        assign vc_alias_codes = '049'
+      when 'vanille'
+        assign vc_alias_codes = '040|049|078'
+      when 'zimt'
+        assign vc_alias_codes = '047|049|078'
+      when 'bergamotte'
+        assign vc_alias_codes = '040|047|049|078|080'
+      when 'zitrone'
+        assign vc_alias_codes = '040|049'
+      when 'ingwer'
+        assign vc_alias_codes = '047|080'
+      when 'amber'
+        assign vc_alias_codes = '026|040'
+      when 'moschus'
+        assign vc_alias_codes = '026|040'
+      when 'süß', 'suess', 'suss'
+        assign vc_alias_codes = '026|040|049|078|080'
+      when 'würzig', 'wuerzig', 'wurzig'
+        assign vc_alias_codes = '026|047|049|078'
+      when 'gourmand'
+        assign vc_alias_codes = '026|049|078|080'
+      when 'cremig'
+        assign vc_alias_codes = '049|078'
+      when 'frisch'
+        assign vc_alias_codes = '040|047|080'
+      when 'fruchtig'
+        assign vc_alias_codes = '040|080'
+      when 'blumig'
+        assign vc_alias_codes = '026|040|080'
+      when 'zitrisch'
+        assign vc_alias_codes = '040|047|049'
+      when 'holzig'
+        assign vc_alias_codes = '026|078'
+    endcase
+  endif
+
+  comment
+    Alias/note search must scan the full catalog, not only the homepage/bestseller
+    collection. The latter can omit products that still need to match note searches.
+  endcomment
+  assign vc_search_pool = collections['all']
+  if vc_search_pool == blank
+    assign vc_search_pool = settings.scent_code_collection
+  endif
+  assign vc_alias_count = 0
+-%}
+
+{%- capture vc_code_hit -%}
+  {%- if search.performed -%}{% render 'scent-code-hit', terms: search.terms, results: search.results %}{%- endif -%}
+{%- endcapture -%}
+{%- assign vc_code_hit = vc_code_hit | strip -%}
+{%- liquid
+  comment
+    Für den Seitenkopf: Liegt ein direkter Codetreffer vor und ist genau ein
+    Code gemeint, wird er im Kopf genannt – „VC-001 gefunden" statt der
+    langen Zeile „Ergebnisse für …". Das hält den Kopf kurz und bringt das
+    Produkt früher ins Bild.
+  endcomment
+  assign vc_head_code = ''
+  assign vc_code_list = vc_alias_codes | split: '|'
+  if vc_code_hit != blank and vc_code_list.size == 1 and vc_alias_codes != blank
+    assign vc_prefix = settings.scent_code_prefix | default: 'VC'
+    assign vc_head_code = vc_prefix | append: '-' | append: vc_alias_codes
+  endif
+-%}
+
+{{ 'section-search-results.css' | asset_url | stylesheet_tag }}
+
+{%- paginate search.results by 24 -%}
+  <section class="section search-page">
+    <div class="page-width">
+      <div class="search-head">
+        {%- if search.performed -%}
+          <span class="eyebrow search-head__eyebrow">{{ 'general.search.eyebrow' | t }}</span>
+        {%- endif -%}
+        <h1 class="h3 search-head__title">
+          {%- if vc_head_code != blank -%}
+            {{ 'general.search.code_found' | t: code: vc_head_code }}
+          {%- elsif search.performed -%}
+            {{ 'general.search.results_for' | t: terms: search.terms }}
+          {%- else -%}
+            {{ 'general.search.title' | t }}
+          {%- endif -%}
+        </h1>
+
+        {%- unless vc_code_hit != blank -%}
+        <form action="{{ routes.search_url }}" method="get" role="search" class="search-panel__form search-page__form" data-vc-search-form>
+          <label class="visually-hidden" for="SearchPageInput">{{ 'general.search.title' | t }}</label>
+          <input
+            id="SearchPageInput"
+            class="search-panel__input"
+            type="search"
+            name="q"
+            value="{{ search.terms | escape }}"
+            placeholder="{{ settings.search_placeholder | escape }}"
+            inputmode="search"
+          >
+          <input type="hidden" name="options[prefix]" value="last">
+          <button type="submit" class="button button--quiet">{{ 'general.search.submit' | t }}</button>
+        </form>
+        {%- endunless -%}
+      </div>
+
+      {%- if search.performed -%}
+        {%- if vc_code_hit != blank -%}
+          {{ vc_code_hit }}
+        {%- elsif vc_alias_codes != blank and vc_search_pool != blank -%}
+          {%- capture vc_alias_cards -%}
+            {%- for item in vc_search_pool.products limit: 100 -%}
+              {%- liquid
+                assign candidate_code = item.metafields.custom.scent_code.value | default: item.title | strip | upcase
+                assign candidate_num = candidate_code | remove: 'VC-' | remove: 'VC ' | remove: 'VC' | plus: 0
+                assign code_tokens = vc_alias_codes | split: '|'
+                assign is_alias_match = false
+                for token in code_tokens
+                  assign token_num = token | plus: 0
+                  if candidate_num == token_num
+                    assign is_alias_match = true
+                    break
+                  endif
+                endfor
+              -%}
+              {%- if is_alias_match -%}
+                {%- assign vc_alias_count = vc_alias_count | plus: 1 -%}
+                <li>{% render 'product-card', product: item, lazy: 'lazy' %}</li>
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endcapture -%}
+
+          {%- if vc_alias_count > 0 -%}
+            <p class="meta meta--muted results-count">{{ vc_alias_count }} passende Duftprofile</p>
+            <ul class="grid grid--products">{{ vc_alias_cards }}</ul>
+          {%- endif -%}
+        {%- endif -%}
+
+        {%- if vc_alias_count == 0 and search.results.size == 0 and vc_code_hit == blank -%}
+          <div class="empty-state">
+            <p class="h4 empty-state__title">{{ 'general.search.no_results' | t: terms: search.terms }}</p>
+            <p class="empty-state__text">Suche nach einem Scent Code, einer Nummer, Duftnote oder einem Duftcharakter – zum Beispiel „49“, „Vanille“, „Gourmand“ oder „Holzig“.</p>
+            {%- if settings.whatsapp_enabled -%}
+              {%- assign wa_context = 'sections.whatsapp.context_search' | t | replace: '__CODE__', search.terms -%}
+              <div class="empty-state__actions">
+                {% render 'whatsapp-link', class: 'button', icon: true, context: wa_context %}
+              </div>
+            {%- endif -%}
+          </div>
+        {%- elsif vc_alias_count == 0 and search.results.size > 0 and vc_code_hit == blank -%}
+          <p class="meta meta--muted results-count">
+            {{ 'general.search.results_count' | t: count: search.results_count }}
+          </p>
+          <ul class="grid grid--products">
+            {%- for item in search.results -%}
+              <li>
+                {%- if item.object_type == 'product' -%}
+                  {% render 'product-card', product: item, lazy: 'lazy' %}
+                {%- else -%}
+                  <article class="card">
+                    <h3 class="card__title"><a href="{{ item.url }}">{{ item.title }}</a></h3>
+                    <p class="card__family">{{ item.content | default: item.excerpt | strip_html | truncate: 120 }}</p>
+                  </article>
+                {%- endif -%}
+              </li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+      {%- endif -%}
+
+      {%- if vc_alias_count == 0 and vc_code_hit == blank -%}
+        {% render 'pagination', paginate: paginate %}
+      {%- endif -%}
+    </div>
+  </section>
+{%- endpaginate -%}
+
+<script src="{{ 'vc-search.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Suche",
+  "tag": "section",
+  "settings": [
+
+  ]
+}
+{% endschema %}
