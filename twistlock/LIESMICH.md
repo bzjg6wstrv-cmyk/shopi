@@ -110,6 +110,15 @@ Beispieldaten: Normalfall, Verspätung, kein Internet, fehlgeschlagener Fotovers
 geänderter Auftrag. Alles dort ist als **Demo** gekennzeichnet, es wird nichts
 gesendet. Gut zum Zeigen und zum Üben, ohne einen echten Auftrag anzufassen.
 
+Zum Verschicken gibt es dieselbe Vorschau auch als **eine einzige Datei**:
+`vorschau-einzeldatei.html`. Die läuft ohne Server, per E-Mail verschickt oder
+vom USB-Stick — einfach im Browser öffnen. Neu bauen nach Änderungen:
+
+    node vorschau-bauen.js
+
+Warum eine Einzeldatei: eingebettete Anzeigeflächen ohne eigene Adresse laden
+keine Nebendateien. Alles steckt darum in der Datei selbst.
+
 ### Bürotelefon eintragen
 
 Damit „Büro anrufen“ wählt, muss die Nummer hinterlegt sein. Sie steht in

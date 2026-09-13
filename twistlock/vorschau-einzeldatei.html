@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#15202B">
+<title>TWISTLOCK Fahreransicht</title>
+</head>
+<body>
+<style>
+/* ===========================================================
+   TWISTLOCK — Fahreroberfläche
+   Regeln, die hier bewusst eingehalten werden:
+   - Systemschrift, keine schmale Zierschrift
+   - Fließtext und Beschriftungen 20–22 px, wichtige Uhrzeiten 36–44 px
+   - Schaltflächen mindestens 60 px hoch, Hauptaktion 72–88 px
+   - Farbe ist nie die einzige Information: immer Symbol und Satz dazu
+   - Hauptaktion unten in einer eigenen Leiste, die nichts verdeckt
+   =========================================================== */
+
+:root{
+  --ink:#15202B;          /* Text                              */
+  --soft:#47525D;         /* Nebentext, Kontrast 7,4:1 auf Weiß */
+  --paper:#FFFFFF;
+  --seite:#E9EBE7;
+  --linie:#CBD0CC;
+  --linie2:#E3E6E2;
+
+  --gruen:#0A6B31;  --gruen-flaeche:#E4F1E9;
+  --gelb:#8A5200;   --gelb-flaeche:#FBEFD6;
+  --rot:#A3161D;    --rot-flaeche:#FAE8E8;
+  --marine:#1B4C78; --marine-flaeche:#E8F0F7;
+
+  --rand:16px;            /* Seitenabstand                     */
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+html,body{height:100%}
+body{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:21px; line-height:1.35;
+  background:var(--seite); color:var(--ink);
+  -webkit-text-size-adjust:100%;
+}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- Grundgerüst: Kopf, Inhalt, Aktionsleiste ----------
+   Der Inhalt scrollt für sich. Die Leiste unten bleibt stehen,
+   liegt aber nicht über dem Inhalt.                            */
+.app{
+  max-width:560px; margin:0 auto; background:var(--paper);
+  height:100vh; height:100dvh; max-height:100dvh;
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.inhalt{flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;
+        padding:0 var(--rand) 14px}
+.leiste{flex:0 0 auto; background:var(--paper); border-top:2px solid var(--linie);
+        padding:10px var(--rand) calc(10px + env(safe-area-inset-bottom,0px));
+        display:flex; flex-direction:column; gap:10px}
+.zweierreihe{display:flex; gap:14px; flex-wrap:wrap}
+.zweierreihe > *{flex:1 1 46%; min-width:0}
+.zweierreihe .zweit-btn{padding-left:8px; padding-right:8px; gap:8px}
+
+/* ---------- Kopfzeile ---------- */
+.kopf{flex:0 0 auto; display:flex; gap:10px; align-items:stretch; flex-wrap:nowrap;
+      padding:8px var(--rand); border-bottom:2px solid var(--ink)}
+@media (max-width:330px){ .kopf{flex-wrap:wrap} }   /* stark vergrößerte Schrift */
+.kopf > *{flex:1 1 auto; min-width:0}
+.kopf .zweit-btn{width:auto; font-size:18px; padding:6px 10px; gap:8px; min-height:60px}
+.kopf > .schmal{flex:0 0 auto; min-width:max-content}
+
+/* ---------- Schaltflächen ---------- */
+button,.knopf{font-family:inherit; font-size:21px; line-height:1.2; cursor:pointer}
+/* Lange Beschriftungen dürfen umbrechen, auch bei 200 % Schrift.
+   „anywhere“ sorgt dafür, dass die Schaltfläche selbst schmaler werden darf. */
+.haupt-btn,.zweit-btn,.wahl-btn,.klapp-kopf,.sprach-btn,.person,.marke{
+  overflow-wrap:break-word; min-width:0; hyphens:auto}
+/* Bei sehr schmaler Anzeige lieber trennen als mitten im Wort brechen.
+   „anywhere“ bleibt nur als letzte Rettung für sehr lange Wörter. */
+@media (max-width:330px){
+  .haupt-btn,.zweit-btn,.wahl-btn,.klapp-kopf,.sprach-btn,.person,.marke{
+    hyphens:auto; -webkit-hyphens:auto; overflow-wrap:break-word}
+}
+.haupt-btn > span,.zweit-btn > span,.wahl-btn > span,.klapp-kopf > span{min-width:0}
+
+.haupt-btn{
+  width:100%; min-height:76px; padding:10px 16px;
+  font-size:23px; font-weight:700;
+  border:0; background:var(--ink); color:#fff;
+  display:flex; align-items:center; justify-content:center; gap:14px; text-align:center;
+}
+.haupt-btn:disabled{opacity:.55}
+
+.zweit-btn{
+  width:100%; min-height:62px; padding:8px 14px;
+  font-size:20px; font-weight:600;
+  border:3px solid var(--ink); background:var(--paper); color:var(--ink);
+  display:flex; align-items:center; justify-content:center; gap:10px; text-align:center;
+  text-decoration:none;
+}
+.zweit-btn.leise{border-color:var(--linie); color:var(--soft)}
+.zweit-btn svg,.haupt-btn svg{flex:0 0 auto}
+
+/* Auswahlknöpfe, zum Beispiel „Was ist passiert?“ */
+.wahl-btn{
+  width:100%; min-height:72px; padding:10px 16px; margin-bottom:14px;
+  font-size:22px; font-weight:700;
+  border:3px solid var(--ink); background:var(--paper); color:var(--ink);
+  display:flex; align-items:center; gap:16px; text-align:left; text-decoration:none;
+}
+.wahl-btn .ico{flex:0 0 auto; color:var(--marine)}
+
+button:focus-visible,a:focus-visible{outline:4px solid var(--marine); outline-offset:2px}
+
+/* ---------- Überschriften und Texte ---------- */
+.titel{font-size:22px; font-weight:700; line-height:1.2; padding:8px 0 6px;
+       overflow-wrap:anywhere}
+.unter{font-size:20px; color:var(--soft); padding-bottom:10px}
+.etikett{font-size:19px; color:var(--soft); line-height:1.2}
+.wert{font-size:23px; font-weight:700; overflow-wrap:anywhere}
+.uhrzeit{font-size:40px; font-weight:700; line-height:1.05; letter-spacing:-.01em}
+.hinweis{font-size:19px; color:var(--soft); padding:10px 0; overflow-wrap:anywhere}
+
+/* ---------- Statusstreifen: Symbol, Satz, kein Farbfeld ---------- */
+.status{display:flex; gap:12px; align-items:flex-start;
+        padding:10px 12px; margin:0 0 10px; border-left:8px solid var(--soft);
+        background:#F2F3F1; font-size:20px; font-weight:700; line-height:1.25;
+        overflow-wrap:anywhere}
+.status .ico{flex:0 0 auto; margin-top:1px}
+.status .zusatz{display:block; font-size:18px; font-weight:600; margin-top:4px}
+.status.gruen{border-color:var(--gruen); background:var(--gruen-flaeche); color:var(--gruen)}
+.status.gelb {border-color:var(--gelb);  background:var(--gelb-flaeche);  color:var(--gelb)}
+.status.rot  {border-color:var(--rot);   background:var(--rot-flaeche);   color:var(--rot)}
+.status.grau {border-color:var(--soft);  background:#F2F3F1;             color:var(--ink)}
+.status.info {border-color:var(--marine);background:var(--marine-flaeche);color:var(--marine)}
+
+/* ---------- Ort, Adresse, Tor ---------- */
+.ort{padding:10px 0 10px; border-bottom:2px solid var(--linie2)}
+.ort.knapp{padding:8px 0}
+.ort.knapp .firma{font-size:21px}
+.ort .reihe{display:flex; gap:10px; align-items:baseline; flex-wrap:wrap}
+.ort .firma{font-size:23px; font-weight:700; overflow-wrap:anywhere; flex:1 1 auto; min-width:0}
+.ort .adresse{font-size:20px; margin-top:2px; overflow-wrap:anywhere}
+.tor{display:inline-flex; align-items:center; gap:6px; flex:0 0 auto;
+     padding:3px 9px; border:3px solid var(--ink); background:#F2F3F1;
+     font-size:21px; font-weight:700; white-space:nowrap}
+
+/* ---------- Zeitfelder ---------- */
+.zeiten{display:flex; gap:14px; flex-wrap:wrap; padding:8px 0;
+        border-bottom:2px solid var(--linie2)}
+.zeiten > div{flex:1 1 44%; min-width:140px; max-width:100%}
+.zeile{display:flex; gap:14px; align-items:center; padding:12px 0;
+       border-bottom:2px solid var(--linie2)}
+.zeile .ico{flex:0 0 auto; color:var(--soft)}
+.zeile .txt{flex:1; min-width:0; overflow-wrap:anywhere}
+.daten-zeile{display:flex; gap:12px; align-items:baseline; padding:9px 0;
+             border-bottom:1px solid var(--linie2); flex-wrap:wrap}
+.daten-zeile .etikett{flex:0 1 130px}
+.daten-zeile .wert{flex:1 1 auto; letter-spacing:.04em}
+
+/* ---------- Aufklappen „Fahrzeug und Container“ ---------- */
+.klapp{margin:12px 0}
+.klapp-kopf{width:100%; min-height:60px; padding:8px 12px; font-size:20px; font-weight:600;
+            border:3px solid var(--linie); background:var(--paper); color:var(--ink);
+            display:flex; align-items:center; gap:12px; text-align:left}
+.klapp-kopf .pf{margin-left:auto}
+.klapp-inhalt{border:3px solid var(--linie); border-top:0; padding:4px 12px 10px}
+
+/* ---------- Meldung, Notiz, Änderung ---------- */
+.kasten{display:flex; gap:12px; align-items:flex-start; padding:12px 14px; margin:12px 0;
+        background:var(--marine-flaeche); border-left:8px solid var(--marine);
+        font-size:20px; overflow-wrap:anywhere}
+.kasten .ico{flex:0 0 auto; color:var(--marine)}
+.kasten.warn{background:var(--gelb-flaeche); border-color:var(--gelb)}
+.kasten.warn .ico{color:var(--gelb)}
+.kasten b{display:block; font-size:21px}
+.kasten > div{min-width:0}
+
+/* ---------- Ergebnisseiten: ruhig, kein Vollbild-Alarm ---------- */
+.ergebnis{display:flex; gap:12px; align-items:flex-start; padding:14px 12px; margin:10px 0;
+          border-left:8px solid var(--gruen); background:var(--gruen-flaeche)}
+.ergebnis.wartet{border-color:var(--gelb); background:var(--gelb-flaeche)}
+.ergebnis.fehler{border-color:var(--rot);  background:var(--rot-flaeche)}
+.ergebnis .ico{flex:0 0 auto; color:var(--gruen)}
+.ergebnis.wartet .ico{color:var(--gelb)}
+.ergebnis.fehler .ico{color:var(--rot)}
+.ergebnis .w{font-size:23px; font-weight:700; overflow-wrap:anywhere}
+.ergebnis .z{font-size:36px; font-weight:700; line-height:1.05; margin-top:4px}
+.ergebnis .u{font-size:19px; margin-top:5px}
+
+/* ---------- Tagesliste ---------- */
+.tagzeile{display:flex; gap:14px; align-items:center; padding:14px 0;
+          border-bottom:2px solid var(--linie2); flex-wrap:wrap}
+.tagzeile .zt{font-size:30px; font-weight:700; min-width:92px}
+.tagzeile .wo{flex:1 1 120px; min-width:0; font-size:21px; font-weight:600; overflow-wrap:anywhere}
+.marke{display:inline-flex; align-items:center; gap:7px; padding:4px 10px;
+       font-size:18px; font-weight:700; border:2px solid var(--ink)}
+.marke.jetzt{background:var(--ink); color:#fff}
+.marke.fertig{border-color:var(--gruen); color:var(--gruen); background:var(--gruen-flaeche)}
+.marke.offen{border-color:var(--soft); color:var(--soft); background:#F2F3F1}
+
+/* ---------- Fotovorschau ---------- */
+.vorschaubild{width:100%; max-height:46vh; object-fit:contain; background:#15202B;
+              border:3px solid var(--ink); margin:10px 0}
+
+/* ---------- Sprache ---------- */
+.sprach-btn{width:100%; min-height:68px; margin-bottom:12px; padding:8px 16px;
+  font-size:22px; font-weight:700; border:3px solid var(--linie); background:var(--paper);
+  color:var(--ink); display:flex; align-items:center; gap:14px; text-align:left}
+.sprach-btn[aria-pressed="true"]{border-color:var(--ink); background:#F2F3F1}
+.sprach-btn .fl{font-size:26px}
+.sprach-btn .ha{margin-left:auto; color:var(--gruen)}
+
+/* ---------- Anmeldung ---------- */
+.wer{padding:14px 0}
+.wer h1{font-size:27px; font-weight:700; margin-bottom:14px}
+.person{width:100%; min-height:80px; display:flex; align-items:center; gap:16px;
+  padding:8px 16px; border:3px solid var(--ink); background:var(--paper);
+  margin-bottom:12px; font-size:23px; font-weight:700; text-align:left}
+.person .kreis{width:54px; height:54px; border-radius:50%; background:var(--marine); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:25px; flex:0 0 auto}
+.pad{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding:6px 0 14px}
+.pad button{min-height:76px; font-size:32px; font-weight:700;
+  border:3px solid var(--ink); background:var(--paper)}
+.pad button.tief{border-color:var(--linie); color:var(--soft); font-size:20px}
+.punkte{display:flex; gap:14px; justify-content:center; padding:8px 0}
+.punkte i{width:22px; height:22px; border-radius:50%; border:3px solid var(--ink); display:block}
+.punkte i.voll{background:var(--ink)}
+
+/* ---------- Kleinteile ---------- */
+.laedt{padding:40px 0; text-align:center; color:var(--soft); font-size:22px}
+.netzstreifen{display:flex; gap:10px; align-items:center; padding:10px 14px;
+  background:var(--gelb-flaeche); border-left:8px solid var(--gelb); color:var(--gelb);
+  font-size:19px; font-weight:700; margin:10px 0}
+.netzstreifen .ico{flex:0 0 auto}
+.install{width:100%; min-height:60px; margin-top:4px; font-size:19px; font-weight:700;
+  border:3px dashed var(--marine); background:var(--marine-flaeche); color:var(--marine);
+  display:none; align-items:center; justify-content:center; gap:10px}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+/* ---------- Demo-Vorschau: klar getrennt von der Fahreransicht ---------- */
+.demo-rahmen{max-width:560px; margin:0 auto; padding:0 0 24px}
+.demo-kopf{background:#15202B; color:#fff; padding:14px 16px}
+.demo-kopf h1{font-size:22px; font-weight:700}
+.demo-kopf p{font-size:18px; color:#D6DBD9; margin-top:4px}
+.demo-marke{display:inline-block; margin-bottom:8px; padding:4px 10px; font-size:17px;
+  font-weight:700; background:#FFD34D; color:#2A1D00; letter-spacing:.06em}
+.demo-schalter{display:flex; flex-wrap:wrap; gap:10px; padding:12px 16px; background:#2A3642}
+.demo-schalter button{min-height:60px; flex:1 1 45%; font-size:19px; font-weight:700;
+  border:3px solid #5C6B79; background:#15202B; color:#fff; padding:6px 10px}
+.demo-schalter button[aria-pressed="true"]{background:#fff; color:#15202B; border-color:#fff}
+.demo-buehne{border:4px solid #2A3642}
+.demo-notiz{background:#FFF8E1; border-left:8px solid #B07100; color:#5E3A00;
+  padding:12px 14px; font-size:18px; margin:0 0 0 0}
+
+@media (prefers-reduced-motion:no-preference){ .haupt-btn:active{transform:translateY(1px)} }
+
+/* Bühne der Demo-Vorschau: feste Höhe wie ein Handy, damit man die
+   Aktionsleiste unten sieht. In der echten App gilt 100dvh. */
+.demo-buehne .app{min-height:0; height:648px; max-height:648px; max-width:none}
+@media (max-width:620px){ .demo-buehne .app{height:600px; max-height:600px} }
+
+/* ---------- Sehr wenig Höhe (stark vergrößerte Schrift, kleine Geräte) ----
+   Dann wird die Seite wieder eine normale, scrollbare Seite: die
+   Aktionsleiste steht am Ende und verdeckt nie etwas. Scrollen ist hier
+   ausdrücklich erlaubt, Verdecken nicht.                                  */
+@media (max-height:560px){
+  .app{height:auto; max-height:none; min-height:100dvh; overflow:visible}
+  .inhalt{overflow:visible}
+}
+
+/* ---------- Sehr schmal (z. B. 200 % Schriftvergrößerung) ----------
+   Lieber etwas kleinere Beschriftungen als Wörter, die mitten im Wort
+   umbrechen. Alles bleibt deutlich größer als in der Normalansicht. */
+@media (max-width:330px){
+  .haupt-btn{font-size:19px; gap:8px; padding:8px 10px}
+  .zweit-btn,.wahl-btn,.klapp-kopf{font-size:18px; gap:8px; padding:8px 10px}
+  .haupt-btn svg{width:26px; height:26px}
+  .wahl-btn svg,.zweit-btn svg{width:22px; height:22px}
+  .titel{font-size:21px}
+  .uhrzeit{font-size:36px}
+}
+
+/* Diese Vorschau hat bewusst nur ein Farbschema: die App wird im Lkw bei
+   Tageslicht benutzt. Alle Flächen sind ausgemalt, damit die Seite auf
+   jedem Untergrund gleich aussieht. */
+body{background:#E9EBE7; color:#15202B}
+.demo-rahmen{padding-inline:0}
+/* Auf dem Handy zwei Schalter pro Zeile: sonst schieben sieben Zeilen
+   den Fahrerbildschirm aus dem Bild. */
+.demo-schalter{gap:8px; padding:10px 12px}
+.demo-schalter button{flex:1 1 45%; min-height:60px; font-size:17px}
+.demo-kopf h1{font-size:20px}
+.demo-kopf p{font-size:16px}
+</style>
+
+
+<div class="demo-rahmen">
+  <div class="demo-kopf">
+    <span class="demo-marke">DEMO</span>
+    <h1>TWISTLOCK Fahreransicht — Vorschau</h1>
+    <p>Feste Beispieldaten. Nichts wird gesendet, kein Büro, keine Navigation,
+       keine Benachrichtigungen. Die Schaltflächen unten gehören zur Vorschau,
+       nicht zur Fahreroberfläche.</p>
+  </div>
+
+  <div class="demo-schalter" id="schalter"></div>
+  <p class="demo-notiz" id="notiz"></p>
+
+  <div class="demo-buehne">
+    <div class="app" id="app"></div>
+  </div>
+
+  <p class="demo-notiz" style="border-left-color:#1B4C78;background:#EEF4FA;color:#16324B">
+    <b>Echt in dieser Vorschau:</b> Darstellung, Schriftgrößen, Bedienablauf,
+    Sprachwahl, Vorlesen (Sprachausgabe des Browsers).<br>
+    <b>Nur dargestellt:</b> Abholen und Abliefern, Fotoaufnahme, Senden ans Büro,
+    Lesebestätigung, Navigation, Netzstatus.
+  </p>
+</div>
+
+
+<script>
+/* ===========================================================
+   TWISTLOCK — Wörter, Sprachausgabe und Symbole
+   Gemeinsam genutzt von Anmeldung, Fahreransicht und Demo-Vorschau.
+
+   Regeln für Texte:
+   - normale Groß- und Kleinschreibung, keine Wörter in Großbuchstaben
+   - keine Fachbegriffe: „Ankunft etwa“ statt ETA, „Reserve“ statt Puffer
+   - Platzhalter in geschweiften Klammern, zum Beispiel {min}
+   - fehlt eine Übersetzung, wird automatisch der deutsche Satz genommen
+
+   Neue Sprache: unten einen Block ergänzen und in SPRACHNAME eintragen.
+   WICHTIG: Übersetzungen von einem Muttersprachler prüfen lassen.
+   =========================================================== */
+"use strict";
+
+const W = {
+de:{
+  /* Kopf und Wege */
+  vorlesen:"Vorlesen", sprache:"Sprache", spracheWaehlen:"Sprache wählen",
+  heuteAuftraege:"Heute: {n} Aufträge", heuteEinAuftrag:"Heute: 1 Auftrag",
+  zurueck:"Zurück", zurueckZumAuftrag:"Zurück zum Auftrag", abbrechen:"Abbrechen",
+  /* Schritte */
+  jetztAbholen:"Jetzt: Container abholen",
+  jetztFahren:"Jetzt: Zum Kunden fahren",
+  jetztBeimKunden:"Beim Kunden angekommen",
+  abholenBei:"Abholen bei", ziel:"Ziel", tor:"Tor",
+  abholzeitAb:"Abholzeit ab", abholzeit:"Abholzeit",
+  spaetestensLos:"Spätestens losfahren",
+  terminBeimKunden:"Termin beim Kunden: {zeit} in {ort}",
+  termin:"Termin", ankunftEtwa:"Ankunft etwa", ankunft:"Ankunft",
+  vorOrtSeit:"Seit {min} Minuten vor Ort",
+  aufenthalt:"Aufenthalt",
+  wartehinweis:"Das Büro prüft, welche Zeit davon berechnet wird.",
+  nurAnkunft:"Dieser Schritt meldet nur die Ankunft, noch nicht die Ablieferung.",
+  /* Fahrzeugdaten */
+  fahrzeugUndContainer:"Fahrzeug und Container",
+  container:"Container", chassis:"Chassis", zugmaschine:"Zugmaschine", siegel:"Siegel",
+  auftragsnummer:"Auftrag", kunde:"Kunde", keineAngabe:"nicht angegeben",
+  /* Zeitstatus */
+  rechtzeitig:"Du bist voraussichtlich rechtzeitig",
+  knapp:"Es wird knapp. Noch {min} Minuten Reserve.",
+  zuSpaet:"Voraussichtlich {min} Minuten zu spät",
+  keineDaten:"Ankunft gerade nicht verfügbar",
+  keineDatenZusatz:"Keine Verbindung zum Büro. Die Zeiten können sich geändert haben.",
+  schaetzung:"Geschätzt aus der geplanten Fahrzeit, ohne Verkehrslage.",
+  minutenVorher:"Voraussichtlich {min} Minuten vorher",
+  punktgenau:"Voraussichtlich genau zur Zeit",
+  /* Aktionen */
+  naviAbholort:"Navigation zum Abholort", naviZiel:"Navigation zum Ziel",
+  navigation:"Navigation", fahrzeug:"Fahrzeug",
+  naviHinweis:"Öffnet die Karten-App deines Handys.",
+  problemMelden:"Problem melden",
+  fotoAbholung:"Abgeholt? Foto machen", fotoAbgabe:"Abgegeben? Foto machen",
+  amZielAngekommen:"Am Ziel angekommen",
+  warte:"Moment…",
+  /* Foto */
+  fotoTitelAbholung:"Foto von der Abholung",
+  fotoTitelAbgabe:"Foto von der Ablieferung",
+  anweisungAbholung:"Fotografiere den Container von der Seite, so dass Containernummer und Siegel zu sehen sind.",
+  anweisungAbgabe:"Fotografiere den abgestellten Container beim Kunden.",
+  kameraOeffnen:"Kamera öffnen", fotoVerwenden:"Foto verwenden", fotoNeu:"Neu machen",
+  abbrechenHinweis:"Abbrechen schließt den Auftrag nicht ab.",
+  schadenHinweis:"Das Foto ist ein Beleg für die Übernahme. Es ist keine vollständige Schadensdokumentation. Schäden bitte zusätzlich dem Büro melden.",
+  kameraGehtNicht:"Kamera geht nicht?",
+  kameraHilfeTitel:"Kamera geht nicht",
+  kameraHilfeText:"Die App darf die Kamera nur mit deiner Erlaubnis benutzen. Öffne die Einstellungen deines Handys, suche den Browser oder TWISTLOCK und erlaube die Kamera. Danach hier weitermachen.",
+  kameraHilfeText2:"Wenn es dann noch nicht geht, ruf das Büro an. Der Auftrag bleibt offen.",
+  /* Ergebnis senden */
+  fotoGespeichert:"Foto gespeichert",
+  abholungGebucht:"Abholung ist gespeichert",
+  abgabeGebucht:"Ablieferung ist gespeichert",
+  nochNichtGesendet:"Noch nicht gesendet",
+  keinInternet:"Kein Internet",
+  bleibtAufHandy:"Die Aufnahme bleibt auf dem Handy und wird von allein gesendet, sobald du Netz hast.",
+  sendenFehlgeschlagen:"Senden hat nicht geklappt",
+  sendenFehlerText:"Das Büro hat die Aufnahme noch nicht. Sie liegt weiter auf dem Handy.",
+  nichtGemerkt:"Die Aufnahme konnte auf dem Handy nicht gespeichert werden. Bitte im Stand noch einmal versuchen.",
+  nochmalSenden:"Nochmal senden",
+  weiter:"Weiter",
+  /* Problem melden */
+  wasIstPassiert:"Was ist passiert?",
+  stau:"Stau", mussWarten:"Ich muss warten", containerFehlt:"Container fehlt",
+  panne:"Panne", bueroAnrufen:"Büro anrufen",
+  keineNummer:"Im Büro ist noch keine Telefonnummer hinterlegt.",
+  meldenFrage:"{was} melden?",
+  melden:"Melden",
+  meldenStandHinweis:"Melde nur, wenn der Lkw sicher steht.",
+  meldungGesendet:"Meldung gesendet",
+  meldungWartet:"Noch nicht gesendet – kein Internet",
+  meldungFehler:"Meldung nicht angekommen",
+  meldungGelesen:"Vom Büro gelesen",
+  meldungNichtGelesen:"Noch nicht vom Büro gelesen",
+  /* Sicherer Stand */
+  standTitel:"Steht der Lkw sicher?",
+  standText:"Mach das erst im Stand. Die App kann nicht erkennen, ob du fährst.",
+  standJa:"Der Lkw steht sicher", standNein:"Noch nicht",
+  /* Auftrag abgeschlossen */
+  auftragAbgeschlossen:"Auftrag abgeschlossen",
+  abgeliefertUm:"Abgeliefert bei {ort} um {zeit}",
+  naechsterAuftrag:"Nächster Auftrag: {ort}",
+  naechstenAnsehen:"Nächsten Auftrag ansehen",
+  keinWeiterer:"Heute kein weiterer Auftrag",
+  bueroSiehtVerspaetung:"Das Büro bekommt die Verspätung automatisch gemeldet. Fahr bitte normal weiter.",
+  tagFertigAnsehen:"Tag ansehen",
+  /* Tagesplan */
+  tagesplan:"Heute", uebersicht:"Übersicht",
+  statusJetzt:"Jetzt", statusOffen:"Offen", statusUnterwegs:"Unterwegs",
+  statusBeimKunden:"Beim Kunden", statusFertig:"Fertig",
+  nichtsHeute:"Heute kein Auftrag",
+  heuteFertig:"Alle Aufträge von heute sind fertig",
+  morgenVorschau:"Vorschau für morgen, {datum}",
+  morgenHinweis:"Nur eine Vorschau. Der Auftrag startet erst morgen.",
+  /* Verbindung */
+  alleGesendet:"Alles ist gesendet",
+  wartetAufNetz:"{n} Aufnahmen warten auf Netz",
+  einerWartetAufNetz:"1 Aufnahme wartet auf Netz",
+  standVon:"Daten vom Büro: {zeit}",
+  keinNetzStreifen:"Kein Internet. Angezeigt werden die Daten von {zeit}.",
+  keinNetzLaden:"Kein Internet und noch keine Daten auf dem Handy.",
+  nochmalLaden:"Nochmal versuchen",
+  vorlesenGehtNicht:"Vorlesen geht auf diesem Handy nicht.",
+  /* Änderungen */
+  geaendert:"Der Auftrag wurde geändert",
+  neuStatt:"Neu: {neu} statt {alt}",
+  neuOhneAlt:"Neu: {neu}",
+  gesehenBestaetigen:"Gesehen und bestätigt",
+  bestaetigt:"Bestätigt",
+  /* Anmeldung */
+  wer:"Wer bist du?", pin:"PIN", falsch:"PIN falsch",
+  installieren:"Als App speichern"
+},
+
+tr:{
+  vorlesen:"Sesli oku", sprache:"Dil", spracheWaehlen:"Dil seç",
+  heuteAuftraege:"Bugün: {n} iş", heuteEinAuftrag:"Bugün: 1 iş",
+  zurueck:"Geri", zurueckZumAuftrag:"İşe geri dön", abbrechen:"Vazgeç",
+  jetztAbholen:"Şimdi: Konteyneri al",
+  jetztFahren:"Şimdi: Müşteriye git",
+  jetztBeimKunden:"Müşteriye varıldı",
+  abholenBei:"Alım yeri", ziel:"Hedef", tor:"Kapı",
+  abholzeitAb:"Alım saati", abholzeit:"Alım saati",
+  spaetestensLos:"En geç yola çık",
+  terminBeimKunden:"Müşteri randevusu: {zeit}, {ort}",
+  termin:"Randevu", ankunftEtwa:"Varış yaklaşık", ankunft:"Varış",
+  vorOrtSeit:"{min} dakikadan beri burada",
+  aufenthalt:"Bekleme",
+  wartehinweis:"Bu sürenin ne kadarının ücretli olduğunu ofis kontrol eder.",
+  nurAnkunft:"Bu adım sadece varışı bildirir, teslimi değil.",
+  fahrzeugUndContainer:"Araç ve konteyner",
+  container:"Konteyner", chassis:"Şasi", zugmaschine:"Çekici", siegel:"Mühür",
+  auftragsnummer:"İş", kunde:"Müşteri", keineAngabe:"belirtilmemiş",
+  rechtzeitig:"Muhtemelen zamanında olacaksın",
+  knapp:"Zaman daralıyor. {min} dakika payın kaldı.",
+  zuSpaet:"Muhtemelen {min} dakika gecikme",
+  keineDaten:"Varış şu an bilinmiyor",
+  keineDatenZusatz:"Ofisle bağlantı yok. Saatler değişmiş olabilir.",
+  schaetzung:"Planlanan sürüş süresine göre tahmin, trafik hariç.",
+  minutenVorher:"Muhtemelen {min} dakika önce",
+  punktgenau:"Muhtemelen tam saatinde",
+  naviAbholort:"Alım yerine navigasyon", naviZiel:"Hedefe navigasyon",
+  navigation:"Navigasyon", fahrzeug:"Araç",
+  naviHinweis:"Telefonundaki harita uygulamasını açar.",
+  problemMelden:"Sorun bildir",
+  fotoAbholung:"Aldın mı? Fotoğraf çek", fotoAbgabe:"Teslim ettin mi? Fotoğraf çek",
+  amZielAngekommen:"Hedefe vardım",
+  warte:"Bir saniye…",
+  fotoTitelAbholung:"Alımın fotoğrafı", fotoTitelAbgabe:"Teslimin fotoğrafı",
+  anweisungAbholung:"Konteyneri yandan çek; numara ve mühür görünsün.",
+  anweisungAbgabe:"Müşteride bırakılan konteyneri çek.",
+  kameraOeffnen:"Kamerayı aç", fotoVerwenden:"Fotoğrafı kullan", fotoNeu:"Yeniden çek",
+  abbrechenHinweis:"Vazgeçmek işi tamamlamaz.",
+  schadenHinweis:"Bu fotoğraf teslim alma belgesidir, tam hasar tespiti değildir. Hasarları ayrıca ofise bildir.",
+  kameraGehtNicht:"Kamera çalışmıyor mu?",
+  kameraHilfeTitel:"Kamera çalışmıyor",
+  kameraHilfeText:"Uygulama kamerayı ancak izin verirsen kullanır. Telefon ayarlarını aç, tarayıcıyı veya TWISTLOCK'u bul ve kameraya izin ver. Sonra buradan devam et.",
+  kameraHilfeText2:"Hâlâ olmuyorsa ofisi ara. İş açık kalır.",
+  fotoGespeichert:"Fotoğraf kaydedildi",
+  abholungGebucht:"Alım kaydedildi", abgabeGebucht:"Teslim kaydedildi",
+  nochNichtGesendet:"Henüz gönderilmedi", keinInternet:"İnternet yok",
+  bleibtAufHandy:"Kayıt telefonda kalır ve internet gelince kendiliğinden gönderilir.",
+  sendenFehlgeschlagen:"Gönderme olmadı",
+  sendenFehlerText:"Ofiste henüz yok. Kayıt telefonda duruyor.",
+  nichtGemerkt:"Kayıt telefona kaydedilemedi. Lütfen durduğunda tekrar dene.",
+  nochmalSenden:"Tekrar gönder", weiter:"Devam",
+  wasIstPassiert:"Ne oldu?",
+  stau:"Trafik", mussWarten:"Beklemem gerekiyor", containerFehlt:"Konteyner yok",
+  panne:"Arıza", bueroAnrufen:"Ofisi ara",
+  keineNummer:"Ofis için telefon numarası kayıtlı değil.",
+  meldenFrage:"{was} bildirilsin mi?", melden:"Bildir",
+  meldenStandHinweis:"Sadece araç güvenli durduğunda bildir.",
+  meldungGesendet:"Bildirim gönderildi",
+  meldungWartet:"Henüz gönderilmedi – internet yok",
+  meldungFehler:"Bildirim ulaşmadı",
+  meldungGelesen:"Ofis okudu", meldungNichtGelesen:"Ofis henüz okumadı",
+  standTitel:"Araç güvenli duruyor mu?",
+  standText:"Bunu ancak dururken yap. Uygulama sürüp sürmediğini anlayamaz.",
+  standJa:"Araç güvenli duruyor", standNein:"Henüz değil",
+  auftragAbgeschlossen:"İş tamamlandı",
+  abgeliefertUm:"{ort} adresine {zeit} teslim edildi",
+  naechsterAuftrag:"Sonraki iş: {ort}", naechstenAnsehen:"Sonraki işi gör",
+  keinWeiterer:"Bugün başka iş yok",
+  bueroSiehtVerspaetung:"Gecikme ofise otomatik bildirilir. Normal devam et.",
+  tagFertigAnsehen:"Günü gör",
+  tagesplan:"Bugün", uebersicht:"Genel bakış",
+  statusJetzt:"Şimdi", statusOffen:"Açık", statusUnterwegs:"Yolda",
+  statusBeimKunden:"Müşteride", statusFertig:"Bitti",
+  nichtsHeute:"Bugün iş yok", heuteFertig:"Bugünün işleri bitti",
+  morgenVorschau:"Yarın için ön izleme, {datum}",
+  morgenHinweis:"Sadece ön izleme. İş yarın başlar.",
+  alleGesendet:"Her şey gönderildi",
+  wartetAufNetz:"{n} kayıt interneti bekliyor",
+  einerWartetAufNetz:"1 kayıt interneti bekliyor",
+  standVon:"Ofis verileri: {zeit}",
+  keinNetzStreifen:"İnternet yok. Gösterilen veriler {zeit} saatinden.",
+  keinNetzLaden:"İnternet yok ve telefonda henüz veri yok.",
+  nochmalLaden:"Tekrar dene",
+  vorlesenGehtNicht:"Bu telefonda sesli okuma yok.",
+  geaendert:"İş değişti", neuStatt:"Yeni: {alt} değil {neu}", neuOhneAlt:"Yeni: {neu}",
+  gesehenBestaetigen:"Gördüm ve onaylıyorum", bestaetigt:"Onaylandı",
+  wer:"Sen kimsin?", pin:"PIN", falsch:"PIN yanlış",
+  installieren:"Uygulama olarak kaydet"
+},
+
+pl:{
+  vorlesen:"Przeczytaj", sprache:"Język", spracheWaehlen:"Wybierz język",
+  heuteAuftraege:"Dziś: {n} zlecenia", heuteEinAuftrag:"Dziś: 1 zlecenie",
+  zurueck:"Wstecz", zurueckZumAuftrag:"Wróć do zlecenia", abbrechen:"Anuluj",
+  jetztAbholen:"Teraz: Odbierz kontener",
+  jetztFahren:"Teraz: Jedź do klienta",
+  jetztBeimKunden:"Jestem u klienta",
+  abholenBei:"Odbiór w", ziel:"Cel", tor:"Brama",
+  abholzeitAb:"Odbiór od", abholzeit:"Godzina odbioru",
+  spaetestensLos:"Najpóźniej wyjazd",
+  terminBeimKunden:"Termin u klienta: {zeit} w {ort}",
+  termin:"Termin", ankunftEtwa:"Przyjazd około", ankunft:"Przyjazd",
+  vorOrtSeit:"Na miejscu od {min} minut",
+  aufenthalt:"Postój",
+  wartehinweis:"Biuro sprawdza, ile z tego czasu jest płatne.",
+  nurAnkunft:"Ten krok zgłasza tylko przyjazd, jeszcze nie dostawę.",
+  fahrzeugUndContainer:"Pojazd i kontener",
+  container:"Kontener", chassis:"Podwozie", zugmaschine:"Ciągnik", siegel:"Plomba",
+  auftragsnummer:"Zlecenie", kunde:"Klient", keineAngabe:"brak danych",
+  rechtzeitig:"Prawdopodobnie będziesz na czas",
+  knapp:"Będzie ciasno. Zostało {min} minut rezerwy.",
+  zuSpaet:"Prawdopodobnie {min} minut spóźnienia",
+  keineDaten:"Przyjazd chwilowo nieznany",
+  keineDatenZusatz:"Brak połączenia z biurem. Godziny mogły się zmienić.",
+  schaetzung:"Szacunek z planowanego czasu jazdy, bez ruchu na drodze.",
+  minutenVorher:"Prawdopodobnie {min} minut wcześniej",
+  punktgenau:"Prawdopodobnie dokładnie na czas",
+  naviAbholort:"Nawigacja do odbioru", naviZiel:"Nawigacja do celu",
+  navigation:"Nawigacja", fahrzeug:"Pojazd",
+  naviHinweis:"Otwiera aplikację map w telefonie.",
+  problemMelden:"Zgłoś problem",
+  fotoAbholung:"Odebrane? Zrób zdjęcie", fotoAbgabe:"Oddane? Zrób zdjęcie",
+  amZielAngekommen:"Jestem na miejscu",
+  warte:"Chwila…",
+  fotoTitelAbholung:"Zdjęcie odbioru", fotoTitelAbgabe:"Zdjęcie dostawy",
+  anweisungAbholung:"Zrób zdjęcie kontenera z boku, tak aby widać było numer i plombę.",
+  anweisungAbgabe:"Zrób zdjęcie odstawionego kontenera u klienta.",
+  kameraOeffnen:"Otwórz kamerę", fotoVerwenden:"Użyj zdjęcia", fotoNeu:"Zrób nowe",
+  abbrechenHinweis:"Anulowanie nie kończy zlecenia.",
+  schadenHinweis:"Zdjęcie jest dowodem odbioru, nie pełną dokumentacją szkód. Szkody zgłoś dodatkowo do biura.",
+  kameraGehtNicht:"Kamera nie działa?",
+  kameraHilfeTitel:"Kamera nie działa",
+  kameraHilfeText:"Aplikacja używa kamery tylko za Twoją zgodą. Otwórz ustawienia telefonu, znajdź przeglądarkę lub TWISTLOCK i zezwól na kamerę. Potem wróć tutaj.",
+  kameraHilfeText2:"Jeśli nadal nie działa, zadzwoń do biura. Zlecenie pozostaje otwarte.",
+  fotoGespeichert:"Zdjęcie zapisane",
+  abholungGebucht:"Odbiór zapisany", abgabeGebucht:"Dostawa zapisana",
+  nochNichtGesendet:"Jeszcze nie wysłane", keinInternet:"Brak internetu",
+  bleibtAufHandy:"Zapis zostaje w telefonie i wyśle się sam, gdy będzie sieć.",
+  sendenFehlgeschlagen:"Wysyłka się nie udała",
+  sendenFehlerText:"Biuro jeszcze tego nie ma. Zapis jest dalej w telefonie.",
+  nichtGemerkt:"Nie udało się zapisać w telefonie. Spróbuj jeszcze raz na postoju.",
+  nochmalSenden:"Wyślij ponownie", weiter:"Dalej",
+  wasIstPassiert:"Co się stało?",
+  stau:"Korek", mussWarten:"Muszę czekać", containerFehlt:"Brak kontenera",
+  panne:"Awaria", bueroAnrufen:"Zadzwoń do biura",
+  keineNummer:"W biurze nie ma jeszcze zapisanego numeru telefonu.",
+  meldenFrage:"Zgłosić: {was}?", melden:"Zgłoś",
+  meldenStandHinweis:"Zgłaszaj tylko, gdy pojazd bezpiecznie stoi.",
+  meldungGesendet:"Zgłoszenie wysłane",
+  meldungWartet:"Jeszcze nie wysłane – brak internetu",
+  meldungFehler:"Zgłoszenie nie dotarło",
+  meldungGelesen:"Biuro przeczytało", meldungNichtGelesen:"Biuro jeszcze nie przeczytało",
+  standTitel:"Czy pojazd bezpiecznie stoi?",
+  standText:"Rób to tylko na postoju. Aplikacja nie rozpozna, czy jedziesz.",
+  standJa:"Pojazd bezpiecznie stoi", standNein:"Jeszcze nie",
+  auftragAbgeschlossen:"Zlecenie zakończone",
+  abgeliefertUm:"Dostarczono do {ort} o {zeit}",
+  naechsterAuftrag:"Następne zlecenie: {ort}", naechstenAnsehen:"Pokaż następne zlecenie",
+  keinWeiterer:"Dziś nie ma więcej zleceń",
+  bueroSiehtVerspaetung:"Biuro automatycznie dostaje informację o spóźnieniu. Jedź normalnie.",
+  tagFertigAnsehen:"Pokaż dzień",
+  tagesplan:"Dziś", uebersicht:"Przegląd",
+  statusJetzt:"Teraz", statusOffen:"Otwarte", statusUnterwegs:"W drodze",
+  statusBeimKunden:"U klienta", statusFertig:"Gotowe",
+  nichtsHeute:"Dziś brak zleceń", heuteFertig:"Wszystkie dzisiejsze zlecenia gotowe",
+  morgenVorschau:"Podgląd na jutro, {datum}",
+  morgenHinweis:"To tylko podgląd. Zlecenie startuje jutro.",
+  alleGesendet:"Wszystko wysłane",
+  wartetAufNetz:"{n} zapisów czeka na sieć",
+  einerWartetAufNetz:"1 zapis czeka na sieć",
+  standVon:"Dane z biura: {zeit}",
+  keinNetzStreifen:"Brak internetu. Pokazane dane z godziny {zeit}.",
+  keinNetzLaden:"Brak internetu i brak danych w telefonie.",
+  nochmalLaden:"Spróbuj ponownie",
+  vorlesenGehtNicht:"Ten telefon nie czyta na głos.",
+  geaendert:"Zlecenie zostało zmienione", neuStatt:"Nowe: {neu} zamiast {alt}", neuOhneAlt:"Nowe: {neu}",
+  gesehenBestaetigen:"Widziałem i potwierdzam", bestaetigt:"Potwierdzone",
+  wer:"Kto to?", pin:"PIN", falsch:"Zły PIN",
+  installieren:"Zapisz jako aplikację"
+},
+
+ro:{
+  vorlesen:"Citește cu voce", sprache:"Limba", spracheWaehlen:"Alege limba",
+  heuteAuftraege:"Azi: {n} comenzi", heuteEinAuftrag:"Azi: 1 comandă",
+  zurueck:"Înapoi", zurueckZumAuftrag:"Înapoi la comandă", abbrechen:"Anulează",
+  jetztAbholen:"Acum: Preia containerul",
+  jetztFahren:"Acum: Mergi la client",
+  jetztBeimKunden:"Ai ajuns la client",
+  abholenBei:"Preluare la", ziel:"Destinație", tor:"Poarta",
+  abholzeitAb:"Preluare de la", abholzeit:"Ora preluării",
+  spaetestensLos:"Cel târziu plecarea",
+  terminBeimKunden:"Programare la client: {zeit} în {ort}",
+  termin:"Programare", ankunftEtwa:"Sosire aproximativ", ankunft:"Sosire",
+  vorOrtSeit:"De {min} minute la fața locului",
+  aufenthalt:"Staționare",
+  wartehinweis:"Biroul verifică cât din acest timp se facturează.",
+  nurAnkunft:"Acest pas anunță doar sosirea, nu încă livrarea.",
+  fahrzeugUndContainer:"Vehicul și container",
+  container:"Container", chassis:"Șasiu", zugmaschine:"Cap tractor", siegel:"Sigiliu",
+  auftragsnummer:"Comandă", kunde:"Client", keineAngabe:"nespecificat",
+  rechtzeitig:"Probabil ajungi la timp",
+  knapp:"Se strânge timpul. Mai ai {min} minute rezervă.",
+  zuSpaet:"Probabil {min} minute întârziere",
+  keineDaten:"Sosirea nu este disponibilă acum",
+  keineDatenZusatz:"Fără legătură cu biroul. Orele se pot fi schimbat.",
+  schaetzung:"Estimare din timpul de mers planificat, fără trafic.",
+  minutenVorher:"Probabil {min} minute mai devreme",
+  punktgenau:"Probabil exact la timp",
+  naviAbholort:"Navigare la preluare", naviZiel:"Navigare la destinație",
+  navigation:"Navigare", fahrzeug:"Vehicul",
+  naviHinweis:"Deschide aplicația de hărți din telefon.",
+  problemMelden:"Raportează o problemă",
+  fotoAbholung:"Preluat? Fă o poză", fotoAbgabe:"Predat? Fă o poză",
+  amZielAngekommen:"Am ajuns la destinație",
+  warte:"Un moment…",
+  fotoTitelAbholung:"Poza preluării", fotoTitelAbgabe:"Poza livrării",
+  anweisungAbholung:"Fotografiază containerul din lateral, să se vadă numărul și sigiliul.",
+  anweisungAbgabe:"Fotografiază containerul lăsat la client.",
+  kameraOeffnen:"Deschide camera", fotoVerwenden:"Folosește poza", fotoNeu:"Fă alta",
+  abbrechenHinweis:"Anularea nu încheie comanda.",
+  schadenHinweis:"Poza este dovada preluării, nu o documentare completă a daunelor. Anunță daunele separat la birou.",
+  kameraGehtNicht:"Camera nu merge?",
+  kameraHilfeTitel:"Camera nu merge",
+  kameraHilfeText:"Aplicația folosește camera numai cu permisiunea ta. Deschide setările telefonului, caută browserul sau TWISTLOCK și permite camera. Apoi continuă aici.",
+  kameraHilfeText2:"Dacă tot nu merge, sună la birou. Comanda rămâne deschisă.",
+  fotoGespeichert:"Poza a fost salvată",
+  abholungGebucht:"Preluarea este salvată", abgabeGebucht:"Livrarea este salvată",
+  nochNichtGesendet:"Încă netrimis", keinInternet:"Fără internet",
+  bleibtAufHandy:"Înregistrarea rămâne pe telefon și se trimite singură când ai semnal.",
+  sendenFehlgeschlagen:"Trimiterea nu a reușit",
+  sendenFehlerText:"Biroul nu are încă înregistrarea. Ea rămâne pe telefon.",
+  nichtGemerkt:"Înregistrarea nu a putut fi salvată pe telefon. Încearcă din nou din staționare.",
+  nochmalSenden:"Trimite din nou", weiter:"Mai departe",
+  wasIstPassiert:"Ce s-a întâmplat?",
+  stau:"Ambuteiaj", mussWarten:"Trebuie să aștept", containerFehlt:"Lipsește containerul",
+  panne:"Pană", bueroAnrufen:"Sună la birou",
+  keineNummer:"La birou nu este încă salvat niciun număr de telefon.",
+  meldenFrage:"Raportezi {was}?", melden:"Raportează",
+  meldenStandHinweis:"Raportează numai când camionul stă în siguranță.",
+  meldungGesendet:"Raportarea a fost trimisă",
+  meldungWartet:"Încă netrimis – fără internet",
+  meldungFehler:"Raportarea nu a ajuns",
+  meldungGelesen:"Citit de birou", meldungNichtGelesen:"Încă necitit de birou",
+  standTitel:"Stă camionul în siguranță?",
+  standText:"Fă asta doar din staționare. Aplicația nu poate ști dacă conduci.",
+  standJa:"Camionul stă în siguranță", standNein:"Încă nu",
+  auftragAbgeschlossen:"Comandă încheiată",
+  abgeliefertUm:"Livrat la {ort} la ora {zeit}",
+  naechsterAuftrag:"Comanda următoare: {ort}", naechstenAnsehen:"Vezi comanda următoare",
+  keinWeiterer:"Azi nu mai este altă comandă",
+  bueroSiehtVerspaetung:"Biroul este anunțat automat despre întârziere. Condu normal.",
+  tagFertigAnsehen:"Vezi ziua",
+  tagesplan:"Azi", uebersicht:"Privire de ansamblu",
+  statusJetzt:"Acum", statusOffen:"Deschis", statusUnterwegs:"Pe drum",
+  statusBeimKunden:"La client", statusFertig:"Gata",
+  nichtsHeute:"Azi nicio comandă", heuteFertig:"Toate comenzile de azi sunt gata",
+  morgenVorschau:"Previzualizare pentru mâine, {datum}",
+  morgenHinweis:"Doar o previzualizare. Comanda începe mâine.",
+  alleGesendet:"Totul este trimis",
+  wartetAufNetz:"{n} înregistrări așteaptă semnal",
+  einerWartetAufNetz:"1 înregistrare așteaptă semnal",
+  standVon:"Date de la birou: {zeit}",
+  keinNetzStreifen:"Fără internet. Se arată datele de la {zeit}.",
+  keinNetzLaden:"Fără internet și încă fără date pe telefon.",
+  nochmalLaden:"Încearcă din nou",
+  vorlesenGehtNicht:"Acest telefon nu citește cu voce.",
+  geaendert:"Comanda a fost modificată", neuStatt:"Nou: {neu} în loc de {alt}", neuOhneAlt:"Nou: {neu}",
+  gesehenBestaetigen:"Văzut și confirmat", bestaetigt:"Confirmat",
+  wer:"Cine ești?", pin:"PIN", falsch:"PIN greșit",
+  installieren:"Salvează ca aplicație"
+},
+
+ar:{
+  vorlesen:"اقرأ بصوت", sprache:"اللغة", spracheWaehlen:"اختر اللغة",
+  heuteAuftraege:"اليوم: {n} مهام", heuteEinAuftrag:"اليوم: مهمة واحدة",
+  zurueck:"رجوع", zurueckZumAuftrag:"رجوع إلى المهمة", abbrechen:"إلغاء",
+  jetztAbholen:"الآن: استلم الحاوية",
+  jetztFahren:"الآن: اذهب إلى العميل",
+  jetztBeimKunden:"وصلت إلى العميل",
+  abholenBei:"الاستلام من", ziel:"الوجهة", tor:"البوابة",
+  abholzeitAb:"الاستلام من الساعة", abholzeit:"وقت الاستلام",
+  spaetestensLos:"آخر وقت للانطلاق",
+  terminBeimKunden:"الموعد عند العميل: {zeit} في {ort}",
+  termin:"الموعد", ankunftEtwa:"الوصول تقريباً", ankunft:"الوصول",
+  vorOrtSeit:"موجود هنا منذ {min} دقيقة",
+  aufenthalt:"مدة التوقف",
+  wartehinweis:"المكتب يحدد أي جزء من هذا الوقت يُحسب.",
+  nurAnkunft:"هذه الخطوة تُبلغ عن الوصول فقط، وليس عن التسليم.",
+  fahrzeugUndContainer:"الشاحنة والحاوية",
+  container:"الحاوية", chassis:"الهيكل", zugmaschine:"القاطرة", siegel:"الحرز",
+  auftragsnummer:"المهمة", kunde:"العميل", keineAngabe:"غير محدد",
+  rechtzeitig:"من المتوقع أن تصل في الوقت",
+  knapp:"الوقت ضيق. بقي {min} دقيقة احتياط.",
+  zuSpaet:"من المتوقع تأخير {min} دقيقة",
+  keineDaten:"الوصول غير متاح الآن",
+  keineDatenZusatz:"لا اتصال بالمكتب. قد تكون الأوقات تغيّرت.",
+  schaetzung:"تقدير من زمن القيادة المخطط، بدون حالة الطريق.",
+  minutenVorher:"من المتوقع {min} دقيقة قبل الموعد",
+  punktgenau:"من المتوقع في الوقت بالضبط",
+  naviAbholort:"الملاحة إلى مكان الاستلام", naviZiel:"الملاحة إلى الوجهة",
+  navigation:"الملاحة", fahrzeug:"الشاحنة",
+  naviHinweis:"يفتح تطبيق الخرائط في هاتفك.",
+  problemMelden:"أبلغ عن مشكلة",
+  fotoAbholung:"استلمت؟ التقط صورة", fotoAbgabe:"سلّمت؟ التقط صورة",
+  amZielAngekommen:"وصلت إلى الوجهة",
+  warte:"لحظة…",
+  fotoTitelAbholung:"صورة الاستلام", fotoTitelAbgabe:"صورة التسليم",
+  anweisungAbholung:"صوّر الحاوية من الجانب بحيث يظهر الرقم والحرز.",
+  anweisungAbgabe:"صوّر الحاوية بعد إنزالها عند العميل.",
+  kameraOeffnen:"افتح الكاميرا", fotoVerwenden:"استخدم الصورة", fotoNeu:"صورة جديدة",
+  abbrechenHinweis:"الإلغاء لا يُنهي المهمة.",
+  schadenHinweis:"الصورة إثبات للاستلام وليست توثيقاً كاملاً للأضرار. أبلغ المكتب بالأضرار أيضاً.",
+  kameraGehtNicht:"الكاميرا لا تعمل؟",
+  kameraHilfeTitel:"الكاميرا لا تعمل",
+  kameraHilfeText:"يحتاج التطبيق إذنك لاستخدام الكاميرا. افتح إعدادات الهاتف، ابحث عن المتصفح أو TWISTLOCK واسمح بالكاميرا. ثم تابع من هنا.",
+  kameraHilfeText2:"إذا استمرت المشكلة، اتصل بالمكتب. تبقى المهمة مفتوحة.",
+  fotoGespeichert:"تم حفظ الصورة",
+  abholungGebucht:"تم حفظ الاستلام", abgabeGebucht:"تم حفظ التسليم",
+  nochNichtGesendet:"لم يُرسل بعد", keinInternet:"لا يوجد إنترنت",
+  bleibtAufHandy:"تبقى الصورة في الهاتف وتُرسل تلقائياً عند توفر الشبكة.",
+  sendenFehlgeschlagen:"الإرسال لم ينجح",
+  sendenFehlerText:"المكتب لم يستلمها بعد. هي محفوظة في الهاتف.",
+  nichtGemerkt:"تعذّر حفظ الصورة في الهاتف. حاول مرة أخرى أثناء التوقف.",
+  nochmalSenden:"أرسل مرة أخرى", weiter:"متابعة",
+  wasIstPassiert:"ماذا حدث؟",
+  stau:"ازدحام", mussWarten:"يجب أن أنتظر", containerFehlt:"الحاوية غير موجودة",
+  panne:"عطل", bueroAnrufen:"اتصل بالمكتب",
+  keineNummer:"لا يوجد رقم هاتف محفوظ للمكتب.",
+  meldenFrage:"هل تريد الإبلاغ عن {was}؟", melden:"أبلغ",
+  meldenStandHinweis:"أبلغ فقط عندما تكون الشاحنة متوقفة بأمان.",
+  meldungGesendet:"تم إرسال البلاغ",
+  meldungWartet:"لم يُرسل بعد – لا يوجد إنترنت",
+  meldungFehler:"البلاغ لم يصل",
+  meldungGelesen:"المكتب قرأ البلاغ", meldungNichtGelesen:"المكتب لم يقرأ البلاغ بعد",
+  standTitel:"هل الشاحنة متوقفة بأمان؟",
+  standText:"افعل ذلك في التوقف فقط. التطبيق لا يعرف إن كنت تقود.",
+  standJa:"الشاحنة متوقفة بأمان", standNein:"ليس بعد",
+  auftragAbgeschlossen:"تم إنهاء المهمة",
+  abgeliefertUm:"تم التسليم في {ort} الساعة {zeit}",
+  naechsterAuftrag:"المهمة التالية: {ort}", naechstenAnsehen:"اعرض المهمة التالية",
+  keinWeiterer:"لا مهمة أخرى اليوم",
+  bueroSiehtVerspaetung:"يتم إبلاغ المكتب بالتأخير تلقائياً. تابع القيادة بشكل طبيعي.",
+  tagFertigAnsehen:"اعرض اليوم",
+  tagesplan:"اليوم", uebersicht:"نظرة عامة",
+  statusJetzt:"الآن", statusOffen:"مفتوح", statusUnterwegs:"على الطريق",
+  statusBeimKunden:"عند العميل", statusFertig:"منتهي",
+  nichtsHeute:"لا مهمة اليوم", heuteFertig:"كل مهام اليوم منتهية",
+  morgenVorschau:"معاينة للغد، {datum}",
+  morgenHinweis:"معاينة فقط. المهمة تبدأ غداً.",
+  alleGesendet:"تم إرسال كل شيء",
+  wartetAufNetz:"{n} تسجيلات تنتظر الشبكة",
+  einerWartetAufNetz:"تسجيل واحد ينتظر الشبكة",
+  standVon:"بيانات المكتب: {zeit}",
+  keinNetzStreifen:"لا يوجد إنترنت. المعروض بيانات الساعة {zeit}.",
+  keinNetzLaden:"لا يوجد إنترنت ولا بيانات على الهاتف.",
+  nochmalLaden:"حاول مرة أخرى",
+  vorlesenGehtNicht:"هذا الهاتف لا يقرأ بصوت.",
+  geaendert:"تم تعديل المهمة", neuStatt:"جديد: {neu} بدل {alt}", neuOhneAlt:"جديد: {neu}",
+  gesehenBestaetigen:"رأيت وأؤكد", bestaetigt:"مؤكد",
+  wer:"من أنت؟", pin:"الرمز", falsch:"الرمز خطأ",
+  installieren:"احفظ كتطبيق"
+}
+};
+
+/* Sprachen mit Namen anzeigen, Flagge nur als Ergänzung */
+const SPRACHNAME = { de:"Deutsch", tr:"Türkçe", pl:"Polski", ro:"Română", ar:"العربية" };
+const FLAGGE     = { de:"🇩🇪", tr:"🇹🇷", pl:"🇵🇱", ro:"🇷🇴", ar:"🇸🇦" };
+const STIMME     = { de:"de-DE", tr:"tr-TR", pl:"pl-PL", ro:"ro-RO", ar:"ar-SA" };
+const RTL        = { ar:true };
+
+/* Sprache wird einmal gewählt und bleibt ein Jahr gemerkt.
+   Zuerst ein Cookie, damit auch der Service Worker damit klarkommt.
+   Manche Browser verbieten Cookies (privates Fenster, eingebettete Seite).
+   Dann darf die App nicht stehenbleiben: sie weicht auf den örtlichen
+   Speicher aus und notfalls auf Deutsch für diese Sitzung. */
+function spracheLesen(){
+  try { const m = document.cookie.match(/tl_lang=(\w\w)/); if (m) return m[1]; } catch (e) {}
+  try { const v = localStorage.getItem("tl_lang"); if (v) return v; } catch (e) {}
+  return null;
+}
+function spracheMerken(k){
+  try { document.cookie = "tl_lang=" + k + "; Path=/; Max-Age=" + 365*24*3600 + "; SameSite=Lax"; }
+  catch (e) {}
+  try { localStorage.setItem("tl_lang", k); } catch (e) {}
+}
+
+let L = spracheLesen() || "de";
+if (!W[L]) L = "de";
+
+function setzeSprache(k){
+  if (!W[k]) return;
+  L = k;
+  spracheMerken(k);
+  richtungSetzen();
+}
+function richtungSetzen(){
+  document.documentElement.lang = L;
+  document.documentElement.dir  = RTL[L] ? "rtl" : "ltr";
+}
+richtungSetzen();
+
+/* Übersetzung holen. Fehlt ein Satz, kommt der deutsche.
+   t("knapp",{min:8}) -> "Es wird knapp. Noch 8 Minuten Reserve." */
+function t(schluessel, werte){
+  let s = (W[L] && W[L][schluessel]) || W.de[schluessel] || schluessel;
+  if (werte) for (const k in werte) s = s.split("{"+k+"}").join(werte[k]);
+  return s;
+}
+
+/* ---------- Vorlesen: nur auf Knopfdruck, niemals von allein ---------- */
+const vorlesenMoeglich = () => "speechSynthesis" in window;
+function sprich(text){
+  if (!vorlesenMoeglich() || !text) return;
+  try {
+    speechSynthesis.cancel();                 // nichts überlagern
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = STIMME[L] || "de-DE";
+    u.rate = 0.85;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+/* ---------- Symbole: immer zusammen mit einem Wort benutzen ---------- */
+function sv(g, inhalt, dicke){
+  return `<svg width="${g}" height="${g}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    stroke-width="${dicke||2}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+    focusable="false">${inhalt}</svg>`;
+}
+const I = {
+  haken:  (g=30)=>sv(g,'<circle cx="12" cy="12" r="9"/><path d="M7.5 12.5l3 3 6-6.5"/>',2.4),
+  sanduhr:(g=30)=>sv(g,'<path d="M7 3h10M7 21h10M8 3c0 4 8 5 8 9s-8 5-8 9"/><path d="M16 3c0 4-8 5-8 9s8 5 8 9"/>'),
+  warnung:(g=30)=>sv(g,'<path d="M12 3.5L21 19H3z"/><path d="M12 9v5M12 16.6h.01"/>'),
+  frage:  (g=30)=>sv(g,'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.4 2.5c-.6.2-.9.8-.9 1.4v.6M12 17h.01"/>'),
+  uhr:    (g=30)=>sv(g,'<circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/>'),
+  wecker: (g=30)=>sv(g,'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5M4 4l3-2M20 4l-3-2"/>'),
+  lkw:    (g=28)=>sv(g,'<path d="M2 6h11v10H2z"/><path d="M13 9h4l4 3.5V16h-8z"/><circle cx="6.5" cy="18.5" r="2"/><circle cx="17.5" cy="18.5" r="2"/>'),
+  chassis:(g=28)=>sv(g,'<path d="M2 12h20"/><path d="M4 12v3M20 12v3"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/><path d="M5 9h14"/>'),
+  box:    (g=28)=>sv(g,'<rect x="3" y="6" width="18" height="12"/><path d="M7 6v12M11 6v12M15 6v12"/>'),
+  siegel: (g=28)=>sv(g,'<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8.5 10V7.5a3.5 3.5 0 0 1 7 0V10"/>'),
+  kamera: (g=34)=>sv(g,'<path d="M3 8h4l1.5-2h7L17 8h4v12H3z"/><circle cx="12" cy="13.5" r="3.5"/>'),
+  telefon:(g=28)=>sv(g,'<path d="M6 3h4l2 5-2.5 1.5a12 12 0 0 0 5 5L16 12l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 4 5a2 2 0 0 1 2-2z"/>'),
+  ton:    (g=30)=>sv(g,'<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9.5a4 4 0 0 1 0 5"/><path d="M19.5 7a7.5 7.5 0 0 1 0 10"/>'),
+  info:   (g=28)=>sv(g,'<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 8h.01"/>'),
+  pfeil:  (g=28)=>sv(g,'<path d="M4 12h15M13 6l6 6-6 6"/>'),
+  zurueck:(g=28)=>sv(g,'<path d="M20 12H5M11 6l-6 6 6 6"/>'),
+  runter: (g=24)=>sv(g,'<path d="M6 9l6 6 6-6"/>'),
+  rauf:   (g=24)=>sv(g,'<path d="M6 15l6-6 6 6"/>'),
+  navi:   (g=28)=>sv(g,'<path d="M12 2l8.5 19-8.5-5-8.5 5z"/>'),
+  liste:  (g=28)=>sv(g,'<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>'),
+  kegel:  (g=30)=>sv(g,'<path d="M12 3l5.5 14h-11z"/><path d="M4 20h16"/><path d="M9.5 11h5"/>'),
+  schrauben:(g=30)=>sv(g,'<circle cx="12" cy="12" r="3.2"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3'+
+    'M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>'),
+  globus: (g=28)=>sv(g,'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/>'),
+  wolkeAus:(g=28)=>sv(g,'<path d="M18 17H7a4 4 0 0 1-.6-7.95A6 6 0 0 1 17 8.5"/><path d="M3 3l18 18"/>'),
+  kreuz:  (g=28)=>sv(g,'<path d="M6 6l12 12M18 6L6 18"/>'),
+  auge:   (g=28)=>sv(g,'<path d="M2 12s3.8-6 10-6 10 6 10 6-3.8 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="3"/>'),
+  stift:  (g=28)=>sv(g,'<path d="M4 20h4l11-11-4-4L4 16z"/><path d="M14 5l4 4"/>')
+};
+
+/* ---------- App-Installation (nur wenn der Browser sie anbietet) ---------- */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    try { navigator.serviceWorker.register("/sw.js").catch(()=>{}); } catch (e) {}
+  });
+}
+let installEvent = null;
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault(); installEvent = e;
+  const b = document.getElementById("install");
+  if (b) { b.style.display = "flex"; b.textContent = t("installieren"); }
+});
+function installieren(){
+  if (!installEvent) return;
+  installEvent.prompt(); installEvent = null;
+  const b = document.getElementById("install"); if (b) b.style.display = "none";
+}
+
+</script>
+<script>
+/* ===========================================================
+   TWISTLOCK — Fahreransichten
+
+   Dieses Modul baut nur Bildschirme aus einem Zustand. Es ruft
+   selbst nichts ab und speichert nichts. Dadurch benutzen die
+   echte App (fahrer.html) und die Demo-Vorschau (vorschau.html)
+   dieselbe Darstellung.
+
+   Jede Schaltfläche trägt data-tun="name". Die Seite, die das
+   Modul benutzt, hört auf Klicks und führt die Aktion aus.
+
+   Zustand (alle Felder sind freiwillig):
+     ansicht        "auftrag" | "foto" | "ergebnis" | "abschluss" |
+                    "problem" | "problemFrage" | "problemErgebnis" |
+                    "tagesplan" | "sprache" | "stand" | "kamerahilfe" |
+                    "feierabend" | "laden" | "keinNetz"
+     auftrag        aktueller Auftrag inklusive .rechnung vom Server
+     heute, morgen  Listen für den Tagesplan
+     online         Netz vorhanden
+     datenZeit      wann die Daten vom Büro kamen (ISO)
+     offen          Anzahl Aufnahmen in der Warteschlange
+     laeuft         gerade wird gesendet
+     einst          Einstellungen vom Server (u. a. bueroTelefon)
+   =========================================================== */
+"use strict";
+
+const FA = (() => {
+
+/* ---------- kleine Helfer ---------- */
+const ORT_SPRACHE = { de:"de-DE", tr:"tr-TR", pl:"pl-PL", ro:"ro-RO", ar:"ar-SA" };
+
+function esc(x){
+  return String(x == null ? "" : x)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+function uhr(iso){
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d)) return null;
+  return d.toLocaleTimeString(ORT_SPRACHE[L] || "de-DE",
+    { hour:"2-digit", minute:"2-digit", hour12:false });
+}
+function datumLang(datum){
+  if (!datum) return "";
+  const d = new Date(datum + "T12:00:00");
+  if (isNaN(d)) return datum;
+  return d.toLocaleDateString(ORT_SPRACHE[L] || "de-DE",
+    { weekday:"long", day:"2-digit", month:"2-digit" });
+}
+/* Containernummern in Vierergruppen: leichter vorzulesen und zu vergleichen */
+function lueckig(s){
+  return String(s || "").replace(/[\s-]/g,"").replace(/(.{4})/g,"$1 ").trim();
+}
+const minuten = x => Math.max(0, Math.round(x));
+
+/* Welcher Arbeitsschritt ist gerade dran? */
+function schrittVon(a){
+  if (!a) return 0;
+  if (a.status === "angekommen") return 3;   // beim Kunden
+  if (a.status === "geladen")    return 2;   // unterwegs zum Kunden
+  return 1;                                  // Container abholen
+}
+
+/* Wie alt sind die Daten vom Büro? */
+function datenAlterMin(Z){
+  if (!Z.datenZeit) return null;
+  return Math.round((Date.now() - new Date(Z.datenZeit).getTime()) / 60000);
+}
+
+/* ---------- Zeitstatus: Symbol, Satz, Farbe als Zugabe ----------
+   Eine Farbe allein sagt nichts. Darum immer Symbol und Satz.   */
+function zeitstatus(a, Z){
+  const r = (a && a.rechnung) || {};
+  const alt = datenAlterMin(Z);
+  const veraltet = (!Z.online && (alt === null || alt > 5));
+
+  if (veraltet || r.puffer == null || r.ankunft == null) {
+    return { klasse:"grau", ico:I.frage(30), satz:t("keineDaten"),
+             zusatz:t("keineDatenZusatz") };
+  }
+  const p = Math.round(r.puffer);
+  // Der Hinweis „geschätzt“ steht direkt bei den Uhrzeiten, nicht hier —
+  // sonst verdrängt er Termin und Ankunft aus dem sichtbaren Bereich.
+  if (r.ampel === "rot" || p < 0)
+    return { klasse:"rot", ico:I.warnung(30), satz:t("zuSpaet",{min:minuten(-p)}), zusatz:"" };
+  if (r.ampel === "gelb")
+    return { klasse:"gelb", ico:I.sanduhr(30), satz:t("knapp",{min:minuten(p)}), zusatz:"" };
+  return { klasse:"gruen", ico:I.haken(30), satz:t("rechtzeitig"), zusatz:"" };
+}
+function statusStreifen(s){
+  return `<div class="status ${s.klasse}" role="status">
+    <span class="ico">${s.ico}</span>
+    <span>${esc(s.satz)}${s.zusatz ? `<span class="zusatz">${esc(s.zusatz)}</span>` : ""}</span>
+  </div>`;
+}
+
+/* ---------- Bausteine ---------- */
+function kopf(Z, opt){
+  opt = opt || {};
+  const n = (Z.heute || []).length;
+  const links = opt.zurueck
+    ? `<button class="zweit-btn" data-tun="zurueck">${I.zurueck(22)} ${esc(t("zurueck"))}</button>`
+    : `<button class="zweit-btn" data-tun="tagesplan">${I.liste(22)} ${
+        esc(n === 1 ? t("heuteEinAuftrag") : t("heuteAuftraege",{n}))}</button>`;
+  const vor = vorlesenMoeglich()
+    ? `<button class="zweit-btn schmal" data-tun="vorlesen">${I.ton(22)} ${esc(t("vorlesen"))}</button>`
+    : "";
+  return `<div class="kopf">${links}${vor}</div>`;
+}
+
+function netzStreifen(Z){
+  let s = "";
+  if (!Z.online) {
+    const z = uhr(Z.datenZeit);
+    s += `<div class="netzstreifen">${I.wolkeAus(26)}
+      <span>${esc(z ? t("keinNetzStreifen",{zeit:z}) : t("keinInternet"))}</span></div>`;
+  }
+  if (Z.offen > 0) {
+    s += `<div class="netzstreifen">${I.sanduhr(26)}<span>${
+      esc(Z.offen === 1 ? t("einerWartetAufNetz") : t("wartetAufNetz",{n:Z.offen}))
+    }</span></div>`;
+  }
+  return s;
+}
+
+function ortBlock(etikett, firma, adresse, torNr){
+  return `<div class="ort">
+    <div class="etikett">${esc(etikett)}</div>
+    <div class="reihe">
+      <div class="firma">${esc(firma || t("keineAngabe"))}</div>
+      ${torNr ? `<div class="tor">${I.pfeil(20)} ${esc(t("tor"))} ${esc(torNr)}</div>` : ""}
+    </div>
+    ${adresse ? `<div class="adresse">${esc(adresse)}</div>` : ""}
+  </div>`;
+}
+/* Knappe Ortszeile: beim Kunden steht der Fahrer schon da — Firma und
+   Tor genügen, die volle Adresse würde nur Platz für die Zeiten wegnehmen. */
+function ortZeile(etikett, firma, torNr){
+  return `<div class="ort knapp">
+    <div class="etikett">${esc(etikett)}</div>
+    <div class="reihe">
+      <div class="firma">${esc(firma || t("keineAngabe"))}</div>
+      ${torNr ? `<div class="tor">${I.pfeil(20)} ${esc(t("tor"))} ${esc(torNr)}</div>` : ""}
+    </div>
+  </div>`;
+}
+function zeitFeld(etikett, wert){
+  return `<div><div class="etikett">${esc(etikett)}</div>
+    <div class="uhrzeit num">${esc(wert || "—")}</div></div>`;
+}
+function datenZeile(etikett, wert){
+  return `<div class="daten-zeile"><div class="etikett">${esc(etikett)}</div>
+    <div class="wert num">${esc(wert || t("keineAngabe"))}</div></div>`;
+}
+
+/* Abhol- und Zielangaben: getrennt halten, damit nicht versehentlich
+   das Lieferziel als Abholort erscheint. */
+function abholort(a){
+  return { firma: a.abholFirma || a.abholOrt,
+           adresse: a.abholAdresse || (a.abholFirma ? a.abholOrt : ""),
+           tor: a.abholTor };
+}
+function zielort(a){
+  return { firma: a.kunde || a.zielOrt,
+           adresse: a.zielAdresse || (a.kunde ? a.zielOrt : ""),
+           tor: a.zielTor };
+}
+function naviLink(text, ziel){
+  const q = encodeURIComponent(ziel || "");
+  return `<a class="zweit-btn" data-tun="navi" target="_blank" rel="noopener"
+    href="https://www.google.com/maps/dir/?api=1&destination=${q}">${I.navi(26)} ${esc(text)}</a>`;
+}
+function aenderungKasten(a){
+  if (!a.aenderung || !a.aenderung.punkte || !a.aenderung.punkte.length) return "";
+  const fertig = !!a.aenderungGesehen;
+  const zeilen = a.aenderung.punkte.map(p => {
+    const name = t(p.feld) === p.feld ? p.feld : t(p.feld);
+    const neu = (name ? name + " " : "") + p.nach;
+    return `<div>${esc(p.von ? t("neuStatt",{neu, alt:(name?name+" ":"")+p.von})
+                             : t("neuOhneAlt",{neu}))}</div>`;
+  }).join("");
+  return `<div class="kasten warn"><span class="ico">${I.stift(26)}</span><div>
+    <b>${esc(t("geaendert"))}</b>${zeilen}
+    ${fertig
+      ? `<div style="margin-top:6px;font-weight:700">${I.haken(22)} ${esc(t("bestaetigt"))}</div>`
+      : `<button class="zweit-btn" style="margin-top:10px" data-tun="aenderungGesehen">
+           ${I.haken(24)} ${esc(t("gesehenBestaetigen"))}</button>`}
+  </div></div>`;
+}
+function fahrzeugKlapp(Z, a){
+  const offen = !!Z.fahrzeugOffen;
+  return `<div class="klapp">
+    <button class="klapp-kopf" data-tun="fahrzeug" aria-expanded="${offen}">
+      ${I.lkw(26)} <span>${esc(t("fahrzeugUndContainer"))}</span>
+      <span class="pf">${offen ? I.rauf(24) : I.runter(24)}</span></button>
+    ${offen ? `<div class="klapp-inhalt">
+      ${datenZeile(t("container"), lueckig(a.container))}
+      ${datenZeile(t("chassis"), a.chassis)}
+      ${datenZeile(t("zugmaschine"), a.zugmaschine)}
+      ${datenZeile(t("siegel"), a.siegel)}
+      ${datenZeile(t("auftragsnummer"), a.nummer)}
+    </div>` : ""}</div>`;
+}
+function aktionsLeiste(inhalt){ return `<div class="leiste">${inhalt}</div>`; }
+function nebenAktionen(naviHtml){
+  return `<div class="zweierreihe">${naviHtml}
+    <button class="zweit-btn" data-tun="problem">${I.warnung(26)} ${esc(t("problemMelden"))}</button>
+  </div>`;
+}
+function hauptKnopf(text, ico, aktion, Z){
+  return `<button class="haupt-btn" data-tun="${aktion}" ${Z && Z.laeuft ? "disabled" : ""}>
+    ${ico} ${esc(Z && Z.laeuft ? t("warte") : text)}</button>`;
+}
+
+/* ===========================================================
+   Ansicht A — Container abholen
+   =========================================================== */
+function ansichtAbholen(Z){
+  const a = Z.auftrag, r = a.rechnung || {}, o = abholort(a);
+  const s = zeitstatus(a, Z);
+  return kopf(Z) + `<div class="inhalt">
+    ${netzStreifen(Z)}
+    <h1 class="titel">${esc(t("jetztAbholen"))}</h1>
+    ${statusStreifen(s)}
+    ${aenderungKasten(a)}
+    ${ortBlock(t("abholenBei"), o.firma, o.adresse, o.tor)}
+    <div class="zeiten">
+      ${zeitFeld(t("abholzeitAb"), a.abholAb || "—")}
+      ${zeitFeld(t("spaetestensLos"), uhr(r.losBis) || "—")}
+    </div>
+    <div class="hinweis">${esc(t("schaetzung"))}</div>
+    ${datenZeile(t("container"), lueckig(a.container))}
+    ${datenZeile(t("chassis"), a.chassis)}
+    <div class="hinweis">${esc(t("terminBeimKunden",
+        { zeit:a.termin || "—", ort:a.zielOrt || t("keineAngabe") }))}</div>
+    ${a.notiz ? `<div class="kasten"><span class="ico">${I.info(26)}</span>
+        <div>${esc(a.notiz)}</div></div>` : ""}
+  </div>` + aktionsLeiste(
+    nebenAktionen(naviLink(t("navigation"), o.adresse || o.firma)) +
+    hauptKnopf(t("fotoAbholung"), I.kamera(32), "fotoAbholung", Z));
+}
+
+/* ===========================================================
+   Ansicht B — Zum Kunden fahren
+   =========================================================== */
+function ansichtFahren(Z){
+  const a = Z.auftrag, r = a.rechnung || {}, o = zielort(a);
+  const s = zeitstatus(a, Z);
+  const ank = uhr(r.ankunft);
+  const p = r.puffer == null ? null : Math.round(r.puffer);
+  return kopf(Z) + `<div class="inhalt">
+    ${netzStreifen(Z)}
+    <h1 class="titel">${esc(t("jetztFahren"))}</h1>
+    ${statusStreifen(s)}
+    ${aenderungKasten(a)}
+    ${ortBlock(t("ziel"), o.firma, o.adresse, o.tor)}
+    <div class="zeiten">
+      ${zeitFeld(t("termin"), a.termin || "—")}
+      ${zeitFeld(t("ankunftEtwa"), ank || "—")}
+    </div>
+    <div class="hinweis">${p != null && ank && p >= 0
+      ? esc((p > 0 ? t("minutenVorher",{min:p}) : t("punktgenau")) + " · " + t("schaetzung"))
+      : esc(t("schaetzung"))}</div>
+    ${a.notiz ? `<div class="kasten"><span class="ico">${I.info(26)}</span>
+        <div>${esc(a.notiz)}</div></div>` : ""}
+    ${fahrzeugKlapp(Z, a)}
+    <div class="hinweis">${esc(t("nurAnkunft"))}</div>
+  </div>` + aktionsLeiste(
+    nebenAktionen(naviLink(t("navigation"), o.adresse || o.firma)) +
+    hauptKnopf(t("amZielAngekommen"), I.haken(32), "ankunft", Z));
+}
+
+/* ===========================================================
+   Ansicht C — Beim Kunden
+   Der Aufenthalt ist keine abrechenbare Wartezeit, und das Warten
+   allein sagt nichts über den nächsten Termin.
+   =========================================================== */
+function ansichtBeimKunden(Z){
+  const a = Z.auftrag, r = a.rechnung || {}, o = zielort(a);
+  const s = zeitstatus(a, Z);
+  const seit = r.wartetSeit != null ? minuten(r.wartetSeit) : null;
+  const naechste = (Z.heute || []).find(x => x.id !== a.id && x.status !== "fertig");
+  let danach = "";
+  if (naechste) {
+    const ns = zeitstatus(naechste, Z);
+    danach = `<div class="kasten"><span class="ico">${I.uhr(26)}</span><div>
+      <b>${esc(t("naechsterAuftrag",{ort:naechste.zielOrt || t("keineAngabe")}))}</b>
+      <div>${esc(t("termin"))}: ${esc(naechste.termin || "—")} · ${esc(ns.satz)}</div></div></div>`;
+  }
+  return kopf(Z) + `<div class="inhalt">
+    ${netzStreifen(Z)}
+    <h1 class="titel">${esc(t("jetztBeimKunden"))}</h1>
+    ${statusStreifen(s)}
+    ${ortZeile(t("ziel"), o.firma, o.tor)}
+    <div class="zeiten">
+      ${zeitFeld(t("ankunft"), uhr(a.ankunftZeit) || "—")}
+      ${zeitFeld(t("termin"), a.termin || "—")}
+    </div>
+    ${seit != null ? `<div class="zeile"><span class="ico">${I.sanduhr(28)}</span>
+      <div class="txt"><div class="wert">${esc(t("vorOrtSeit",{min:seit}))}</div>
+      <div class="etikett">${esc(t("wartehinweis"))}</div></div></div>` : ""}
+    ${datenZeile(t("container"), lueckig(a.container))}
+    ${danach}
+    ${a.notiz ? `<div class="kasten"><span class="ico">${I.info(26)}</span>
+        <div>${esc(a.notiz)}</div></div>` : ""}
+  </div>` + aktionsLeiste(
+    nebenAktionen(`<button class="zweit-btn" data-tun="fahrzeug">${I.lkw(26)} ${
+      esc(t("fahrzeug"))}</button>`) +
+    hauptKnopf(t("fotoAbgabe"), I.kamera(32), "fotoAbgabe", Z));
+}
+
+/* ===========================================================
+   Ansicht D — Auftrag abgeschlossen
+   =========================================================== */
+function ansichtAbschluss(Z){
+  const b = Z.abschluss || {}, n = b.naechster;
+  let nHtml = "", knopf;
+  if (n) {
+    const p = n.puffer == null ? null : Math.round(n.puffer);
+    const klasse = n.ampel === "rot" ? "rot" : (n.ampel === "gelb" ? "gelb" : "gruen");
+    const satz = p == null ? t("keineDaten")
+      : (p < 0 ? t("zuSpaet",{min:minuten(-p)})
+              : (n.ampel === "gelb" ? t("knapp",{min:minuten(p)}) : t("rechtzeitig")));
+    const ico = klasse === "rot" ? I.warnung(30) : (klasse === "gelb" ? I.sanduhr(30) : I.haken(30));
+    nHtml = `<h2 class="titel" style="font-size:24px">${
+        esc(t("naechsterAuftrag",{ort:n.zielOrt || t("keineAngabe")}))}</h2>
+      <div class="zeiten">
+        ${zeitFeld(t("termin"), n.termin || "—")}
+        ${zeitFeld(t("ankunftEtwa"), uhr(n.ankunft) || "—")}
+      </div>
+      ${statusStreifen({ klasse, ico, satz, zusatz:"" })}
+      <div class="hinweis">${esc(t("schaetzung"))}</div>
+      ${klasse === "rot" ? `<div class="hinweis">${esc(t("bueroSiehtVerspaetung"))}</div>` : ""}`;
+    knopf = hauptKnopf(t("naechstenAnsehen"), I.pfeil(30), "naechster", Z);
+  } else {
+    nHtml = `<div class="hinweis">${esc(t("keinWeiterer"))}</div>`;
+    knopf = hauptKnopf(t("tagFertigAnsehen"), I.liste(30), "tagesplan", Z);
+  }
+  return kopf(Z) + `<div class="inhalt">
+    ${netzStreifen(Z)}
+    <div class="ergebnis"><span class="ico">${I.haken(40)}</span><div>
+      <div class="w">${esc(t("auftragAbgeschlossen"))}</div>
+      <div class="u">${esc(t("abgeliefertUm",{ ort:b.ort || t("keineAngabe"),
+                                               zeit:uhr(b.zeit) || "—" }))}</div>
+    </div></div>
+    ${nHtml}
+  </div>` + aktionsLeiste(knopf);
+}
+
+/* ===========================================================
+   Fotoablauf — Anweisung, Vorschau, Ergebnis
+   =========================================================== */
+function ansichtFoto(Z){
+  const f = Z.foto || {}, abgabe = f.art === "abgabe";
+  const titel = abgabe ? t("fotoTitelAbgabe") : t("fotoTitelAbholung");
+  const a = Z.auftrag || {};
+
+  if (f.bild) {                                   /* Vorschau */
+    return kopf(Z, {zurueck:true}) + `<div class="inhalt">
+      <h1 class="titel">${esc(titel)}</h1>
+      <img class="vorschaubild" src="${esc(f.bild)}" alt="${esc(titel)}">
+      ${datenZeile(t("container"), lueckig(a.container))}
+      <div class="hinweis">${esc(t("schadenHinweis"))}</div>
+    </div>` + aktionsLeiste(`
+      <div class="zweierreihe">
+        <button class="zweit-btn" data-tun="fotoNeu">${I.kamera(26)} ${esc(t("fotoNeu"))}</button>
+        <button class="zweit-btn leise" data-tun="fotoAbbrechen">${I.kreuz(26)} ${esc(t("abbrechen"))}</button>
+      </div>
+      ${hauptKnopf(t("fotoVerwenden"), I.haken(32), "fotoVerwenden", Z)}`);
+  }
+  /* Anweisung */
+  return kopf(Z, {zurueck:true}) + `<div class="inhalt">
+    <h1 class="titel">${esc(titel)}</h1>
+    <div class="kasten"><span class="ico">${I.kamera(28)}</span>
+      <div>${esc(abgabe ? t("anweisungAbgabe") : t("anweisungAbholung"))}</div></div>
+    ${datenZeile(t("container"), lueckig(a.container))}
+    <div class="hinweis">${esc(t("abbrechenHinweis"))}</div>
+    <button class="zweit-btn leise" data-tun="kamerahilfe">${I.frage(26)} ${esc(t("kameraGehtNicht"))}</button>
+  </div>` + aktionsLeiste(
+    `<button class="zweit-btn leise" data-tun="fotoAbbrechen">${I.kreuz(26)} ${esc(t("abbrechen"))}</button>` +
+    hauptKnopf(t("kameraOeffnen"), I.kamera(32), "kamera", Z));
+}
+
+function ansichtErgebnis(Z){
+  const e = Z.ergebnis || {};
+  const klasse = e.typ === "gespeichert" ? "" : (e.typ === "wartet" ? "wartet" : "fehler");
+  const ico = e.typ === "gespeichert" ? I.haken(40)
+            : (e.typ === "wartet" ? I.sanduhr(40) : I.warnung(40));
+  let wort, unten;
+  if (e.typ === "gespeichert") {
+    wort = e.art === "abgabe" ? t("abgabeGebucht")
+         : (e.art === "abholung" ? t("abholungGebucht") : t("fotoGespeichert"));
+    unten = "";
+  } else if (e.typ === "wartet") {
+    wort = t("nochNichtGesendet") + " – " + t("keinInternet");
+    unten = t("bleibtAufHandy");
+  } else {
+    wort = t("sendenFehlgeschlagen");
+    // Nur behaupten, dass die Aufnahme sicher liegt, wenn sie wirklich liegt.
+    unten = e.gemerkt === false ? t("nichtGemerkt") : t("sendenFehlerText");
+  }
+  return kopf(Z) + `<div class="inhalt">
+    ${netzStreifen(Z)}
+    <div class="ergebnis ${klasse}"><span class="ico">${ico}</span><div>
+      <div class="w">${esc(wort)}</div>
+      <div class="z num">${esc(uhr(e.zeit) || "")}</div>
+      ${unten ? `<div class="u">${esc(unten)}</div>` : ""}
+    </div></div>
+  </div>` + aktionsLeiste(
+    (e.typ === "fehler"
+      ? `<button class="zweit-btn" data-tun="nochmalSenden">${I.pfeil(26)} ${esc(t("nochmalSenden"))}</button>`
+      : "") +
+    hauptKnopf(t("zurueckZumAuftrag"), I.zurueck(30), "zurueck", Z));
+}
+
+function ansichtKamerahilfe(Z){
+  const tel = (Z.einst && Z.einst.bueroTelefon) || "";
+  return kopf(Z, {zurueck:true}) + `<div class="inhalt">
+    <h1 class="titel">${esc(t("kameraHilfeTitel"))}</h1>
+    <div class="kasten"><span class="ico">${I.info(28)}</span><div>${esc(t("kameraHilfeText"))}</div></div>
+    <div class="hinweis">${esc(t("kameraHilfeText2"))}</div>
+    ${tel ? `<a class="zweit-btn" href="tel:${esc(tel)}">${I.telefon(26)} ${esc(t("bueroAnrufen"))}</a>` : ""}
+  </div>` + aktionsLeiste(hauptKnopf(t("zurueck"), I.zurueck(30), "zurueck", Z));
+}
+
+/* ===========================================================
+   Sicherer Stand — ehrlich: die App kann das nicht messen
+   =========================================================== */
+function ansichtStand(Z){
+  return kopf(Z, {zurueck:true}) + `<div class="inhalt">
+    <h1 class="titel">${esc(t("standTitel"))}</h1>
+    <div class="kasten warn"><span class="ico">${I.warnung(28)}</span>
+      <div>${esc(t("standText"))}</div></div>
+  </div>` + aktionsLeiste(
+    `<button class="zweit-btn leise" data-tun="zurueck">${I.zurueck(26)} ${esc(t("standNein"))}</button>` +
+    hauptKnopf(t("standJa"), I.haken(32), "standJa", Z));
+}
+
+/* ===========================================================
+   Problem melden
+   =========================================================== */
+const PROBLEME = [
+  { art:"stau",           wort:"stau",           ico:()=>I.kegel(30) },
+  { art:"warten",         wort:"mussWarten",     ico:()=>I.sanduhr(30) },
+  { art:"containerFehlt", wort:"containerFehlt", ico:()=>I.box(30) },
+  { art:"panne",          wort:"panne",          ico:()=>I.schrauben(30) }
+];
+function problemWort(art){
+  const p = PROBLEME.find(x => x.art === art);
+  return p ? t(p.wort) : art;
+}
+function ansichtProblem(Z){
+  const tel = (Z.einst && Z.einst.bueroTelefon) || "";
+  return kopf(Z, {zurueck:true}) + `<div class="inhalt">
+    <h1 class="titel">${esc(t("wasIstPassiert"))}</h1>
+    ${PROBLEME.map(p => `<button class="wahl-btn" data-tun="problemWahl" data-art="${p.art}">
+       <span class="ico">${p.ico()}</span> ${esc(t(p.wort))}</button>`).join("")}
+    ${tel ? `<a class="wahl-btn" href="tel:${esc(tel)}"><span class="ico">${I.telefon(30)}</span>
+       ${esc(t("bueroAnrufen"))}</a>`
+          : `<div class="kasten"><span class="ico">${I.telefon(26)}</span>
+       <div>${esc(t("bueroAnrufen"))}: ${esc(t("keineNummer"))}</div></div>`}
+  </div>` + aktionsLeiste(
+    `<button class="zweit-btn" data-tun="zurueck">${I.zurueck(26)} ${esc(t("zurueckZumAuftrag"))}</button>`);
+}
+function ansichtProblemFrage(Z){
+  const art = (Z.problem || {}).art;
+  return kopf(Z, {zurueck:true}) + `<div class="inhalt">
+    <h1 class="titel">${esc(t("meldenFrage",{was:problemWort(art)}))}</h1>
+    <div class="hinweis">${esc(t("meldenStandHinweis"))}</div>
+  </div>` + aktionsLeiste(
+    `<button class="zweit-btn" data-tun="problem">${I.zurueck(26)} ${esc(t("zurueck"))}</button>` +
+    hauptKnopf(t("melden"), I.pfeil(30), "problemSenden", Z));
+}
+function ansichtProblemErgebnis(Z){
+  const e = Z.problemErgebnis || {};
+  const klasse = e.typ === "gesendet" ? "" : (e.typ === "wartet" ? "wartet" : "fehler");
+  const ico = e.typ === "gesendet" ? I.haken(40)
+            : (e.typ === "wartet" ? I.sanduhr(40) : I.warnung(40));
+  const wort = e.typ === "gesendet" ? t("meldungGesendet")
+             : (e.typ === "wartet" ? t("meldungWartet") : t("meldungFehler"));
+  const unten = e.typ === "gesendet"
+    ? (e.gelesen ? t("meldungGelesen") : t("meldungNichtGelesen"))
+    : (e.typ === "wartet" ? t("bleibtAufHandy") : t("sendenFehlerText"));
+  return kopf(Z) + `<div class="inhalt">
+    ${netzStreifen(Z)}
+    <div class="ergebnis ${klasse}"><span class="ico">${ico}</span><div>
+      <div class="w">${esc(problemWort(e.art))}: ${esc(wort)}</div>
+      <div class="z num">${esc(uhr(e.zeit) || "")}</div>
+      <div class="u">${esc(unten)}</div>
+    </div></div>
+  </div>` + aktionsLeiste(
+    (e.typ === "fehler"
+      ? `<button class="zweit-btn" data-tun="problemSenden">${I.pfeil(26)} ${esc(t("nochmalSenden"))}</button>`
+      : "") +
+    hauptKnopf(t("zurueckZumAuftrag"), I.zurueck(30), "zurueck", Z));
+}
+
+/* ===========================================================
+   Tagesplan und Sprache
+   =========================================================== */
+function statusWort(a, jetzt){
+  if (a.status === "fertig")     return { wort:t("statusFertig"), klasse:"fertig", ico:I.haken(20) };
+  if (a === jetzt)               return { wort:t("statusJetzt"),  klasse:"jetzt",  ico:I.pfeil(20) };
+  if (a.status === "geladen")    return { wort:t("statusUnterwegs"), klasse:"offen", ico:I.lkw(20) };
+  if (a.status === "angekommen") return { wort:t("statusBeimKunden"), klasse:"offen", ico:I.sanduhr(20) };
+  return { wort:t("statusOffen"), klasse:"offen", ico:I.uhr(20) };
+}
+function ansichtTagesplan(Z){
+  const liste = Z.heute || [];
+  const jetzt = liste.find(a => a.status !== "fertig");
+  const m = Z.morgen || [];
+  const alleFertig = liste.length > 0 && !jetzt;
+  return kopf(Z, {zurueck:true}) + `<div class="inhalt">
+    ${netzStreifen(Z)}
+    <h1 class="titel">${esc(t("tagesplan"))}</h1>
+    ${liste.length ? liste.map(a => {
+      const s = statusWort(a, jetzt);
+      return `<div class="tagzeile">
+        <div class="zt num">${esc(a.termin || "—")}</div>
+        <div class="wo">${esc(a.kunde || a.zielOrt || t("keineAngabe"))}
+          ${a.zielOrt && a.kunde ? `<div class="etikett">${esc(a.zielOrt)}</div>` : ""}</div>
+        <span class="marke ${s.klasse}">${s.ico} ${esc(s.wort)}</span></div>`;
+    }).join("") : `<div class="hinweis">${esc(t("nichtsHeute"))}</div>`}
+    ${alleFertig ? `<div class="kasten"><span class="ico">${I.haken(26)}</span>
+        <div>${esc(t("heuteFertig"))}</div></div>` : ""}
+    ${alleFertig && m.length ? morgenBlock(m) : ""}
+    <div class="hinweis">${Z.online
+      ? esc(t("standVon",{zeit:uhr(Z.datenZeit) || "—"}))
+      : esc(t("keinNetzStreifen",{zeit:uhr(Z.datenZeit) || "—"}))}</div>
+    ${Z.offen ? "" : `<div class="hinweis">${I.haken(22)} ${esc(t("alleGesendet"))}</div>`}
+    <button class="zweit-btn" data-tun="sprache">${I.globus(26)} ${
+      esc(t("sprache"))}: ${esc(SPRACHNAME[L])}</button>
+    <button class="install" id="install" onclick="installieren()"></button>
+  </div>` + aktionsLeiste(
+    `<button class="haupt-btn" data-tun="zurueck">${I.zurueck(30)} ${esc(t("zurueckZumAuftrag"))}</button>`);
+}
+function morgenBlock(m){
+  const erster = m[0] || {};
+  return `<div class="kasten warn"><span class="ico">${I.wecker(26)}</span><div>
+    <b>${esc(t("morgenVorschau",{datum:datumLang(erster.datum)}))}</b>
+    ${m.map(x => `<div>${esc(x.termin || "—")} · ${esc(x.kunde || x.zielOrt || "")}</div>`).join("")}
+    <div style="margin-top:6px">${esc(t("morgenHinweis"))}</div></div></div>`;
+}
+function ansichtSprache(Z){
+  return kopf(Z, {zurueck:true}) + `<div class="inhalt">
+    <h1 class="titel">${esc(t("spracheWaehlen"))}</h1>
+    ${Object.keys(SPRACHNAME).map(k => `<button class="sprach-btn" data-tun="spracheSetzen"
+      data-k="${k}" aria-pressed="${k === L}" lang="${k}">
+      <span class="fl" aria-hidden="true">${FLAGGE[k]}</span> ${esc(SPRACHNAME[k])}
+      ${k === L ? `<span class="ha">${I.haken(26)}</span>` : ""}</button>`).join("")}
+    ${vorlesenMoeglich() ? "" : `<div class="hinweis">${esc(t("vorlesenGehtNicht"))}</div>`}
+  </div>` + aktionsLeiste(
+    `<button class="haupt-btn" data-tun="zurueck">${I.zurueck(30)} ${esc(t("zurueck"))}</button>`);
+}
+
+/* ===========================================================
+   Feierabend, Laden, kein Netz
+   =========================================================== */
+function ansichtFeierabend(Z){
+  const m = Z.morgen || [];
+  return kopf(Z) + `<div class="inhalt">
+    ${netzStreifen(Z)}
+    <div class="ergebnis"><span class="ico">${I.haken(40)}</span><div>
+      <div class="w">${esc(t("heuteFertig"))}</div></div></div>
+    ${m.length ? morgenBlock(m) : `<div class="hinweis">${esc(t("nichtsHeute"))}</div>`}
+    <button class="install" id="install" onclick="installieren()"></button>
+  </div>` + aktionsLeiste(
+    `<button class="haupt-btn" data-tun="tagesplan">${I.liste(30)} ${esc(t("tagFertigAnsehen"))}</button>`);
+}
+function ansichtLaden(){
+  return `<div class="inhalt"><div class="laedt">…</div></div>`;
+}
+function ansichtKeinNetz(Z){
+  return kopf(Z) + `<div class="inhalt">
+    <div class="ergebnis fehler"><span class="ico">${I.wolkeAus(40)}</span><div>
+      <div class="w">${esc(t("keinInternet"))}</div>
+      <div class="u">${esc(t("keinNetzLaden"))}</div></div></div>
+  </div>` + aktionsLeiste(
+    hauptKnopf(t("nochmalLaden"), I.pfeil(30), "nochmalLaden", Z));
+}
+
+/* ===========================================================
+   Hauptfunktion: Zustand hinein, Bildschirm heraus
+   =========================================================== */
+function zeichne(Z){
+  switch (Z.ansicht) {
+    case "laden":           return ansichtLaden(Z);
+    case "keinNetz":        return ansichtKeinNetz(Z);
+    case "foto":            return ansichtFoto(Z);
+    case "ergebnis":        return ansichtErgebnis(Z);
+    case "kamerahilfe":     return ansichtKamerahilfe(Z);
+    case "stand":           return ansichtStand(Z);
+    case "abschluss":       return ansichtAbschluss(Z);
+    case "problem":         return ansichtProblem(Z);
+    case "problemFrage":    return ansichtProblemFrage(Z);
+    case "problemErgebnis": return ansichtProblemErgebnis(Z);
+    case "tagesplan":       return ansichtTagesplan(Z);
+    case "sprache":         return ansichtSprache(Z);
+    case "feierabend":      return ansichtFeierabend(Z);
+  }
+  if (!Z.auftrag) return ansichtFeierabend(Z);
+  const s = schrittVon(Z.auftrag);
+  return s === 3 ? ansichtBeimKunden(Z) : (s === 2 ? ansichtFahren(Z) : ansichtAbholen(Z));
+}
+
+/* ---------- Vorlesetext: Ziel, Termin, Zeitstatus, nächste Handlung ----------
+   Kurze Sätze, keine Abkürzungen, keine Fachwörter.             */
+function vorlesetext(Z){
+  const a = Z.auftrag;
+  if (Z.ansicht === "problem" || Z.ansicht === "problemFrage")
+    return t("wasIstPassiert");
+  if (Z.ansicht === "problemErgebnis") {
+    const e = Z.problemErgebnis || {};
+    return problemWort(e.art) + ". " +
+      (e.typ === "gesendet" ? t("meldungGesendet") : (e.typ === "wartet" ? t("meldungWartet") : t("meldungFehler")));
+  }
+  if (Z.ansicht === "ergebnis") {
+    const e = Z.ergebnis || {};
+    return e.typ === "gespeichert" ? t("fotoGespeichert")
+         : (e.typ === "wartet" ? t("nochNichtGesendet") + ". " + t("bleibtAufHandy")
+                               : t("sendenFehlgeschlagen") + ". " + t("sendenFehlerText"));
+  }
+  if (Z.ansicht === "foto") {
+    const f = Z.foto || {};
+    return f.art === "abgabe" ? t("anweisungAbgabe") : t("anweisungAbholung");
+  }
+  if (Z.ansicht === "abschluss") {
+    const b = Z.abschluss || {}, n = b.naechster;
+    let s = t("auftragAbgeschlossen") + ". ";
+    if (n) {
+      const p = n.puffer == null ? null : Math.round(n.puffer);
+      s += t("naechsterAuftrag",{ort:n.zielOrt || ""}) + ". " +
+           t("termin") + " " + (n.termin || "") + ". " +
+           t("ankunftEtwa") + " " + (uhr(n.ankunft) || "") + ". " +
+           (p == null ? t("keineDaten")
+                      : (p < 0 ? t("zuSpaet",{min:minuten(-p)}) : t("rechtzeitig")));
+    } else s += t("keinWeiterer");
+    return s;
+  }
+  if (Z.ansicht === "tagesplan") {
+    const liste = Z.heute || [];
+    return (liste.length === 1 ? t("heuteEinAuftrag") : t("heuteAuftraege",{n:liste.length})) + ". " +
+      liste.map(x => (x.termin || "") + " " + (x.kunde || x.zielOrt || "")).join(". ");
+  }
+  if (!a) return t("heuteFertig");
+
+  const r = a.rechnung || {}, s = zeitstatus(a, Z), schritt = schrittVon(a);
+  let text = "";
+  if (schritt === 1) {
+    const o = abholort(a);
+    text += t("jetztAbholen") + ". " + t("abholenBei") + " " + (o.firma || "") + ". " +
+            (o.adresse ? o.adresse + ". " : "") +
+            (o.tor ? t("tor") + " " + o.tor + ". " : "") +
+            (a.abholAb ? t("abholzeitAb") + " " + a.abholAb + ". " : "") +
+            t("terminBeimKunden",{ zeit:a.termin || "", ort:a.zielOrt || "" }) + ". " +
+            t("container") + " " + lueckig(a.container) + ". ";
+  } else if (schritt === 2) {
+    const o = zielort(a);
+    text += t("jetztFahren") + ". " + (o.firma || "") + ". " + (o.adresse ? o.adresse + ". " : "") +
+            (o.tor ? t("tor") + " " + o.tor + ". " : "") +
+            t("termin") + " " + (a.termin || "") + ". " +
+            (uhr(r.ankunft) ? t("ankunftEtwa") + " " + uhr(r.ankunft) + ". " : "");
+  } else {
+    const o = zielort(a);
+    text += t("jetztBeimKunden") + ". " + (o.firma || "") + ". " +
+            (uhr(a.ankunftZeit) ? t("ankunft") + " " + uhr(a.ankunftZeit) + ". " : "") +
+            (r.wartetSeit != null ? t("vorOrtSeit",{min:minuten(r.wartetSeit)}) + ". " : "");
+  }
+  text += s.satz + ". ";
+  if (a.notiz) text += a.notiz + ". ";
+  text += schritt === 1 ? t("fotoAbholung") : (schritt === 2 ? t("amZielAngekommen") : t("fotoAbgabe"));
+  return text;
+}
+
+return { zeichne, vorlesetext, schrittVon, problemWort, PROBLEME, uhr, lueckig, esc, zeitstatus };
+})();
+
+</script>
+<script>
+
+"use strict";
+const APP = document.getElementById("app");
+const NOTIZ = document.getElementById("notiz");
+
+/* ============ Beispieldaten: ein Tag, drei Aufträge ============ */
+const HEUTE = new Date().toLocaleDateString("sv-SE");
+const MORGEN_DATUM = new Date(Date.now()+86400000).toLocaleDateString("sv-SE");
+const iso = (hhmm, tage) => {
+  const [h,m] = hhmm.split(":").map(Number);
+  const d = new Date(); d.setDate(d.getDate() + (tage||0));
+  d.setHours(h, m, 0, 0); return d.toISOString();
+};
+function auftragsSatz(){
+  return [
+    { id:"a1", nummer:"4701", datum:HEUTE, status:"freigegeben",
+      abholFirma:"Hansa Terminal Bremen", abholOrt:"Bremen",
+      abholAdresse:"Am Speicher 12, 28197 Bremen", abholTor:"2", abholAb:"08:30",
+      kunde:"Möller Baustoffe GmbH", zielOrt:"Walsrode",
+      zielAdresse:"Lange Straße 4, 29664 Walsrode", zielTor:"3", termin:"11:00",
+      container:"MSCU1234567", chassis:"CH-01", zugmaschine:"HB-TL 412", siegel:"SL 88213",
+      notiz:"Anmeldung beim Pförtner, Tor 3 benutzen.",
+      rechnung:{ ampel:"gruen", puffer:38, ankunft:iso("10:22"), losBis:iso("09:35"),
+                 termin:iso("11:00"), restMin:85 } },
+    { id:"a2", nummer:"4702", datum:HEUTE, status:"freigegeben",
+      abholFirma:"Hansa Terminal Bremen", abholOrt:"Bremen",
+      abholAdresse:"Am Speicher 12, 28197 Bremen", abholTor:"2", abholAb:"12:00",
+      kunde:"Nordsee Handel KG", zielOrt:"Bremen-Neustadt",
+      zielAdresse:"Hafenstraße 88, 28199 Bremen", zielTor:"1", termin:"13:30",
+      container:"TGHU7654321", chassis:"CH-04", zugmaschine:"HB-TL 412", siegel:"SL 88990",
+      rechnung:{ ampel:"rot", puffer:-24, ankunft:iso("13:54"), losBis:iso("12:05"),
+                 termin:iso("13:30"), restMin:95 } },
+    { id:"a3", nummer:"4703", datum:HEUTE, status:"freigegeben",
+      abholFirma:"Hansa Terminal Bremen", abholOrt:"Bremen",
+      abholAdresse:"Am Speicher 12, 28197 Bremen", abholTor:"2", abholAb:"15:00",
+      kunde:"Weserhof Logistik und Umschlag Delmenhorst-Annenheide GmbH & Co. KG",
+      zielOrt:"Delmenhorst-Annenheide", zielAdresse:"Annenheider Damm 145, 27755 Delmenhorst",
+      zielTor:"5", termin:"16:15",
+      container:"HLXU9988776", chassis:"CH-07", zugmaschine:"HB-TL 412", siegel:"SL 89014",
+      rechnung:{ ampel:"gruen", puffer:46, ankunft:iso("15:29"), losBis:iso("14:50"),
+                 termin:iso("16:15"), restMin:90 } }
+  ];
+}
+const MORGEN = [
+  { id:"b1", nummer:"4704", datum:MORGEN_DATUM, termin:"07:30",
+    kunde:"Möller Baustoffe GmbH", zielOrt:"Walsrode", container:"MSCU2223334" }
+];
+const EINST = { bueroTelefon:"+49 421 000000", gruenAb:20, freiMin:60 };
+
+/* ============ Zustand der Vorschau ============ */
+let Z = null;
+let fotoFehlerEinmal = false;
+
+function grundZustand(){
+  return { ansicht:"auftrag", auftrag:null, heute:auftragsSatz(), morgen:MORGEN, einst:EINST,
+           online:true, datenZeit:new Date().toISOString(), offen:0,
+           laeuft:false, fahrzeugOffen:false, foto:null, ergebnis:null, abschluss:null,
+           problem:null, problemErgebnis:null, stand:null, vorher:"auftrag", demo:true };
+}
+function aktuell(){ return (Z.heute || []).filter(a => a.status !== "fertig")[0] || null; }
+
+/* ============ Szenarien ============ */
+const SZENARIEN = [
+  { k:"abholen", wort:"1 · Abholen",
+    notiz:"Ansicht A: Der Fahrer steht am Terminal. Hauptaktion: „Abgeholt? Foto machen“.",
+    bauen(){ return grundZustand(); } },
+
+  { k:"unterwegs", wort:"2 · Unterwegs",
+    notiz:"Ansicht B: Container ist geladen. Termin 11:00, Ankunft etwa 10:50 — es wird knapp.",
+    bauen(){ const z = grundZustand();
+      z.heute[0].status = "geladen"; z.heute[0].abholZeit = iso("09:25");
+      z.heute[0].rechnung = { ampel:"gelb", puffer:10, ankunft:iso("10:50"),
+                              termin:iso("11:00"), restMin:42 };
+      return z; } },
+
+  { k:"beimKunden", wort:"3 · Beim Kunden",
+    notiz:"Ansicht C: Seit 25 Minuten vor Ort. Der Aufenthalt wird nicht als abrechenbare Wartezeit ausgegeben.",
+    bauen(){ const z = grundZustand();
+      z.heute[0].status = "angekommen"; z.heute[0].abholZeit = iso("09:25");
+      z.heute[0].ankunftZeit = iso("10:50");
+      z.heute[0].rechnung = { ampel:"gruen", puffer:10, ankunft:iso("10:50"),
+                              termin:iso("11:00"), wartetSeit:25, frei:60, berechenbar:0 };
+      return z; } },
+
+  { k:"verspaetung", wort:"4 · Verspätung",
+    notiz:"Ansicht D: Auftrag abgeschlossen, der nächste Termin ist voraussichtlich 24 Minuten zu spät. Kein Blinken, keine Aufforderung schneller zu fahren.",
+    bauen(){ const z = grundZustand();
+      z.heute[0].status = "fertig"; z.heute[0].abgabeZeit = iso("11:18");
+      z.ansicht = "abschluss";
+      z.abschluss = { ort:"Möller Baustoffe GmbH", zeit:iso("11:18"),
+        naechster:{ nummer:"4702", zielOrt:"Bremen", termin:"13:30",
+                    ankunft:iso("13:54"), puffer:-24, ampel:"rot" } };
+      return z; } },
+
+  { k:"keinNetz", wort:"5 · Kein Internet",
+    notiz:"Ohne Verbindung: keine falsche grüne Sicherheit, sondern „Ankunft gerade nicht verfügbar“. Eine Aufnahme wartet noch auf Netz.",
+    bauen(){ const z = grundZustand();
+      z.online = false; z.offen = 1;
+      z.datenZeit = new Date(Date.now() - 52*60000).toISOString();
+      z.heute[0].status = "geladen"; z.heute[0].abholZeit = iso("09:25");
+      return z; } },
+
+  { k:"fotoFehler", wort:"6 · Foto klemmt",
+    notiz:"Der Fotoversand schlägt fehl. Die Aufnahme bleibt auf dem Handy, der Auftrag bleibt offen, „Nochmal senden“ ist möglich.",
+    bauen(){ const z = grundZustand(); fotoFehlerEinmal = true;
+      z.foto = { art:"abholung", bild:DEMOFOTO }; z.ansicht = "foto"; return z; } },
+
+  { k:"geaendert", wort:"7 · Auftrag geändert",
+    notiz:"Das Büro hat das Tor geändert. Der Fahrer sieht die Änderung im Klartext und kann sie im Stand bestätigen.",
+    bauen(){ const z = grundZustand();
+      z.heute[0].aenderung = { zeit:new Date().toISOString(),
+        punkte:[{ feld:"tor", von:"1", nach:"3" }, { feld:"termin", von:"10:30", nach:"11:00" }] };
+      return z; } }
+];
+
+/* Platzhalterbild statt echter Kamera */
+const DEMOFOTO = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+`<svg xmlns="http://www.w3.org/2000/svg" width="640" height="440">
+  <rect width="640" height="440" fill="#2A3642"/>
+  <rect x="40" y="120" width="560" height="200" fill="#4A5A68" stroke="#9FB0BD" stroke-width="6"/>
+  <text x="320" y="232" font-family="system-ui, sans-serif" font-size="40" font-weight="bold"
+        fill="#fff" text-anchor="middle">MSCU 1234 567</text>
+  <text x="320" y="392" font-family="system-ui, sans-serif" font-size="30"
+        fill="#FFD34D" text-anchor="middle">Demo-Foto, keine echte Aufnahme</text>
+</svg>`);
+
+/* ============ Vorschau zeichnen ============ */
+function schalterZeichnen(aktiv){
+  document.getElementById("schalter").innerHTML = SZENARIEN.map(s =>
+    `<button data-sz="${s.k}" aria-pressed="${s.k === aktiv}">${s.wort}</button>`).join("");
+}
+function szenario(k){
+  const s = SZENARIEN.find(x => x.k === k) || SZENARIEN[0];
+  fotoFehlerEinmal = false;                     // nur im Szenario „Foto klemmt“
+  Z = s.bauen();
+  if (!Z.auftrag) Z.auftrag = aktuell();
+  NOTIZ.textContent = "Demo: " + s.notiz;
+  schalterZeichnen(s.k);
+  zeichne();
+}
+function zeichne(){ APP.innerHTML = FA.zeichne(Z); }
+
+document.getElementById("schalter").addEventListener("click", e => {
+  const b = e.target.closest("[data-sz]"); if (b) szenario(b.dataset.sz);
+});
+
+/* ============ Simulierte Aktionen ============ */
+function demoHinweis(text){ NOTIZ.textContent = "Demo: " + text; }
+
+function mitStand(fn){
+  if (Z.standOk) return fn();
+  Z.stand = { aktion:fn }; Z.vorher = Z.ansicht; Z.ansicht = "stand"; zeichne();
+}
+const A = {
+  vorlesen(){ sprich(FA.vorlesetext(Z)); demoHinweis("Vorlesen benutzt die Sprachausgabe des Browsers."); },
+  tagesplan(){ Z.vorher = Z.ansicht; Z.ansicht = "tagesplan"; zeichne(); },
+  sprache(){ Z.vorher = "tagesplan"; Z.ansicht = "sprache"; zeichne(); },
+  spracheSetzen(d){ setzeSprache(d.k); Z.ansicht = "tagesplan"; zeichne();
+                    demoHinweis("Die Sprache bleibt gemerkt, auch nach dem Schließen."); },
+  zurueck(){
+    if (Z.ansicht === "sprache") { Z.ansicht = "tagesplan"; return zeichne(); }
+    if (Z.ansicht === "stand")   { Z.ansicht = Z.vorher || "auftrag"; Z.stand = null; return zeichne(); }
+    if (Z.ansicht === "kamerahilfe") { Z.ansicht = "foto"; return zeichne(); }
+    Z.ansicht = "auftrag"; Z.foto = null; Z.ergebnis = null;
+    Z.problem = null; Z.problemErgebnis = null;
+    Z.auftrag = aktuell();
+    if (!Z.auftrag) Z.ansicht = "feierabend";
+    zeichne();
+  },
+  nochmalLaden(){ Z.online = true; Z.ansicht = "auftrag"; zeichne(); },
+  fahrzeug(){ Z.fahrzeugOffen = !Z.fahrzeugOffen; zeichne(); },
+  aenderungGesehen(){ mitStand(() => {
+    Z.auftrag.aenderungGesehen = { zeit:new Date().toISOString() }; zeichne();
+    demoHinweis("In der echten App geht die Bestätigung ans Büro."); }); },
+
+  fotoAbholung(){ Z.foto = { art:"abholung", bild:null }; Z.ansicht = "foto"; zeichne(); },
+  fotoAbgabe(){   Z.foto = { art:"abgabe",   bild:null }; Z.ansicht = "foto"; zeichne(); },
+  kamera(){ mitStand(() => { Z.foto.bild = DEMOFOTO; Z.ansicht = "foto"; zeichne();
+    demoHinweis("Statt der Kamera wird ein Platzhalterbild gezeigt."); }); },
+  fotoNeu(){ Z.foto.bild = DEMOFOTO; zeichne(); demoHinweis("Neue Aufnahme, wieder ein Platzhalterbild."); },
+  fotoAbbrechen(){ Z.foto = null; Z.ansicht = "auftrag"; zeichne();
+                   demoHinweis("Abbrechen hat den Auftrag nicht abgeschlossen."); },
+  kamerahilfe(){ Z.ansicht = "kamerahilfe"; zeichne(); },
+
+  fotoVerwenden(){
+    const art = Z.foto.art, jetzt = new Date().toISOString();
+    Z.foto = null;
+    if (fotoFehlerEinmal) {
+      Z.ergebnis = { typ:"fehler", art, zeit:jetzt }; Z.offen = 1; Z.ansicht = "ergebnis";
+      demoHinweis("Der Versand ist fehlgeschlagen. Der Auftrag bleibt offen, die Aufnahme bleibt gespeichert.");
+      return zeichne();
+    }
+    if (!Z.online) {
+      buchen(art, jetzt);
+      Z.ergebnis = { typ:"wartet", art, zeit:jetzt }; Z.offen = (Z.offen||0) + 1;
+      Z.ansicht = "ergebnis"; demoHinweis("Ohne Netz wird die Aufnahme gemerkt und später gesendet.");
+      return zeichne();
+    }
+    buchen(art, jetzt);
+    if (art === "abgabe") {
+      const n = aktuell();
+      Z.abschluss = { ort:Z.auftrag ? (Z.auftrag.kunde || Z.auftrag.zielOrt) : "", zeit:jetzt,
+        naechster: n ? { nummer:n.nummer, zielOrt:n.zielOrt, termin:n.termin,
+                         ankunft:n.rechnung.ankunft, puffer:n.rechnung.puffer,
+                         ampel:n.rechnung.ampel } : null };
+      Z.ansicht = "abschluss";
+    } else {
+      Z.ergebnis = { typ:"gespeichert", art, zeit:jetzt }; Z.ansicht = "ergebnis";
+    }
+    zeichne();
+  },
+  ankunft(){ mitStand(() => {
+    const jetzt = new Date().toISOString();
+    buchen("ankunft", jetzt);
+    Z.ergebnis = { typ:"gespeichert", art:"ankunft", zeit:jetzt };
+    Z.ansicht = "ergebnis"; zeichne();
+    demoHinweis("Nur die Ankunft ist gemeldet. Die Ablieferung kommt danach."); }); },
+  standJa(){ Z.standOk = true; const f = Z.stand && Z.stand.aktion; Z.stand = null;
+             Z.ansicht = Z.vorher || "auftrag"; zeichne(); if (f) f(); },
+  nochmalSenden(){
+    fotoFehlerEinmal = false; Z.offen = 0;
+    if (Z.ergebnis) { Z.ergebnis.typ = "gespeichert"; }
+    buchen("abholung", new Date().toISOString());
+    zeichne(); demoHinweis("Zweiter Versuch erfolgreich. In der echten App sendet die App auch von allein weiter.");
+  },
+
+  problem(){ Z.problem = null; Z.ansicht = "problem"; zeichne(); },
+  problemWahl(d){ Z.problem = { art:d.art }; Z.ansicht = "problemFrage"; zeichne(); },
+  problemSenden(){
+    const art = Z.problem ? Z.problem.art : (Z.problemErgebnis||{}).art;
+    const jetzt = new Date().toISOString();
+    if (!Z.online) {
+      Z.problemErgebnis = { art, typ:"wartet", zeit:jetzt }; Z.offen = (Z.offen||0)+1;
+      demoHinweis("Ohne Netz: die Meldung wartet. Es steht nicht „gesendet“ da.");
+    } else {
+      Z.problemErgebnis = { art, typ:"gesendet", zeit:jetzt, gelesen:false };
+      demoHinweis("Demo: „Vom Büro gelesen“ erscheint hier nach einigen Sekunden. In der echten App nur, wenn das Büro die Meldung wirklich geöffnet hat.");
+      setTimeout(() => {
+        if (Z.problemErgebnis && Z.problemErgebnis.typ === "gesendet") {
+          Z.problemErgebnis.gelesen = true;
+          if (Z.ansicht === "problemErgebnis") zeichne();
+        }
+      }, 6000);
+    }
+    Z.ansicht = "problemErgebnis"; zeichne();
+  },
+  naechster(){ Z.abschluss = null; Z.auftrag = aktuell();
+               Z.ansicht = Z.auftrag ? "auftrag" : "feierabend"; zeichne(); },
+  navi(){ demoHinweis("In der echten App öffnet sich hier die Karten-App des Handys."); }
+};
+function buchen(art, jetzt){
+  const a = Z.auftrag; if (!a) return;
+  if (art === "abholung") { a.status = "geladen";    a.abholZeit = jetzt;
+    a.rechnung = { ampel:"gelb", puffer:10, ankunft:iso("10:50"), termin:iso("11:00"), restMin:42 }; }
+  if (art === "ankunft")  { a.status = "angekommen"; a.ankunftZeit = jetzt;
+    a.rechnung = { ...a.rechnung, wartetSeit:0, frei:60, berechenbar:0 }; }
+  if (art === "abgabe")   { a.status = "fertig";     a.abgabeZeit = jetzt; }
+  Z.auftrag = aktuell();
+}
+
+APP.addEventListener("click", e => {
+  const b = e.target.closest("[data-tun]");
+  if (!b) return;
+  if (b.dataset.tun === "navi") e.preventDefault();     // in der Demo keine Karten-App
+  const f = A[b.dataset.tun];
+  if (typeof f === "function") f(b.dataset);
+});
+
+szenario("abholen");
+
+</script>
+</body>
+</html>
