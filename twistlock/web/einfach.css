@@ -103,6 +103,12 @@ button,.knopf{font-family:inherit; font-size:21px; line-height:1.2; cursor:point
 
 button:focus-visible,a:focus-visible{outline:4px solid var(--marine); outline-offset:2px}
 
+/* ---------- „Heute“ oben im Inhalt ---------- */
+.heute-btn{width:100%; min-height:60px; margin:8px 0 0; padding:6px 12px;
+  font-size:19px; font-weight:700; border:3px solid var(--linie); background:var(--paper);
+  color:var(--ink); display:flex; align-items:center; gap:10px; text-align:left}
+.heute-btn span{flex:1; min-width:0}
+
 /* ---------- Überschriften und Texte ---------- */
 .titel{font-size:22px; font-weight:700; line-height:1.2; padding:8px 0 6px;
        overflow-wrap:anywhere}
@@ -137,14 +143,14 @@ button:focus-visible,a:focus-visible{outline:4px solid var(--marine); outline-of
      font-size:21px; font-weight:700; white-space:nowrap}
 
 /* ---------- Zeitfelder ---------- */
-.zeiten{display:flex; gap:14px; flex-wrap:wrap; padding:8px 0;
+.zeiten{display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end; padding:8px 0;
         border-bottom:2px solid var(--linie2)}
 .zeiten > div{flex:1 1 44%; min-width:140px; max-width:100%}
 .zeile{display:flex; gap:14px; align-items:center; padding:12px 0;
        border-bottom:2px solid var(--linie2)}
 .zeile .ico{flex:0 0 auto; color:var(--soft)}
 .zeile .txt{flex:1; min-width:0; overflow-wrap:anywhere}
-.daten-zeile{display:flex; gap:12px; align-items:baseline; padding:9px 0;
+.daten-zeile{display:flex; gap:12px; align-items:baseline; padding:8px 0;
              border-bottom:1px solid var(--linie2); flex-wrap:wrap}
 .daten-zeile .etikett{flex:0 1 130px}
 .daten-zeile .wert{flex:1 1 auto; letter-spacing:.04em}
@@ -189,6 +195,50 @@ button:focus-visible,a:focus-visible{outline:4px solid var(--marine); outline-of
 .marke.jetzt{background:var(--ink); color:#fff}
 .marke.fertig{border-color:var(--gruen); color:var(--gruen); background:var(--gruen-flaeche)}
 .marke.offen{border-color:var(--soft); color:var(--soft); background:#F2F3F1}
+
+/* ---------- Containernummer prüfen ---------- */
+.nummer-gross{font-size:30px; font-weight:700; letter-spacing:.03em; line-height:1.15;
+  margin:4px 0 10px; overflow-wrap:anywhere; font-variant-numeric:tabular-nums}
+.nummer-gross.rot{color:var(--rot)}
+/* Die beiden Nummern untereinander: so lassen sie sich Stelle für Stelle
+   vergleichen, auch auf einem schmalen Bildschirm. */
+.gegen{display:flex; flex-direction:column; gap:10px; margin:4px 0 8px}
+.gegen > div{border-left:6px solid var(--linie); padding-left:10px}
+.gegen > div:last-child{border-left-color:var(--rot)}
+.gegen .nummer-gross{margin:0}
+.feld{width:100%; min-height:64px; margin:6px 0 10px; font-family:inherit;
+  font-size:26px; font-weight:700; letter-spacing:.06em; padding:8px 12px;
+  border:3px solid var(--ink); background:var(--paper); color:var(--ink)}
+
+/* ---------- Kurze Bestätigung nach einem Schritt ---------- */
+.bestaetigung{display:flex; gap:10px; align-items:center; padding:10px 12px; margin:10px 0;
+  background:var(--gruen-flaeche); border-left:8px solid var(--gruen); color:var(--gruen);
+  font-size:19px; font-weight:700}
+.bestaetigung svg{flex:0 0 auto}
+
+/* ---------- Zeitstatus direkt unter der Uhrzeit ---------- */
+.unter-zeit{display:flex; align-items:center; gap:6px; font-size:18px; font-weight:700;
+  margin-top:2px; line-height:1.2; overflow-wrap:anywhere}
+.unter-zeit svg{flex:0 0 auto; width:20px; height:20px}
+.unter-zeit.gruen{color:var(--gruen)}
+.unter-zeit.gelb {color:var(--gelb)}
+.unter-zeit.rot  {color:var(--rot)}
+.unter-zeit.grau {color:var(--soft)}
+
+/* ---------- Nächster Termin in einer Zeile ---------- */
+.naechster-kurz{font-size:19px; color:var(--soft); padding:8px 0 2px; overflow-wrap:anywhere}
+.naechster-kurz b{color:var(--ink)}
+
+/* ---------- Uhrzeit in der Farbe des Zeitstatus ---------- */
+.uhrzeit.gruen{color:var(--gruen)}
+.uhrzeit.gelb {color:var(--gelb)}
+.uhrzeit.rot  {color:var(--rot)}
+.uhrzeit.grau {color:var(--soft)}
+
+/* ---------- Firmenname und Zusatzzeile ---------- */
+.marke-firma{font-size:16px; font-weight:700; color:var(--soft); letter-spacing:.1em}
+.wahl-btn .klein{display:block; font-size:17px; font-weight:600; color:var(--soft);
+  letter-spacing:.02em}
 
 /* ---------- Fotovorschau ---------- */
 .vorschaubild{width:100%; max-height:46vh; object-fit:contain; background:#15202B;

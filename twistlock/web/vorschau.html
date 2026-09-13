@@ -13,10 +13,10 @@
 <div class="demo-rahmen">
   <div class="demo-kopf">
     <span class="demo-marke">DEMO</span>
-    <h1>TWISTLOCK Fahreransicht — Vorschau</h1>
+    <h1>TWISTLOCK Fahreransicht — I&amp;M CARGO</h1>
     <p>Feste Beispieldaten. Nichts wird gesendet, kein Büro, keine Navigation,
-       keine Benachrichtigungen. Die Schaltflächen unten gehören zur Vorschau,
-       nicht zur Fahreroberfläche.</p>
+       keine Nummernerkennung, keine Benachrichtigungen. Die Schaltflächen unten
+       gehören zur Vorschau, nicht zur Fahreroberfläche.</p>
   </div>
 
   <div class="demo-schalter" id="schalter"></div>
@@ -27,13 +27,17 @@
   </div>
 
   <p class="demo-notiz" style="border-left-color:#1B4C78;background:#EEF4FA;color:#16324B">
-    <b>Echt in dieser Vorschau:</b> Darstellung, Schriftgrößen, Bedienablauf,
-    Sprachwahl, Vorlesen (Sprachausgabe des Browsers).<br>
-    <b>Nur dargestellt:</b> Abholen und Abliefern, Fotoaufnahme, Senden ans Büro,
-    Lesebestätigung, Navigation, Netzstatus.
+    <b>Echt in dieser Vorschau:</b> Darstellung, Schriftgrößen, Bedienablauf, Farbregeln
+    für die Reserve, Prüfziffer der Containernummer, Sprachwahl, Vorlesen.<br>
+    <b>Nur dargestellt:</b> Kamera, automatische Nummernerkennung, Senden ans Büro,
+    Lesebestätigung, Verspätungsalarm, Navigation, Netzstatus.<br>
+    <b>Unterschied zur App:</b> Hier wird die Nummernerkennung simuliert. In der App
+    fragt der Bildschirm einmal nach („Steht diese Nummer auf dem Container?“),
+    solange keine Erkennung angebunden ist.
   </p>
 </div>
 
+<script src="/container.js"></script>
 <script src="/sprache.js"></script>
 <script src="/fahreransicht.js"></script>
 <script>
@@ -49,6 +53,8 @@ const iso = (hhmm, tage) => {
   const d = new Date(); d.setDate(d.getDate() + (tage||0));
   d.setHours(h, m, 0, 0); return d.toISOString();
 };
+const inMin = m => new Date(Date.now() + m*60000).toISOString();
+
 function auftragsSatz(){
   return [
     { id:"a1", nummer:"4701", datum:HEUTE, status:"freigegeben",
@@ -56,111 +62,156 @@ function auftragsSatz(){
       abholAdresse:"Am Speicher 12, 28197 Bremen", abholTor:"2", abholAb:"08:30",
       kunde:"Möller Baustoffe GmbH", zielOrt:"Walsrode",
       zielAdresse:"Lange Straße 4, 29664 Walsrode", zielTor:"3", termin:"11:00",
-      container:"MSCU1234567", chassis:"CH-01", zugmaschine:"HB-TL 412", siegel:"SL 88213",
+      container:"MSCU1234566", chassis:"CH-01", zugmaschine:"HB-TL 412", siegel:"SL 88213",
       notiz:"Anmeldung beim Pförtner, Tor 3 benutzen.",
       rechnung:{ ampel:"gruen", puffer:38, ankunft:iso("10:22"), losBis:iso("09:35"),
                  termin:iso("11:00"), restMin:85 } },
     { id:"a2", nummer:"4702", datum:HEUTE, status:"freigegeben",
       abholFirma:"Hansa Terminal Bremen", abholOrt:"Bremen",
       abholAdresse:"Am Speicher 12, 28197 Bremen", abholTor:"2", abholAb:"12:00",
-      kunde:"Nordsee Handel KG", zielOrt:"Bremen-Neustadt",
-      zielAdresse:"Hafenstraße 88, 28199 Bremen", zielTor:"1", termin:"13:30",
-      container:"TGHU7654321", chassis:"CH-04", zugmaschine:"HB-TL 412", siegel:"SL 88990",
-      rechnung:{ ampel:"rot", puffer:-24, ankunft:iso("13:54"), losBis:iso("12:05"),
-                 termin:iso("13:30"), restMin:95 } },
+      kunde:"Nordsee Handel KG", zielOrt:"Walsrode",
+      zielAdresse:"Industriestraße 7, 29664 Walsrode", zielTor:"1", termin:"15:00",
+      container:"TGHU7654320", chassis:"CH-04", zugmaschine:"HB-TL 412", siegel:"SL 88990",
+      rechnung:{ ampel:"gruen", puffer:15, ankunft:iso("14:45"), losBis:iso("13:05"),
+                 termin:iso("15:00"), restMin:95 } },
     { id:"a3", nummer:"4703", datum:HEUTE, status:"freigegeben",
       abholFirma:"Hansa Terminal Bremen", abholOrt:"Bremen",
-      abholAdresse:"Am Speicher 12, 28197 Bremen", abholTor:"2", abholAb:"15:00",
+      abholAdresse:"Am Speicher 12, 28197 Bremen", abholTor:"2", abholAb:"16:00",
       kunde:"Weserhof Logistik und Umschlag Delmenhorst-Annenheide GmbH & Co. KG",
       zielOrt:"Delmenhorst-Annenheide", zielAdresse:"Annenheider Damm 145, 27755 Delmenhorst",
-      zielTor:"5", termin:"16:15",
-      container:"HLXU9988776", chassis:"CH-07", zugmaschine:"HB-TL 412", siegel:"SL 89014",
-      rechnung:{ ampel:"gruen", puffer:46, ankunft:iso("15:29"), losBis:iso("14:50"),
-                 termin:iso("16:15"), restMin:90 } }
+      zielTor:"5", termin:"17:30",
+      container:"HLXU9988779", chassis:"CH-07", zugmaschine:"HB-TL 412", siegel:"SL 89014",
+      rechnung:{ ampel:"gruen", puffer:46, ankunft:iso("16:44"), losBis:iso("16:05"),
+                 termin:iso("17:30"), restMin:90 } }
   ];
 }
 const MORGEN = [
   { id:"b1", nummer:"4704", datum:MORGEN_DATUM, termin:"07:30",
-    kunde:"Möller Baustoffe GmbH", zielOrt:"Walsrode", container:"MSCU2223334" }
+    kunde:"Möller Baustoffe GmbH", zielOrt:"Walsrode", container:"CAIU4567890" }
 ];
-const EINST = { bueroTelefon:"+49 421 000000", gruenAb:20, freiMin:60 };
+const EINST = { bueroTelefon:"+4942198994620", gruenAb:10, freiMin:60, entladezeitStandard:120 };
 
-/* ============ Zustand der Vorschau ============ */
+/* Der nächste Termin, wie ihn der Server aus der Kette rechnet */
+function naechsterDemo(opt){
+  opt = opt || {};
+  return { nummer:"4702", zielOrt:"Walsrode", kunde:"Nordsee Handel KG", termin:"15:00",
+           ankunft: opt.unsicher ? null : iso(opt.ankunft || "14:45"),
+           puffer: opt.unsicher ? null : (opt.puffer != null ? opt.puffer : 15),
+           unsicher: !!opt.unsicher,
+           ampel: opt.unsicher ? "grau" : (opt.puffer < 0 ? "rot" : "gruen") };
+}
+
+/* ============ Zustand ============ */
 let Z = null;
-let fotoFehlerEinmal = false;
+let demoErkennung = "passt";      // passt | abweichung | unsicher
+let demoNetz = true, demoFotoFehler = false;
 
 function grundZustand(){
   return { ansicht:"auftrag", auftrag:null, heute:auftragsSatz(), morgen:MORGEN, einst:EINST,
            online:true, datenZeit:new Date().toISOString(), offen:0,
-           laeuft:false, fahrzeugOffen:false, foto:null, ergebnis:null, abschluss:null,
-           problem:null, problemErgebnis:null, stand:null, vorher:"auftrag", demo:true };
+           laeuft:false, fahrzeugOffen:false, foto:null, pruefung:null, bestaetigung:null,
+           ergebnis:null, abschluss:null, problem:null, problemErgebnis:null,
+           stand:null, vorher:"auftrag", demo:true };
 }
-function aktuell(){ return (Z.heute || []).filter(a => a.status !== "fertig")[0] || null; }
+const aktuell = () => (Z.heute || []).filter(a => a.status !== "fertig")[0] || null;
 
-/* ============ Szenarien ============ */
-const SZENARIEN = [
-  { k:"abholen", wort:"1 · Abholen",
-    notiz:"Ansicht A: Der Fahrer steht am Terminal. Hauptaktion: „Abgeholt? Foto machen“.",
-    bauen(){ return grundZustand(); } },
-
-  { k:"unterwegs", wort:"2 · Unterwegs",
-    notiz:"Ansicht B: Container ist geladen. Termin 11:00, Ankunft etwa 10:50 — es wird knapp.",
-    bauen(){ const z = grundZustand();
-      z.heute[0].status = "geladen"; z.heute[0].abholZeit = iso("09:25");
-      z.heute[0].rechnung = { ampel:"gelb", puffer:10, ankunft:iso("10:50"),
-                              termin:iso("11:00"), restMin:42 };
-      return z; } },
-
-  { k:"beimKunden", wort:"3 · Beim Kunden",
-    notiz:"Ansicht C: Seit 25 Minuten vor Ort. Der Aufenthalt wird nicht als abrechenbare Wartezeit ausgegeben.",
-    bauen(){ const z = grundZustand();
-      z.heute[0].status = "angekommen"; z.heute[0].abholZeit = iso("09:25");
-      z.heute[0].ankunftZeit = iso("10:50");
-      z.heute[0].rechnung = { ampel:"gruen", puffer:10, ankunft:iso("10:50"),
-                              termin:iso("11:00"), wartetSeit:25, frei:60, berechenbar:0 };
-      return z; } },
-
-  { k:"verspaetung", wort:"4 · Verspätung",
-    notiz:"Ansicht D: Auftrag abgeschlossen, der nächste Termin ist voraussichtlich 24 Minuten zu spät. Kein Blinken, keine Aufforderung schneller zu fahren.",
-    bauen(){ const z = grundZustand();
-      z.heute[0].status = "fertig"; z.heute[0].abgabeZeit = iso("11:18");
-      z.ansicht = "abschluss";
-      z.abschluss = { ort:"Möller Baustoffe GmbH", zeit:iso("11:18"),
-        naechster:{ nummer:"4702", zielOrt:"Bremen", termin:"13:30",
-                    ankunft:iso("13:54"), puffer:-24, ampel:"rot" } };
-      return z; } },
-
-  { k:"keinNetz", wort:"5 · Kein Internet",
-    notiz:"Ohne Verbindung: keine falsche grüne Sicherheit, sondern „Ankunft gerade nicht verfügbar“. Eine Aufnahme wartet noch auf Netz.",
-    bauen(){ const z = grundZustand();
-      z.online = false; z.offen = 1;
-      z.datenZeit = new Date(Date.now() - 52*60000).toISOString();
-      z.heute[0].status = "geladen"; z.heute[0].abholZeit = iso("09:25");
-      return z; } },
-
-  { k:"fotoFehler", wort:"6 · Foto klemmt",
-    notiz:"Der Fotoversand schlägt fehl. Die Aufnahme bleibt auf dem Handy, der Auftrag bleibt offen, „Nochmal senden“ ist möglich.",
-    bauen(){ const z = grundZustand(); fotoFehlerEinmal = true;
-      z.foto = { art:"abholung", bild:DEMOFOTO }; z.ansicht = "foto"; return z; } },
-
-  { k:"geaendert", wort:"7 · Auftrag geändert",
-    notiz:"Das Büro hat das Tor geändert. Der Fahrer sieht die Änderung im Klartext und kann sie im Stand bestätigen.",
-    bauen(){ const z = grundZustand();
-      z.heute[0].aenderung = { zeit:new Date().toISOString(),
-        punkte:[{ feld:"tor", von:"1", nach:"3" }, { feld:"termin", von:"10:30", nach:"11:00" }] };
-      return z; } }
-];
-
-/* Platzhalterbild statt echter Kamera */
+/* Platzhalterbild statt Kamera */
 const DEMOFOTO = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
 `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="440">
   <rect width="640" height="440" fill="#2A3642"/>
   <rect x="40" y="120" width="560" height="200" fill="#4A5A68" stroke="#9FB0BD" stroke-width="6"/>
   <text x="320" y="232" font-family="system-ui, sans-serif" font-size="40" font-weight="bold"
-        fill="#fff" text-anchor="middle">MSCU 1234 567</text>
+        fill="#fff" text-anchor="middle">MSCU 123456 6</text>
   <text x="320" y="392" font-family="system-ui, sans-serif" font-size="30"
         fill="#FFD34D" text-anchor="middle">Demo-Foto, keine echte Aufnahme</text>
 </svg>`);
+
+/* ============ Szenarien ============ */
+const SZENARIEN = [
+  { k:"passt", wort:"1 · Container passt",
+    notiz:"Abholung: Das Foto ist gemacht, die Nummer passt zum Auftrag. Hauptaktion: „Abholung bestätigen“.",
+    bauen(){ demoErkennung = "passt";
+      const z = grundZustand(); z.auftrag = z.heute[0];
+      z.foto = { art:"abholung", bild:DEMOFOTO };
+      z.pruefung = { zustand:"passt", erkannt:z.heute[0].container, bestaetigt:z.heute[0].container, demo:true };
+      z.ansicht = "container"; return z; } },
+
+  { k:"abweichung", wort:"2 · Container weicht ab",
+    notiz:"Erkannte Nummer und Auftrag stimmen nicht überein. „Trotzdem abholen“ fragt noch einmal nach, danach bleibt der Auftrag als Abweichung markiert.",
+    bauen(){ demoErkennung = "abweichung";
+      const z = grundZustand(); z.auftrag = z.heute[0];
+      z.foto = { art:"abholung", bild:DEMOFOTO };
+      z.pruefung = { zustand:"abweichung", erkannt:"MSCU2233440", bestaetigt:"MSCU2233440", demo:true };
+      z.ansicht = "container"; return z; } },
+
+  { k:"unlesbar", wort:"3 · Nummer unlesbar",
+    notiz:"Die Nummer war nicht sicher zu lesen. Die App behauptet nicht, es sei der falsche Container.",
+    bauen(){ demoErkennung = "unsicher";
+      const z = grundZustand(); z.auftrag = z.heute[0];
+      z.foto = { art:"abholung", bild:DEMOFOTO };
+      z.pruefung = { zustand:"unsicher", erkannt:null, demo:true };
+      z.ansicht = "container"; return z; } },
+
+  { k:"gruen", wort:"4 · Fahrt grün",
+    notiz:"Unterwegs mit 38 Minuten Reserve. Über 10 Minuten Reserve ist grün.",
+    bauen(){ const z = grundZustand(); const a = z.heute[0];
+      a.status = "geladen"; a.abholZeit = iso("09:25"); a.containerBestaetigt = a.container;
+      a.rechnung = { ampel:"gruen", puffer:38, ankunft:iso("10:22"), termin:iso("11:00") };
+      z.auftrag = a; return z; } },
+
+  { k:"orange", wort:"5 · Fahrt orange",
+    notiz:"Sieben Minuten Reserve: orange. Die Dispo bekommt hier ausdrücklich keinen Alarm.",
+    bauen(){ const z = grundZustand(); const a = z.heute[0];
+      a.status = "geladen"; a.abholZeit = iso("09:25"); a.containerBestaetigt = a.container;
+      a.rechnung = { ampel:"gelb", puffer:7, ankunft:iso("10:53"), termin:iso("11:00") };
+      z.auftrag = a; return z; } },
+
+  { k:"rot", wort:"6 · Fahrt rot",
+    notiz:"24 Minuten Verspätung: rot. Ab 20 Minuten geht einmalig ein Alarm an die Dispo — kein Blinken, kein Druck aufs Gaspedal.",
+    bauen(){ const z = grundZustand(); const a = z.heute[0];
+      a.status = "geladen"; a.abholZeit = iso("09:25"); a.containerBestaetigt = a.container;
+      a.rechnung = { ampel:"rot", puffer:-24, ankunft:iso("11:24"), termin:iso("11:00") };
+      z.auftrag = a; return z; } },
+
+  { k:"entladen", wort:"7 · Entladung läuft",
+    notiz:"Geplant sind zwei Stunden. „Dauert länger“ bietet genau drei Antworten, gerechnet ab dem Tippen.",
+    bauen(){ const z = grundZustand(); const a = z.heute[0];
+      a.status = "entladen"; a.abholZeit = iso("09:25"); a.ankunftZeit = iso("10:30");
+      a.containerBestaetigt = a.container;
+      a.rechnung = { wartetSeit:90, entladeStart:iso("10:30"), entladePlanMin:120,
+                     entladeEndePlan:iso("12:30"), entladeUnbekannt:false,
+                     naechster: naechsterDemo({ ankunft:"14:45", puffer:15 }) };
+      z.auftrag = a; return z; } },
+
+  { k:"offen", wort:"8 · Ende unbekannt",
+    notiz:"Nach „Weiß ich nicht“ wird keine Ankunft erfunden: der Zeitstatus bleibt grau.",
+    bauen(){ const z = grundZustand(); const a = z.heute[0];
+      a.status = "entladen"; a.ankunftZeit = iso("10:30"); a.containerBestaetigt = a.container;
+      a.rechnung = { wartetSeit:120, entladeStart:iso("10:30"), entladePlanMin:120,
+                     entladeUnbekannt:true, entladeEndePlan:null,
+                     naechster: naechsterDemo({ unsicher:true }) };
+      z.auftrag = a; return z; } },
+
+  { k:"spaet", wort:"9 · Nächster 24 Min. zu spät",
+    notiz:"Auftrag abgeschlossen. Der nächste Termin ist voraussichtlich 24 Minuten zu spät — ab 20 Minuten weiß es das Büro.",
+    bauen(){ const z = grundZustand(); const a = z.heute[0];
+      a.status = "fertig"; a.abgabeZeit = iso("12:48");
+      z.ansicht = "abschluss";
+      z.abschluss = { ort:"Möller Baustoffe GmbH", zeit:iso("12:48"),
+        naechster: naechsterDemo({ ankunft:"15:24", puffer:-24 }) };
+      z.auftrag = z.heute[1]; return z; } },
+
+  { k:"keinNetz", wort:"10 · Foto ohne Internet",
+    notiz:"Ohne Netz bleibt die Aufnahme auf dem Handy. Es steht nicht „übertragen“ da, solange nichts angekommen ist.",
+    bauen(){ demoNetz = false;
+      const z = grundZustand(); const a = z.heute[0];
+      a.status = "geladen"; a.abholZeit = iso("09:25"); a.containerBestaetigt = a.container;
+      a.rechnung = { ampel:"gruen", puffer:38, ankunft:iso("10:22"), termin:iso("11:00") };
+      z.auftrag = a; z.online = false; z.offen = 1;
+      z.datenZeit = new Date(Date.now() - 40*60000).toISOString();
+      z.ergebnis = { typ:"wartet", art:"abholung", zeit:iso("09:25") };
+      z.ansicht = "ergebnis"; return z; } }
+];
 
 /* ============ Vorschau zeichnen ============ */
 function schalterZeichnen(aktiv){
@@ -169,7 +220,7 @@ function schalterZeichnen(aktiv){
 }
 function szenario(k){
   const s = SZENARIEN.find(x => x.k === k) || SZENARIEN[0];
-  fotoFehlerEinmal = false;                     // nur im Szenario „Foto klemmt“
+  demoNetz = true; demoFotoFehler = false; demoErkennung = "passt";
   Z = s.bauen();
   if (!Z.auftrag) Z.auftrag = aktuell();
   NOTIZ.textContent = "Demo: " + s.notiz;
@@ -177,29 +228,48 @@ function szenario(k){
   zeichne();
 }
 function zeichne(){ APP.innerHTML = FA.zeichne(Z); }
+function demoHinweis(text){ NOTIZ.textContent = "Demo: " + text; }
 
 document.getElementById("schalter").addEventListener("click", e => {
   const b = e.target.closest("[data-sz]"); if (b) szenario(b.dataset.sz);
 });
 
 /* ============ Simulierte Aktionen ============ */
-function demoHinweis(text){ NOTIZ.textContent = "Demo: " + text; }
-
 function mitStand(fn){
   if (Z.standOk) return fn();
   Z.stand = { aktion:fn }; Z.vorher = Z.ansicht; Z.ansicht = "stand"; zeichne();
 }
+function buchen(art, jetzt){
+  const a = Z.auftrag; if (!a) return;
+  if (art === "abholung") { a.status = "geladen"; a.abholZeit = jetzt;
+    a.rechnung = { ampel:"gruen", puffer:38, ankunft:iso("10:22"), termin:iso("11:00") }; }
+  if (art === "ankunft")  { a.status = "angekommen"; a.ankunftZeit = jetzt;
+    a.rechnung = { ...a.rechnung, wartetSeit:0, naechster:naechsterDemo({ankunft:"14:45",puffer:15}) }; }
+  if (art === "warten")   { a.status = "warten"; a.wartenZeit = jetzt;
+    a.rechnung = { ...a.rechnung, wartetVorEntladung:0 }; }
+  if (art === "entladenStart") { a.status = "entladen"; a.entladeStart = jetzt;
+    a.rechnung = { ...a.rechnung, entladePlanMin:120, entladeUnbekannt:false,
+      entladeEndePlan: inMin(120), naechster:naechsterDemo({ankunft:"14:45",puffer:15}) }; }
+  if (art === "entladenFertig") { a.status = "entladen_fertig"; a.entladeFertigZeit = jetzt; }
+  if (art === "abgabe")   { a.status = "fertig"; a.abgabeZeit = jetzt; }
+  Z.auftrag = aktuell() || a;
+}
+
 const A = {
   vorlesen(){ sprich(FA.vorlesetext(Z)); demoHinweis("Vorlesen benutzt die Sprachausgabe des Browsers."); },
+  anrufen(){ demoHinweis("In der App wählt das Handy jetzt 0421 98994620."); },
   tagesplan(){ Z.vorher = Z.ansicht; Z.ansicht = "tagesplan"; zeichne(); },
   sprache(){ Z.vorher = "tagesplan"; Z.ansicht = "sprache"; zeichne(); },
   spracheSetzen(d){ setzeSprache(d.k); Z.ansicht = "tagesplan"; zeichne();
                     demoHinweis("Die Sprache bleibt gemerkt, auch nach dem Schließen."); },
   zurueck(){
-    if (Z.ansicht === "sprache") { Z.ansicht = "tagesplan"; return zeichne(); }
-    if (Z.ansicht === "stand")   { Z.ansicht = Z.vorher || "auftrag"; Z.stand = null; return zeichne(); }
-    if (Z.ansicht === "kamerahilfe") { Z.ansicht = "foto"; return zeichne(); }
-    Z.ansicht = "auftrag"; Z.foto = null; Z.ergebnis = null;
+    if (Z.ansicht === "sprache")        { Z.ansicht = "tagesplan"; return zeichne(); }
+    if (Z.ansicht === "stand")          { Z.ansicht = Z.vorher || "auftrag"; Z.stand = null; return zeichne(); }
+    if (Z.ansicht === "kamerahilfe")    { Z.ansicht = "foto"; return zeichne(); }
+    if (Z.ansicht === "nummerEingeben") { Z.ansicht = "container"; return zeichne(); }
+    if (Z.ansicht === "containerFrage") { Z.ansicht = "container"; return zeichne(); }
+    if (Z.ansicht === "laenger")        { Z.ansicht = "auftrag"; return zeichne(); }
+    Z.ansicht = "auftrag"; Z.foto = null; Z.ergebnis = null; Z.pruefung = null;
     Z.problem = null; Z.problemErgebnis = null;
     Z.auftrag = aktuell();
     if (!Z.auftrag) Z.ansicht = "feierabend";
@@ -207,72 +277,142 @@ const A = {
   },
   nochmalLaden(){ Z.online = true; Z.ansicht = "auftrag"; zeichne(); },
   fahrzeug(){ Z.fahrzeugOffen = !Z.fahrzeugOffen; zeichne(); },
-  aenderungGesehen(){ mitStand(() => {
-    Z.auftrag.aenderungGesehen = { zeit:new Date().toISOString() }; zeichne();
-    demoHinweis("In der echten App geht die Bestätigung ans Büro."); }); },
+  aenderungGesehen(){ mitStand(() => { Z.auftrag.aenderungGesehen = { zeit:new Date().toISOString() };
+    zeichne(); demoHinweis("In der App geht die Bestätigung ans Büro."); }); },
 
+  /* Foto */
   fotoAbholung(){ Z.foto = { art:"abholung", bild:null }; Z.ansicht = "foto"; zeichne(); },
   fotoAbgabe(){   Z.foto = { art:"abgabe",   bild:null }; Z.ansicht = "foto"; zeichne(); },
   kamera(){ mitStand(() => { Z.foto.bild = DEMOFOTO; Z.ansicht = "foto"; zeichne();
     demoHinweis("Statt der Kamera wird ein Platzhalterbild gezeigt."); }); },
-  fotoNeu(){ Z.foto.bild = DEMOFOTO; zeichne(); demoHinweis("Neue Aufnahme, wieder ein Platzhalterbild."); },
-  fotoAbbrechen(){ Z.foto = null; Z.ansicht = "auftrag"; zeichne();
+  fotoNeu(){ Z.foto = Z.foto || { art:"abholung", bild:null };
+    Z.foto.bild = DEMOFOTO; Z.pruefung = null; Z.ansicht = "foto"; zeichne();
+    demoHinweis("Neue Aufnahme, wieder ein Platzhalterbild."); },
+  fotoAbbrechen(){ Z.foto = null; Z.pruefung = null; Z.ansicht = "auftrag"; zeichne();
                    demoHinweis("Abbrechen hat den Auftrag nicht abgeschlossen."); },
   kamerahilfe(){ Z.ansicht = "kamerahilfe"; zeichne(); },
-
   fotoVerwenden(){
-    const art = Z.foto.art, jetzt = new Date().toISOString();
-    Z.foto = null;
-    if (fotoFehlerEinmal) {
-      Z.ergebnis = { typ:"fehler", art, zeit:jetzt }; Z.offen = 1; Z.ansicht = "ergebnis";
-      demoHinweis("Der Versand ist fehlgeschlagen. Der Auftrag bleibt offen, die Aufnahme bleibt gespeichert.");
+    if (Z.foto && Z.foto.art === "abholung") {
+      // In der Vorschau wird die Erkennung simuliert und als Demo gekennzeichnet.
+      const a = Z.auftrag;
+      Z.pruefung = demoErkennung === "abweichung"
+        ? { zustand:"abweichung", erkannt:"MSCU2233440", bestaetigt:"MSCU2233440", demo:true }
+        : demoErkennung === "unsicher"
+        ? { zustand:"unsicher", erkannt:null, demo:true }
+        : { zustand:"passt", erkannt:a.container, bestaetigt:a.container, demo:true };
+      Z.ansicht = "container";
+      demoHinweis("Die Nummernerkennung ist simuliert, nicht angebunden.");
       return zeichne();
     }
-    if (!Z.online) {
-      buchen(art, jetzt);
-      Z.ergebnis = { typ:"wartet", art, zeit:jetzt }; Z.offen = (Z.offen||0) + 1;
-      Z.ansicht = "ergebnis"; demoHinweis("Ohne Netz wird die Aufnahme gemerkt und später gesendet.");
+    const jetzt = new Date().toISOString();
+    const art = Z.foto ? Z.foto.art : "abgabe";
+    Z.foto = null;
+    if (!demoNetz) {
+      buchen(art, jetzt); Z.offen = (Z.offen||0)+1;
+      Z.ergebnis = { typ:"wartet", art, zeit:jetzt }; Z.ansicht = "ergebnis";
+      demoHinweis("Ohne Netz bleibt die Aufnahme auf dem Handy.");
       return zeichne();
     }
     buchen(art, jetzt);
     if (art === "abgabe") {
-      const n = aktuell();
-      Z.abschluss = { ort:Z.auftrag ? (Z.auftrag.kunde || Z.auftrag.zielOrt) : "", zeit:jetzt,
-        naechster: n ? { nummer:n.nummer, zielOrt:n.zielOrt, termin:n.termin,
-                         ankunft:n.rechnung.ankunft, puffer:n.rechnung.puffer,
-                         ampel:n.rechnung.ampel } : null };
+      Z.abschluss = { ort:"Möller Baustoffe GmbH", zeit:jetzt,
+                      naechster: naechsterDemo({ ankunft:"15:24", puffer:-24 }) };
       Z.ansicht = "abschluss";
     } else {
-      Z.ergebnis = { typ:"gespeichert", art, zeit:jetzt }; Z.ansicht = "ergebnis";
+      Z.ergebnis = { typ:"uebertragen", art, zeit:jetzt }; Z.ansicht = "ergebnis";
     }
     zeichne();
   },
-  ankunft(){ mitStand(() => {
+
+  /* Containernummer */
+  nummerStimmt(){ const a = Z.auftrag;
+    Z.pruefung = { zustand:"passt", erkannt:a.container, bestaetigt:a.container };
+    Z.ansicht = "container"; zeichne(); },
+  nummerEingeben(){ Z.pruefung = { ...(Z.pruefung||{}), zustand:"eingabe" };
+    Z.ansicht = "nummerEingeben"; zeichne();
+    const f = document.getElementById("nummerfeld"); if (f) f.focus(); },
+  nummerUebernehmen(){
+    const feld = document.getElementById("nummerfeld");
+    const roh = feld ? feld.value : "";
+    const rein = TL_CONTAINER.rein(roh), a = Z.auftrag;
+    if (rein.length < 11) { Z.pruefung = { ...(Z.pruefung||{}), eingabe:roh, pruefzifferWarnung:true };
+                            return zeichne(); }
+    const pruef = TL_CONTAINER.pruefe(rein);
+    const gleich = TL_CONTAINER.vergleiche(a.container, rein) === "passt";
+    Z.pruefung = { zustand: gleich ? "passt" : "abweichung", erkannt:rein, bestaetigt:rein,
+                   eingabe:roh, pruefzifferWarnung: !pruef.gueltig };
+    Z.ansicht = "container"; zeichne();
+    demoHinweis(pruef.gueltig ? "Die Prüfziffer stimmt — das rechnet die Vorschau wirklich."
+                              : "Die Prüfziffer passt nicht zu dieser Nummer.");
+  },
+  trotzdem(){ Z.ansicht = "containerFrage"; zeichne(); },
+  abholungBestaetigen(){
+    const a = Z.auftrag, p = Z.pruefung || {};
     const jetzt = new Date().toISOString();
-    buchen("ankunft", jetzt);
-    Z.ergebnis = { typ:"gespeichert", art:"ankunft", zeit:jetzt };
+    const abweichung = p.zustand === "abweichung";
+    a.containerBestaetigt = p.bestaetigt || a.container;
+    if (abweichung) a.abweichung = true;
+    buchen("abholung", jetzt);
+    Z.foto = null; Z.pruefung = null;
+    Z.ergebnis = { typ:"uebertragen", art:"abholung", zeit:jetzt };
     Z.ansicht = "ergebnis"; zeichne();
-    demoHinweis("Nur die Ankunft ist gemeldet. Die Ablieferung kommt danach."); }); },
+    demoHinweis(abweichung
+      ? "In der App geht jetzt eine hervorgehobene Meldung mit beiden Nummern, Fahrer, Uhrzeit und Foto ans Büro. Der Auftrag bleibt als Abweichung markiert."
+      : "In der App steht die bestätigte Abholung im Auftragsverlauf.");
+  },
+
+  /* Ankunft, Warten, Entladen */
+  ankunft(){ mitStand(() => { const j = new Date().toISOString(); buchen("ankunft", j);
+    Z.bestaetigung = t("bestAnkunft"); Z.ansicht = "auftrag"; zeichne();
+    demoHinweis("Nur die Ankunft ist gemeldet. Die Entladung startet der Fahrer selbst."); }); },
+  warten(){ const j = new Date().toISOString(); buchen("warten", j);
+    Z.bestaetigung = t("bestWarten"); Z.ansicht = "auftrag"; zeichne(); },
+  entladenStart(){ mitStand(() => { const j = new Date().toISOString(); buchen("entladenStart", j);
+    Z.bestaetigung = t("bestEntladenStart"); Z.ansicht = "auftrag"; zeichne();
+    demoHinweis("Die geplante Entladezeit von zwei Stunden läuft ab jetzt."); }); },
+  entladenFertig(){ mitStand(() => { const j = new Date().toISOString(); buchen("entladenFertig", j);
+    Z.bestaetigung = t("bestEntladenFertig");
+    Z.foto = { art:"abgabe", bild:null }; Z.ansicht = "foto"; zeichne();
+    demoHinweis("Entladeende und Ablieferung sind getrennt: jetzt kommt das Ablieferfoto."); }); },
+  laenger(){ Z.ansicht = "laenger"; zeichne(); },
+  laengerWahl(d){
+    const a = Z.auftrag;
+    if (d.min === "") {
+      a.rechnung = { ...a.rechnung, entladeUnbekannt:true, entladeEndePlan:null,
+                     naechster: naechsterDemo({ unsicher:true }) };
+      demoHinweis("Ohne Zeitangabe wird keine Ankunft erfunden.");
+    } else {
+      const m = Number(d.min);
+      a.rechnung = { ...a.rechnung, entladeUnbekannt:false, entladeEndePlan: inMin(m),
+                     naechster: naechsterDemo({ ankunft: m >= 60 ? "15:45" : "15:15",
+                                                puffer: m >= 60 ? -45 : -15 }) };
+      demoHinweis("„" + (m === 30 ? t("noch30") : t("noch60")) + "“ zählt ab jetzt: " +
+                  "das voraussichtliche Ende und der nächste Termin werden neu gerechnet.");
+    }
+    Z.ansicht = "auftrag"; zeichne();
+  },
   standJa(){ Z.standOk = true; const f = Z.stand && Z.stand.aktion; Z.stand = null;
              Z.ansicht = Z.vorher || "auftrag"; zeichne(); if (f) f(); },
   nochmalSenden(){
-    fotoFehlerEinmal = false; Z.offen = 0;
-    if (Z.ergebnis) { Z.ergebnis.typ = "gespeichert"; }
-    buchen("abholung", new Date().toISOString());
-    zeichne(); demoHinweis("Zweiter Versuch erfolgreich. In der echten App sendet die App auch von allein weiter.");
+    if (!demoNetz) { demoHinweis("Immer noch kein Netz: die Aufnahme bleibt gespeichert."); return; }
+    Z.offen = 0;
+    if (Z.ergebnis) Z.ergebnis.typ = "uebertragen";
+    if (Z.problemErgebnis) Z.problemErgebnis.typ = "gesendet";
+    zeichne(); demoHinweis("Zweiter Versuch erfolgreich. Die App sendet auch von allein weiter.");
   },
 
-  problem(){ Z.problem = null; Z.ansicht = "problem"; zeichne(); },
+  /* Problem melden */
+  problem(){ Z.vorher = Z.ansicht; Z.problem = null; Z.ansicht = "problem"; zeichne(); },
   problemWahl(d){ Z.problem = { art:d.art }; Z.ansicht = "problemFrage"; zeichne(); },
   problemSenden(){
     const art = Z.problem ? Z.problem.art : (Z.problemErgebnis||{}).art;
     const jetzt = new Date().toISOString();
-    if (!Z.online) {
+    if (!demoNetz) {
       Z.problemErgebnis = { art, typ:"wartet", zeit:jetzt }; Z.offen = (Z.offen||0)+1;
-      demoHinweis("Ohne Netz: die Meldung wartet. Es steht nicht „gesendet“ da.");
+      demoHinweis("Ohne Netz wartet die Meldung. Es steht nicht „gesendet“ da.");
     } else {
       Z.problemErgebnis = { art, typ:"gesendet", zeit:jetzt, gelesen:false };
-      demoHinweis("Demo: „Vom Büro gelesen“ erscheint hier nach einigen Sekunden. In der echten App nur, wenn das Büro die Meldung wirklich geöffnet hat.");
+      demoHinweis("Demo: „Vom Büro gelesen“ erscheint hier nach einigen Sekunden. In der App nur, wenn das Büro die Meldung wirklich geöffnet hat.");
       setTimeout(() => {
         if (Z.problemErgebnis && Z.problemErgebnis.typ === "gesendet") {
           Z.problemErgebnis.gelesen = true;
@@ -284,27 +424,18 @@ const A = {
   },
   naechster(){ Z.abschluss = null; Z.auftrag = aktuell();
                Z.ansicht = Z.auftrag ? "auftrag" : "feierabend"; zeichne(); },
-  navi(){ demoHinweis("In der echten App öffnet sich hier die Karten-App des Handys."); }
+  navi(){ demoHinweis("In der App öffnet sich hier die Karten-App des Handys."); }
 };
-function buchen(art, jetzt){
-  const a = Z.auftrag; if (!a) return;
-  if (art === "abholung") { a.status = "geladen";    a.abholZeit = jetzt;
-    a.rechnung = { ampel:"gelb", puffer:10, ankunft:iso("10:50"), termin:iso("11:00"), restMin:42 }; }
-  if (art === "ankunft")  { a.status = "angekommen"; a.ankunftZeit = jetzt;
-    a.rechnung = { ...a.rechnung, wartetSeit:0, frei:60, berechenbar:0 }; }
-  if (art === "abgabe")   { a.status = "fertig";     a.abgabeZeit = jetzt; }
-  Z.auftrag = aktuell();
-}
 
 APP.addEventListener("click", e => {
   const b = e.target.closest("[data-tun]");
   if (!b) return;
-  if (b.dataset.tun === "navi") e.preventDefault();     // in der Demo keine Karten-App
+  if (b.dataset.tun === "navi") e.preventDefault();
   const f = A[b.dataset.tun];
   if (typeof f === "function") f(b.dataset);
 });
 
-szenario("abholen");
+szenario("passt");
 </script>
 </body>
 </html>

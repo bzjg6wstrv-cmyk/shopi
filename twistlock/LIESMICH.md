@@ -64,12 +64,18 @@ Ab jetzt steht er beim Fahrer auf dem Handy — aber nur, wenn das Datum heute i
 Jede Ansicht beantwortet drei Fragen: **Wo muss ich hin? Wann muss ich dort sein?
 Was muss ich jetzt machen?** Unten steht immer genau eine hervorgehobene Hauptaktion.
 
-| Ansicht | Überschrift | Hauptaktion |
-|---|---|---|
-| A | „Jetzt: Container abholen“ — Abholfirma, Adresse, Tor, Abholzeit, Containernummer | „Abgeholt? Foto machen“ |
-| B | „Jetzt: Zum Kunden fahren“ — Ziel, Tor, Termin, Ankunft etwa | „Am Ziel angekommen“ |
-| C | „Beim Kunden angekommen“ — Ankunft, Termin, „Seit 25 Minuten vor Ort“ | „Abgegeben? Foto machen“ |
-| D | „Auftrag abgeschlossen“ — nächster Auftrag mit Termin und Ankunft | „Nächsten Auftrag ansehen“ |
+| Ansicht | Überschrift | Hauptaktion | Zweite Aktion |
+|---|---|---|---|
+| A | „Jetzt: Container abholen“ — Abholfirma, Adresse, Tor, Abholzeit, Containernummer | „Abgeholt? Foto machen“ | Navigation |
+| B | „Jetzt: Zum Kunden fahren“ — Ziel, Tor, Termin, Ankunft etwa | „Am Ziel angekommen“ | Navigation |
+| C1 | „Beim Kunden angekommen“ — Ankunft, Termin, Aufenthalt | „Entladung beginnt“ | „Ich muss warten“ |
+| C2 | „Du wartest auf die Entladung“ — Wartezeit | „Entladung beginnt“ | „Büro anrufen“ |
+| C3 | „Du bist beim Entladen“ — fertig etwa, nächster Termin, Ankunft etwa, Reserve | „Entladung fertig“ | „Dauert länger“ |
+| C4 | „Entladung ist fertig“ — Ablieferung noch nicht dokumentiert | „Abgegeben? Foto machen“ | — |
+| D | „Auftrag abgeschlossen“ — nächster Auftrag mit Termin und Ankunft | „Nächsten Auftrag ansehen“ | — |
+
+Jede Ansicht hat oben dieselben zwei Schaltflächen: **Problem melden** und
+**Vorlesen**. Darunter führt **Heute · 3** in die Tagesliste.
 
 Weiteres in der Fahreransicht:
 
@@ -92,10 +98,57 @@ Weiteres in der Fahreransicht:
 
 Die Uhrzeiten kommen vom Server, nicht vom Handy. Der Fahrer kann sie nicht verstellen.
 
+### Entladen beim Kunden
+
+Ankunft heißt nicht, dass der Lkw wieder frei ist. Darum gibt es eigene Schritte:
+**angekommen → warten → Entladung läuft → Entladung fertig → Ablieferung dokumentiert.**
+
+- „Entladung beginnt“ startet den Planwert (Standard **2 Stunden**,
+  in `daten/einstellungen.json` unter `entladezeitStandard`).
+- „Dauert länger“ bietet genau drei Antworten: **Noch 30 Minuten**, **Noch 1 Stunde**,
+  **Weiß ich nicht** — gerechnet ab dem Tippen, nicht ab Entladebeginn.
+- Bei „Weiß ich nicht“ wird **keine** Ankunft beim nächsten Kunden erfunden.
+- Läuft die geplante Zeit ab, fragt die App im Stand nach: „Bist du fertig oder dauert
+  es länger?“ Ohne Antwort wird nichts abgeschlossen und keine Abfahrt angenommen.
+- Nach „Entladung fertig“ führt die App direkt zum Ablieferfoto. Entladeende, Foto und
+  Abfahrt sind getrennte Ereignisse.
+
+Die Ankunft beim nächsten Kunden rechnet der Server aus der **verbleibenden Kette**:
+Restzeit beim jetzigen Kunden + Restarbeiten + Fahrt zur nächsten Abholung +
+Warte- und Ladezeit dort + Fahrt zum nächsten Kunden. Es wird nur gezählt, was
+wirklich anfällt — keine pauschale Rückfahrt über den Hof. Planwerte:
+`nacharbeitMin` (15), `fahrzeitZurAbholung` (60), `ladezeitStandard` (30).
+
+### Containernummer prüfen
+
+Beim Abholen vergleicht die App die Nummer aus dem Auftrag mit der Nummer am Container.
+Erwartete und bestätigte Nummer werden **getrennt** gespeichert; die Auftragsnummer
+wird nie stillschweigend überschrieben.
+
+- Passt sie: „Container passt zum Auftrag“ → „Abholung bestätigen“.
+  Das steht im Auftragsverlauf, nicht in der Meldungsliste der Dispo.
+- Passt sie nicht: „Containernummer stimmt nicht überein“ mit beiden Nummern.
+  „Trotzdem abholen“ fragt ausdrücklich nach, danach bleibt der Auftrag als
+  **Abweichung – vom Büro zu prüfen** markiert. Die Dispo bekommt eine hervorgehobene
+  Meldung mit erwarteter Nummer, bestätigter Nummer, Fahrer, Uhrzeit und Foto.
+- Unsicher: „Nummer nicht sicher erkannt“ — die App behauptet nicht, es sei der falsche
+  Container, und bietet neue Aufnahme oder Eingabe von Hand an.
+- Die Prüfziffer nach ISO 6346 rechnet die App selbst (`web/container.js`). Eine richtige
+  Prüfziffer beweist aber nicht, dass es der richtige Container ist.
+
+**Noch nicht angebunden:** Das automatische Auslesen der Nummer aus dem Foto.
+Solange fragt die App einmal nach: „Steht diese Nummer auf dem Container?“
+
 ### Was die App sagt und was sie nicht sagt
 
-- Grün: „Du bist voraussichtlich rechtzeitig“ · Gelb: „Es wird knapp. Noch 10 Minuten
-  Reserve.“ · Rot: „Voraussichtlich 24 Minuten zu spät“.
+- Reserve = Kundentermin minus erwartete Ankunft.
+  Mehr als **10 Minuten** Reserve: grün („15 Minuten Reserve“).
+  **0 bis 10 Minuten**: orange („Es wird knapp – 7 Minuten Reserve“).
+  Weniger: rot („Voraussichtlich 12 Minuten zu spät“). Ohne Daten: grau.
+- **Verspätungsalarm an die Dispo erst ab 20 Minuten** berechneter Verspätung,
+  und dann genau einmal je Auftrag. Orange meldet nichts, kleine Schwankungen auch
+  nicht. In der Übersicht bleibt der aktuelle Zustand sichtbar.
+  Schwelle: `verspaetungAb` (20), Farbgrenze: `gruenAb` (10).
 - Alle Ankunftszeiten sind mit „Geschätzt aus der geplanten Fahrzeit, ohne Verkehrslage“
   gekennzeichnet. Ohne Verbindung steht dort **„Ankunft gerade nicht verfügbar“** —
   keine falsche grüne Sicherheit.
@@ -121,9 +174,9 @@ keine Nebendateien. Alles steckt darum in der Datei selbst.
 
 ### Bürotelefon eintragen
 
-Damit „Büro anrufen“ wählt, muss die Nummer hinterlegt sein. Sie steht in
-`daten/einstellungen.json` unter `bueroTelefon`, zum Beispiel `"+49421123456"`.
-Ohne Nummer zeigt die App die Schaltfläche, sagt aber, dass keine Nummer hinterlegt ist.
+Voreingestellt ist die Nummer von I&M CARGO: **0421 98994620**
+(technisch `tel:+4942198994620`). Ändern in `daten/einstellungen.json` unter
+`bueroTelefon`. Ohne Nummer sagt die App offen, dass keine hinterlegt ist.
 
 ### Zusätzliche Felder für den Auftrag
 
@@ -164,7 +217,7 @@ Damit auch ein Fenster aufploppt, erlaube dem Browser einmal Benachrichtigungen.
 | Browser zeigt nichts | Läuft das schwarze Fenster noch? Sonst neu starten |
 | Fahrer kommt nicht rein | Name muss **genau** stimmen, auch Groß- und Kleinschreibung ist egal, aber Leerzeichen zählen |
 | Alles zurücksetzen | Ordner `daten` und `fotos` löschen und neu starten |
-| Prüfen, ob alles funktioniert | Im Ordner `node test.js` ausführen — macht über 60 automatische Tests, inklusive Farbkontrasten |
+| Prüfen, ob alles funktioniert | Im Ordner `node test.js` ausführen — über 100 automatische Tests, inklusive Prüfziffern, Alarmschwelle und Farbkontrasten |
 | App-Symbol fehlt auf dem Handy | Geht nur mit https. Siehe `APP-MACHEN.md` |
 
 ---

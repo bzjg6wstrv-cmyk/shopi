@@ -20,13 +20,14 @@ const ziel  = process.argv[2] || path.join(__dirname, "vorschau-einzeldatei.html
 const rumpf = process.argv.includes("--rumpf");
 
 const css     = lies("einfach.css");
+const container = lies("container.js");
 const sprache = lies("sprache.js");
 const ansicht = lies("fahreransicht.js");
 const seite   = lies("vorschau.html");
 
 // Aus der Vorschauseite nur den sichtbaren Teil und das eigene Skript holen
 const koerper = seite.split("<body>")[1].split("</body>")[0];
-const inhalt  = koerper.split('<script src="/sprache.js">')[0];
+const inhalt  = koerper.split('<script src="/container.js">')[0];
 const eigenes = koerper.split('<script src="/fahreransicht.js"></script>')[1]
                        .replace(/^\s*<script>/, "").replace(/<\/script>\s*$/, "");
 
@@ -49,6 +50,9 @@ body{background:#E9EBE7; color:#15202B}
 .demo-kopf p{font-size:16px}
 </style>
 ${inhalt}
+<script>
+${sicher(container)}
+</script>
 <script>
 ${sicher(sprache)}
 </script>

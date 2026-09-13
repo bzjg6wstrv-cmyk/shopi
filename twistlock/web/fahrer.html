@@ -18,6 +18,7 @@
        style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"
        tabindex="-1" aria-hidden="true">
 
+<script src="/container.js"></script>
 <script src="/sprache.js"></script>
 <script src="/fahreransicht.js"></script>
 <script>
@@ -31,7 +32,7 @@ const Z = {
   ansicht:"laden", auftrag:null, heute:[], morgen:[], einst:{},
   online:navigator.onLine, datenZeit:null, offen:0,
   laeuft:false, fahrzeugOffen:false,
-  foto:null, ergebnis:null, abschluss:null,
+  foto:null, ergebnis:null, abschluss:null, pruefung:null, bestaetigung:null,
   problem:null, problemErgebnis:null,
   stand:null, vorher:"auftrag"
 };
@@ -190,14 +191,14 @@ function uebernehmen(){
 }
 
 /* ============ Ereignis senden (Abholung, Ankunft, Abgabe) ============ */
-async function ereignisSenden(auftrag, art, foto){
+async function ereignisSenden(auftrag, art, foto, extra){
   const schluessel = auftrag.id + ":" + art;
   if (Z.laeuft || gebucht.has(schluessel)) return;   // Doppeltipp läuft ins Leere
   gebucht.add(schluessel);
   Z.laeuft = true; neuZeichnen();
 
   const nutzlast = { auftragId:auftrag.id, art, foto, schluessel,
-                     lat:gps&&gps.lat, lon:gps&&gps.lon };
+                     lat:gps&&gps.lat, lon:gps&&gps.lon, ...(extra || {}) };
   let antwort = null, fehlerText = null, netzfehler = false, gemerkt = true;
   try {
     const r = await fetch("/api/fahrer/ereignis",{ method:"POST",
@@ -212,17 +213,30 @@ async function ereignisSenden(auftrag, art, foto){
   }
   Z.laeuft = false;
   const jetzt = new Date().toISOString();
+  Z.foto = null;              // das benutzte Foto ist erledigt — vor dem Weiterschalten
 
   if (antwort) {
     Z.online = true;
+    Z.pruefung = null;
     await holen();
     if (art === "abgabe") {
       Z.abschluss = { ort: auftrag.kunde || auftrag.zielOrt, zeit: jetzt,
                       naechster: antwort.naechster || null };
       Z.ansicht = "abschluss";
-    } else {
-      Z.ergebnis = { typ:"gespeichert", art, zeit:jetzt };
+    } else if (art === "abholung") {
+      // Foto ist beim Büro: kurze Bestätigung, dann gleich der nächste Schritt.
+      Z.ergebnis = { typ:"uebertragen", art, zeit:jetzt };
       Z.ansicht = "ergebnis";
+    } else {
+      // Kleine Schritte brauchen keine eigene Seite: kurzer Hinweis genügt.
+      Z.bestaetigung = bestaetigungsText(art);
+      if (art === "entladenFertig") {
+        // Entladeende ist nicht die Ablieferung: direkt zum Foto führen.
+        Z.foto = { art:"abgabe", bild:null };
+        Z.ansicht = "foto";
+      } else {
+        Z.ansicht = "auftrag";
+      }
     }
   } else if (netzfehler && gemerkt) {
     // Aufnahme ist gesichert. Der Bildschirm geht weiter, damit der Fahrer
@@ -242,14 +256,28 @@ async function ereignisSenden(auftrag, art, foto){
     Z.ergebnis = { typ:"fehler", art, zeit:jetzt, text:fehlerText };
     Z.ansicht = "ergebnis";
   }
-  Z.foto = null;
   neuZeichnen();
 }
-/* Damit der Bildschirm auch ohne Netz sofort weitergeht */
+/* Kurze Rückmeldung zum gerade gebuchten Schritt — nicht die Überschrift
+   der neuen Ansicht wiederholen. */
+function bestaetigungsText(art){
+  return { ankunft:t("bestAnkunft"), warten:t("bestWarten"),
+           entladenStart:t("bestEntladenStart"), entladenFertig:t("bestEntladenFertig"),
+           entladenLaenger:t("bestLaenger") }[art] || "";
+}
+
+/* Damit der Bildschirm auch ohne Netz sofort weitergeht.
+   Die Zeiten werden vom Server noch einmal gesetzt, sobald er erreichbar ist. */
 function oertlichVormerken(a, art, jetzt){
-  if (art === "abholung") { a.status = "geladen";    a.abholZeit   = jetzt; }
-  if (art === "ankunft")  { a.status = "angekommen"; a.ankunftZeit = jetzt; }
-  if (art === "abgabe")   { a.status = "fertig";     a.abgabeZeit  = jetzt; }
+  if (art === "abholung")      { a.status = "geladen";         a.abholZeit = jetzt; }
+  if (art === "ankunft")       { a.status = "angekommen";      a.ankunftZeit = jetzt; }
+  if (art === "warten")        { a.status = "warten";          a.wartenZeit = jetzt; }
+  if (art === "entladenStart") { a.status = "entladen";        a.entladeStart = jetzt;
+    const plan = (Z.einst.entladezeitStandard || 120);
+    a.rechnung = { ...(a.rechnung || {}), entladeEndePlan:
+      new Date(new Date(jetzt).getTime() + plan*60000).toISOString(), entladeUnbekannt:false }; }
+  if (art === "entladenFertig"){ a.status = "entladen_fertig"; a.entladeFertigZeit = jetzt; }
+  if (art === "abgabe")        { a.status = "fertig";          a.abgabeZeit = jetzt; }
   Z.auftrag = (Z.heute || []).filter(x => x.status !== "fertig")[0] || null;
 }
 
@@ -332,6 +360,7 @@ function mitStand(aktion){
 /* ============ Aktionen ============ */
 const A = {
   vorlesen(){ sprich(FA.vorlesetext(Z)); },
+  anrufen(){ const n = Z.einst.bueroTelefon; if (n) location.href = "tel:" + n; },
 
   tagesplan(){ Z.vorher = Z.ansicht === "tagesplan" ? "auftrag" : Z.ansicht;
                Z.ansicht = "tagesplan"; neuZeichnen(); },
@@ -339,10 +368,13 @@ const A = {
   spracheSetzen(d){ setzeSprache(d.k); Z.ansicht = "tagesplan"; neuZeichnen(); },
 
   zurueck(){
-    if (Z.ansicht === "sprache")  { Z.ansicht = "tagesplan"; return neuZeichnen(); }
-    if (Z.ansicht === "stand")    { Z.ansicht = Z.vorher || "auftrag"; Z.stand = null; return neuZeichnen(); }
-    if (Z.ansicht === "kamerahilfe") { Z.ansicht = "foto"; return neuZeichnen(); }
-    Z.ansicht = "auftrag"; Z.foto = null; Z.ergebnis = null;
+    if (Z.ansicht === "sprache")       { Z.ansicht = "tagesplan"; return neuZeichnen(); }
+    if (Z.ansicht === "stand")         { Z.ansicht = Z.vorher || "auftrag"; Z.stand = null; return neuZeichnen(); }
+    if (Z.ansicht === "kamerahilfe")   { Z.ansicht = "foto"; return neuZeichnen(); }
+    if (Z.ansicht === "nummerEingeben"){ Z.ansicht = "container"; return neuZeichnen(); }
+    if (Z.ansicht === "containerFrage"){ Z.ansicht = "container"; return neuZeichnen(); }
+    if (Z.ansicht === "laenger")       { Z.ansicht = "auftrag"; return neuZeichnen(); }
+    Z.ansicht = "auftrag"; Z.foto = null; Z.ergebnis = null; Z.pruefung = null;
     Z.problem = null; Z.problemErgebnis = null;
     uebernehmen(); neuZeichnen();
   },
@@ -350,22 +382,80 @@ const A = {
   fahrzeug(){ Z.fahrzeugOffen = !Z.fahrzeugOffen; neuZeichnen(); },
   aenderungGesehen(){ mitStand(aenderungBestaetigen); },
 
-  /* Foto */
+  /* --- Foto --- */
   fotoAbholung(){ Z.foto = { art:"abholung", bild:null }; Z.ansicht = "foto"; neuZeichnen(); },
   fotoAbgabe(){   Z.foto = { art:"abgabe",   bild:null }; Z.ansicht = "foto"; neuZeichnen(); },
   kamera(){ mitStand(() => cam.click()); },
-  fotoNeu(){ if (Z.foto) Z.foto.bild = null; neuZeichnen(); cam.click(); },
+  fotoNeu(){
+    if (!Z.foto) Z.foto = { art:"abholung", bild:null };
+    Z.foto.bild = null; Z.pruefung = null; Z.ansicht = "foto";
+    neuZeichnen(); mitStand(() => cam.click());
+  },
   fotoVerwenden(){
     if (!Z.foto || !Z.foto.bild || !Z.auftrag) return;
+    if (Z.foto.art === "abholung") {
+      // Vor dem Buchen die Containernummer vergleichen.
+      Z.pruefung = { zustand:"frage" };
+      Z.ansicht = "container";
+      return neuZeichnen();
+    }
     ereignisSenden(Z.auftrag, Z.foto.art, Z.foto.bild);
   },
-  fotoAbbrechen(){ Z.foto = null; Z.ansicht = "auftrag"; neuZeichnen(); },   // schließt nichts ab
+  fotoAbbrechen(){ Z.foto = null; Z.pruefung = null; Z.ansicht = "auftrag"; neuZeichnen(); },
   kamerahilfe(){ Z.ansicht = "kamerahilfe"; neuZeichnen(); },
 
-  /* Ankunft */
-  ankunft(){ mitStand(() => { if (Z.auftrag) ereignisSenden(Z.auftrag, "ankunft", null); }); },
+  /* --- Containernummer --- */
+  nummerStimmt(){
+    const a = Z.auftrag; if (!a) return;
+    Z.pruefung = { zustand:"passt", erkannt:a.container, bestaetigt:a.container };
+    Z.ansicht = "container"; neuZeichnen();
+  },
+  nummerEingeben(){
+    Z.pruefung = { ...(Z.pruefung || {}), zustand:"eingabe",
+                   eingabe:(Z.pruefung && Z.pruefung.eingabe) || "" };
+    Z.ansicht = "nummerEingeben"; neuZeichnen();
+    const f = document.getElementById("nummerfeld"); if (f) f.focus();
+  },
+  nummerUebernehmen(){
+    const feld = document.getElementById("nummerfeld");
+    const roh = feld ? feld.value : "";
+    const rein = TL_CONTAINER.rein(roh);
+    const a = Z.auftrag; if (!a) return;
+    if (rein.length < 11) {
+      Z.pruefung = { ...(Z.pruefung||{}), eingabe:roh, pruefzifferWarnung:true };
+      return neuZeichnen();
+    }
+    const pruef = TL_CONTAINER.pruefe(rein);
+    const gleich = TL_CONTAINER.vergleiche(a.container, rein) === "passt";
+    Z.pruefung = { zustand: gleich ? "passt" : "abweichung", erkannt:rein, eingabe:roh,
+                   bestaetigt:rein, pruefzifferWarnung: !pruef.gueltig };
+    Z.ansicht = "container"; neuZeichnen();
+  },
+  trotzdem(){ Z.ansicht = "containerFrage"; neuZeichnen(); },
+  abholungBestaetigen(){
+    const a = Z.auftrag, p = Z.pruefung || {};
+    if (!a || !Z.foto) return;
+    ereignisSenden(a, "abholung", Z.foto.bild, {
+      containerBestaetigt: p.bestaetigt || p.erkannt || a.container,
+      containerErkannt: p.erkannt || null
+    });
+  },
 
-  /* Sicherer Stand bestätigt */
+  /* --- Ankunft, Warten, Entladen --- */
+  ankunft(){ mitStand(() => { if (Z.auftrag) ereignisSenden(Z.auftrag, "ankunft", null); }); },
+  warten(){ if (Z.auftrag) ereignisSenden(Z.auftrag, "warten", null); },
+  entladenStart(){ mitStand(() => { if (Z.auftrag) ereignisSenden(Z.auftrag, "entladenStart", null); }); },
+  entladenFertig(){ mitStand(() => { if (Z.auftrag) ereignisSenden(Z.auftrag, "entladenFertig", null); }); },
+  laenger(){ Z.ansicht = "laenger"; neuZeichnen(); },
+  laengerWahl(d){
+    const m = d.min === "" ? null : Number(d.min);
+    if (!Z.auftrag) return;
+    // Der Schritt darf mehrfach vorkommen: Schlüssel jedes Mal neu.
+    gebucht.delete(Z.auftrag.id + ":entladenLaenger");
+    ereignisSenden(Z.auftrag, "entladenLaenger", null, { minuten:m });
+  },
+
+  /* --- Sicherer Stand --- */
   standJa(){
     standBis = Date.now() + 5*60000;
     const f = Z.stand && Z.stand.aktion; Z.stand = null;
@@ -374,13 +464,14 @@ const A = {
     if (f) f();
   },
 
-  /* Senden wiederholen */
+  /* --- Senden wiederholen --- */
   async nochmalSenden(){
     Z.laeuft = true; neuZeichnen();
     const fertig = await warteschlangeSenden();
     Z.laeuft = false;
     if (fertig) {
-      if (Z.ergebnis) Z.ergebnis.typ = "gespeichert";
+      if (Z.ergebnis) Z.ergebnis.typ = "uebertragen";
+      if (Z.problemErgebnis) Z.problemErgebnis.typ = "gesendet";
       await holen();
     } else if (Z.ergebnis) {
       Z.ergebnis.typ = navigator.onLine ? "fehler" : "wartet";
@@ -388,12 +479,12 @@ const A = {
     neuZeichnen();
   },
 
-  /* Problem melden */
-  problem(){ Z.problem = null; Z.ansicht = "problem"; neuZeichnen(); },
+  /* --- Problem melden --- */
+  problem(){ Z.vorher = Z.ansicht; Z.problem = null; Z.ansicht = "problem"; neuZeichnen(); },
   problemWahl(d){ Z.problem = { art:d.art }; Z.ansicht = "problemFrage"; neuZeichnen(); },
   problemSenden(){ problemSenden(); },
 
-  /* Abschluss */
+  /* --- Abschluss --- */
   naechster(){ Z.abschluss = null; Z.ansicht = "auftrag"; uebernehmen(); neuZeichnen(); },
 
   navi(){ /* der Link öffnet die Karten-App des Handys */ }
@@ -410,9 +501,22 @@ APP.addEventListener("click", e => {
 /* ============ Start ============ */
 warteschlangeSenden().then(holen);
 setInterval(() => {
-  const fest = ["foto","ergebnis","stand","kamerahilfe","problem","problemFrage","problemErgebnis"];
-  if (!Z.laeuft && !fest.includes(Z.ansicht)) holen();
+  const fest = ["foto","ergebnis","stand","kamerahilfe","problem","problemFrage","problemErgebnis",
+                "container","containerFrage","nummerEingeben","laenger"];
+  if (!Z.laeuft && !fest.includes(Z.ansicht)) holen().then(entladezeitPruefen);
 }, 60000);
+
+/* Ist die geplante Entladezeit abgelaufen? Dann einmal nachfragen.
+   Ohne Antwort wird nichts abgeschlossen und keine Abfahrt angenommen. */
+function entladezeitPruefen(){
+  const a = Z.auftrag;
+  if (!a || a.status !== "entladen" || Z.ansicht !== "auftrag") return;
+  const r = a.rechnung || {};
+  if (r.entladeUnbekannt || !r.entladeEndePlan) return;
+  if (new Date(r.entladeEndePlan).getTime() > Date.now()) return;
+  Z.ansicht = "nachfrage";
+  neuZeichnen();
+}
 </script>
 </body>
 </html>

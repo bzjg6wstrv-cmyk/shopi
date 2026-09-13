@@ -58,17 +58,23 @@ if (!benutzer) {
 /* -----------------------------------------------------------
    2. Einstellungen — hier die echten Messwerte eintragen
    ----------------------------------------------------------- */
-let einst = lade("einstellungen", {
+const EINST_STANDARD = {
   fahrzeitStandard: 75,   // Minuten Bremen -> Ziel
   ruestzeit: 10,          // Minuten Abfahrtkontrolle
-  gruenAb: 20,            // ab so viel Puffer ist die Ampel grün
-  verspaetungAb: 20,      // ab so viel Verzug Meldung an die Dispo
-  handlingRueck: 30,      // Minuten Handling nach der Rückkehr
-  fahrzeitRueck: 75,      // Minuten Rückfahrt
+  gruenAb: 10,            // bis so viel Reserve ist der Status orange, darüber grün
+  verspaetungAb: 20,      // ab so viel Verspätung bekommt die Dispo einen Alarm
+  handlingRueck: 30,      // Minuten Handling nach der Rückkehr (Altwert)
+  fahrzeitRueck: 75,      // Minuten Rückfahrt (Altwert)
   freiMin: 60,            // Minuten Wartezeit, die vertraglich frei sind
   maxAbstandKm: 3,        // ab so viel Abstand zum Zielort: Warnung
-  bueroTelefon: ""        // Nummer für „Büro anrufen“ in der Fahrer-App
-});
+  bueroTelefon: "+4942198994620",   // I&M CARGO, Büro
+  entladezeitStandard: 120,  // Planwert Entladung beim Kunden, in Minuten
+  nacharbeitMin: 15,         // Papiere, Ladungssicherung, bevor es weitergeht
+  fahrzeitZurAbholung: 60,   // Fahrt vom Kunden zur nächsten Abholstelle
+  ladezeitStandard: 30       // Warten und Laden an der Abholstelle
+};
+// Gespeicherte Werte gewinnen, neue Planwerte kommen dazu.
+let einst = { ...EINST_STANDARD, ...lade("einstellungen", {}) };
 sichere("einstellungen", einst);
 
 /* -----------------------------------------------------------
@@ -106,7 +112,8 @@ const min = ms => ms / 60000;
 // Wie viele Minuten braucht der Lkw noch bis zur Abgabestelle?
 function restfahrzeit(a, jetzt) {
   const fz = a.fahrzeitMin || einst.fahrzeitStandard;
-  if (a.status === "angekommen") return 0;          // steht schon am Ziel
+  // Steht beim Kunden — egal ob wartend, entladend oder fertig entladen
+  if (["angekommen","warten","entladen","entladen_fertig"].includes(a.status)) return 0;
   if (a.status === "geladen" && a.abholZeit) {
     const gefahren = min(jetzt - new Date(a.abholZeit));
     return Math.max(0, fz - gefahren);
@@ -122,6 +129,16 @@ function rechne(a, jetzt = new Date()) {
     r.frei       = a.freiMin ?? einst.freiMin;
     r.berechenbar = Math.max(0, r.wartetSeit - r.frei);
   }
+  if (a.entladeStart) {
+    r.entladeStart = a.entladeStart;
+    r.entladePlanMin = a.entladePlanMin ?? einst.entladezeitStandard;
+    r.entladeUnbekannt = !!a.entladeUnbekannt;
+    if (a.entladeEndePlan && !a.entladeUnbekannt) {
+      r.entladeEndePlan = a.entladeEndePlan;
+      r.entladeRestMin  = Math.round(min(new Date(a.entladeEndePlan) - jetzt));
+    }
+  }
+  if (a.wartenZeit) r.wartetVorEntladung = Math.max(0, Math.round(min(jetzt - new Date(a.wartenZeit))));
   if (a.status === "fertig" && a.abgabeZeit) {
     r.verzug  = Math.round(min(new Date(a.abgabeZeit) - termin));
     r.ampel   = "fertig";
@@ -134,11 +151,72 @@ function rechne(a, jetzt = new Date()) {
   r.ankunft   = ankunft.toISOString();
   r.restMin   = Math.round(rest);
   r.puffer    = puffer;
-  r.ampel     = puffer < 0 ? "rot" : (puffer < einst.gruenAb ? "gelb" : "gruen");
+  r.ampel     = puffer < 0 ? "rot" : (puffer <= einst.gruenAb ? "gelb" : "gruen");
   r.losBis    = new Date(termin.getTime()
                   - ((a.fahrzeitMin || einst.fahrzeitStandard)
                   +  (a.ruestzeitMin ?? einst.ruestzeit)) * 60000).toISOString();
   return r;
+}
+
+/* Wie lange dauert es noch, bis der Lkw beim Kunden fertig ist?
+   null heißt: offen — dann wird keine Ankunft erfunden. */
+function restBeimKunden(a, jetzt) {
+  if (a.status === "entladen") {
+    if (a.entladeUnbekannt || !a.entladeEndePlan) return null;
+    return Math.max(0, min(new Date(a.entladeEndePlan) - jetzt));
+  }
+  if (a.status === "warten" || a.status === "angekommen")
+    return a.entladePlanMin ?? einst.entladezeitStandard;   // Entladung steht noch bevor
+  if (a.status === "entladen_fertig") return 0;
+  return null;
+}
+
+/* Ankunft beim nächsten Kunden aus der verbleibenden Auftragskette:
+   Restzeit beim jetzigen Kunden + Restarbeiten + Fahrt zur nächsten
+   Abholung + dortige Warte- und Ladezeit + Fahrt zum nächsten Kunden.
+   Nur Schritte, die wirklich anfallen — keine pauschale Rückfahrt. */
+function naechsterAusKette(aktuell, ziel, jetzt = new Date()) {
+  if (!ziel) return null;
+  const erg = { nummer: ziel.nummer, zielOrt: ziel.zielOrt, kunde: ziel.kunde || null,
+                termin: ziel.termin, datum: ziel.datum, teile: [] };
+  let dauer = 0, unsicher = false;
+  const dazu = (was, minuten) => {
+    if (!minuten) return;
+    erg.teile.push({ was, min: Math.round(minuten) });
+    dauer += minuten;
+  };
+
+  if (aktuell && aktuell.id !== ziel.id && aktuell.status !== "fertig") {
+    const rest = restBeimKunden(aktuell, jetzt);
+    if (rest === null) unsicher = true;
+    else dazu("entladung", rest);
+    dazu("nacharbeit", einst.nacharbeitMin);
+  }
+  // Muss der Lkw den nächsten Container erst holen?
+  if (ziel.status !== "geladen" && ziel.abholOrt) {
+    dazu("fahrtAbholung", ziel.anfahrtMin ?? einst.fahrzeitZurAbholung);
+    dazu("laden", ziel.ladezeitMin ?? einst.ladezeitStandard);
+  }
+  dazu("fahrtKunde", ziel.fahrzeitMin || einst.fahrzeitStandard);
+
+  erg.restMin = Math.round(dauer);
+  if (unsicher) { erg.unsicher = true; erg.ampel = "grau"; return erg; }
+  const ank = new Date(jetzt.getTime() + dauer * 60000);
+  const puffer = Math.round(min(zeitpunkt(ziel.datum, ziel.termin) - ank));
+  erg.ankunft = ank.toISOString();
+  erg.puffer  = puffer;
+  erg.ampel   = puffer < 0 ? "rot" : (puffer <= einst.gruenAb ? "gelb" : "gruen");
+  return erg;
+}
+
+/* Die offenen Aufträge eines Fahrertages als Kette bewerten:
+   der erste zählt normal, der zweite haengt am ersten. */
+function kette(fahrerId, datum, jetzt = new Date()) {
+  const offen = auftraege
+    .filter(a => a.fahrerId === fahrerId && a.datum === datum &&
+                 a.status !== "fertig" && a.status !== "entwurf")
+    .sort((x, y) => x.termin.localeCompare(y.termin));
+  return { erster: offen[0] || null, zweiter: offen[1] || null, offen };
 }
 
 /* -----------------------------------------------------------
@@ -192,20 +270,58 @@ function notiere(wer, was) {
   sichere("protokoll", protokoll);
 }
 
+/* Verspätungsalarm an die Dispo.
+   Regel: erst ab einer Prognose von mindestens 20 Minuten Verspätung,
+   und dann genau einmal je Auftrag. Orange loest nichts aus, kleine
+   Schwankungen ebenfalls nicht. Der aktuelle Zustand bleibt in der
+   Übersicht sichtbar — der Alarm ist nur die Benachrichtigung. */
+function alarmPruefen(a, puffer, ankunftIso) {
+  if (!a || a.gemeldet || puffer == null) return false;
+  const verzug = -Math.round(puffer);
+  if (verzug < einst.verspaetungAb) return false;
+  a.gemeldet = true;
+  const uhr = ankunftIso
+    ? new Date(ankunftIso).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })
+    : "unbekannt";
+  melde("rot",
+    `Auftrag ${a.nummer} · ${a.zielOrt} ${a.termin}. Ankunft voraussichtlich ${uhr} — ${verzug} Min. zu spät.`,
+    a.id, { verspaetungMin: verzug });
+  return true;
+}
+
 // Läuft jede Minute: prüft, ob ein Auftrag zu spät wird
 function verspaetungPruefen() {
   const jetzt = new Date();
   let geaendert = false;
+  const gesehen = new Set();
+
   for (const a of auftraege) {
-    if (a.status === "fertig" || a.status === "entwurf" || a.gemeldet) continue;
-    const r = rechne(a, jetzt);
-    if (-r.puffer >= einst.verspaetungAb) {
-      a.gemeldet = true; geaendert = true;
-      const uhr = new Date(r.ankunft).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
-      melde("rot",
-        `Auftrag ${a.nummer} · ${a.zielOrt} ${a.termin}. Ankunft voraussichtlich ${uhr} — ${-r.puffer} Min. zu spät.`,
-        a.id);
+    if (a.status === "fertig" || a.status === "entwurf") continue;
+    const schluessel = a.fahrerId + "|" + a.datum;
+    if (!a.fahrerId || gesehen.has(schluessel)) continue;
+    gesehen.add(schluessel);
+
+    const k = kette(a.fahrerId, a.datum, jetzt);
+    if (k.erster) {
+      const r = rechne(k.erster, jetzt);
+      if (alarmPruefen(k.erster, r.puffer, r.ankunft)) geaendert = true;
     }
+    // Der zweite Auftrag haengt am ersten: Entladung, Restarbeiten, Wege.
+    if (k.zweiter) {
+      const n = naechsterAusKette(k.erster, k.zweiter, jetzt);
+      if (n && !n.unsicher && alarmPruefen(k.zweiter, n.puffer, n.ankunft)) geaendert = true;
+    }
+    // Weitere Aufträge des Tages wie bisher einzeln bewerten
+    for (const w of k.offen.slice(2)) {
+      const r = rechne(w, jetzt);
+      if (alarmPruefen(w, r.puffer, r.ankunft)) geaendert = true;
+    }
+  }
+  // Aufträge ohne Fahrer weiterhin einzeln bewerten
+  for (const a of auftraege) {
+    if (a.status === "fertig" || a.status === "entwurf" || a.fahrerId) continue;
+    const r = rechne(a, jetzt);
+    if (alarmPruefen(a, r.puffer, r.ankunft)) geaendert = true;
   }
   if (geaendert) sichere("auftraege", auftraege);
 }
@@ -289,6 +405,14 @@ const server = http.createServer(async (req, res) => {
         .sort((x, y) => x.termin.localeCompare(y.termin))
         .map(a => ({ ...a, rechnung: rechne(a) }));
 
+      // Der laufende Auftrag bekommt den nächsten Termin aus der Kette mit,
+      // damit die App beim Entladen zeigen kann, ob es danach reicht.
+      const laufend = meine.find(a => a.status !== "fertig");
+      if (laufend) {
+        const k = kette(nutzer.id, tag);
+        if (k.zweiter) laufend.rechnung.naechster = naechsterAusKette(k.erster, k.zweiter);
+      }
+
       const offen = meine.filter(a => a.status !== "fertig");
       let morgen = [];
       if (offen.length === 0) {
@@ -306,12 +430,17 @@ const server = http.createServer(async (req, res) => {
       const b = await koerper(req);
       const a = auftraege.find(x => x.id === b.auftragId && x.fahrerId === nutzer.id);
       if (!a) return json(res, 404, { fehler: "Auftrag nicht gefunden" });
-      const brauchtFoto = b.art !== "ankunft";
+      const ARTEN = ["abholung","ankunft","warten","entladenStart","entladenLaenger",
+                     "entladenFertig","abgabe"];
+      if (!ARTEN.includes(b.art)) return json(res, 400, { fehler: "unbekannter Schritt" });
+      const brauchtFoto = b.art === "abholung" || b.art === "abgabe";
       if (brauchtFoto && !b.foto) return json(res, 400, { fehler: "Ohne Foto geht es nicht." });
 
       // Schon gebucht? Dann nichts überschreiben (Doppeltipp, zweiter Versuch
       // aus der Warteschlange). Die Antwort bleibt freundlich.
-      const schonDa = { abholung: a.abholZeit, ankunft: a.ankunftZeit, abgabe: a.abgabeZeit }[b.art];
+      const schonDa = { abholung: a.abholZeit, ankunft: a.ankunftZeit, abgabe: a.abgabeZeit,
+                        warten: a.wartenZeit, entladenStart: a.entladeStart,
+                        entladenFertig: a.entladeFertigZeit, entladenLaenger: null }[b.art];
       if (schonDa) {
         notiere(nutzer.name, `${b.art} Auftrag ${a.nummer} doppelt gesendet, ignoriert`);
         return json(res, 200, { ok: true, doppelt: true, naechster: null });
@@ -323,6 +452,29 @@ const server = http.createServer(async (req, res) => {
 
       if (b.art === "abholung") {
         a.abholZeit = jetzt; a.fotoAbhol = datei; a.abholGps = gps; a.status = "geladen";
+
+        /* Containernummer: erwartet und bestätigt bleiben getrennt.
+           Die Nummer aus dem Auftrag wird niemals stillschweigend ersetzt. */
+        a.containerErwartet = a.container || null;
+        if (b.containerErkannt)   a.containerErkannt   = String(b.containerErkannt).toUpperCase();
+        if (b.containerBestaetigt) a.containerBestaetigt = String(b.containerBestaetigt).toUpperCase();
+        const rein = x => String(x || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+        const weicht = !!(a.containerBestaetigt && a.containerErwartet &&
+                          rein(a.containerBestaetigt) !== rein(a.containerErwartet));
+        if (weicht) {
+          a.abweichung = { erwartet: a.containerErwartet, bestaetigt: a.containerBestaetigt,
+                           fahrer: nutzer.name, zeit: jetzt, foto: datei, geprueft: false };
+          melde("rot",
+            `Abweichung bei Auftrag ${a.nummer}: im Auftrag ${a.containerErwartet}, ` +
+            `abgeholt ${a.containerBestaetigt} (${nutzer.name}). Vom Büro zu prüfen.`,
+            a.id, { abweichung: true, erwartet: a.containerErwartet,
+                    bestaetigt: a.containerBestaetigt, foto: datei, fahrerId: nutzer.id });
+        } else if (a.containerBestaetigt) {
+          // Passt zum Auftrag: das gehört in den Auftragsverlauf, nicht in die
+          // Meldungsliste — die Dispo soll dort nur Dinge sehen, die sie angehen.
+          notiere(nutzer.name, `Abholung bestätigt, Container ${a.containerBestaetigt}, Auftrag ${a.nummer}`);
+        }
+
         const weg = ortPruefen(a.abholOrt, gps);
         if (weg) { a.abholWeit = weg;
           melde("warn", `Auftrag ${a.nummer}: Foto der Abholung ${weg} km vom Abholort entfernt aufgenommen.`, a.id); }
@@ -331,6 +483,36 @@ const server = http.createServer(async (req, res) => {
         const weg = ortPruefen(a.zielOrt, gps);
         if (weg) { a.ankunftWeit = weg;
           melde("warn", `Auftrag ${a.nummer}: Ankunft ${weg} km vom Zielort entfernt gemeldet.`, a.id); }
+      } else if (b.art === "warten") {
+        a.wartenZeit = jetzt; a.status = "warten";
+        if (!a.ankunftZeit) a.ankunftZeit = jetzt;
+
+      } else if (b.art === "entladenStart") {
+        // Die geplante Entladezeit läuft ab jetzt.
+        a.entladeStart = jetzt; a.status = "entladen";
+        if (!a.ankunftZeit) a.ankunftZeit = jetzt;
+        a.entladePlanMin = b.planMin ?? a.entladePlanMin ?? einst.entladezeitStandard;
+        a.entladeUnbekannt = false;
+        a.entladeEndePlan = new Date(new Date(jetzt).getTime() + a.entladePlanMin * 60000).toISOString();
+
+      } else if (b.art === "entladenLaenger") {
+        // „Noch 30 Minuten“ zählt ab dem Tippen, nicht ab Entladebeginn.
+        if (a.status !== "entladen") return json(res, 400, { fehler: "Entladung läuft nicht." });
+        if (b.minuten == null) {
+          a.entladeUnbekannt = true; a.entladeEndePlan = null;
+        } else {
+          const m = Math.max(0, Math.round(Number(b.minuten) || 0));
+          a.entladeUnbekannt = false;
+          a.entladeEndePlan = new Date(new Date(jetzt).getTime() + m * 60000).toISOString();
+        }
+        a.entladeVerlaengert = (a.entladeVerlaengert || 0) + 1;
+
+      } else if (b.art === "entladenFertig") {
+        // Entladeende ist nicht die Ablieferung: das Foto kommt noch.
+        a.entladeFertigZeit = jetzt; a.status = "entladen_fertig";
+        a.entladeUnbekannt = false;
+        if (!a.ankunftZeit) a.ankunftZeit = jetzt;
+
       } else {
         a.abgabeZeit = jetzt; a.fotoAbgabe = datei; a.abgabeGps = gps; a.status = "fertig";
         if (!a.ankunftZeit) a.ankunftZeit = jetzt;      // falls Ankunft vergessen wurde
@@ -352,28 +534,19 @@ const server = http.createServer(async (req, res) => {
 
       // Antwort: schaffe ich den nächsten Termin?
       let naechster = null;
-      if (b.art === "abgabe") {
-        const rest = auftraege
-          .filter(x => x.fahrerId === nutzer.id && x.datum === a.datum && x.status !== "fertig" && x.status !== "entwurf")
-          .sort((x, y) => x.termin.localeCompare(y.termin))[0];
-        if (rest) {
-          const zurueck = new Date(Date.now() + (einst.fahrzeitRueck + einst.handlingRueck) * 60000);
-          const ank     = new Date(zurueck.getTime()
-                            + ((rest.ruestzeitMin ?? einst.ruestzeit)
-                            +  (rest.fahrzeitMin || einst.fahrzeitStandard)) * 60000);
-          const puffer  = Math.round(min(zeitpunkt(rest.datum, rest.termin) - ank));
-          naechster = {
-            nummer: rest.nummer, zielOrt: rest.zielOrt, termin: rest.termin,
-            ankunft: ank.toISOString(), puffer,
-            ampel: puffer < 0 ? "rot" : (puffer < einst.gruenAb ? "gelb" : "gruen")
-          };
-          if (puffer < 0 && !rest.gemeldet) {
-            rest.gemeldet = true; sichere("auftraege", auftraege);
-            melde("rot", `Auftrag ${rest.nummer} (${rest.termin} ${rest.zielOrt}) ist mit diesem Lkw nicht mehr zu schaffen.`, rest.id);
-          }
-        }
+      const k = kette(nutzer.id, a.datum);
+      const ziel = (k.erster && k.erster.id !== a.id) ? k.erster : k.zweiter;
+      if (ziel) {
+        naechster = naechsterAusKette(a.status === "fertig" ? null : a, ziel);
+        // Gleiche Regel wie überall: Alarm erst ab 20 Minuten Prognose.
+        if (naechster && !naechster.unsicher &&
+            alarmPruefen(ziel, naechster.puffer, naechster.ankunft)) sichere("auftraege", auftraege);
       }
-      return json(res, 200, { ok: true, naechster });
+      return json(res, 200, { ok: true, naechster, auftrag: {
+        status: a.status, entladeEndePlan: a.entladeEndePlan || null,
+        entladeUnbekannt: !!a.entladeUnbekannt,
+        containerBestaetigt: a.containerBestaetigt || null,
+        abweichung: a.abweichung ? true : false } });
     }
 
     /* --- Fahrer: Problem melden ----------------------------------

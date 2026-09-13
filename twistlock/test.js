@@ -73,7 +73,7 @@ const TESTFOTO = "data:image/jpeg;base64," + Buffer.from([
   const bis12 = Math.round((new Date(mdat + "T12:00:00") - Date.now()) / 60000);
   const faelle = [
     { name:"gruen", fahrzeit: bis12 - 45, erwartet:"gruen" },
-    { name:"gelb",  fahrzeit: bis12 - 9,  erwartet:"gelb"  },
+    { name:"orange", fahrzeit: bis12 - 9,  erwartet:"gelb"  },
     { name:"rot",   fahrzeit: bis12 + 30, erwartet:"rot"   }
   ];
   const ids = [];
@@ -94,7 +94,7 @@ const TESTFOTO = "data:image/jpeg;base64," + Buffer.from([
   r = await ruf("/api/dispo/uebersicht?von=" + mdat + "&bis=" + mdat);
   faelle.forEach((f, n) => {
     const a = r.daten.auftraege.find(x => x.id === ids[n]);
-    pruefe("Ampel " + f.name,
+    pruefe("Zeitstatus " + f.name,
       a && a.rechnung.ampel === f.erwartet,
       a ? a.rechnung.ampel + " / Puffer " + a.rechnung.puffer : "nicht gefunden");
   });
@@ -325,6 +325,167 @@ const TESTFOTO = "data:image/jpeg;base64," + Buffer.from([
   pruefe("Kein zweites Foto auf der Platte",
     fs.readdirSync(path.join(__dirname,"fotos")).length === vorher + 1);
 
+
+
+  // 25 Containernummer: Pruefziffer und Vergleich
+  {
+    const C = require("./web/container.js");
+    pruefe("Pruefziffer erkennt eine gueltige Nummer", C.pruefe("CSQU3054383").gueltig);
+    pruefe("Pruefziffer erkennt einen Zahlendreher", !C.pruefe("CSQU3054384").gueltig);
+    pruefe("Leerzeichen stoeren den Vergleich nicht",
+      C.vergleiche("MSCU1234566", "mscu 123456 6") === "passt");
+    pruefe("Andere Nummer faellt auf",
+      C.vergleiche("MSCU1234566", "MSCU2233440") === "abweichung");
+    pruefe("Nummer wird lesbar gruppiert", C.lesbar("MSCU1234566") === "MSCU 123456 6",
+      C.lesbar("MSCU1234566"));
+  }
+
+  // 26 Schwellen: bis 10 Minuten Reserve orange, darueber gruen, Alarm erst ab 20
+  keks = ""; await ruf("/api/anmelden","POST",{name:"Ahmed",pin:"1234"});
+  let ue2 = (await ruf("/api/dispo/uebersicht")).daten;
+  pruefe("Orange bis 10 Minuten Reserve eingestellt", ue2.einst.gruenAb === 10, "gruenAb " + ue2.einst.gruenAb);
+  pruefe("Alarmschwelle bleibt 20 Minuten", ue2.einst.verspaetungAb === 20);
+  pruefe("Bueronummer ist hinterlegt", ue2.einst.bueroTelefon === "+4942198994620",
+    ue2.einst.bueroTelefon);
+  pruefe("Planwert Entladung ist zwei Stunden", ue2.einst.entladezeitStandard === 120);
+
+  const f4 = ue2.fahrer[0];
+  const heute4 = new Date().toLocaleDateString("sv-SE");
+  const jetzt4 = new Date();
+  const inMin = m => hhmm((jetzt4.getHours()*60 + jetzt4.getMinutes() + m) % 1440);
+
+  // Reserve 5 Minuten -> orange, aber KEIN Alarm
+  const meldVorher = (await ruf("/api/dispo/uebersicht")).daten.meldungen.length;
+  r = await ruf("/api/dispo/auftrag","POST",{
+    datum:heute4, status:"freigegeben", fahrerId:f4.id, zielOrt:"Orangestadt",
+    termin:inMin(65), fahrzeitMin:60, ruestzeitMin:0, container:"MSCU1234566" });
+  const orangeId = r.daten.id;
+  let ueO = (await ruf("/api/dispo/uebersicht")).daten;
+  let ao = ueO.auftraege.find(x => x.id === orangeId);
+  pruefe("Fuenf Minuten Reserve sind orange", ao.rechnung.ampel === "gelb",
+    "Reserve " + ao.rechnung.puffer);
+  pruefe("Orange loest keinen Alarm aus", ueO.meldungen.length === meldVorher,
+    ueO.meldungen.length + " statt " + meldVorher);
+
+  // 15 Minuten Verspaetung -> rot, aber immer noch kein Alarm
+  r = await ruf("/api/dispo/auftrag","POST",{
+    datum:heute4, status:"freigegeben", fahrerId:f4.id, zielOrt:"Knappstadt",
+    termin:inMin(45), fahrzeitMin:60, ruestzeitMin:0 });
+  const knappId = r.daten.id;
+  let ueK = (await ruf("/api/dispo/uebersicht")).daten;
+  let ak = ueK.auftraege.find(x => x.id === knappId);
+  pruefe("Fuenfzehn Minuten Verspaetung sind rot", ak.rechnung.ampel === "rot",
+    "Reserve " + ak.rechnung.puffer);
+  pruefe("Unter 20 Minuten Verspaetung kein Alarm",
+    !ueK.meldungen.some(m => m.auftragId === knappId),
+    JSON.stringify(ueK.meldungen.slice(0,1)));
+
+  // 30 Minuten Verspaetung -> Alarm, aber nur einmal
+  r = await ruf("/api/dispo/auftrag","POST",{
+    datum:heute4, status:"freigegeben", fahrerId:f4.id, zielOrt:"Spaetstadt",
+    termin:inMin(30), fahrzeitMin:60, ruestzeitMin:0 });
+  const spaetId = r.daten.id;
+  let ueS = (await ruf("/api/dispo/uebersicht")).daten;
+  const alarme = ueS.meldungen.filter(m => m.auftragId === spaetId);
+  pruefe("Ab 20 Minuten Verspaetung kommt ein Alarm", alarme.length === 1,
+    (alarme[0]||{}).text);
+  ueS = (await ruf("/api/dispo/uebersicht")).daten;   // zweite Runde
+  pruefe("Der Alarm kommt nur einmal",
+    ueS.meldungen.filter(m => m.auftragId === spaetId).length === 1);
+
+  // 27 Entladung: Schritte, Verlaengerung und Kettenrechnung
+  //    Eigener Fahrer, damit die Kette eindeutig ist.
+  await ruf("/api/dispo/fahrer","POST",{ neu:"Fahrer Kette", pin:"2222" });
+  const kf = (await ruf("/api/dispo/uebersicht")).daten.fahrer.find(x => x.name === "Fahrer Kette");
+  pruefe("Zweiter Fahrerzugang angelegt", !!kf);
+  r = await ruf("/api/dispo/auftrag","POST",{
+    datum:heute4, status:"freigegeben", fahrerId:kf.id, zielOrt:"Kettenstadt",
+    termin:inMin(240), container:"MSCU1234566", abholOrt:"Bremen", fahrzeitMin:60 });
+  const kettenId = r.daten.id;
+  await ruf("/api/dispo/auftrag","POST",{
+    datum:heute4, status:"freigegeben", fahrerId:kf.id, zielOrt:"Danachstadt",
+    termin:inMin(420), container:"TGHU7654320", abholOrt:"Bremen", fahrzeitMin:60 });
+
+  keks = ""; await ruf("/api/anmelden","POST",{name:"Fahrer Kette",pin:"2222"});
+  const orangeId2 = kettenId;
+  await ruf("/api/fahrer/ereignis","POST",{auftragId:orangeId2,art:"abholung",foto:TESTFOTO,
+    containerBestaetigt:"MSCU1234566"});
+  r = await ruf("/api/fahrer/ereignis","POST",{auftragId:orangeId2,art:"ankunft"});
+  pruefe("Ankunft beim Kunden wird gebucht", r.status === 200);
+  r = await ruf("/api/fahrer/ereignis","POST",{auftragId:orangeId2,art:"warten"});
+  pruefe("Warten auf Entladung ist ein eigener Schritt",
+    r.status === 200 && (await ruf("/api/fahrer/tag")).daten.heute
+      .find(x => x.id === orangeId2).status === "warten");
+  r = await ruf("/api/fahrer/ereignis","POST",{auftragId:orangeId2,art:"entladenStart"});
+  pruefe("Entladung startet die geplante Zeit", r.status === 200);
+  let tagD = (await ruf("/api/fahrer/tag")).daten;
+  let ad = tagD.heute.find(x => x.id === orangeId2);
+  const planEnde = Math.round((new Date(ad.rechnung.entladeEndePlan) - Date.now())/60000);
+  pruefe("Geplantes Ende liegt zwei Stunden spaeter", planEnde >= 118 && planEnde <= 120,
+    planEnde + " Minuten");
+  pruefe("Der naechste Termin haengt an der Entladung",
+    ad.rechnung.naechster && ad.rechnung.naechster.restMin > 120,
+    ad.rechnung.naechster && JSON.stringify(ad.rechnung.naechster.teile));
+
+  r = await ruf("/api/fahrer/ereignis","POST",{auftragId:orangeId2,art:"entladenLaenger",minuten:30});
+  ad = (await ruf("/api/fahrer/tag")).daten.heute.find(x => x.id === orangeId2);
+  const neuEnde = Math.round((new Date(ad.rechnung.entladeEndePlan) - Date.now())/60000);
+  pruefe("„Noch 30 Minuten“ zaehlt ab dem Tippen", neuEnde >= 29 && neuEnde <= 30,
+    neuEnde + " Minuten");
+
+  r = await ruf("/api/fahrer/ereignis","POST",{auftragId:orangeId2,art:"entladenLaenger",minuten:null});
+  ad = (await ruf("/api/fahrer/tag")).daten.heute.find(x => x.id === orangeId2);
+  pruefe("„Weiß ich nicht“ erfindet keine Ankunft",
+    ad.rechnung.entladeUnbekannt === true && !ad.rechnung.entladeEndePlan &&
+    ad.rechnung.naechster && ad.rechnung.naechster.unsicher === true);
+
+  r = await ruf("/api/fahrer/ereignis","POST",{auftragId:orangeId2,art:"entladenFertig"});
+  ad = (await ruf("/api/fahrer/tag")).daten.heute.find(x => x.id === orangeId2);
+  pruefe("Entladeende ist nicht die Ablieferung",
+    ad.status === "entladen_fertig" && !ad.abgabeZeit);
+  r = await ruf("/api/fahrer/ereignis","POST",{auftragId:orangeId2,art:"abgabe",foto:TESTFOTO});
+  ad = (await ruf("/api/fahrer/tag")).daten.heute.find(x => x.id === orangeId2);
+  pruefe("Erst das Ablieferfoto schliesst den Auftrag ab",
+    ad.status === "fertig" && !!ad.abgabeZeit && !!ad.fotoAbgabe);
+
+  // 28 Containerabweichung: getrennt gespeichert, hervorgehobene Meldung
+  keks = ""; await ruf("/api/anmelden","POST",{name:"Ahmed",pin:"1234"});
+  r = await ruf("/api/dispo/auftrag","POST",{
+    datum:heute4, status:"freigegeben", fahrerId:f4.id, zielOrt:"Pruefstadt",
+    termin:inMin(300), container:"MSCU1234566" });
+  const abwId = r.daten.id;
+  keks = ""; await ruf("/api/anmelden","POST",{name:f4.name,pin:"1111"});
+  r = await ruf("/api/fahrer/ereignis","POST",{auftragId:abwId, art:"abholung", foto:TESTFOTO,
+    containerErkannt:"MSCU2233440", containerBestaetigt:"MSCU2233440"});
+  pruefe("Abholung mit anderer Nummer wird angenommen", r.status === 200);
+  let aa = (await ruf("/api/fahrer/tag")).daten.heute.find(x => x.id === abwId);
+  pruefe("Auftragsnummer bleibt unveraendert", aa.container === "MSCU1234566", aa.container);
+  pruefe("Erwartete und bestaetigte Nummer stehen getrennt",
+    aa.containerErwartet === "MSCU1234566" && aa.containerBestaetigt === "MSCU2233440");
+  pruefe("Auftrag ist als Abweichung markiert", !!aa.abweichung && aa.abweichung.geprueft === false);
+  keks = ""; await ruf("/api/anmelden","POST",{name:"Ahmed",pin:"1234"});
+  const meldA = (await ruf("/api/dispo/uebersicht")).daten.meldungen
+    .find(m => m.auftragId === abwId && m.abweichung);
+  pruefe("Buero bekommt eine hervorgehobene Meldung mit beiden Nummern",
+    !!meldA && meldA.erwartet === "MSCU1234566" && meldA.bestaetigt === "MSCU2233440" && !!meldA.foto,
+    meldA && meldA.text);
+
+  // 29 Passende Nummer erzeugt keine Warnmeldung
+  r = await ruf("/api/dispo/auftrag","POST",{
+    datum:heute4, status:"freigegeben", fahrerId:f4.id, zielOrt:"Pasststadt",
+    termin:inMin(300), container:"TGHU7654320" });
+  const okId = r.daten.id;
+  const vorMeld = (await ruf("/api/dispo/uebersicht")).daten.meldungen.length;
+  keks = ""; await ruf("/api/anmelden","POST",{name:f4.name,pin:"1111"});
+  await ruf("/api/fahrer/ereignis","POST",{auftragId:okId, art:"abholung", foto:TESTFOTO,
+    containerErkannt:"TGHU7654320", containerBestaetigt:"TGHU7654320"});
+  keks = ""; await ruf("/api/anmelden","POST",{name:"Ahmed",pin:"1234"});
+  const nachMeld = (await ruf("/api/dispo/uebersicht")).daten.meldungen.length;
+  pruefe("Passende Nummer meldet nichts in die Meldungsliste", nachMeld === vorMeld,
+    vorMeld + " → " + nachMeld);
+  const ao2 = (await ruf("/api/dispo/uebersicht")).daten.auftraege.find(x => x.id === okId);
+  pruefe("Passende Abholung wird trotzdem festgehalten",
+    ao2.containerBestaetigt === "TGHU7654320" && !ao2.abweichung);
 
   // 24 Farbkontraste der Fahreransicht (WCAG AA, mindestens 4,5:1)
   {

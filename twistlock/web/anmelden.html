@@ -73,7 +73,7 @@ function zeichne(fehler){
   }
   APP.innerHTML = kopf() + `<div class="inhalt">
     <div class="wer">
-      <h1>${esc(t("wer"))}</h1>
+      <h1>${esc(t("wer"))} <span class="marke-firma">${esc(MARKE)}</span></h1>
       ${leute.length ? leute.map(p => `<button class="person" data-tun="person" data-name="${esc(p.name)}">
          <span class="kreis" aria-hidden="true">${esc(p.name.trim()[0].toUpperCase())}</span>
          ${esc(p.name)}</button>`).join("")

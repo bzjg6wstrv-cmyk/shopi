@@ -1,7 +1,7 @@
 {
-  "name": "TWISTLOCK",
+  "name": "TWISTLOCK — I&M CARGO",
   "short_name": "TWISTLOCK",
-  "description": "Tagesplan, Fotos und Termine für Fahrer",
+  "description": "I&M CARGO — Tagesplan, Fotos und Termine für Fahrer",
   "start_url": "/fahrer.html",
   "scope": "/",
   "display": "standalone",
