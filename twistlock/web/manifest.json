@@ -1,0 +1,17 @@
+{
+  "name": "TWISTLOCK — I&M CARGO",
+  "short_name": "TWISTLOCK",
+  "description": "I&M CARGO — Tagesplan, Fotos und Termine für Fahrer",
+  "start_url": "/fahrer.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#141B22",
+  "theme_color": "#141B22",
+  "lang": "de",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

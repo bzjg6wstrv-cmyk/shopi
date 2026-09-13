@@ -1,0 +1,323 @@
+/* ===========================================================
+   TWISTLOCK — Fahreroberfläche
+   Regeln, die hier bewusst eingehalten werden:
+   - Systemschrift, keine schmale Zierschrift
+   - Fließtext und Beschriftungen 20–22 px, wichtige Uhrzeiten 36–44 px
+   - Schaltflächen mindestens 60 px hoch, Hauptaktion 72–88 px
+   - Farbe ist nie die einzige Information: immer Symbol und Satz dazu
+   - Hauptaktion unten in einer eigenen Leiste, die nichts verdeckt
+   =========================================================== */
+
+:root{
+  --ink:#15202B;          /* Text                              */
+  --soft:#47525D;         /* Nebentext, Kontrast 7,4:1 auf Weiß */
+  --paper:#FFFFFF;
+  --seite:#E9EBE7;
+  --linie:#CBD0CC;
+  --linie2:#E3E6E2;
+
+  --gruen:#0A6B31;  --gruen-flaeche:#E4F1E9;
+  --gelb:#8A5200;   --gelb-flaeche:#FBEFD6;
+  --rot:#A3161D;    --rot-flaeche:#FAE8E8;
+  --marine:#1B4C78; --marine-flaeche:#E8F0F7;
+
+  --rand:16px;            /* Seitenabstand                     */
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+html,body{height:100%}
+body{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:21px; line-height:1.35;
+  background:var(--seite); color:var(--ink);
+  -webkit-text-size-adjust:100%;
+}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- Grundgerüst: Kopf, Inhalt, Aktionsleiste ----------
+   Der Inhalt scrollt für sich. Die Leiste unten bleibt stehen,
+   liegt aber nicht über dem Inhalt.                            */
+.app{
+  max-width:560px; margin:0 auto; background:var(--paper);
+  height:100vh; height:100dvh; max-height:100dvh;
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.inhalt{flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;
+        padding:0 var(--rand) 14px}
+.leiste{flex:0 0 auto; background:var(--paper); border-top:2px solid var(--linie);
+        padding:10px var(--rand) calc(10px + env(safe-area-inset-bottom,0px));
+        display:flex; flex-direction:column; gap:10px}
+.zweierreihe{display:flex; gap:14px; flex-wrap:wrap}
+.zweierreihe > *{flex:1 1 46%; min-width:0}
+.zweierreihe .zweit-btn{padding-left:8px; padding-right:8px; gap:8px}
+
+/* ---------- Kopfzeile ---------- */
+.kopf{flex:0 0 auto; display:flex; gap:10px; align-items:stretch; flex-wrap:nowrap;
+      padding:8px var(--rand); border-bottom:2px solid var(--ink)}
+@media (max-width:330px){ .kopf{flex-wrap:wrap} }   /* stark vergrößerte Schrift */
+.kopf > *{flex:1 1 auto; min-width:0}
+.kopf .zweit-btn{width:auto; font-size:18px; padding:6px 10px; gap:8px; min-height:60px}
+.kopf > .schmal{flex:0 0 auto; min-width:max-content}
+
+/* ---------- Schaltflächen ---------- */
+button,.knopf{font-family:inherit; font-size:21px; line-height:1.2; cursor:pointer}
+/* Lange Beschriftungen dürfen umbrechen, auch bei 200 % Schrift.
+   „anywhere“ sorgt dafür, dass die Schaltfläche selbst schmaler werden darf. */
+.haupt-btn,.zweit-btn,.wahl-btn,.klapp-kopf,.sprach-btn,.person,.marke{
+  overflow-wrap:break-word; min-width:0; hyphens:auto}
+/* Bei sehr schmaler Anzeige lieber trennen als mitten im Wort brechen.
+   „anywhere“ bleibt nur als letzte Rettung für sehr lange Wörter. */
+@media (max-width:330px){
+  .haupt-btn,.zweit-btn,.wahl-btn,.klapp-kopf,.sprach-btn,.person,.marke{
+    hyphens:auto; -webkit-hyphens:auto; overflow-wrap:break-word}
+}
+.haupt-btn > span,.zweit-btn > span,.wahl-btn > span,.klapp-kopf > span{min-width:0}
+
+.haupt-btn{
+  width:100%; min-height:76px; padding:10px 16px;
+  font-size:23px; font-weight:700;
+  border:0; background:var(--ink); color:#fff;
+  display:flex; align-items:center; justify-content:center; gap:14px; text-align:center;
+}
+.haupt-btn:disabled{opacity:.55}
+
+.zweit-btn{
+  width:100%; min-height:62px; padding:8px 14px;
+  font-size:20px; font-weight:600;
+  border:3px solid var(--ink); background:var(--paper); color:var(--ink);
+  display:flex; align-items:center; justify-content:center; gap:10px; text-align:center;
+  text-decoration:none;
+}
+.zweit-btn.leise{border-color:var(--linie); color:var(--soft)}
+.zweit-btn svg,.haupt-btn svg{flex:0 0 auto}
+
+/* Auswahlknöpfe, zum Beispiel „Was ist passiert?“ */
+.wahl-btn{
+  width:100%; min-height:72px; padding:10px 16px; margin-bottom:14px;
+  font-size:22px; font-weight:700;
+  border:3px solid var(--ink); background:var(--paper); color:var(--ink);
+  display:flex; align-items:center; gap:16px; text-align:left; text-decoration:none;
+}
+.wahl-btn .ico{flex:0 0 auto; color:var(--marine)}
+
+button:focus-visible,a:focus-visible{outline:4px solid var(--marine); outline-offset:2px}
+
+/* ---------- „Heute“ oben im Inhalt ---------- */
+.heute-btn{width:100%; min-height:60px; margin:8px 0 0; padding:6px 12px;
+  font-size:19px; font-weight:700; border:3px solid var(--linie); background:var(--paper);
+  color:var(--ink); display:flex; align-items:center; gap:10px; text-align:left}
+.heute-btn span{flex:1; min-width:0}
+
+/* ---------- Überschriften und Texte ---------- */
+.titel{font-size:22px; font-weight:700; line-height:1.2; padding:8px 0 6px;
+       overflow-wrap:anywhere}
+.unter{font-size:20px; color:var(--soft); padding-bottom:10px}
+.etikett{font-size:19px; color:var(--soft); line-height:1.2}
+.wert{font-size:23px; font-weight:700; overflow-wrap:anywhere}
+.uhrzeit{font-size:40px; font-weight:700; line-height:1.05; letter-spacing:-.01em}
+.hinweis{font-size:19px; color:var(--soft); padding:10px 0; overflow-wrap:anywhere}
+
+/* ---------- Statusstreifen: Symbol, Satz, kein Farbfeld ---------- */
+.status{display:flex; gap:12px; align-items:flex-start;
+        padding:10px 12px; margin:0 0 10px; border-left:8px solid var(--soft);
+        background:#F2F3F1; font-size:20px; font-weight:700; line-height:1.25;
+        overflow-wrap:anywhere}
+.status .ico{flex:0 0 auto; margin-top:1px}
+.status .zusatz{display:block; font-size:18px; font-weight:600; margin-top:4px}
+.status.gruen{border-color:var(--gruen); background:var(--gruen-flaeche); color:var(--gruen)}
+.status.gelb {border-color:var(--gelb);  background:var(--gelb-flaeche);  color:var(--gelb)}
+.status.rot  {border-color:var(--rot);   background:var(--rot-flaeche);   color:var(--rot)}
+.status.grau {border-color:var(--soft);  background:#F2F3F1;             color:var(--ink)}
+.status.info {border-color:var(--marine);background:var(--marine-flaeche);color:var(--marine)}
+
+/* ---------- Ort, Adresse, Tor ---------- */
+.ort{padding:10px 0 10px; border-bottom:2px solid var(--linie2)}
+.ort.knapp{padding:8px 0}
+.ort.knapp .firma{font-size:21px}
+.ort .reihe{display:flex; gap:10px; align-items:baseline; flex-wrap:wrap}
+.ort .firma{font-size:23px; font-weight:700; overflow-wrap:anywhere; flex:1 1 auto; min-width:0}
+.ort .adresse{font-size:20px; margin-top:2px; overflow-wrap:anywhere}
+.tor{display:inline-flex; align-items:center; gap:6px; flex:0 0 auto;
+     padding:3px 9px; border:3px solid var(--ink); background:#F2F3F1;
+     font-size:21px; font-weight:700; white-space:nowrap}
+
+/* ---------- Zeitfelder ---------- */
+.zeiten{display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end; padding:8px 0;
+        border-bottom:2px solid var(--linie2)}
+.zeiten > div{flex:1 1 44%; min-width:140px; max-width:100%}
+.zeile{display:flex; gap:14px; align-items:center; padding:12px 0;
+       border-bottom:2px solid var(--linie2)}
+.zeile .ico{flex:0 0 auto; color:var(--soft)}
+.zeile .txt{flex:1; min-width:0; overflow-wrap:anywhere}
+.daten-zeile{display:flex; gap:12px; align-items:baseline; padding:8px 0;
+             border-bottom:1px solid var(--linie2); flex-wrap:wrap}
+.daten-zeile .etikett{flex:0 1 130px}
+.daten-zeile .wert{flex:1 1 auto; letter-spacing:.04em}
+
+/* ---------- Aufklappen „Fahrzeug und Container“ ---------- */
+.klapp{margin:12px 0}
+.klapp-kopf{width:100%; min-height:60px; padding:8px 12px; font-size:20px; font-weight:600;
+            border:3px solid var(--linie); background:var(--paper); color:var(--ink);
+            display:flex; align-items:center; gap:12px; text-align:left}
+.klapp-kopf .pf{margin-left:auto}
+.klapp-inhalt{border:3px solid var(--linie); border-top:0; padding:4px 12px 10px}
+
+/* ---------- Meldung, Notiz, Änderung ---------- */
+.kasten{display:flex; gap:12px; align-items:flex-start; padding:12px 14px; margin:12px 0;
+        background:var(--marine-flaeche); border-left:8px solid var(--marine);
+        font-size:20px; overflow-wrap:anywhere}
+.kasten .ico{flex:0 0 auto; color:var(--marine)}
+.kasten.warn{background:var(--gelb-flaeche); border-color:var(--gelb)}
+.kasten.warn .ico{color:var(--gelb)}
+.kasten b{display:block; font-size:21px}
+.kasten > div{min-width:0}
+
+/* ---------- Ergebnisseiten: ruhig, kein Vollbild-Alarm ---------- */
+.ergebnis{display:flex; gap:12px; align-items:flex-start; padding:14px 12px; margin:10px 0;
+          border-left:8px solid var(--gruen); background:var(--gruen-flaeche)}
+.ergebnis.wartet{border-color:var(--gelb); background:var(--gelb-flaeche)}
+.ergebnis.fehler{border-color:var(--rot);  background:var(--rot-flaeche)}
+.ergebnis .ico{flex:0 0 auto; color:var(--gruen)}
+.ergebnis.wartet .ico{color:var(--gelb)}
+.ergebnis.fehler .ico{color:var(--rot)}
+.ergebnis .w{font-size:23px; font-weight:700; overflow-wrap:anywhere}
+.ergebnis .z{font-size:36px; font-weight:700; line-height:1.05; margin-top:4px}
+.ergebnis .u{font-size:19px; margin-top:5px}
+
+/* ---------- Tagesliste ---------- */
+.tagzeile{display:flex; gap:14px; align-items:center; padding:14px 0;
+          border-bottom:2px solid var(--linie2); flex-wrap:wrap}
+.tagzeile .zt{font-size:30px; font-weight:700; min-width:92px}
+.tagzeile .wo{flex:1 1 120px; min-width:0; font-size:21px; font-weight:600; overflow-wrap:anywhere}
+.marke{display:inline-flex; align-items:center; gap:7px; padding:4px 10px;
+       font-size:18px; font-weight:700; border:2px solid var(--ink)}
+.marke.jetzt{background:var(--ink); color:#fff}
+.marke.fertig{border-color:var(--gruen); color:var(--gruen); background:var(--gruen-flaeche)}
+.marke.offen{border-color:var(--soft); color:var(--soft); background:#F2F3F1}
+
+/* ---------- Containernummer prüfen ---------- */
+.nummer-gross{font-size:30px; font-weight:700; letter-spacing:.03em; line-height:1.15;
+  margin:4px 0 10px; overflow-wrap:anywhere; font-variant-numeric:tabular-nums}
+.nummer-gross.rot{color:var(--rot)}
+/* Die beiden Nummern untereinander: so lassen sie sich Stelle für Stelle
+   vergleichen, auch auf einem schmalen Bildschirm. */
+.gegen{display:flex; flex-direction:column; gap:10px; margin:4px 0 8px}
+.gegen > div{border-left:6px solid var(--linie); padding-left:10px}
+.gegen > div:last-child{border-left-color:var(--rot)}
+.gegen .nummer-gross{margin:0}
+.feld{width:100%; min-height:64px; margin:6px 0 10px; font-family:inherit;
+  font-size:26px; font-weight:700; letter-spacing:.06em; padding:8px 12px;
+  border:3px solid var(--ink); background:var(--paper); color:var(--ink)}
+
+/* ---------- Kurze Bestätigung nach einem Schritt ---------- */
+.bestaetigung{display:flex; gap:10px; align-items:center; padding:10px 12px; margin:10px 0;
+  background:var(--gruen-flaeche); border-left:8px solid var(--gruen); color:var(--gruen);
+  font-size:19px; font-weight:700}
+.bestaetigung svg{flex:0 0 auto}
+
+/* ---------- Zeitstatus direkt unter der Uhrzeit ---------- */
+.unter-zeit{display:flex; align-items:center; gap:6px; font-size:18px; font-weight:700;
+  margin-top:2px; line-height:1.2; overflow-wrap:anywhere}
+.unter-zeit svg{flex:0 0 auto; width:20px; height:20px}
+.unter-zeit.gruen{color:var(--gruen)}
+.unter-zeit.gelb {color:var(--gelb)}
+.unter-zeit.rot  {color:var(--rot)}
+.unter-zeit.grau {color:var(--soft)}
+
+/* ---------- Nächster Termin in einer Zeile ---------- */
+.naechster-kurz{font-size:19px; color:var(--soft); padding:8px 0 2px; overflow-wrap:anywhere}
+.naechster-kurz b{color:var(--ink)}
+
+/* ---------- Uhrzeit in der Farbe des Zeitstatus ---------- */
+.uhrzeit.gruen{color:var(--gruen)}
+.uhrzeit.gelb {color:var(--gelb)}
+.uhrzeit.rot  {color:var(--rot)}
+.uhrzeit.grau {color:var(--soft)}
+
+/* ---------- Firmenname und Zusatzzeile ---------- */
+.marke-firma{font-size:16px; font-weight:700; color:var(--soft); letter-spacing:.1em}
+.wahl-btn .klein{display:block; font-size:17px; font-weight:600; color:var(--soft);
+  letter-spacing:.02em}
+
+/* ---------- Fotovorschau ---------- */
+.vorschaubild{width:100%; max-height:46vh; object-fit:contain; background:#15202B;
+              border:3px solid var(--ink); margin:10px 0}
+
+/* ---------- Sprache ---------- */
+.sprach-btn{width:100%; min-height:68px; margin-bottom:12px; padding:8px 16px;
+  font-size:22px; font-weight:700; border:3px solid var(--linie); background:var(--paper);
+  color:var(--ink); display:flex; align-items:center; gap:14px; text-align:left}
+.sprach-btn[aria-pressed="true"]{border-color:var(--ink); background:#F2F3F1}
+.sprach-btn .fl{font-size:26px}
+.sprach-btn .ha{margin-left:auto; color:var(--gruen)}
+
+/* ---------- Anmeldung ---------- */
+.wer{padding:14px 0}
+.wer h1{font-size:27px; font-weight:700; margin-bottom:14px}
+.person{width:100%; min-height:80px; display:flex; align-items:center; gap:16px;
+  padding:8px 16px; border:3px solid var(--ink); background:var(--paper);
+  margin-bottom:12px; font-size:23px; font-weight:700; text-align:left}
+.person .kreis{width:54px; height:54px; border-radius:50%; background:var(--marine); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:25px; flex:0 0 auto}
+.pad{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding:6px 0 14px}
+.pad button{min-height:76px; font-size:32px; font-weight:700;
+  border:3px solid var(--ink); background:var(--paper)}
+.pad button.tief{border-color:var(--linie); color:var(--soft); font-size:20px}
+.punkte{display:flex; gap:14px; justify-content:center; padding:8px 0}
+.punkte i{width:22px; height:22px; border-radius:50%; border:3px solid var(--ink); display:block}
+.punkte i.voll{background:var(--ink)}
+
+/* ---------- Kleinteile ---------- */
+.laedt{padding:40px 0; text-align:center; color:var(--soft); font-size:22px}
+.netzstreifen{display:flex; gap:10px; align-items:center; padding:10px 14px;
+  background:var(--gelb-flaeche); border-left:8px solid var(--gelb); color:var(--gelb);
+  font-size:19px; font-weight:700; margin:10px 0}
+.netzstreifen .ico{flex:0 0 auto}
+.install{width:100%; min-height:60px; margin-top:4px; font-size:19px; font-weight:700;
+  border:3px dashed var(--marine); background:var(--marine-flaeche); color:var(--marine);
+  display:none; align-items:center; justify-content:center; gap:10px}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+/* ---------- Demo-Vorschau: klar getrennt von der Fahreransicht ---------- */
+.demo-rahmen{max-width:560px; margin:0 auto; padding:0 0 24px}
+.demo-kopf{background:#15202B; color:#fff; padding:14px 16px}
+.demo-kopf h1{font-size:22px; font-weight:700}
+.demo-kopf p{font-size:18px; color:#D6DBD9; margin-top:4px}
+.demo-marke{display:inline-block; margin-bottom:8px; padding:4px 10px; font-size:17px;
+  font-weight:700; background:#FFD34D; color:#2A1D00; letter-spacing:.06em}
+.demo-schalter{display:flex; flex-wrap:wrap; gap:10px; padding:12px 16px; background:#2A3642}
+.demo-schalter button{min-height:60px; flex:1 1 45%; font-size:19px; font-weight:700;
+  border:3px solid #5C6B79; background:#15202B; color:#fff; padding:6px 10px}
+.demo-schalter button[aria-pressed="true"]{background:#fff; color:#15202B; border-color:#fff}
+.demo-buehne{border:4px solid #2A3642}
+.demo-notiz{background:#FFF8E1; border-left:8px solid #B07100; color:#5E3A00;
+  padding:12px 14px; font-size:18px; margin:0 0 0 0}
+
+@media (prefers-reduced-motion:no-preference){ .haupt-btn:active{transform:translateY(1px)} }
+
+/* Bühne der Demo-Vorschau: feste Höhe wie ein Handy, damit man die
+   Aktionsleiste unten sieht. In der echten App gilt 100dvh. */
+.demo-buehne .app{min-height:0; height:648px; max-height:648px; max-width:none}
+@media (max-width:620px){ .demo-buehne .app{height:600px; max-height:600px} }
+
+/* ---------- Sehr wenig Höhe (stark vergrößerte Schrift, kleine Geräte) ----
+   Dann wird die Seite wieder eine normale, scrollbare Seite: die
+   Aktionsleiste steht am Ende und verdeckt nie etwas. Scrollen ist hier
+   ausdrücklich erlaubt, Verdecken nicht.                                  */
+@media (max-height:560px){
+  .app{height:auto; max-height:none; min-height:100dvh; overflow:visible}
+  .inhalt{overflow:visible}
+}
+
+/* ---------- Sehr schmal (z. B. 200 % Schriftvergrößerung) ----------
+   Lieber etwas kleinere Beschriftungen als Wörter, die mitten im Wort
+   umbrechen. Alles bleibt deutlich größer als in der Normalansicht. */
+@media (max-width:330px){
+  .haupt-btn{font-size:19px; gap:8px; padding:8px 10px}
+  .zweit-btn,.wahl-btn,.klapp-kopf{font-size:18px; gap:8px; padding:8px 10px}
+  .haupt-btn svg{width:26px; height:26px}
+  .wahl-btn svg,.zweit-btn svg{width:22px; height:22px}
+  .titel{font-size:21px}
+  .uhrzeit{font-size:36px}
+}

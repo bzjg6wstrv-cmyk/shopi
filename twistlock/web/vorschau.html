@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#15202B">
+<title>TWISTLOCK Fahreransicht — Demo-Vorschau</title>
+<link rel="icon" href="/icon-192.png">
+<link rel="stylesheet" href="/einfach.css">
+</head>
+<body>
+
+<div class="demo-rahmen">
+  <div class="demo-kopf">
+    <span class="demo-marke">DEMO</span>
+    <h1>TWISTLOCK Fahreransicht — I&amp;M CARGO</h1>
+    <p id="demo-uhr">Demo-Uhr: —</p>
+    <p>Beispieldaten. Nichts wird gesendet, keine Kamera, keine Nummernerkennung,
+       kein Routing, keine Nachrichten ans Büro. Die Schaltflächen unten gehören
+       zur Vorschau, nicht zur Fahreroberfläche.</p>
+  </div>
+
+  <div class="demo-schalter" id="schalter"></div>
+  <p class="demo-notiz" id="warteschlange" style="border-left-color:#1B4C78;background:#EEF4FA;color:#16324B"></p>
+  <p class="demo-notiz" id="notiz"></p>
+
+  <div class="demo-buehne">
+    <div class="app" id="app"></div>
+  </div>
+
+  <p class="demo-notiz" style="border-left-color:#1B4C78;background:#EEF4FA;color:#16324B">
+    <b>Rechnet in dieser Vorschau wirklich:</b> Reserve und Farbe (über 10 Minuten grün,
+    0 bis 10 orange, darunter rot, veraltet grau), die Alarmschwelle von 20 Minuten
+    (einmal je Auftrag), die Entladezeit ab dem Tippen, die Folgeankunft aus der Kette
+    und die Prüfziffer der Containernummer.<br>
+    <b>Beispiel-Fahrzeiten der Vorschau:</b> Restarbeiten 15 Min., Fahrt zur nächsten
+    Abholung 60 Min., Warten und Laden dort 30 Min., Fahrt zum nächsten Kunden 60 Min.
+    Das sind Planwerte, keine Verkehrsdaten.<br>
+    <b>Nur dargestellt:</b> Kamera und Nummernerkennung, Senden ans Büro,
+    Lesebestätigung, Navigation, Netzstatus. Gespeichert wird hier nichts:
+    alles liegt im Arbeitsspeicher und ist beim Neuladen weg.
+  </p>
+</div>
+
+<script src="/container.js"></script>
+<script src="/zeit.js"></script>
+<script src="/warteschlange.js"></script>
+<script src="/sprache.js"></script>
+<script src="/fahreransicht.js"></script>
+<script>
+"use strict";
+const APP = document.getElementById("app");
+const NOTIZ = document.getElementById("notiz");
+const UHR = document.getElementById("demo-uhr");
+
+/* ============ Demo-Uhr ============
+   Eine einzige Uhr für die ganze Vorschau. Gerechnet wird in der
+   Betriebszeitzone Europe/Berlin — Datum und Uhrzeit gehören immer
+   zusammen, damit Termine morgen und Fahrten über Mitternacht stimmen. */
+const jetzt = () => new Date();
+const jetztIso = () => jetzt().toISOString();
+const inMin = m => new Date(jetzt().getTime() + m * 60000).toISOString();
+const hhmm = iso => TL_ZEIT.uhrzeitVon(iso) || "—";
+const tagVon = iso => TL_ZEIT.datumVon(iso);
+const HEUTE = () => TL_ZEIT.datumVon(jetztIso());
+
+/* Beispiel-Fahrzeiten der Vorschau — klar benannt, keine Verkehrsdaten */
+const PLAN = { nacharbeit:15, fahrtAbholung:60, laden:30, fahrtKunde:60, entladung:120 };
+
+/* Die Warteschlange der Vorschau liegt in einer eigenen Datenbank,
+   damit sie nichts mit der echten App zu tun hat. */
+TL_WARTE.setzeDatenbank("twistlock-demo");
+/* Kein Ersatzspeicher: Wenn die eingebettete Vorschau keinen dauerhaften
+   Speicher erlaubt, zeigt sie ehrlich den Speicherfehler — statt einen
+   Vorgang als gespeichert auszugeben, der beim Neuladen weg wäre. */
+
+/* ============ Beispieltag ============
+   Jeder Auftrag bekommt Datum und Uhrzeit aus einem echten Zeitpunkt.
+   Ein Termin in drei Stunden liegt am späten Abend schon morgen. */
+function terminFelder(minuten){
+  const iso = inMin(minuten);
+  return { datum: tagVon(iso), termin: hhmm(iso) };
+}
+function auftragsSatz(){
+  return [
+    { id:"a1", nummer:"4701", status:"freigegeben",
+      ...terminFelder(45),
+      abholFirma:"Hansa Terminal Bremen", abholOrt:"Bremen",
+      abholAdresse:"Am Speicher 12, 28197 Bremen", abholTor:"2", abholAb:"08:30",
+      kunde:"Möller Baustoffe GmbH", zielOrt:"Walsrode",
+      zielAdresse:"Lange Straße 4, 29664 Walsrode", zielTor:"3",
+      container:"MSCU1234566", chassis:"CH-01", zugmaschine:"HB-TL 412", siegel:"SL 88213",
+      notiz:"Anmeldung beim Pförtner, Tor 3 benutzen.", brauchtAbholung:false },
+    { id:"a2", nummer:"4702", status:"freigegeben",
+      ...terminFelder(195),
+      abholFirma:"Hansa Terminal Bremen", abholOrt:"Bremen",
+      abholAdresse:"Am Speicher 12, 28197 Bremen", abholTor:"2", abholAb:hhmm(inMin(120)),
+      kunde:"Nordsee Handel KG", zielOrt:"Walsrode",
+      zielAdresse:"Industriestraße 7, 29664 Walsrode", zielTor:"1",
+      container:"TGHU7654320", chassis:"CH-04", zugmaschine:"HB-TL 412",
+      siegel:"SL 88990", brauchtAbholung:true },
+    { id:"a3", nummer:"4703", status:"freigegeben",
+      ...terminFelder(420),
+      abholFirma:"Hansa Terminal Bremen", abholOrt:"Bremen", abholTor:"2",
+      abholAb:hhmm(inMin(300)),
+      kunde:"Weserhof Logistik und Umschlag Delmenhorst-Annenheide GmbH & Co. KG",
+      zielOrt:"Delmenhorst-Annenheide", zielAdresse:"Annenheider Damm 145, 27755 Delmenhorst",
+      zielTor:"5", container:"HLXU9988779", brauchtAbholung:true }
+  ];
+}
+const MORGEN = () => {
+  const iso = new Date(jetzt().getTime() + 86400000).toISOString();
+  return [{ id:"b1", nummer:"4704", datum: tagVon(iso), termin:"07:30",
+            kunde:"Möller Baustoffe GmbH", zielOrt:"Walsrode", container:"CAIU4567890" }];
+};
+
+const EINST = { bueroTelefon:"+4942198994620", gruenAb:10, verspaetungAb:20,
+                freiMin:60, entladezeitStandard:PLAN.entladung, maxDatenAlterMin:10 };
+
+/* Termin als echter Zeitpunkt: Datum und Uhrzeit des Auftrags.
+   Fehlt eines davon, wird keine Ankunft bewertet. */
+function terminZeit(a){
+  return TL_ZEIT.zeitpunkt(a && a.datum, a && a.termin);
+}
+
+/* ============ Kette: wann bin ich beim nächsten Kunden? ============
+   Nur Schritte, die für diesen Auftrag wirklich anfallen. */
+function ketteTeile(ziel){
+  const teile = [{ was:"nacharbeit", min:PLAN.nacharbeit }];
+  if (ziel.brauchtAbholung) {
+    teile.push({ was:"fahrtAbholung", min:PLAN.fahrtAbholung });
+    teile.push({ was:"laden", min:PLAN.laden });
+  }
+  teile.push({ was:"fahrtKunde", min: ziel.fahrzeitMin || PLAN.fahrtKunde });
+  return teile;
+}
+function naechsterAus(endeIso, ziel){
+  if (!ziel) return null;
+  const grund = { nummer:ziel.nummer, zielOrt:ziel.zielOrt, kunde:ziel.kunde,
+                  termin:ziel.termin, datum:ziel.datum };
+  if (!endeIso) return { ...grund, unsicher:true, ampel:"grau" };
+  const teile = ketteTeile(ziel);
+  const ankunft = TL_ZEIT.ankunft(endeIso, teile);
+  const terminIso = terminZeit(ziel);
+  if (!terminIso) return { ...grund, ankunft, teile, unsicher:true, ampel:"grau" };
+  const puffer = TL_ZEIT.reserve(terminIso, ankunft);
+  alarmPruefen(ziel, puffer, ankunft);
+  return { ...grund, ankunft, puffer, teile, restMin:TL_ZEIT.kette(teile).min,
+           ampel:TL_ZEIT.status(puffer, EINST.gruenAb) };
+}
+
+/* ============ Alarmregel ============
+   Nur ab 20 Minuten berechneter Verspätung, und nur einmal je Auftrag. */
+const alarmiert = new Set();
+function alarmPruefen(auftrag, puffer, ankunftIso){
+  if (!auftrag || puffer == null || !Z) return false;
+  if (!TL_ZEIT.alarmNoetig(puffer, EINST.verspaetungAb)) return false;
+  // Aus alten Daten entsteht kein neuer Alarm.
+  if (!TL_ZEIT.alarmErlaubt(Z.datenZeit, Z.ortungZeit, EINST.maxDatenAlterMin)) {
+    demoHinweis("Kein neuer Alarm: die Prognose ist zu alt. Der Zeitstatus bleibt grau, " +
+                "eine bereits gemeldete Verspätung bleibt stehen.");
+    return false;
+  }
+  if (alarmiert.has(auftrag.id)) return false;
+  alarmiert.add(auftrag.id);
+  auftrag.gemeldet = true;            // erst jetzt gilt „Büro wurde informiert“
+  demoHinweis("Alarm an die Dispo für Auftrag " + auftrag.nummer + " (simuliert): voraussichtlich " +
+    Math.round(-puffer) + " Minuten zu spät, Ankunft etwa " + hhmm(ankunftIso) +
+    ". Genau einmal je Auftrag.");
+  return true;
+}
+
+/* ============ Zustand ============ */
+let Z = null;
+let demoErkennung = "passt";     // passt | abweichung | unsicher | ungueltig
+let demoNetz = true;
+let demoSpeicherFehler = false;   // Szenario „Speichern klemmt“
+const gebucht = new Set();       // gegen doppelte Abholungen
+
+function grundZustand(){
+  return { ansicht:"auftrag", auftrag:null, heute:auftragsSatz(), morgen:MORGEN(), einst:EINST,
+           online:true, datenZeit:jetztIso(), ortungZeit:jetztIso(), offen:0,
+           laeuft:false, fahrzeugOffen:false, foto:null, pruefung:null, bestaetigung:null,
+           ergebnis:null, abschluss:null, problem:null, problemErgebnis:null,
+           stand:null, vorher:"auftrag", demo:true,
+           offenerVersuch:null, offeneIds:[] };
+}
+const aktuell = () => (Z.heute || []).filter(a => a.status !== "fertig")[0] || null;
+const zweiter = () => (Z.heute || []).filter(a => a.status !== "fertig")[1] || null;
+
+/* Platzhalterbild statt Kamera */
+const DEMOFOTO = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+`<svg xmlns="http://www.w3.org/2000/svg" width="640" height="440">
+  <rect width="640" height="440" fill="#2A3642"/>
+  <rect x="40" y="120" width="560" height="200" fill="#4A5A68" stroke="#9FB0BD" stroke-width="6"/>
+  <text x="320" y="232" font-family="system-ui, sans-serif" font-size="40" font-weight="bold"
+        fill="#fff" text-anchor="middle">MSCU 123456 6</text>
+  <text x="320" y="392" font-family="system-ui, sans-serif" font-size="30"
+        fill="#FFD34D" text-anchor="middle">Demo-Foto, keine echte Aufnahme</text>
+</svg>`);
+
+/* Prüfung einer Nummer: erkannt? gültig? gleich? — getrennt beantwortet */
+function pruefungBauen(erkannt, opt){
+  opt = opt || {};
+  const a = Z.auftrag || {};
+  const rein = TL_CONTAINER.rein(erkannt);
+  const pruef = TL_CONTAINER.pruefe(rein);
+  const gleich = TL_CONTAINER.vergleiche(a.container, rein) === "passt";
+  const basis = { erkannt:rein, bestaetigt:rein, gleich, gueltig:pruef.gueltig,
+                  sicher: opt.sicher !== false, eingabe: opt.eingabe || "",
+                  versucht: !!opt.versucht, demo: opt.demo !== false };
+  if (!basis.sicher)  return { ...basis, zustand:"unsicher" };
+  if (!basis.gueltig) return { ...basis, zustand:"ungueltig", ungeprueft:true };
+  if (!gleich)        return { ...basis, zustand:"abweichung" };
+  return { ...basis, zustand:"passt" };
+}
+
+/* ============ Szenarien ============ */
+function entladeZustand(opt){
+  opt = opt || {};
+  const z = grundZustand();
+  const a = z.heute[0];
+  a.status = "entladen";
+  a.abholZeit = inMin(-180);
+  a.ankunftZeit = inMin(-105);
+  a.containerBestaetigt = a.container;
+  a.entladeStart = inMin(-105);
+  const ende = opt.unbekannt ? null : inMin(15);   // geplantes Ende in 15 Minuten
+  a.rechnung = { wartetSeit:105, entladeStart:a.entladeStart, entladePlanMin:PLAN.entladung,
+                 entladeUnbekannt: !!opt.unbekannt, entladeEndePlan: ende,
+                 naechster: naechsterAus(ende, z.heute[1]) };
+  z.auftrag = a;
+  return z;
+}
+function fahrtZustand(restMin, opt){
+  opt = opt || {};
+  const z = grundZustand(); const a = z.heute[0];
+  if (opt.datenAlterMin) {             // zuerst altern lassen, dann rechnen
+    z.datenZeit = inMin(-opt.datenAlterMin);
+    z.ortungZeit = inMin(-opt.datenAlterMin);
+  }
+  a.status = "geladen"; a.abholZeit = inMin(-60); a.containerBestaetigt = a.container;
+  const ankunft = inMin(restMin);
+  const t = terminFelder(45);           // Termin in 45 Minuten, mit Datum
+  a.datum = t.datum; a.termin = t.termin;
+  Z = z;                                 // damit die Alarmprüfung die Zeitstempel kennt
+  const puffer = TL_ZEIT.reserve(terminZeit(a), ankunft);
+  a.rechnung = { ankunft, puffer, restMin, termin:terminZeit(a),
+                 ampel:TL_ZEIT.status(puffer, EINST.gruenAb) };
+  alarmPruefen(a, puffer, ankunft);
+  z.auftrag = a;
+  return z;
+}
+
+const SZENARIEN = [
+  { k:"passt", wort:"1 · Container passt",
+    notiz:"Abholung: Nummer stimmt mit dem Auftrag überein und die Prüfziffer ist gültig.",
+    bauen(){ demoErkennung = "passt";
+      const z = grundZustand(); z.auftrag = z.heute[0];
+      z.foto = { art:"abholung", bild:DEMOFOTO };
+      Z = z; z.pruefung = pruefungBauen(z.auftrag.container, { sicher:true });
+      z.ansicht = "container"; return z; } },
+
+  { k:"abweichung", wort:"2 · Andere Nummer",
+    notiz:"Gültige Nummer, aber nicht die aus dem Auftrag. „Trotzdem abholen“ fragt ausdrücklich nach.",
+    bauen(){ demoErkennung = "abweichung";
+      const z = grundZustand(); z.auftrag = z.heute[0];
+      z.foto = { art:"abholung", bild:DEMOFOTO };
+      Z = z; z.pruefung = pruefungBauen("MSCU2233440", { sicher:true });
+      z.ansicht = "container"; return z; } },
+
+  { k:"pruefziffer", wort:"3 · Prüfziffer falsch",
+    notiz:"Die Nummer passt zum Auftrag, aber die Prüfziffer stimmt nicht. Die Übereinstimmung verdeckt das nicht.",
+    bauen(){ demoErkennung = "ungueltig";
+      const z = grundZustand();
+      z.heute[0] = { ...z.heute[0], container:"MSCU1234567" };  // Prüfziffer 7 statt 6
+      z.auftrag = z.heute[0];
+      z.foto = { art:"abholung", bild:DEMOFOTO };
+      Z = z; z.pruefung = pruefungBauen("MSCU1234567", { sicher:true });
+      z.ansicht = "container"; return z; } },
+
+  { k:"unlesbar", wort:"4 · Nummer unlesbar",
+    notiz:"Nicht sicher erkannt. Die App behauptet nicht, es sei der falsche Container.",
+    bauen(){ demoErkennung = "unsicher";
+      const z = grundZustand(); z.auftrag = z.heute[0];
+      z.foto = { art:"abholung", bild:DEMOFOTO };
+      Z = z; z.pruefung = pruefungBauen("", { sicher:false });
+      z.ansicht = "container"; return z; } },
+
+  { k:"gruen", wort:"5 · Fahrt grün",
+    notiz:"Noch 20 Minuten Restfahrt bis zum Termin in 45 Minuten: 25 Minuten Reserve, also grün.",
+    bauen(){ return fahrtZustand(20); } },
+
+  { k:"orange", wort:"6 · Fahrt orange",
+    notiz:"Restfahrt 40 Minuten: 5 Minuten Reserve — orange. Die Dispo bekommt ausdrücklich keinen Alarm.",
+    bauen(){ return fahrtZustand(40); } },
+
+  { k:"rot", wort:"7 · Fahrt rot",
+    notiz:"Restfahrt 69 Minuten: 24 Minuten zu spät. Ab 20 Minuten geht einmalig ein Alarm an die Dispo.",
+    bauen(){ return fahrtZustand(69); } },
+
+  { k:"entladen", wort:"8 · Entladung läuft",
+    notiz:"Geplantes Ende in 15 Minuten. „Dauert länger“ rechnet ab dem Tippen neu — auch die Folgeankunft.",
+    bauen(){ return entladeZustand(); } },
+
+  { k:"offen", wort:"9 · Ende unbekannt",
+    notiz:"Nach „Weiß ich nicht“ wird keine Folgeankunft erfunden: grau statt grüner Sicherheit.",
+    bauen(){ return entladeZustand({ unbekannt:true }); } },
+
+  { k:"keinNetz", wort:"10 · Abholung ohne Netz",
+    notiz:"Ohne Internet: „Auf dem Handy gespeichert – noch nicht gesendet“. Erst „Nochmal senden“ macht daraus „Abholung übertragen“.",
+    bauen(){ demoNetz = false; demoErkennung = "passt";
+      const z = grundZustand(); z.auftrag = z.heute[0];
+      z.online = false; z.datenZeit = inMin(-3);
+      z.foto = { art:"abholung", bild:DEMOFOTO };
+      Z = z; z.pruefung = pruefungBauen(z.auftrag.container, { sicher:true });
+      z.ansicht = "container"; return z; } },
+
+  { k:"speicherfehler", wort:"11 · Speichern klemmt",
+    notiz:"Der Gerätespeicher nimmt den Vorgang nicht an. Das Foto bleibt, der Schritt bleibt offen, nichts wird als gespeichert behauptet.",
+    bauen(){ demoNetz = false; demoSpeicherFehler = true; demoErkennung = "passt";
+      const z = grundZustand(); z.auftrag = z.heute[0];
+      z.online = false; z.datenZeit = inMin(-3); z.ortungZeit = inMin(-3);
+      z.foto = { art:"abholung", bild:DEMOFOTO };
+      Z = z; z.pruefung = pruefungBauen(z.auftrag.container, { sicher:true });
+      z.ansicht = "container"; return z; } },
+
+  { k:"abgabeOffline", wort:"12 · Ablieferung ohne Netz",
+    notiz:"Auch das Ablieferfoto geht in den Gerätespeicher. Der Auftrag darf weitergehen, bleibt aber als „Übertragung offen“ erkennbar.",
+    bauen(){ demoNetz = false; demoErkennung = "passt";
+      const z = grundZustand(); const a = z.heute[0];
+      a.status = "entladen_fertig"; a.abholZeit = inMin(-180); a.ankunftZeit = inMin(-120);
+      a.entladeFertigZeit = inMin(-5); a.containerBestaetigt = a.container;
+      z.online = false; z.datenZeit = inMin(-3); z.ortungZeit = inMin(-3);
+      z.auftrag = a; z.foto = { art:"abgabe", bild:DEMOFOTO }; z.ansicht = "foto";
+      return z; } },
+
+  { k:"veraltet", wort:"13 · Daten veraltet",
+    notiz:"Internet ist da, aber die Ortungs- und Prognosedaten sind über eine Stunde alt: grau, mit Zeitpunkt der letzten Aktualisierung.",
+    bauen(){ // Die Daten sind schon alt, bevor gerechnet wird: kein neuer Alarm.
+      const z = fahrtZustand(69, { datenAlterMin:65 });
+      z.auftrag.gemeldet = true;      // eine frühere Warnung bleibt bestehen
+      return z; } },
+
+  { k:"morgen", wort:"14 · Termin morgen",
+    notiz:"Der nächste Termin liegt am nächsten Tag. Die App schreibt „Termin morgen“ dazu, statt nur eine Uhrzeit zu zeigen.",
+    bauen(){ const z = grundZustand(); const a = z.heute[0];
+      const frueh = new Date(jetzt().getTime() + 86400000);
+      frueh.setHours(7, 30, 0, 0);
+      a.status = "geladen"; a.abholZeit = inMin(-30); a.containerBestaetigt = a.container;
+      a.datum = tagVon(frueh.toISOString()); a.termin = hhmm(frueh.toISOString());
+      Z = z;
+      const ankunft = inMin(60);
+      const puffer = TL_ZEIT.reserve(terminZeit(a), ankunft);
+      a.rechnung = { ankunft, puffer, restMin:60, termin:terminZeit(a),
+                     ampel:TL_ZEIT.status(puffer, EINST.gruenAb) };
+      z.auftrag = a; return z; } },
+
+  { k:"tagfertig", wort:"15 · Tag fertig",
+    notiz:"Alle heutigen Aufträge sind erledigt. Erst jetzt erscheint die Vorschau für morgen — mit Datum und als Vorschau gekennzeichnet.",
+    bauen(){ const z = grundZustand();
+      z.heute.forEach((a, i) => { a.status = "fertig"; a.abgabeZeit = inMin(-30 * (3 - i)); });
+      z.auftrag = null; z.ansicht = "feierabend"; return z; } },
+
+  { k:"spaet", wort:"16 · Nächster zu spät",
+    notiz:"Auftrag abgeschlossen. Die Folgeankunft wird aus der Kette gerechnet, nicht gesetzt.",
+    bauen(){ const z = grundZustand(); const erledigt = z.heute[0];
+      erledigt.status = "fertig"; erledigt.abgabeZeit = jetztIso();
+      erledigt.containerBestaetigt = erledigt.container;
+      z.auftrag = z.heute[1];
+      Z = z;
+      z.abschluss = { ort:erledigt.kunde, zeit:erledigt.abgabeZeit,
+                      nummer:erledigt.nummer, container:erledigt.containerBestaetigt,
+                      naechster: naechsterAus(jetztIso(), z.heute[1]) };
+      z.ansicht = "abschluss"; return z; } }
+];
+
+/* ============ Zeichnen ============ */
+function uhrZeigen(){ UHR.textContent = "Demo-Uhr: " + hhmm(jetzt()) + " Uhr"; }
+function schalterZeichnen(aktiv){
+  document.getElementById("schalter").innerHTML = SZENARIEN.map(s =>
+    `<button data-sz="${s.k}" aria-pressed="${s.k === aktiv}">${s.wort}</button>`).join("");
+}
+function szenario(k){
+  const s = SZENARIEN.find(x => x.k === k) || SZENARIEN[0];
+  demoNetz = true; demoErkennung = "passt"; demoSpeicherFehler = false;
+  gebucht.clear(); alarmiert.clear();
+  Z = s.bauen();
+  if (!Z.auftrag) Z.auftrag = aktuell();
+  NOTIZ.textContent = "Demo: " + s.notiz;
+  schalterZeichnen(s.k);
+  zeichne();
+  warteschlangeZeigen();      // wartende Vorgänge bleiben über Szenarien hinweg
+}
+function zeichne(){ uhrZeigen(); APP.innerHTML = FA.zeichne(Z); }
+function demoHinweis(text){ NOTIZ.textContent = "Demo: " + text; }
+setInterval(uhrZeigen, 20000);
+
+document.getElementById("schalter").addEventListener("click", e => {
+  const b = e.target.closest("[data-sz]"); if (b) szenario(b.dataset.sz);
+});
+
+/* ============ Buchen in der Vorschau ============ */
+function mitStand(fn){
+  if (Z.standOk) return fn();
+  Z.stand = { aktion:fn }; Z.vorher = Z.ansicht; Z.ansicht = "stand"; zeichne();
+}
+function neuRechnen(endeIso){
+  const a = Z.auftrag; if (!a) return;
+  a.rechnung = { ...(a.rechnung || {}),
+    entladeUnbekannt: !endeIso, entladeEndePlan: endeIso,
+    naechster: naechsterAus(endeIso, zweiter()) };
+}
+function buchen(art, zeit){
+  const a = Z.auftrag; if (!a) return;
+  if (art === "abholung")      { a.status = "geladen"; a.abholZeit = zeit; }
+  if (art === "ankunft")       { a.status = "angekommen"; a.ankunftZeit = zeit;
+    a.rechnung = { ...a.rechnung, wartetSeit:0, naechster:naechsterAus(inMin(PLAN.entladung), zweiter()) }; }
+  if (art === "warten")        { a.status = "warten"; a.wartenZeit = zeit;
+    a.rechnung = { ...a.rechnung, wartetVorEntladung:0 }; }
+  if (art === "entladenStart") { a.status = "entladen"; a.entladeStart = zeit;
+    a.rechnung = { ...a.rechnung, entladePlanMin:PLAN.entladung };
+    neuRechnen(inMin(PLAN.entladung)); }
+  if (art === "entladenFertig"){ a.status = "entladen_fertig"; a.entladeFertigZeit = zeit;
+    // Ab dem tatsächlichen Entladeende neu rechnen
+    a.rechnung = { ...a.rechnung, entladeEndePlan: zeit, entladeUnbekannt:false,
+                   naechster: naechsterAus(zeit, zweiter()) }; }
+  if (art === "abgabe")        { a.status = "fertig"; a.abgabeZeit = zeit; }
+  Z.auftrag = aktuell() || a;
+  // Ein gebuchter Schritt macht weder Prognose noch Ortung frisch.
+}
+
+/* Ein Weg für Abholung und Ablieferung.
+   Ohne Netz wird der ganze Vorgang zuerst auf dem Gerät abgelegt — erst
+   danach gilt der Schritt als gebucht und die Aufnahme verschwindet. */
+let speichertGerade = false;        // verhindert parallele Speicherversuche
+
+async function vorgangSenden(art, opt){
+  opt = opt || {};
+  const a = Z.auftrag;
+  if (!a || speichertGerade) return;     // zweiter Tipp läuft ins Leere
+  const id = a.id + ":" + art;
+  speichertGerade = true;
+  Z.laeuft = true; zeichne();
+  try {
+    await vorgangAblegen(a, art, id, opt);
+  } finally {
+    speichertGerade = false;
+    Z.laeuft = false;
+    zeichne();                           // sonst bliebe der Knopf gesperrt
+  }
+}
+
+async function vorgangAblegen(a, art, id, opt){
+  // Wiederholung: Uhrzeit und Foto des ersten Versuchs behalten
+  const alterVersuch = Z.offenerVersuch && Z.offenerVersuch.id === id ? Z.offenerVersuch : null;
+  const zeit = (alterVersuch && alterVersuch.zeit) || jetztIso();
+  const bild = (Z.foto && Z.foto.bild) || (alterVersuch && alterVersuch.foto) || DEMOFOTO;
+  const nummer = opt.nummer || a.containerBestaetigt || a.container;
+  const erledigt = a;
+
+  const fertigBuchen = () => {
+    if (gebucht.has(id)) return;
+    gebucht.add(id);
+    if (art === "abholung") {
+      a.containerBestaetigt = nummer;
+      a.containerUngeprueft = opt.ungeprueft || undefined;
+      a.abweichung = opt.abweichung || undefined;
+    }
+    buchen(art, zeit);
+  };
+
+  if (demoNetz) {
+    fertigBuchen();
+    Z.foto = null; Z.pruefung = null; Z.offenerVersuch = null;
+    if (art === "abgabe") {
+      Z.abschluss = { ort: erledigt.kunde || erledigt.zielOrt, zeit,
+                      nummer: erledigt.nummer,
+                      container: erledigt.containerBestaetigt || erledigt.container,
+                      naechster: naechsterAus(zeit, aktuell()) };
+      Z.ansicht = "abschluss"; zeichne();
+      return demoHinweis("Simulierter Versand: in der App ginge die Ablieferung jetzt ans Büro.");
+    }
+    Z.ergebnis = { art, zeit, nummer, abweichung:opt.abweichung, ungeprueft:opt.ungeprueft,
+                   typ:"uebertragen" };
+    Z.ansicht = "ergebnis"; zeichne();
+    return demoHinweis(opt.abweichung
+      ? "Simulierter Versand. In der App ginge eine hervorgehobene Meldung mit beiden Nummern, Fahrer, Uhrzeit und Foto ans Büro."
+      : opt.ungeprueft
+      ? "Simulierter Versand. Die Nummer bliebe als ungeprüft markiert und das Büro bekäme eine Meldung."
+      : "Simulierter Versand. In der App stünde der Schritt im Auftragsverlauf.");
+  }
+
+  // Ohne Netz: erst ablegen, dann buchen
+  const vorgang = { id, auftragId:a.id, art, zeit, nummer,
+                    abweichung: !!opt.abweichung, ungeprueft: !!opt.ungeprueft,
+                    foto: bild, weg:"(Demo, kein Versand)",
+                    nutzlast: { auftragId:a.id, art, zeit, foto:bild,
+                                containerBestaetigt: art === "abholung" ? nummer : undefined,
+                                containerUngeprueft: opt.ungeprueft || undefined } };
+  const abgelegt = demoSpeicherFehler ? false : await TL_WARTE.legeAb(vorgang);
+  await warteschlangeZeigen();
+
+  if (!abgelegt) {
+    // Nichts gebucht, nichts behauptet: Foto und Daten bleiben erhalten.
+    Z.offenerVersuch = { id, art, foto:bild, zeit, opt };
+    Z.ansicht = "speicherfehler"; zeichne();
+    return demoHinweis("Speichern hat nicht geklappt. Das Foto bleibt erhalten, der Schritt bleibt offen. " +
+                       "Mit „Erneut speichern“ wird derselbe Vorgang noch einmal abgelegt.");
+  }
+
+  fertigBuchen();
+  Z.foto = null; Z.pruefung = null; Z.offenerVersuch = null;
+  Z.ergebnis = { art, zeit, nummer, abweichung:opt.abweichung, ungeprueft:opt.ungeprueft,
+                 typ:"gespeichert" };
+  Z.ansicht = "ergebnis"; zeichne();
+  demoHinweis("Nichts gesendet. Foto, Nummer und Uhrzeit " + hhmm(zeit) +
+              " liegen im Gerätespeicher. Der Auftrag geht weiter, bleibt aber als " +
+              "„Übertragung offen“ erkennbar.");
+}
+
+/* Erneut senden: derselbe Vorgang. Ist nichts da, wird auch nichts behauptet. */
+async function nochmalSendenDemo(){
+  const liste = await TL_WARTE.alle();
+  if (!liste.length) {
+    await warteschlangeZeigen();
+    zeichne();
+    return demoHinweis("Es wartet kein Vorgang. Deshalb wird hier auch keine Übertragung bestätigt.");
+  }
+  demoNetz = true; Z.online = true;
+  const v = liste[0];
+  await TL_WARTE.entferne(v.id);
+  await warteschlangeZeigen();
+  Z.datenZeit = jetztIso();          // neue Daten vom Büro
+  // Die Ortung bleibt so alt, wie sie ist — ein Versand ortet nicht.
+  Z.ergebnis = { art:v.art, zeit:v.zeit, nummer:v.nummer, abweichung:v.abweichung,
+                 ungeprueft:v.ungeprueft, typ:"uebertragen" };
+  Z.ansicht = "ergebnis"; zeichne();
+  demoHinweis("Simuliert gesendet: derselbe Vorgang von " + hhmm(v.zeit) +
+              (v.nummer ? ", Nummer " + FA.nummer(v.nummer) : "") +
+              ". Keine zweite Buchung, keine neue Uhrzeit.");
+}
+
+/* Was liegt gerade im Gerätespeicher? */
+async function warteschlangeZeigen(){
+  const feld = document.getElementById("warteschlange");
+  const liste = await TL_WARTE.alle();
+  if (Z) { Z.offen = liste.length; Z.offeneIds = liste.map(v => v.id); }
+  if (!liste.length) {
+    feld.innerHTML = "<b>Gerätespeicher der Vorschau:</b> kein Vorgang offen." +
+      " Wartende Vorgänge werden in IndexedDB abgelegt und überleben das Neuladen." +
+      (TL_WARTE.istDauerhaft() === false
+        ? " <b>In diesem Rahmen ist kein dauerhafter Speicher möglich</b> (" +
+          (TL_WARTE.fehlerText() || "IndexedDB gesperrt") +
+          "). Die Vorschau zeigt dann den Speicherfehler, statt etwas zu behaupten."
+        : "");
+    return;
+  }
+  feld.innerHTML = "<b>Gerätespeicher der Vorschau (IndexedDB, übersteht das Neuladen):</b> " +
+    liste.length +
+    " Vorgang/Vorgänge offen — " +
+    liste.map(v => v.art + " von " + hhmm(v.zeit) + ", Nummer " +
+      (v.nummer ? FA.nummer(v.nummer) : "—") + ", Foto " + (v.foto ? "vorhanden" : "fehlt")).join("; ") +
+    ' <button type="button" id="leeren" style="min-height:44px;font-size:16px;margin-left:8px">Warteschlange leeren</button>';
+  const b = document.getElementById("leeren");
+  if (b) b.onclick = async () => { for (const v of liste) await TL_WARTE.entferne(v.id);
+    await warteschlangeZeigen(); if (Z) zeichne(); };
+}
+
+const A = {
+  vorlesen(){ sprich(FA.vorlesetext(Z)); demoHinweis("Vorlesen benutzt die Sprachausgabe des Browsers."); },
+  anrufen(){ demoHinweis("In der App wählt das Handy jetzt 0421 98994620."); },
+  tagesplan(){ Z.vorher = Z.ansicht; Z.ansicht = "tagesplan"; zeichne(); },
+  sprache(){ Z.vorher = "tagesplan"; Z.ansicht = "sprache"; zeichne(); },
+  spracheSetzen(d){ setzeSprache(d.k); Z.ansicht = "tagesplan"; zeichne();
+                    demoHinweis("Die Sprache bleibt gemerkt, auch nach dem Schließen."); },
+  zurueck(){
+    if (Z.ansicht === "sprache")        { Z.ansicht = "tagesplan"; return zeichne(); }
+    if (Z.ansicht === "stand")          { Z.ansicht = Z.vorher || "auftrag"; Z.stand = null; return zeichne(); }
+    if (Z.ansicht === "kamerahilfe")    { Z.ansicht = "foto"; return zeichne(); }
+    if (Z.ansicht === "nummerEingeben") { Z.ansicht = "container"; return zeichne(); }
+    if (Z.ansicht === "containerFrage") { Z.ansicht = "container"; return zeichne(); }
+    if (Z.ansicht === "ungeprueft")     { Z.ansicht = "container"; return zeichne(); }
+    if (Z.ansicht === "laenger")        { Z.ansicht = "auftrag"; return zeichne(); }
+    if (Z.ansicht === "speicherfehler") { return A.zurueckZumFoto(); }
+    Z.ansicht = "auftrag"; Z.foto = null; Z.ergebnis = null; Z.pruefung = null;
+    Z.problem = null; Z.problemErgebnis = null;
+    Z.auftrag = aktuell();
+    if (!Z.auftrag) Z.ansicht = "feierabend";
+    zeichne();
+  },
+  nochmalLaden(){ Z.online = true; Z.datenZeit = jetztIso(); Z.ansicht = "auftrag"; zeichne(); },
+  fahrzeug(){ Z.fahrzeugOffen = !Z.fahrzeugOffen; zeichne(); },
+  aenderungGesehen(){ mitStand(() => { Z.auftrag.aenderungGesehen = { zeit:jetztIso() };
+    zeichne(); demoHinweis("In der App geht die Bestätigung ans Büro."); }); },
+
+  /* Foto */
+  fotoAbholung(){ Z.foto = { art:"abholung", bild:null }; Z.ansicht = "foto"; zeichne(); },
+  fotoAbgabe(){   Z.foto = { art:"abgabe",   bild:null }; Z.ansicht = "foto"; zeichne(); },
+  kamera(){ mitStand(() => { Z.foto.bild = DEMOFOTO; Z.ansicht = "foto"; zeichne();
+    demoHinweis("Statt der Kamera wird ein Platzhalterbild gezeigt."); }); },
+  fotoNeu(){ Z.foto = Z.foto || { art:"abholung", bild:null };
+    Z.foto.bild = DEMOFOTO; Z.pruefung = null; Z.ansicht = "foto"; zeichne();
+    demoHinweis("Neue Aufnahme, wieder ein Platzhalterbild."); },
+  fotoAbbrechen(){ Z.foto = null; Z.pruefung = null; Z.ansicht = "auftrag"; zeichne();
+                   demoHinweis("Abbrechen hat den Auftrag nicht abgeschlossen."); },
+  kamerahilfe(){ Z.ansicht = "kamerahilfe"; zeichne(); },
+  fotoVerwenden(){
+    if (Z.foto && Z.foto.art === "abholung") {
+      const a = Z.auftrag;
+      Z.pruefung = demoErkennung === "abweichung" ? pruefungBauen("MSCU2233440", {sicher:true})
+                 : demoErkennung === "unsicher"   ? pruefungBauen("", {sicher:false})
+                 : demoErkennung === "ungueltig"  ? pruefungBauen("MSCU1234567", {sicher:true})
+                 : pruefungBauen(a.container, {sicher:true});
+      Z.ansicht = "container"; zeichne();
+      return demoHinweis("Die Nummernerkennung ist simuliert. Prüfziffer und Vergleich rechnet die Vorschau wirklich.");
+    }
+    // Ablieferung nimmt denselben Weg wie die Abholung: erst ablegen, dann buchen.
+    vorgangSenden(Z.foto ? Z.foto.art : "abgabe", {});
+  },
+
+  /* Containernummer */
+  nummerStimmt(){ Z.pruefung = pruefungBauen((Z.auftrag||{}).container, {sicher:true, demo:false});
+                  Z.ansicht = "container"; zeichne(); },
+  nummerEingeben(){ Z.pruefung = { ...(Z.pruefung||{}), zustand:"eingabe" };
+    Z.ansicht = "nummerEingeben"; zeichne();
+    const f = document.getElementById("nummerfeld"); if (f) f.focus(); },
+  nummerUebernehmen(){
+    const feld = document.getElementById("nummerfeld");
+    const roh = feld ? feld.value : "";
+    Z.pruefung = pruefungBauen(roh, { sicher:true, versucht:true, eingabe:roh, demo:false });
+    Z.ansicht = "container"; zeichne();
+    demoHinweis(Z.pruefung.gueltig
+      ? "Prüfziffer stimmt — das rechnet die Vorschau wirklich."
+      : "Prüfziffer oder Format stimmen nicht. Eine Übereinstimmung mit dem Auftrag ändert daran nichts.");
+  },
+  trotzdem(){ Z.ansicht = "containerFrage"; zeichne(); },
+  ungeprueftUebernehmen(){ Z.ansicht = "ungeprueft"; zeichne(); },
+  abholungBestaetigen(){
+    const p = Z.pruefung || {};
+    vorgangSenden("abholung", { nummer: p.bestaetigt || (Z.auftrag||{}).container,
+                                abweichung: p.zustand === "abweichung",
+                                ungeprueft: Z.ansicht === "ungeprueft" || p.zustand === "ungueltig" });
+  },
+  erneutSpeichern(){
+    const v = Z.offenerVersuch;
+    if (!v) { Z.ansicht = "auftrag"; return zeichne(); }
+    vorgangSenden(v.art, v.opt || {});
+  },
+  zurueckZumFoto(){
+    const v = Z.offenerVersuch;
+    if (v) Z.foto = { art:v.art, bild:v.foto };     // Foto bleibt erhalten
+    Z.ansicht = "foto"; zeichne();
+  },
+
+  /* Ankunft, Warten, Entladen */
+  ankunft(){ mitStand(() => { buchen("ankunft", jetztIso());
+    Z.bestaetigung = t("bestAnkunft"); Z.ansicht = "auftrag"; zeichne();
+    demoHinweis("Nur die Ankunft ist gemeldet. Die Entladung startet der Fahrer selbst."); }); },
+  warten(){ buchen("warten", jetztIso()); Z.bestaetigung = t("bestWarten");
+            Z.ansicht = "auftrag"; zeichne(); },
+  entladenStart(){ mitStand(() => { buchen("entladenStart", jetztIso());
+    Z.bestaetigung = t("bestEntladenStart"); Z.ansicht = "auftrag"; zeichne();
+    demoHinweis("Die geplante Entladezeit von " + PLAN.entladung + " Minuten läuft ab jetzt."); }); },
+  entladenFertig(){ mitStand(() => { const zeit = jetztIso();
+    buchen("entladenFertig", zeit);
+    Z.bestaetigung = t("bestEntladenFertig");
+    Z.foto = { art:"abgabe", bild:null }; Z.ansicht = "foto"; zeichne();
+    const n = Z.auftrag && Z.auftrag.rechnung && Z.auftrag.rechnung.naechster;
+    demoHinweis("Ab dem tatsächlichen Entladeende neu gerechnet" +
+      (n && n.ankunft ? ": Ankunft beim nächsten Kunden etwa " + hhmm(n.ankunft) + " Uhr." : ".") +
+      " Die Ablieferung ist damit noch nicht dokumentiert — dafür kommt das Foto."); }); },
+  laenger(){ Z.ansicht = "laenger"; zeichne(); },
+  laengerWahl(d){
+    const a = Z.auftrag;
+    if (d.min === "") {
+      neuRechnen(null);
+      demoHinweis("Ohne Zeitangabe wird keine Folgeankunft gerechnet.");
+    } else {
+      const m = Number(d.min);
+      const ende = inMin(m);
+      neuRechnen(ende);
+      const n = a.rechnung.naechster;
+      demoHinweis("Gerechnet ab " + hhmm(jetzt()) + ": Entladeende " + hhmm(ende) +
+        ", plus Restarbeiten " + PLAN.nacharbeit + " Min." +
+        (zweiter() && zweiter().brauchtAbholung
+          ? ", Fahrt zur Abholung " + PLAN.fahrtAbholung + " Min., Laden " + PLAN.laden + " Min." : "") +
+        ", Fahrt zum Kunden " + PLAN.fahrtKunde + " Min. → Ankunft etwa " +
+        (n && n.ankunft ? hhmm(n.ankunft) : "—") + " Uhr.");
+    }
+    Z.ansicht = "auftrag"; zeichne();
+  },
+  standJa(){ Z.standOk = true; const f = Z.stand && Z.stand.aktion; Z.stand = null;
+             Z.ansicht = Z.vorher || "auftrag"; zeichne(); if (f) f(); },
+  nochmalSenden(){ nochmalSendenDemo(); },
+
+  /* Problem melden */
+  problem(){ Z.vorher = Z.ansicht; Z.problem = null; Z.ansicht = "problem"; zeichne(); },
+  problemWahl(d){ Z.problem = { art:d.art }; Z.ansicht = "problemFrage"; zeichne(); },
+  problemSenden(){
+    const art = Z.problem ? Z.problem.art : (Z.problemErgebnis||{}).art;
+    const zeit = jetztIso();
+    if (!demoNetz) {
+      Z.problemErgebnis = { art, typ:"wartet", zeit }; Z.offen = (Z.offen||0)+1;
+      demoHinweis("Ohne Netz wartet die Meldung. Es steht nicht „gesendet“ da.");
+    } else {
+      Z.problemErgebnis = { art, typ:"gesendet", zeit, gelesen:false };
+      demoHinweis("Demo: „Vom Büro gelesen“ erscheint hier nach einigen Sekunden. In der App nur bei echter Lesebestätigung.");
+      setTimeout(() => {
+        if (Z.problemErgebnis && Z.problemErgebnis.typ === "gesendet") {
+          Z.problemErgebnis.gelesen = true;
+          if (Z.ansicht === "problemErgebnis") zeichne();
+        }
+      }, 6000);
+    }
+    Z.ansicht = "problemErgebnis"; zeichne();
+  },
+  naechster(){ Z.abschluss = null; Z.auftrag = aktuell();
+               Z.ansicht = Z.auftrag ? "auftrag" : "feierabend"; zeichne(); },
+  navi(){ demoHinweis("In der App öffnet sich hier die Karten-App des Handys."); }
+};
+
+APP.addEventListener("click", e => {
+  const b = e.target.closest("[data-tun]");
+  if (!b) return;
+  if (b.dataset.tun === "navi") e.preventDefault();
+  const f = A[b.dataset.tun];
+  if (typeof f === "function") f(b.dataset);
+});
+
+/* Für Prüfzwecke: Zustand und Gerätespeicher der Vorschau von außen lesbar.
+   Die Fahreransicht benutzt das nicht. */
+window.VORSCHAU = { zustand: () => Z, warteschlange: TL_WARTE, plan: PLAN };
+
+/* Solange eine Aufnahme nicht gespeichert ist, warnt der Browser vor dem
+   Schließen — soweit er das zulässt. */
+window.addEventListener("beforeunload", e => {
+  if (!Z || !Z.offenerVersuch) return;
+  e.preventDefault(); e.returnValue = t("verlassenWarnung");
+  return t("verlassenWarnung");
+});
+
+szenario("passt");
+warteschlangeZeigen();
+</script>
+</body>
+</html>
