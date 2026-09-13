@@ -159,6 +159,11 @@ Solange fragt die App einmal nach: „Steht diese Nummer auf dem Container?“
   **Erfassungszeit des Fahrers** und hält den Eingang getrennt fest.
 - **Abholung und Ablieferung** nehmen denselben Weg: ohne Netz wird der ganze
   Vorgang zuerst in IndexedDB abgelegt, erst danach gilt der Schritt als gebucht.
+  **Es gibt keinen Ersatzspeicher.** Ein Vorgang gilt nur dann als gespeichert,
+  wenn er geschrieben **und mitsamt Foto wieder gelesen** werden konnte. Klappt
+  das nicht (zum Beispiel in einer eingebetteten Vorschau ohne IndexedDB), zeigt
+  die App den Speicherfehler, behält Foto, Auftrag und Uhrzeit und lässt den
+  Schritt offen. Ein zweiter Tipp startet keinen zweiten Speicherversuch.
   Vier Zustände sind getrennt sichtbar: *noch nicht gespeichert* (eigene Ansicht
   mit „Erneut speichern“ und „Zurück zum Foto“, das Foto bleibt), *auf dem Gerät
   gespeichert*, *Übertragung offen* (auch im Tagesplan) und *Übertragung bestätigt*.

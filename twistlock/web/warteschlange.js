@@ -22,15 +22,14 @@ var TL_WARTE = (function () {
 
   function setzeDatenbank(name) { DB_NAME = name; }
 
-  /* Manche Anzeigeflächen (eingebettete Vorschau ohne eigene Herkunft)
-     erlauben keinen dauerhaften Speicher. Die echte App darf dann nichts
-     behaupten. Nur die Vorschau schaltet den Arbeitsspeicher frei —
-     und sagt ausdrücklich dazu, dass er das Neuladen nicht übersteht. */
-  let arbeitsspeicherErlaubt = false;
+  /* Es gibt keinen Ersatzspeicher. Entweder ein Vorgang liegt dauerhaft
+     auf dem Gerät (IndexedDB), oder er gilt als nicht gespeichert.
+     Ein Zwischenspeicher im Arbeitsspeicher würde beim Neuladen
+     verschwinden — und dürfte deshalb nie als gespeichert gelten. */
   let dauerhaft = null;                  // null = noch nicht ausprobiert
-  const gedaechtnis = new Map();
-  function erlaubeArbeitsspeicher(ja) { arbeitsspeicherErlaubt = !!ja; }
+  let letzterFehler = null;
   function istDauerhaft() { return dauerhaft; }
+  function fehlerText() { return letzterFehler; }
 
   function db() {
     return new Promise((ok, nein) => {
@@ -74,14 +73,18 @@ var TL_WARTE = (function () {
         t.onabort = () => nein(t.error);
       });
       // Nur melden, was auch wirklich gelesen werden kann
+      /* Erst wenn der Vorgang wieder gelesen werden kann, gilt er als
+         gespeichert. Alles andere wäre eine Behauptung. */
       const zurueck = await hole(vorgang.id);
-      dauerhaft = !!zurueck;
-      return !!zurueck;
+      const vollstaendig = !!(zurueck && zurueck.id === vorgang.id &&
+                              (!vorgang.foto || zurueck.foto));
+      dauerhaft = vollstaendig;
+      letzterFehler = vollstaendig ? null : "Vorgang nicht vollständig lesbar";
+      return vollstaendig;
     } catch (e) {
-      if (!arbeitsspeicherErlaubt) { dauerhaft = false; return false; }
-      gedaechtnis.set(vorgang.id, vorgang);
       dauerhaft = false;
-      return true;
+      letzterFehler = (e && e.message) || "Speicher nicht verfügbar";
+      return false;
     }
   }
 
@@ -96,7 +99,9 @@ var TL_WARTE = (function () {
       dauerhaft = true;
       return liste;
     } catch (e) {
-      return arbeitsspeicherErlaubt ? [...gedaechtnis.values()] : [];
+      dauerhaft = false;
+      letzterFehler = (e && e.message) || "Speicher nicht verfügbar";
+      return [];
     }
   }
 
@@ -108,9 +113,7 @@ var TL_WARTE = (function () {
         a.onsuccess = () => ok(a.result || null);
         a.onerror   = () => ok(null);
       });
-    } catch (e) {
-      return arbeitsspeicherErlaubt ? (gedaechtnis.get(id) || null) : null;
-    }
+    } catch (e) { return null; }
   }
 
   async function entferne(id) {
@@ -122,16 +125,21 @@ var TL_WARTE = (function () {
         t.oncomplete = ok; t.onerror = ok; t.onabort = ok;
       });
       return true;
-    } catch (e) {
-      if (arbeitsspeicherErlaubt) { gedaechtnis.delete(id); return true; }
-      return false;
-    }
+    } catch (e) { return false; }
   }
 
   async function anzahl() { return (await alle()).length; }
 
+  /* Ist dauerhafter Speicher überhaupt möglich? */
+  async function verfuegbar() {
+    try { await db(); dauerhaft = true; return true; }
+    catch (e) { dauerhaft = false;
+                letzterFehler = (e && e.message) || "Speicher nicht verfügbar";
+                return false; }
+  }
+
   return { setzeDatenbank, legeAb, alle, hole, entferne, anzahl,
-           erlaubeArbeitsspeicher, istDauerhaft };
+           istDauerhaft, fehlerText, verfuegbar };
 })();
 
 if (typeof module !== "undefined" && module.exports) module.exports = TL_WARTE;

@@ -663,15 +663,14 @@ var TL_WARTE = (function () {
 
   function setzeDatenbank(name) { DB_NAME = name; }
 
-  /* Manche Anzeigeflächen (eingebettete Vorschau ohne eigene Herkunft)
-     erlauben keinen dauerhaften Speicher. Die echte App darf dann nichts
-     behaupten. Nur die Vorschau schaltet den Arbeitsspeicher frei —
-     und sagt ausdrücklich dazu, dass er das Neuladen nicht übersteht. */
-  let arbeitsspeicherErlaubt = false;
+  /* Es gibt keinen Ersatzspeicher. Entweder ein Vorgang liegt dauerhaft
+     auf dem Gerät (IndexedDB), oder er gilt als nicht gespeichert.
+     Ein Zwischenspeicher im Arbeitsspeicher würde beim Neuladen
+     verschwinden — und dürfte deshalb nie als gespeichert gelten. */
   let dauerhaft = null;                  // null = noch nicht ausprobiert
-  const gedaechtnis = new Map();
-  function erlaubeArbeitsspeicher(ja) { arbeitsspeicherErlaubt = !!ja; }
+  let letzterFehler = null;
   function istDauerhaft() { return dauerhaft; }
+  function fehlerText() { return letzterFehler; }
 
   function db() {
     return new Promise((ok, nein) => {
@@ -715,14 +714,18 @@ var TL_WARTE = (function () {
         t.onabort = () => nein(t.error);
       });
       // Nur melden, was auch wirklich gelesen werden kann
+      /* Erst wenn der Vorgang wieder gelesen werden kann, gilt er als
+         gespeichert. Alles andere wäre eine Behauptung. */
       const zurueck = await hole(vorgang.id);
-      dauerhaft = !!zurueck;
-      return !!zurueck;
+      const vollstaendig = !!(zurueck && zurueck.id === vorgang.id &&
+                              (!vorgang.foto || zurueck.foto));
+      dauerhaft = vollstaendig;
+      letzterFehler = vollstaendig ? null : "Vorgang nicht vollständig lesbar";
+      return vollstaendig;
     } catch (e) {
-      if (!arbeitsspeicherErlaubt) { dauerhaft = false; return false; }
-      gedaechtnis.set(vorgang.id, vorgang);
       dauerhaft = false;
-      return true;
+      letzterFehler = (e && e.message) || "Speicher nicht verfügbar";
+      return false;
     }
   }
 
@@ -737,7 +740,9 @@ var TL_WARTE = (function () {
       dauerhaft = true;
       return liste;
     } catch (e) {
-      return arbeitsspeicherErlaubt ? [...gedaechtnis.values()] : [];
+      dauerhaft = false;
+      letzterFehler = (e && e.message) || "Speicher nicht verfügbar";
+      return [];
     }
   }
 
@@ -749,9 +754,7 @@ var TL_WARTE = (function () {
         a.onsuccess = () => ok(a.result || null);
         a.onerror   = () => ok(null);
       });
-    } catch (e) {
-      return arbeitsspeicherErlaubt ? (gedaechtnis.get(id) || null) : null;
-    }
+    } catch (e) { return null; }
   }
 
   async function entferne(id) {
@@ -763,16 +766,21 @@ var TL_WARTE = (function () {
         t.oncomplete = ok; t.onerror = ok; t.onabort = ok;
       });
       return true;
-    } catch (e) {
-      if (arbeitsspeicherErlaubt) { gedaechtnis.delete(id); return true; }
-      return false;
-    }
+    } catch (e) { return false; }
   }
 
   async function anzahl() { return (await alle()).length; }
 
+  /* Ist dauerhafter Speicher überhaupt möglich? */
+  async function verfuegbar() {
+    try { await db(); dauerhaft = true; return true; }
+    catch (e) { dauerhaft = false;
+                letzterFehler = (e && e.message) || "Speicher nicht verfügbar";
+                return false; }
+  }
+
   return { setzeDatenbank, legeAb, alle, hole, entferne, anzahl,
-           erlaubeArbeitsspeicher, istDauerhaft };
+           istDauerhaft, fehlerText, verfuegbar };
 })();
 
 if (typeof module !== "undefined" && module.exports) module.exports = TL_WARTE;
@@ -924,11 +932,11 @@ de:{
   uebertragungBestaetigt:"Übertragung bestätigt",
   fotoNichtGespeichert:"Foto noch nicht gespeichert. Bitte erneut versuchen.",
   erneutSpeichern:"Erneut speichern", zurueckZumFoto:"Zurück zum Foto",
-  speicherFehlerText:"Das Foto ist noch da. Solange es nicht gespeichert ist, gilt der Schritt als offen.",
+  speicherFehlerText:"Das Foto ist noch da. Solange es nicht gespeichert ist, gilt der Schritt als offen. Ein noch nicht gespeichertes Foto kann beim Schließen verloren gehen.",
   keinVorgangOffen:"Es wartet kein Vorgang",
   demoNichtGesendet:"Demo: nicht wirklich gesendet",
   verlassenWarnung:"Das Foto ist noch nicht gespeichert.",
-  nichtSchliessen:"Die Aufnahme ist noch auf dem Bildschirm. Bitte die App offen lassen und es gleich noch einmal versuchen.",
+  nichtSchliessen:"Bitte diese Seite nicht schließen.",
   demoSimuliert:"Demo, simuliert",
   demoVersand:"Demo: Der Versand ist simuliert. Es geht nichts an einen Server oder an die Dispo.",
   nummerKorrigieren:"Nummer korrigieren",
@@ -1092,11 +1100,11 @@ tr:{
   uebertragungBestaetigt:"Gönderim onaylandı",
   fotoNichtGespeichert:"Fotoğraf henüz kaydedilmedi. Lütfen tekrar dene.",
   erneutSpeichern:"Tekrar kaydet", zurueckZumFoto:"Fotoğrafa dön",
-  speicherFehlerText:"Fotoğraf duruyor. Kaydedilmediği sürece adım açık sayılır.",
+  speicherFehlerText:"Fotoğraf duruyor. Kaydedilmediği sürece adım açık sayılır. Kaydedilmemiş bir fotoğraf kapatınca kaybolabilir.",
   keinVorgangOffen:"Bekleyen kayıt yok",
   demoNichtGesendet:"Demo: gerçekte gönderilmedi",
   verlassenWarnung:"Fotoğraf henüz kaydedilmedi.",
-  nichtSchliessen:"Fotoğraf hâlâ ekranda. Lütfen uygulamayı açık bırak ve birazdan tekrar dene.",
+  nichtSchliessen:"Lütfen bu sayfayı kapatma.",
   demoSimuliert:"Demo, benzetim",
   demoVersand:"Demo: Gönderim benzetimdir. Hiçbir şey sunucuya veya ofise gitmez.",
   nummerKorrigieren:"Numarayı düzelt",
@@ -1260,11 +1268,11 @@ pl:{
   uebertragungBestaetigt:"Wysyłka potwierdzona",
   fotoNichtGespeichert:"Zdjęcie jeszcze nie zapisane. Spróbuj ponownie.",
   erneutSpeichern:"Zapisz ponownie", zurueckZumFoto:"Wróć do zdjęcia",
-  speicherFehlerText:"Zdjęcie jest nadal tutaj. Dopóki nie zostanie zapisane, krok pozostaje otwarty.",
+  speicherFehlerText:"Zdjęcie jest nadal tutaj. Dopóki nie zostanie zapisane, krok pozostaje otwarty. Niezapisane zdjęcie może zniknąć po zamknięciu.",
   keinVorgangOffen:"Nic nie czeka",
   demoNichtGesendet:"Demo: naprawdę nie wysłano",
   verlassenWarnung:"Zdjęcie nie jest jeszcze zapisane.",
-  nichtSchliessen:"Zdjęcie jest jeszcze na ekranie. Nie zamykaj aplikacji i spróbuj za chwilę ponownie.",
+  nichtSchliessen:"Proszę nie zamykać tej strony.",
   demoSimuliert:"Demo, symulacja",
   demoVersand:"Demo: wysyłka jest symulowana. Nic nie idzie na serwer ani do biura.",
   nummerKorrigieren:"Popraw numer",
@@ -1428,11 +1436,11 @@ ro:{
   uebertragungBestaetigt:"Trimitere confirmată",
   fotoNichtGespeichert:"Poza nu este încă salvată. Te rog încearcă din nou.",
   erneutSpeichern:"Salvează din nou", zurueckZumFoto:"Înapoi la poză",
-  speicherFehlerText:"Poza este încă aici. Cât timp nu este salvată, pasul rămâne deschis.",
+  speicherFehlerText:"Poza este încă aici. Cât timp nu este salvată, pasul rămâne deschis. O poză nesalvată se poate pierde la închidere.",
   keinVorgangOffen:"Nu așteaptă nimic",
   demoNichtGesendet:"Demo: nu s-a trimis cu adevărat",
   verlassenWarnung:"Poza nu este încă salvată.",
-  nichtSchliessen:"Poza este încă pe ecran. Lasă aplicația deschisă și încearcă din nou imediat.",
+  nichtSchliessen:"Te rog nu închide această pagină.",
   demoSimuliert:"Demo, simulat",
   demoVersand:"Demo: trimiterea este simulată. Nu ajunge nimic la server sau la birou.",
   nummerKorrigieren:"Corectează numărul",
@@ -1596,11 +1604,11 @@ ar:{
   uebertragungBestaetigt:"تم تأكيد الإرسال",
   fotoNichtGespeichert:"لم تُحفظ الصورة بعد. من فضلك حاول مرة أخرى.",
   erneutSpeichern:"احفظ مرة أخرى", zurueckZumFoto:"عد إلى الصورة",
-  speicherFehlerText:"الصورة ما زالت هنا. ما دامت غير محفوظة تبقى الخطوة مفتوحة.",
+  speicherFehlerText:"الصورة ما زالت هنا. ما دامت غير محفوظة تبقى الخطوة مفتوحة. قد تُفقد الصورة غير المحفوظة عند الإغلاق.",
   keinVorgangOffen:"لا يوجد إجراء منتظر",
   demoNichtGesendet:"عرض توضيحي: لم يُرسل فعلياً",
   verlassenWarnung:"الصورة غير محفوظة بعد.",
-  nichtSchliessen:"الصورة ما زالت على الشاشة. أبقِ التطبيق مفتوحاً وحاول بعد قليل مرة أخرى.",
+  nichtSchliessen:"من فضلك لا تغلق هذه الصفحة.",
   demoSimuliert:"عرض توضيحي، محاكاة",
   demoVersand:"عرض توضيحي: الإرسال محاكاة. لا يصل شيء إلى خادم أو إلى المكتب.",
   nummerKorrigieren:"صحّح الرقم",
@@ -2487,6 +2495,8 @@ function ansichtSpeicherfehler(Z){
       <div class="w">${esc(t("fotoNichtGespeichert"))}</div>
       <div class="u">${esc(t("speicherFehlerText"))}</div>
     </div></div>
+    <div class="kasten warn"><span class="ico">${I.warnung(24)}</span>
+      <div>${esc(t("nichtSchliessen"))}</div></div>
     ${f.bild ? `<img class="vorschaubild" src="${esc(f.bild)}" alt="${esc(t("fotoTitelAbholung"))}">` : ""}
   </div>` + leiste(
     hauptKnopf(t("erneutSpeichern"), I.pfeil(28), "erneutSpeichern", Z),
@@ -2825,11 +2835,9 @@ const PLAN = { nacharbeit:15, fahrtAbholung:60, laden:30, fahrtKunde:60, entladu
 /* Die Warteschlange der Vorschau liegt in einer eigenen Datenbank,
    damit sie nichts mit der echten App zu tun hat. */
 TL_WARTE.setzeDatenbank("twistlock-demo");
-/* In einer eingebetteten Vorschau ohne eigene Herkunft gibt es keinen
-   dauerhaften Speicher. Dann weicht nur die Vorschau auf den
-   Arbeitsspeicher aus — und schreibt ausdrücklich dazu, dass der
-   Vorgang das Neuladen dort nicht übersteht. */
-TL_WARTE.erlaubeArbeitsspeicher(true);
+/* Kein Ersatzspeicher: Wenn die eingebettete Vorschau keinen dauerhaften
+   Speicher erlaubt, zeigt sie ehrlich den Speicherfehler — statt einen
+   Vorgang als gespeichert auszugeben, der beim Neuladen weg wäre. */
 
 /* ============ Beispieltag ============
    Jeder Auftrag bekommt Datum und Uhrzeit aus einem echten Zeitpunkt.
@@ -3190,11 +3198,25 @@ function buchen(art, zeit){
 /* Ein Weg für Abholung und Ablieferung.
    Ohne Netz wird der ganze Vorgang zuerst auf dem Gerät abgelegt — erst
    danach gilt der Schritt als gebucht und die Aufnahme verschwindet. */
+let speichertGerade = false;        // verhindert parallele Speicherversuche
+
 async function vorgangSenden(art, opt){
   opt = opt || {};
   const a = Z.auftrag;
-  if (!a) return;
+  if (!a || speichertGerade) return;     // zweiter Tipp läuft ins Leere
   const id = a.id + ":" + art;
+  speichertGerade = true;
+  Z.laeuft = true; zeichne();
+  try {
+    await vorgangAblegen(a, art, id, opt);
+  } finally {
+    speichertGerade = false;
+    Z.laeuft = false;
+    zeichne();                           // sonst bliebe der Knopf gesperrt
+  }
+}
+
+async function vorgangAblegen(a, art, id, opt){
   // Wiederholung: Uhrzeit und Foto des ersten Versuchs behalten
   const alterVersuch = Z.offenerVersuch && Z.offenerVersuch.id === id ? Z.offenerVersuch : null;
   const zeit = (alterVersuch && alterVersuch.zeit) || jetztIso();
@@ -3293,14 +3315,14 @@ async function warteschlangeZeigen(){
     feld.innerHTML = "<b>Gerätespeicher der Vorschau:</b> kein Vorgang offen." +
       " Wartende Vorgänge werden in IndexedDB abgelegt und überleben das Neuladen." +
       (TL_WARTE.istDauerhaft() === false
-        ? " In diesem Rahmen ist kein dauerhafter Speicher erlaubt — dann bleibt der Vorgang nur im Arbeitsspeicher."
+        ? " <b>In diesem Rahmen ist kein dauerhafter Speicher möglich</b> (" +
+          (TL_WARTE.fehlerText() || "IndexedDB gesperrt") +
+          "). Die Vorschau zeigt dann den Speicherfehler, statt etwas zu behaupten."
         : "");
     return;
   }
-  const art = TL_WARTE.istDauerhaft() === false
-    ? "nur im Arbeitsspeicher dieses Rahmens, beim Neuladen weg"
-    : "im Gerätespeicher (IndexedDB), übersteht das Neuladen";
-  feld.innerHTML = "<b>Gerätespeicher der Vorschau (" + art + "):</b> " + liste.length +
+  feld.innerHTML = "<b>Gerätespeicher der Vorschau (IndexedDB, übersteht das Neuladen):</b> " +
+    liste.length +
     " Vorgang/Vorgänge offen — " +
     liste.map(v => v.art + " von " + hhmm(v.zeit) + ", Nummer " +
       (v.nummer ? FA.nummer(v.nummer) : "—") + ", Foto " + (v.foto ? "vorhanden" : "fehlt")).join("; ") +

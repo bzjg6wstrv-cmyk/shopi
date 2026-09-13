@@ -705,6 +705,8 @@ function ansichtSpeicherfehler(Z){
       <div class="w">${esc(t("fotoNichtGespeichert"))}</div>
       <div class="u">${esc(t("speicherFehlerText"))}</div>
     </div></div>
+    <div class="kasten warn"><span class="ico">${I.warnung(24)}</span>
+      <div>${esc(t("nichtSchliessen"))}</div></div>
     ${f.bild ? `<img class="vorschaubild" src="${esc(f.bild)}" alt="${esc(t("fotoTitelAbholung"))}">` : ""}
   </div>` + leiste(
     hauptKnopf(t("erneutSpeichern"), I.pfeil(28), "erneutSpeichern", Z),
