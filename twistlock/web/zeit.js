@@ -81,8 +81,74 @@ var TL_ZEIT = (function () {
     return a > (maxAlter == null ? MAX_ALTER : maxAlter);
   }
 
+  /* ---------- Datum und Uhrzeit eines Auftrags ----------
+     Ein Termin gehört immer zu einem Datum. „14:30“ allein reicht nicht:
+     der Termin kann morgen sein, und die Fahrt kann über Mitternacht gehen.
+     Gerechnet wird in der Zeitzone des Betriebs (Europe/Berlin), damit es
+     auch auf einem Handy mit anderer Einstellung stimmt. */
+  const ZONE = "Europe/Berlin";
+
+  function istDatum(d){ return /^\d{4}-\d{2}-\d{2}$/.test(String(d || "")); }
+  function istUhrzeit(z){ return /^\d{1,2}:\d{2}$/.test(String(z || "")); }
+
+  /* Wie viele Minuten liegt die Zone zu diesem Zeitpunkt vor UTC? */
+  function versatzMin(zeitpunktMs, zone) {
+    const f = new Intl.DateTimeFormat("en-US", {
+      timeZone: zone || ZONE, hour12: false,
+      year:"numeric", month:"2-digit", day:"2-digit",
+      hour:"2-digit", minute:"2-digit", second:"2-digit" });
+    const p = {};
+    for (const teil of f.formatToParts(new Date(zeitpunktMs))) p[teil.type] = teil.value;
+    const alsUtc = Date.UTC(+p.year, +p.month - 1, +p.day,
+                            +p.hour % 24, +p.minute, +p.second);
+    return Math.round((alsUtc - zeitpunktMs) / MIN);
+  }
+
+  /* Datum + Uhrzeit des Auftrags als echter Zeitpunkt.
+     Fehlt oder stimmt etwas nicht, kommt null zurück — dann wird keine
+     Ankunft bewertet, statt eine falsche Zahl zu zeigen. */
+  function zeitpunkt(datum, uhrzeit, zone) {
+    if (!istDatum(datum) || !istUhrzeit(uhrzeit)) return null;
+    const [j, mo, t] = datum.split("-").map(Number);
+    const [h, mi] = uhrzeit.split(":").map(Number);
+    if (mo < 1 || mo > 12 || t < 1 || t > 31 || h > 23 || mi > 59) return null;
+    const roh = Date.UTC(j, mo - 1, t, h, mi);
+    // Zwei Durchgänge, damit auch die Zeitumstellung stimmt
+    let ms = roh - versatzMin(roh, zone) * MIN;
+    ms = roh - versatzMin(ms, zone) * MIN;
+    const d = new Date(ms);
+    if (isNaN(d)) return null;
+    // Bei der Umstellung im Frühjahr gibt es Uhrzeiten, die es nicht gibt
+    return d.toISOString();
+  }
+
+  /* Datum und Uhrzeit eines Zeitpunkts in der Betriebszeitzone */
+  function teile(iso, zone) {
+    const d = new Date(iso);
+    if (isNaN(d)) return null;
+    const f = new Intl.DateTimeFormat("sv-SE", {
+      timeZone: zone || ZONE, hour12:false,
+      year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+    const p = {};
+    for (const t of f.formatToParts(d)) p[t.type] = t.value;
+    return { datum: `${p.year}-${p.month}-${p.day}`,
+             uhrzeit: `${p.hour}:${p.minute}` };
+  }
+  const datumVon  = (iso, zone) => (teile(iso, zone) || {}).datum || null;
+  const uhrzeitVon = (iso, zone) => (teile(iso, zone) || {}).uhrzeit || null;
+
+  /* Darf aus diesen Daten ein Alarm entstehen?
+     Nur wenn Prognose und Ortung frisch genug sind. */
+  function alarmErlaubt(datenZeitISO, ortungZeitISO, maxAlter, jetzt) {
+    if (veraltet(datenZeitISO, maxAlter, jetzt)) return false;
+    if (ortungZeitISO && veraltet(ortungZeitISO, maxAlter, jetzt)) return false;
+    return true;
+  }
+
   return { reserve, status, alarmNoetig, kette, ankunft, abstandMin,
-           alterMin, veraltet, GRENZE_ORANGE, GRENZE_ALARM, MAX_ALTER };
+           alterMin, veraltet, alarmErlaubt,
+           zeitpunkt, datumVon, uhrzeitVon, teile, istDatum, istUhrzeit, versatzMin,
+           ZONE, GRENZE_ORANGE, GRENZE_ALARM, MAX_ALTER };
 })();
 
 if (typeof module !== "undefined" && module.exports) module.exports = TL_ZEIT;

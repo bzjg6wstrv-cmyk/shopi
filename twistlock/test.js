@@ -1,3 +1,7 @@
+// Der Betrieb rechnet in Europe/Berlin — der Test muss dieselbe Uhr benutzen,
+// sonst vergleicht er Berliner Termine mit UTC-Uhrzeiten.
+process.env.TZ = process.env.TZ || "Europe/Berlin";
+
 /* Selbsttest: startet den Server, legt das Montagsbeispiel an,
    prüft Ampel, Foto-Ereignisse und Verspätungsmeldung.
    Aufruf:  node test.js                                        */
@@ -568,6 +572,69 @@ const TESTFOTO = "data:image/jpeg;base64," + Buffer.from([
   // 33 Datenalter wird mitgeliefert
   pruefe("Grenze fuer veraltete Daten ist eingestellt",
     (await ruf("/api/fahrer/tag")).daten.einst.maxDatenAlterMin === 10);
+
+
+  // 34 Datum und Uhrzeit gehoeren zusammen (Europe/Berlin)
+  {
+    const Zt = require("./web/zeit.js");
+    pruefe("Termin mit Datum wird zum Zeitpunkt",
+      Zt.uhrzeitVon(Zt.zeitpunkt("2026-09-13","14:30")) === "14:30");
+    pruefe("Termin morgen bleibt morgen",
+      Zt.datumVon(Zt.zeitpunkt("2026-09-14","00:30")) === "2026-09-14");
+    pruefe("Sommerzeit: 14:30 Berlin ist 12:30 UTC",
+      Zt.zeitpunkt("2026-07-01","14:30") === "2026-07-01T12:30:00.000Z");
+    pruefe("Winterzeit: 14:30 Berlin ist 13:30 UTC",
+      Zt.zeitpunkt("2026-01-15","14:30") === "2026-01-15T13:30:00.000Z");
+    pruefe("Ohne Datum keine Bewertung", Zt.zeitpunkt(null,"14:30") === null);
+    pruefe("Unsinniges Datum wird abgelehnt", Zt.zeitpunkt("morgen","14:30") === null);
+    pruefe("Unsinnige Uhrzeit wird abgelehnt", Zt.zeitpunkt("2026-09-13","99:99") === null);
+
+    // Tour ueber Mitternacht: Abfahrt 23:50, Termin am naechsten Tag 00:30
+    const start = Zt.zeitpunkt("2026-09-13","23:50");
+    const ank   = Zt.ankunft(start, [{was:"fahrt",min:55}]);
+    pruefe("Ankunft nach Mitternacht faellt auf den naechsten Tag",
+      Zt.datumVon(ank) === "2026-09-14" && Zt.uhrzeitVon(ank) === "00:45", Zt.uhrzeitVon(ank));
+    pruefe("Reserve ueber Mitternacht wird richtig gerechnet",
+      Zt.reserve(Zt.zeitpunkt("2026-09-14","00:30"), ank) === -15);
+    pruefe("Termin morgen frueh gegen Ankunft heute Nacht",
+      Zt.reserve(Zt.zeitpunkt("2026-09-14","07:30"), ank) === 405);
+
+    // Alarm nur aus frischen Daten
+    const frisch = new Date(Date.now() - 60000).toISOString();
+    const alt    = new Date(Date.now() - 65*60000).toISOString();
+    pruefe("Frische Daten erlauben einen Alarm", Zt.alarmErlaubt(frisch, frisch, 10) === true);
+    pruefe("Alte Prognose verbietet einen Alarm", Zt.alarmErlaubt(alt, frisch, 10) === false);
+    pruefe("Alte Ortung verbietet einen Alarm", Zt.alarmErlaubt(frisch, alt, 10) === false);
+    pruefe("Fehlende Ortung allein verbietet nichts", Zt.alarmErlaubt(frisch, null, 10) === true);
+  }
+
+  // 35 Nachgereichte Abholung behaelt die Uhrzeit des Fahrers
+  keks = ""; await ruf("/api/anmelden","POST",{name:"Ahmed",pin:"1234"});
+  const heute6 = new Date().toLocaleDateString("sv-SE");
+  const f6 = (await ruf("/api/dispo/uebersicht")).daten.fahrer[0];
+  r = await ruf("/api/dispo/auftrag","POST",{
+    datum:heute6, status:"freigegeben", fahrerId:f6.id, zielOrt:"Nachtragstadt",
+    termin:"23:30", container:"MSCU1234566" });
+  const nachId = r.daten.id;
+  const erfasst = new Date(Date.now() - 40*60000).toISOString();
+  keks = ""; await ruf("/api/anmelden","POST",{name:f6.name,pin:"1111"});
+  r = await ruf("/api/fahrer/ereignis","POST",{ auftragId:nachId, art:"abholung",
+    foto:TESTFOTO, zeit:erfasst, containerBestaetigt:"MSCU1234566" });
+  pruefe("Nachgereichte Abholung wird angenommen", r.status === 200);
+  let nga = (await ruf("/api/fahrer/tag")).daten.heute.find(x => x.id === nachId);
+  pruefe("Die Abholzeit ist die Zeit des Fahrers", nga.abholZeit === erfasst, nga.abholZeit);
+  pruefe("Der Eingang wird getrennt festgehalten",
+    !!nga.nachgereicht && nga.nachgereicht.eingang > nga.nachgereicht.erfasst);
+  r = await ruf("/api/fahrer/ereignis","POST",{ auftragId:nachId, art:"abholung",
+    foto:TESTFOTO, zeit:erfasst, containerBestaetigt:"MSCU1234566" });
+  pruefe("Zweiter Versuch mit demselben Vorgang bucht nicht erneut", r.daten.doppelt === true);
+  nga = (await ruf("/api/fahrer/tag")).daten.heute.find(x => x.id === nachId);
+  pruefe("Die Abholzeit bleibt dieselbe", nga.abholZeit === erfasst);
+  r = await ruf("/api/fahrer/ereignis","POST",{ auftragId:nachId, art:"ankunft",
+    zeit:new Date(Date.now() + 3*3600000).toISOString() });
+  nga = (await ruf("/api/fahrer/tag")).daten.heute.find(x => x.id === nachId);
+  pruefe("Zeiten aus der Zukunft werden nicht uebernommen",
+    new Date(nga.ankunftZeit).getTime() <= Date.now() + 60000, nga.ankunftZeit);
 
   // 24 Farbkontraste der Fahreransicht (WCAG AA, mindestens 4,5:1)
   {

@@ -5,6 +5,10 @@
    Öffnen:   http://localhost:3000
    =========================================================== */
 
+// Der Betrieb rechnet in Europe/Berlin. Ohne feste Zeitzone würde ein Server
+// in einer anderen Zone Termine um Stunden verschoben bewerten.
+process.env.TZ = process.env.TZ || "Europe/Berlin";
+
 const http = require("http");
 const fs   = require("fs");
 const path = require("path");
@@ -448,7 +452,18 @@ const server = http.createServer(async (req, res) => {
       }
 
       const datei = brauchtFoto ? fotoSpeichern(b.foto) : null;
-      const jetzt = new Date().toISOString();
+
+      /* Die Zeit, zu der der Fahrer bestätigt hat, zählt — nicht die Zeit,
+         zu der das Handy wieder Netz hatte. Nur plausible Angaben werden
+         übernommen: nicht aus der Zukunft, nicht älter als ein Tag. */
+      const eingang = new Date().toISOString();
+      let jetzt = eingang;
+      if (b.zeit) {
+        const t = new Date(b.zeit).getTime();
+        if (!isNaN(t) && t <= Date.now() + 60000 && t > Date.now() - 36 * 3600000)
+          jetzt = new Date(t).toISOString();
+      }
+      if (jetzt !== eingang) a.nachgereicht = { art: b.art, erfasst: jetzt, eingang };
       const gps   = (b.lat && b.lon) ? { lat: b.lat, lon: b.lon } : null;
 
       if (b.art === "abholung") {

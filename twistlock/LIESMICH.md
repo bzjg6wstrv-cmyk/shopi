@@ -146,6 +146,21 @@ Solange fragt die App einmal nach: „Steht diese Nummer auf dem Container?“
 
 ### Was die App sagt und was sie nicht sagt
 
+- Der Server rechnet in **Europe/Berlin** (`process.env.TZ` in `server.js`).
+  Ein Termin gehört immer zu einem Datum: `web/zeit.js` macht aus Datum und
+  Uhrzeit einen echten Zeitpunkt, auch über Mitternacht und über die
+  Zeitumstellung. Fehlt das Datum, wird **keine** Ankunft bewertet.
+- Wartende Vorgänge liegen vollständig in IndexedDB (`web/warteschlange.js`):
+  Foto, Auftrag, Ereignis-Kennung, Art, Uhrzeit der Bestätigung und die
+  bestätigte Nummer. Die Aufnahme verschwindet erst vom Bildschirm, wenn sie
+  übertragen oder sicher abgelegt ist; sonst bleibt sie stehen mit dem Hinweis
+  „Foto konnte nicht gespeichert werden. Bitte nicht schließen.“
+  Beim erneuten Senden geht derselbe Vorgang raus — der Server übernimmt die
+  **Erfassungszeit des Fahrers** und hält den Eingang getrennt fest.
+- Ein Alarm entsteht nur aus frischer Prognose und frischer Ortung. Ein Foto,
+  ein Tastendruck oder ein zweiter Sendeversuch macht eine alte Ortung nicht
+  frisch. „Das Büro wurde informiert“ steht erst da, wenn die Meldung
+  tatsächlich gespeichert wurde.
 - Alle Zeitregeln stehen an einer Stelle: `web/zeit.js` (Reserve, Farbgrenzen,
   Alarmschwelle, Kette, Datenalter). App, Vorschau und Tests rechnen damit dasselbe.
 - Prognosen gelten ab `maxDatenAlterMin` (10) als veraltet — **auch mit Internet**.
@@ -227,7 +242,7 @@ Damit auch ein Fenster aufploppt, erlaube dem Browser einmal Benachrichtigungen.
 | Browser zeigt nichts | Läuft das schwarze Fenster noch? Sonst neu starten |
 | Fahrer kommt nicht rein | Name muss **genau** stimmen, auch Groß- und Kleinschreibung ist egal, aber Leerzeichen zählen |
 | Alles zurücksetzen | Ordner `daten` und `fotos` löschen und neu starten |
-| Prüfen, ob alles funktioniert | Im Ordner `node test.js` ausführen — über 100 automatische Tests, inklusive Prüfziffern, Alarmschwelle und Farbkontrasten |
+| Prüfen, ob alles funktioniert | Im Ordner `node test.js` ausführen — 146 automatische Tests, inklusive Datum und Zeitzone, Prüfziffern, Alarmschwelle und Farbkontrasten |
 | App-Symbol fehlt auf dem Handy | Geht nur mit https. Siehe `APP-MACHEN.md` |
 
 ---

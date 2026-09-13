@@ -64,8 +64,11 @@ function zeitstatus(r, Z){
   const grenze  = (Z.einst && Z.einst.gruenAb != null) ? Z.einst.gruenAb : TL_ZEIT.GRENZE_ORANGE;
   const maxAlter = (Z.einst && Z.einst.maxDatenAlterMin != null)
                    ? Z.einst.maxDatenAlterMin : TL_ZEIT.MAX_ALTER;
-  // Auch mit Internet können die Daten alt sein. Dann wird nichts Grünes gezeigt.
-  const veraltet = TL_ZEIT.veraltet(Z.datenZeit, maxAlter);
+  /* Auch mit Internet können die Daten alt sein. Prognose und Ortung werden
+     getrennt geprüft: eine Fotoübertragung macht eine alte Ortung nicht frisch.
+     Eine nie vorhandene Ortung (zum Beispiel ohne https) gilt nicht als alt. */
+  const veraltet = TL_ZEIT.veraltet(Z.datenZeit, maxAlter) ||
+                   (!!Z.ortungZeit && TL_ZEIT.veraltet(Z.ortungZeit, maxAlter));
 
   if (veraltet || !r || r.unsicher || r.puffer == null || !r.ankunft) {
     const zusatz = veraltet
@@ -85,12 +88,12 @@ function zeitstatus(r, Z){
 
 /* Ab der Alarmschwelle weiß das Büro Bescheid. Das sagt die App dem Fahrer,
    damit er keinen Druck verspürt, schneller zu fahren. */
-function alarmHinweis(r, Z){
-  if (!r || r.puffer == null) return "";
-  const schwelle = (Z.einst && Z.einst.verspaetungAb != null)
-    ? Z.einst.verspaetungAb : TL_ZEIT.GRENZE_ALARM;
-  if (!TL_ZEIT.alarmNoetig(Math.round(r.puffer), schwelle)) return "";
-  return `<div class="hinweis">${esc(t("bueroSiehtVerspaetung"))}</div>`;
+function alarmHinweis(a, Z){
+  // Nur wenn die Meldung wirklich beim Büro angekommen ist. Eine berechnete
+  // Verspätung allein ist noch keine Nachricht.
+  if (!a || !a.gemeldet) return "";
+  return `<div class="hinweis">${esc(t("bueroSiehtVerspaetung"))}${
+    Z.demo ? " (" + esc(t("demoSimuliert")) + ")" : ""}</div>`;
 }
 
 /* Wenn die Daten alt sind und das Büro schon gewarnt wurde, bleibt die
@@ -164,6 +167,17 @@ function ortZeile(etikett, firma, torNr){
     </div>
   </div>`;
 }
+/* „Termin 07:30“ ist zweideutig, wenn der Termin morgen ist.
+   Darum steht der Tag dabei, sobald er nicht heute ist. */
+function terminEtikett(a, Z){
+  const heute = TL_ZEIT.datumVon(Z.datenZeit || new Date().toISOString());
+  if (!a || !a.datum || !heute || a.datum === heute) return t("termin");
+  const morgen = TL_ZEIT.datumVon(
+    new Date(new Date(heute + "T12:00:00").getTime() + 86400000).toISOString());
+  if (a.datum === morgen) return t("terminMorgen");
+  return t("termin") + " " + datumLang(a.datum);
+}
+
 function zeitFeld(etikett, wert, farbe, unten){
   return `<div><div class="etikett">${esc(etikett)}</div>
     <div class="uhrzeit num ${farbe || ""}">${esc(wert || "—")}</div>
@@ -272,11 +286,11 @@ function ansichtFahren(Z){
     ${aenderungKasten(a)}
     ${ortBlock(t("ziel"), o.firma, o.adresse, o.tor)}
     <div class="zeiten">
-      ${zeitFeld(t("termin"), a.termin || "—")}
+      ${zeitFeld(terminEtikett(a, Z), a.termin || "—")}
       ${zeitFeld(t("ankunftEtwa"), uhr(r.ankunft) || "—", s.klasse)}
     </div>
     <div class="hinweis">${esc(t("schaetzung"))}</div>
-    ${alarmHinweis(r, Z)}
+    ${alarmHinweis(a, Z)}
     ${a.notiz ? `<div class="kasten"><span class="ico">${I.info(24)}</span>
         <div>${esc(a.notiz)}</div></div>` : ""}
     ${fahrzeugKlapp(Z, a)}
@@ -299,7 +313,7 @@ function ansichtBeimKunden(Z){
     ${ortZeile(t("ziel"), o.firma, o.tor)}
     <div class="zeiten">
       ${zeitFeld(t("ankunft"), uhr(a.ankunftZeit) || "—")}
-      ${zeitFeld(t("termin"), a.termin || "—")}
+      ${zeitFeld(terminEtikett(a, Z), a.termin || "—")}
     </div>
     ${seit != null ? `<div class="zeile"><span class="ico">${I.sanduhr(26)}</span>
       <div class="txt"><div class="wert">${esc(t("vorOrtSeit",{min:seit}))}</div>
@@ -359,7 +373,7 @@ function ansichtEntladen(Z){
                    { ico:s.ico, satz:s.satz })}
       </div>
       <div class="hinweis">${esc(t("schaetzung"))}</div>
-      ${alarmHinweis(n, Z)}`
+      ${alarmHinweis(a, Z)}`
     : `<div class="hinweis">${esc(t("keinWeiterer"))}</div>`}
 
     <div class="zeiten">
@@ -440,7 +454,7 @@ function ansichtAbschluss(Z){
     nHtml = `<h2 class="titel" style="font-size:21px">${
         esc(t("naechsterAuftrag",{ort:n.kunde || n.zielOrt || t("keineAngabe")}))}</h2>
       <div class="zeiten">
-        ${zeitFeld(t("termin"), n.termin || "—")}
+        ${zeitFeld(terminEtikett(n, Z), n.termin || "—")}
         ${zeitFeld(t("ankunftEtwa"), n.unsicher ? "—" : (uhr(n.ankunft) || "—"), s.klasse)}
       </div>
       ${statusStreifen(s)}
@@ -458,6 +472,8 @@ function ansichtAbschluss(Z){
       <div class="w">${esc(t("auftragAbgeschlossen"))}</div>
       <div class="u">${esc(t("abgeliefertUm",{ ort:b.ort || t("keineAngabe"),
                                                zeit:uhr(b.zeit) || "—" }))}</div>
+      ${b.container ? `<div class="u num">${esc(t("container"))}: ${esc(nummer(b.container))}</div>` : ""}
+      ${b.nummer ? `<div class="u">${esc(t("auftragsnummer"))} ${esc(b.nummer)}</div>` : ""}
     </div></div>
     ${nHtml}
   </div>` + leiste(knopf);
@@ -662,8 +678,13 @@ function ansichtErgebnis(Z){
       ${e.abweichung ? `<div class="u">${esc(t("alsAbweichungGemeldet"))}</div>` : ""}
       ${e.ungeprueft ? `<div class="u">${esc(t("ungeprueftMarke"))}</div>` : ""}
     </div></div>
+    ${e.typ === "fehler" && e.gemerkt === false
+      ? `<div class="kasten warn"><span class="ico">${I.warnung(24)}</span>
+         <div>${esc(t("nichtSchliessen"))}</div></div>` : ""}
     ${Z.demo && e.typ !== "uebertragen"
       ? `<div class="hinweis">${esc(t("demoSpeicher"))}</div>` : ""}
+    ${Z.demo && e.typ === "uebertragen"
+      ? `<div class="hinweis">${esc(t("demoVersand"))}</div>` : ""}
   </div>` + leiste(
     hauptKnopf(t("zurueckZumAuftrag"), I.zurueck(28), "zurueck", Z),
     e.typ !== "uebertragen" ? zweitKnopf(t("nochmalSenden"), I.pfeil(24), "nochmalSenden") : "");

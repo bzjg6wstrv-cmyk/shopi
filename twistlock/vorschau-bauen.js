@@ -22,6 +22,7 @@ const rumpf = process.argv.includes("--rumpf");
 const css     = lies("einfach.css");
 const container = lies("container.js");
 const zeit      = lies("zeit.js");
+const warte     = lies("warteschlange.js");
 const sprache = lies("sprache.js");
 const ansicht = lies("fahreransicht.js");
 const seite   = lies("vorschau.html");
@@ -56,6 +57,9 @@ ${sicher(container)}
 </script>
 <script>
 ${sicher(zeit)}
+</script>
+<script>
+${sicher(warte)}
 </script>
 <script>
 ${sicher(sprache)}

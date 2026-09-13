@@ -1,8 +1,8 @@
 /* Service Worker — sorgt dafür, dass die App auch im Funkloch startet.
    Bei jeder Änderung an den Dateien die Nummer erhöhen. */
-const CACHE = "twistlock-v4";
+const CACHE = "twistlock-v5";
 const SCHALE = ["/fahrer.html", "/anmelden.html", "/einfach.css", "/sprache.js",
-                "/fahreransicht.js", "/container.js", "/zeit.js", "/manifest.json", "/icon-192.png", "/icon-512.png"];
+                "/fahreransicht.js", "/container.js", "/zeit.js", "/warteschlange.js", "/manifest.json", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SCHALE)).then(() => self.skipWaiting()));
