@@ -137,16 +137,30 @@ var TL_ZEIT = (function () {
   const datumVon  = (iso, zone) => (teile(iso, zone) || {}).datum || null;
   const uhrzeitVon = (iso, zone) => (teile(iso, zone) || {}).uhrzeit || null;
 
-  /* Darf aus diesen Daten ein Alarm entstehen?
-     Nur wenn Prognose und Ortung frisch genug sind. */
+  /* Sind die Daten verlässlich genug für eine Ankunftsaussage?
+     Beide Zeitstempel müssen da, lesbar und frisch sein — der Zeitpunkt
+     der Ankunftsberechnung und der Zeitpunkt der Ortung. Fehlt einer,
+     wird nichts behauptet und kein Alarm ausgelöst. */
+  function lesbar(iso) {
+    if (!iso) return false;
+    const d = new Date(iso);
+    return !isNaN(d.getTime());
+  }
+  function datenZuverlaessig(datenZeitISO, ortungZeitISO, maxAlter, jetzt) {
+    if (!lesbar(datenZeitISO))  return { ok:false, grund:"prognose_fehlt" };
+    if (!lesbar(ortungZeitISO)) return { ok:false, grund:"ortung_fehlt" };
+    if (veraltet(datenZeitISO, maxAlter, jetzt))  return { ok:false, grund:"prognose_alt" };
+    if (veraltet(ortungZeitISO, maxAlter, jetzt)) return { ok:false, grund:"ortung_alt" };
+    return { ok:true, grund:null };
+  }
+
+  /* Darf aus diesen Daten ein Alarm entstehen? */
   function alarmErlaubt(datenZeitISO, ortungZeitISO, maxAlter, jetzt) {
-    if (veraltet(datenZeitISO, maxAlter, jetzt)) return false;
-    if (ortungZeitISO && veraltet(ortungZeitISO, maxAlter, jetzt)) return false;
-    return true;
+    return datenZuverlaessig(datenZeitISO, ortungZeitISO, maxAlter, jetzt).ok;
   }
 
   return { reserve, status, alarmNoetig, kette, ankunft, abstandMin,
-           alterMin, veraltet, alarmErlaubt,
+           alterMin, veraltet, alarmErlaubt, datenZuverlaessig, lesbar,
            zeitpunkt, datumVon, uhrzeitVon, teile, istDatum, istUhrzeit, versatzMin,
            ZONE, GRENZE_ORANGE, GRENZE_ALARM, MAX_ALTER };
 })();

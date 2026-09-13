@@ -157,7 +157,17 @@ Solange fragt die App einmal nach: „Steht diese Nummer auf dem Container?“
   „Foto konnte nicht gespeichert werden. Bitte nicht schließen.“
   Beim erneuten Senden geht derselbe Vorgang raus — der Server übernimmt die
   **Erfassungszeit des Fahrers** und hält den Eingang getrennt fest.
-- Ein Alarm entsteht nur aus frischer Prognose und frischer Ortung. Ein Foto,
+- **Abholung und Ablieferung** nehmen denselben Weg: ohne Netz wird der ganze
+  Vorgang zuerst in IndexedDB abgelegt, erst danach gilt der Schritt als gebucht.
+  Vier Zustände sind getrennt sichtbar: *noch nicht gespeichert* (eigene Ansicht
+  mit „Erneut speichern“ und „Zurück zum Foto“, das Foto bleibt), *auf dem Gerät
+  gespeichert*, *Übertragung offen* (auch im Tagesplan) und *Übertragung bestätigt*.
+  „Erneut senden“ bei leerer Warteschlange behauptet nichts.
+- Ein Alarm entsteht nur aus frischer Prognose und frischer Ortung.
+  **Fehlt einer der beiden Zeitstempel oder ist er veraltet, gibt es keinen Alarm**
+  und der Zeitstatus ist grau: „Ankunft derzeit nicht zuverlässig“. Der Server
+  verlangt dafür eine aktuelle Position (`alarmBrauchtOrtung`, `maxDatenAlterMin`);
+  ohne https liefert das Handy keine Position — dann bleibt es bei grau. Ein Foto,
   ein Tastendruck oder ein zweiter Sendeversuch macht eine alte Ortung nicht
   frisch. „Das Büro wurde informiert“ steht erst da, wenn die Meldung
   tatsächlich gespeichert wurde.
@@ -242,7 +252,7 @@ Damit auch ein Fenster aufploppt, erlaube dem Browser einmal Benachrichtigungen.
 | Browser zeigt nichts | Läuft das schwarze Fenster noch? Sonst neu starten |
 | Fahrer kommt nicht rein | Name muss **genau** stimmen, auch Groß- und Kleinschreibung ist egal, aber Leerzeichen zählen |
 | Alles zurücksetzen | Ordner `daten` und `fotos` löschen und neu starten |
-| Prüfen, ob alles funktioniert | Im Ordner `node test.js` ausführen — 146 automatische Tests, inklusive Datum und Zeitzone, Prüfziffern, Alarmschwelle und Farbkontrasten |
+| Prüfen, ob alles funktioniert | Im Ordner `node test.js` ausführen — 155 automatische Tests, inklusive Datum und Zeitzone, Prüfziffern, Alarmschwelle und Farbkontrasten |
 | App-Symbol fehlt auf dem Handy | Geht nur mit https. Siehe `APP-MACHEN.md` |
 
 ---

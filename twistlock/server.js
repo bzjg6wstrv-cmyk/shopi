@@ -76,7 +76,8 @@ const EINST_STANDARD = {
   nacharbeitMin: 15,         // Papiere, Ladungssicherung, bevor es weitergeht
   fahrzeitZurAbholung: 60,   // Fahrt vom Kunden zur nächsten Abholstelle
   ladezeitStandard: 30,      // Warten und Laden an der Abholstelle
-  maxDatenAlterMin: 10       // ab diesem Alter gelten Prognosen als veraltet
+  maxDatenAlterMin: 10,      // ab diesem Alter gelten Prognosen als veraltet
+  alarmBrauchtOrtung: true   // Alarm nur mit aktueller Ortung des Fahrzeugs
 };
 // Gespeicherte Werte gewinnen, neue Planwerte kommen dazu.
 let einst = { ...EINST_STANDARD, ...lade("einstellungen", {}) };
@@ -280,10 +281,33 @@ function notiere(wer, was) {
    und dann genau einmal je Auftrag. Orange loest nichts aus, kleine
    Schwankungen ebenfalls nicht. Der aktuelle Zustand bleibt in der
    Übersicht sichtbar — der Alarm ist nur die Benachrichtigung. */
+/* Wann wurde dieser Fahrer zuletzt geortet? */
+function letzteOrtung(fahrerId) {
+  let neuste = null;
+  for (const p of positionen) {
+    if (p.fahrerId !== fahrerId) continue;
+    if (!neuste || p.zeit > neuste) neuste = p.zeit;
+  }
+  return neuste;
+}
+
 function alarmPruefen(a, puffer, ankunftIso) {
   if (!a || a.gemeldet || puffer == null) return false;
   const verzug = -Math.round(puffer);
   if (verzug < einst.verspaetungAb) return false;
+
+  /* Ein Alarm braucht verlässliche Daten. Fehlt eine aktuelle Ortung,
+     wird nichts gemeldet — die Dispo sieht den Zustand trotzdem in der
+     Übersicht, nur eben ohne Alarm. */
+  if (einst.alarmBrauchtOrtung) {
+    const ortung = letzteOrtung(a.fahrerId);
+    const alt = ortung ? (Date.now() - new Date(ortung).getTime()) / 60000 : null;
+    if (alt === null || alt > einst.maxDatenAlterMin) {
+      notiere("System", `Kein Alarm für Auftrag ${a.nummer}: keine aktuelle Ortung` +
+        (alt === null ? "" : ` (${Math.round(alt)} Min. alt)`));
+      return false;
+    }
+  }
   a.gemeldet = true;
   const uhr = ankunftIso
     ? new Date(ankunftIso).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })

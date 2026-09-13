@@ -607,16 +607,30 @@ var TL_ZEIT = (function () {
   const datumVon  = (iso, zone) => (teile(iso, zone) || {}).datum || null;
   const uhrzeitVon = (iso, zone) => (teile(iso, zone) || {}).uhrzeit || null;
 
-  /* Darf aus diesen Daten ein Alarm entstehen?
-     Nur wenn Prognose und Ortung frisch genug sind. */
+  /* Sind die Daten verlässlich genug für eine Ankunftsaussage?
+     Beide Zeitstempel müssen da, lesbar und frisch sein — der Zeitpunkt
+     der Ankunftsberechnung und der Zeitpunkt der Ortung. Fehlt einer,
+     wird nichts behauptet und kein Alarm ausgelöst. */
+  function lesbar(iso) {
+    if (!iso) return false;
+    const d = new Date(iso);
+    return !isNaN(d.getTime());
+  }
+  function datenZuverlaessig(datenZeitISO, ortungZeitISO, maxAlter, jetzt) {
+    if (!lesbar(datenZeitISO))  return { ok:false, grund:"prognose_fehlt" };
+    if (!lesbar(ortungZeitISO)) return { ok:false, grund:"ortung_fehlt" };
+    if (veraltet(datenZeitISO, maxAlter, jetzt))  return { ok:false, grund:"prognose_alt" };
+    if (veraltet(ortungZeitISO, maxAlter, jetzt)) return { ok:false, grund:"ortung_alt" };
+    return { ok:true, grund:null };
+  }
+
+  /* Darf aus diesen Daten ein Alarm entstehen? */
   function alarmErlaubt(datenZeitISO, ortungZeitISO, maxAlter, jetzt) {
-    if (veraltet(datenZeitISO, maxAlter, jetzt)) return false;
-    if (ortungZeitISO && veraltet(ortungZeitISO, maxAlter, jetzt)) return false;
-    return true;
+    return datenZuverlaessig(datenZeitISO, ortungZeitISO, maxAlter, jetzt).ok;
   }
 
   return { reserve, status, alarmNoetig, kette, ankunft, abstandMin,
-           alterMin, veraltet, alarmErlaubt,
+           alterMin, veraltet, alarmErlaubt, datenZuverlaessig, lesbar,
            zeitpunkt, datumVon, uhrzeitVon, teile, istDatum, istUhrzeit, versatzMin,
            ZONE, GRENZE_ORANGE, GRENZE_ALARM, MAX_ALTER };
 })();
@@ -902,6 +916,18 @@ de:{
   bestLaenger:"Neue Zeit ist gespeichert",
   nummerFrage:"Steht diese Nummer auf dem Container?",
   nummerPruefen:"Nummer bitte prüfen",
+  ankunftUnzuverlaessig:"Ankunft derzeit nicht zuverlässig",
+  ortungFehlt:"Es fehlt eine aktuelle Ortung.",
+  prognoseAlt:"Die Ankunftsberechnung ist zu alt.",
+  gespeichertAufGeraet:"Auf dem Gerät gespeichert – wird später gesendet",
+  uebertragungOffen:"Übertragung offen",
+  uebertragungBestaetigt:"Übertragung bestätigt",
+  fotoNichtGespeichert:"Foto noch nicht gespeichert. Bitte erneut versuchen.",
+  erneutSpeichern:"Erneut speichern", zurueckZumFoto:"Zurück zum Foto",
+  speicherFehlerText:"Das Foto ist noch da. Solange es nicht gespeichert ist, gilt der Schritt als offen.",
+  keinVorgangOffen:"Es wartet kein Vorgang",
+  demoNichtGesendet:"Demo: nicht wirklich gesendet",
+  verlassenWarnung:"Das Foto ist noch nicht gespeichert.",
   nichtSchliessen:"Die Aufnahme ist noch auf dem Bildschirm. Bitte die App offen lassen und es gleich noch einmal versuchen.",
   demoSimuliert:"Demo, simuliert",
   demoVersand:"Demo: Der Versand ist simuliert. Es geht nichts an einen Server oder an die Dispo.",
@@ -1058,6 +1084,18 @@ tr:{
   bestLaenger:"Yeni süre kaydedildi",
   nummerFrage:"Konteynerin üzerinde bu numara mı yazıyor?",
   nummerPruefen:"Lütfen numarayı kontrol et",
+  ankunftUnzuverlaessig:"Varış şu an güvenilir değil",
+  ortungFehlt:"Güncel bir konum yok.",
+  prognoseAlt:"Varış hesabı çok eski.",
+  gespeichertAufGeraet:"Cihaza kaydedildi – daha sonra gönderilecek",
+  uebertragungOffen:"Gönderim bekliyor",
+  uebertragungBestaetigt:"Gönderim onaylandı",
+  fotoNichtGespeichert:"Fotoğraf henüz kaydedilmedi. Lütfen tekrar dene.",
+  erneutSpeichern:"Tekrar kaydet", zurueckZumFoto:"Fotoğrafa dön",
+  speicherFehlerText:"Fotoğraf duruyor. Kaydedilmediği sürece adım açık sayılır.",
+  keinVorgangOffen:"Bekleyen kayıt yok",
+  demoNichtGesendet:"Demo: gerçekte gönderilmedi",
+  verlassenWarnung:"Fotoğraf henüz kaydedilmedi.",
   nichtSchliessen:"Fotoğraf hâlâ ekranda. Lütfen uygulamayı açık bırak ve birazdan tekrar dene.",
   demoSimuliert:"Demo, benzetim",
   demoVersand:"Demo: Gönderim benzetimdir. Hiçbir şey sunucuya veya ofise gitmez.",
@@ -1214,6 +1252,18 @@ pl:{
   bestLaenger:"Nowy czas zapisany",
   nummerFrage:"Czy ten numer jest na kontenerze?",
   nummerPruefen:"Sprawdź numer",
+  ankunftUnzuverlaessig:"Przyjazd obecnie niepewny",
+  ortungFehlt:"Brak aktualnej lokalizacji.",
+  prognoseAlt:"Obliczenie przyjazdu jest za stare.",
+  gespeichertAufGeraet:"Zapisano na urządzeniu – wyśle się później",
+  uebertragungOffen:"Wysyłka oczekuje",
+  uebertragungBestaetigt:"Wysyłka potwierdzona",
+  fotoNichtGespeichert:"Zdjęcie jeszcze nie zapisane. Spróbuj ponownie.",
+  erneutSpeichern:"Zapisz ponownie", zurueckZumFoto:"Wróć do zdjęcia",
+  speicherFehlerText:"Zdjęcie jest nadal tutaj. Dopóki nie zostanie zapisane, krok pozostaje otwarty.",
+  keinVorgangOffen:"Nic nie czeka",
+  demoNichtGesendet:"Demo: naprawdę nie wysłano",
+  verlassenWarnung:"Zdjęcie nie jest jeszcze zapisane.",
   nichtSchliessen:"Zdjęcie jest jeszcze na ekranie. Nie zamykaj aplikacji i spróbuj za chwilę ponownie.",
   demoSimuliert:"Demo, symulacja",
   demoVersand:"Demo: wysyłka jest symulowana. Nic nie idzie na serwer ani do biura.",
@@ -1370,6 +1420,18 @@ ro:{
   bestLaenger:"Timpul nou a fost salvat",
   nummerFrage:"Acest număr este pe container?",
   nummerPruefen:"Verifică numărul",
+  ankunftUnzuverlaessig:"Sosirea nu este de încredere acum",
+  ortungFehlt:"Lipsește o localizare actuală.",
+  prognoseAlt:"Calculul sosirii este prea vechi.",
+  gespeichertAufGeraet:"Salvat pe dispozitiv – se trimite mai târziu",
+  uebertragungOffen:"Trimitere în așteptare",
+  uebertragungBestaetigt:"Trimitere confirmată",
+  fotoNichtGespeichert:"Poza nu este încă salvată. Te rog încearcă din nou.",
+  erneutSpeichern:"Salvează din nou", zurueckZumFoto:"Înapoi la poză",
+  speicherFehlerText:"Poza este încă aici. Cât timp nu este salvată, pasul rămâne deschis.",
+  keinVorgangOffen:"Nu așteaptă nimic",
+  demoNichtGesendet:"Demo: nu s-a trimis cu adevărat",
+  verlassenWarnung:"Poza nu este încă salvată.",
   nichtSchliessen:"Poza este încă pe ecran. Lasă aplicația deschisă și încearcă din nou imediat.",
   demoSimuliert:"Demo, simulat",
   demoVersand:"Demo: trimiterea este simulată. Nu ajunge nimic la server sau la birou.",
@@ -1526,6 +1588,18 @@ ar:{
   bestLaenger:"تم حفظ الوقت الجديد",
   nummerFrage:"هل هذا الرقم مكتوب على الحاوية؟",
   nummerPruefen:"من فضلك تحقق من الرقم",
+  ankunftUnzuverlaessig:"الوصول غير موثوق الآن",
+  ortungFehlt:"لا يوجد تحديد موقع حديث.",
+  prognoseAlt:"حساب الوصول قديم جداً.",
+  gespeichertAufGeraet:"محفوظة على الجهاز – سترسل لاحقاً",
+  uebertragungOffen:"الإرسال معلّق",
+  uebertragungBestaetigt:"تم تأكيد الإرسال",
+  fotoNichtGespeichert:"لم تُحفظ الصورة بعد. من فضلك حاول مرة أخرى.",
+  erneutSpeichern:"احفظ مرة أخرى", zurueckZumFoto:"عد إلى الصورة",
+  speicherFehlerText:"الصورة ما زالت هنا. ما دامت غير محفوظة تبقى الخطوة مفتوحة.",
+  keinVorgangOffen:"لا يوجد إجراء منتظر",
+  demoNichtGesendet:"عرض توضيحي: لم يُرسل فعلياً",
+  verlassenWarnung:"الصورة غير محفوظة بعد.",
   nichtSchliessen:"الصورة ما زالت على الشاشة. أبقِ التطبيق مفتوحاً وحاول بعد قليل مرة أخرى.",
   demoSimuliert:"عرض توضيحي، محاكاة",
   demoVersand:"عرض توضيحي: الإرسال محاكاة. لا يصل شيء إلى خادم أو إلى المكتب.",
@@ -1772,18 +1846,24 @@ function zeitstatus(r, Z){
   const grenze  = (Z.einst && Z.einst.gruenAb != null) ? Z.einst.gruenAb : TL_ZEIT.GRENZE_ORANGE;
   const maxAlter = (Z.einst && Z.einst.maxDatenAlterMin != null)
                    ? Z.einst.maxDatenAlterMin : TL_ZEIT.MAX_ALTER;
-  /* Auch mit Internet können die Daten alt sein. Prognose und Ortung werden
-     getrennt geprüft: eine Fotoübertragung macht eine alte Ortung nicht frisch.
-     Eine nie vorhandene Ortung (zum Beispiel ohne https) gilt nicht als alt. */
-  const veraltet = TL_ZEIT.veraltet(Z.datenZeit, maxAlter) ||
-                   (!!Z.ortungZeit && TL_ZEIT.veraltet(Z.ortungZeit, maxAlter));
 
-  if (veraltet || !r || r.unsicher || r.puffer == null || !r.ankunft) {
-    const zusatz = veraltet
-      ? t("letzteAktualisierung", { zeit: uhr(Z.datenZeit) || "—" })
-      : (r && r.unsicher ? t("endeOffen") : "");
-    return { klasse:"grau", ico:I.frage(28), satz:t("keineDaten"), zusatz, veraltet:true };
+  /* Verlässlich ist die Ankunft nur, wenn beides stimmt: der Zeitpunkt der
+     Ankunftsberechnung und der Zeitpunkt der Ortung. Fehlt oder altert
+     einer davon, wird nichts Grünes gezeigt und nichts gemeldet. */
+  const daten = TL_ZEIT.datenZuverlaessig(Z.datenZeit, Z.ortungZeit, maxAlter);
+
+  if (!daten.ok) {
+    const grund = { ortung_fehlt:t("ortungFehlt"), ortung_alt:t("ortungFehlt"),
+                    prognose_fehlt:t("prognoseAlt"), prognose_alt:t("prognoseAlt") }[daten.grund] || "";
+    const stand = Z.datenZeit
+      ? " " + t("letzteAktualisierung", { zeit: uhr(Z.datenZeit) || "—" }) : "";
+    return { klasse:"grau", ico:I.frage(28), satz:t("ankunftUnzuverlaessig"),
+             zusatz:(grund + stand).trim(), veraltet:true, grund:daten.grund };
   }
+
+  if (!r || r.unsicher || r.puffer == null || !r.ankunft)
+    return { klasse:"grau", ico:I.frage(28), satz:t("keineDaten"),
+             zusatz: r && r.unsicher ? t("endeOffen") : "", veraltet:false };
 
   const p = Math.round(r.puffer);
   const k = TL_ZEIT.status(p, grenze);
@@ -1849,7 +1929,7 @@ function netzStreifen(Z){
       <span>${esc(z ? t("keinNetzStreifen",{zeit:z}) : t("keinInternet"))}</span></div>`;
   }
   if (Z.offen > 0) {
-    s += `<div class="netzstreifen">${I.sanduhr(24)}<span>${
+    s += `<div class="netzstreifen">${I.sanduhr(24)}<span>${esc(t("uebertragungOffen"))}: ${
       esc(Z.offen === 1 ? t("einerWartetAufNetz") : t("wartetAufNetz",{n:Z.offen}))
     }</span></div>`;
   }
@@ -2362,19 +2442,24 @@ function ansichtNummerEingeben(Z){
 function ansichtErgebnis(Z){
   const e = Z.ergebnis || {};
   const abholung = e.art === "abholung";
-  const klasse = e.typ === "uebertragen" ? "" : (e.typ === "wartet" ? "wartet" : "fehler");
+  /* Vier Zustände, klar getrennt:
+     nichtGespeichert — das Foto liegt noch nirgends (eigene Ansicht)
+     gespeichert      — auf dem Gerät, Übertragung offen
+     fehler           — gespeichert, Versand hat nicht geklappt
+     uebertragen      — vom Empfänger bestätigt                       */
+  const klasse = e.typ === "uebertragen" ? "" : (e.typ === "gespeichert" ? "wartet" : "fehler");
   const ico = e.typ === "uebertragen" ? I.haken(36)
-            : (e.typ === "wartet" ? I.sanduhr(36) : I.warnung(36));
+            : (e.typ === "gespeichert" ? I.sanduhr(36) : I.warnung(36));
   let wort, unten;
   if (e.typ === "uebertragen") {
     wort = abholung ? t("abholungUebertragen") : t("uebertragen");
     unten = t("uebertragenText");
-  } else if (e.typ === "wartet") {
-    wort = t("aufHandyGespeichert");
+  } else if (e.typ === "gespeichert") {
+    wort = t("gespeichertAufGeraet");
     unten = t("nochNichtGesendetText");
   } else {
     wort = t("nochNichtGesendet");
-    unten = e.gemerkt === false ? t("nichtGemerkt") : t("sendenFehlerText");
+    unten = t("sendenFehlerText");
   }
   return kopf(Z) + `<div class="inhalt">
     ${netzStreifen(Z)}
@@ -2385,17 +2470,27 @@ function ansichtErgebnis(Z){
       ${e.nummer ? `<div class="u num">${esc(t("container"))}: ${esc(nummer(e.nummer))}</div>` : ""}
       ${e.abweichung ? `<div class="u">${esc(t("alsAbweichungGemeldet"))}</div>` : ""}
       ${e.ungeprueft ? `<div class="u">${esc(t("ungeprueftMarke"))}</div>` : ""}
+      ${e.typ !== "uebertragen" ? `<div class="u">${I.sanduhr(18)} ${esc(t("uebertragungOffen"))}</div>` : ""}
     </div></div>
-    ${e.typ === "fehler" && e.gemerkt === false
-      ? `<div class="kasten warn"><span class="ico">${I.warnung(24)}</span>
-         <div>${esc(t("nichtSchliessen"))}</div></div>` : ""}
-    ${Z.demo && e.typ !== "uebertragen"
-      ? `<div class="hinweis">${esc(t("demoSpeicher"))}</div>` : ""}
-    ${Z.demo && e.typ === "uebertragen"
-      ? `<div class="hinweis">${esc(t("demoVersand"))}</div>` : ""}
+    ${Z.demo ? `<div class="hinweis">${esc(e.typ === "uebertragen"
+        ? t("demoVersand") : t("demoSpeicher"))}</div>` : ""}
   </div>` + leiste(
     hauptKnopf(t("zurueckZumAuftrag"), I.zurueck(28), "zurueck", Z),
     e.typ !== "uebertragen" ? zweitKnopf(t("nochmalSenden"), I.pfeil(24), "nochmalSenden") : "");
+}
+
+/* Speichern hat nicht geklappt: das Foto bleibt, der Schritt bleibt offen. */
+function ansichtSpeicherfehler(Z){
+  const f = Z.foto || {};
+  return kopf(Z, {ohneProblem:true}) + `<div class="inhalt">
+    <div class="ergebnis fehler"><span class="ico">${I.warnung(36)}</span><div>
+      <div class="w">${esc(t("fotoNichtGespeichert"))}</div>
+      <div class="u">${esc(t("speicherFehlerText"))}</div>
+    </div></div>
+    ${f.bild ? `<img class="vorschaubild" src="${esc(f.bild)}" alt="${esc(t("fotoTitelAbholung"))}">` : ""}
+  </div>` + leiste(
+    hauptKnopf(t("erneutSpeichern"), I.pfeil(28), "erneutSpeichern", Z),
+    zweitKnopf(t("zurueckZumFoto"), I.kamera(24), "zurueckZumFoto"));
 }
 
 function ansichtKamerahilfe(Z){
@@ -2482,7 +2577,9 @@ function ansichtProblemErgebnis(Z){
 /* ===========================================================
    Tagesplan und Sprache
    =========================================================== */
-function statusWort(a, jetzt){
+function statusWort(a, jetzt, offeneIds){
+  if (offeneIds && offeneIds.some(id => String(id).startsWith(a.id + ":")))
+    return { wort:t("uebertragungOffen"), klasse:"offen", ico:I.sanduhr(18) };
   if (a.status === "fertig")     return { wort:t("statusFertig"), klasse:"fertig", ico:I.haken(18) };
   if (a === jetzt)               return { wort:t("statusJetzt"),  klasse:"jetzt",  ico:I.pfeil(18) };
   if (a.status === "geladen")    return { wort:t("statusUnterwegs"), klasse:"offen", ico:I.lkw(18) };
@@ -2501,7 +2598,7 @@ function ansichtTagesplan(Z){
     ${netzStreifen(Z)}
     <h1 class="titel">${esc(t("tagesplan"))} <span class="marke-firma">${esc(MARKE)}</span></h1>
     ${liste.length ? liste.map(a => {
-      const s = statusWort(a, jetzt);
+      const s = statusWort(a, jetzt, Z.offeneIds);
       return `<div class="tagzeile">
         <div class="zt num">${esc(a.termin || "—")}</div>
         <div class="wo">${esc(a.kunde || a.zielOrt || t("keineAngabe"))}
@@ -2576,6 +2673,7 @@ function zeichne(Z){
     case "ungeprueft":      return ansichtUngeprueft(Z);
     case "nummerEingeben":  return ansichtNummerEingeben(Z);
     case "ergebnis":        return ansichtErgebnis(Z);
+    case "speicherfehler":  return ansichtSpeicherfehler(Z);
     case "kamerahilfe":     return ansichtKamerahilfe(Z);
     case "stand":           return ansichtStand(Z);
     case "laenger":         return ansichtLaenger(Z);
@@ -2605,6 +2703,8 @@ function zeichne(Z){
 function vorlesetext(Z){
   const a = Z.auftrag;
 
+  if (Z.ansicht === "speicherfehler")
+    return t("fotoNichtGespeichert") + " " + t("speicherFehlerText");
   if (Z.ansicht === "ungeprueft")
     return t("ungeprueftFrage") + " " + t("ungeprueftHinweis");
   if (Z.ansicht === "container") {
@@ -2624,8 +2724,8 @@ function vorlesetext(Z){
   if (Z.ansicht === "ergebnis") {
     const e = Z.ergebnis || {};
     return (e.typ === "uebertragen" ? t("uebertragen") + ". " + t("uebertragenText")
-          : e.typ === "wartet" ? t("aufHandyGespeichert") + ". " + t("nochNichtGesendetText")
-          : t("nochNichtGesendet") + ". " + (e.gemerkt === false ? t("nichtGemerkt") : t("sendenFehlerText")));
+          : e.typ === "gespeichert" ? t("gespeichertAufGeraet") + ". " + t("nochNichtGesendetText")
+          : t("nochNichtGesendet") + ". " + t("sendenFehlerText"));
   }
   if (Z.ansicht === "problem" || Z.ansicht === "problemFrage") return t("wasIstPassiert");
   if (Z.ansicht === "problemErgebnis") {
@@ -2831,6 +2931,7 @@ function alarmPruefen(auftrag, puffer, ankunftIso){
 let Z = null;
 let demoErkennung = "passt";     // passt | abweichung | unsicher | ungueltig
 let demoNetz = true;
+let demoSpeicherFehler = false;   // Szenario „Speichern klemmt“
 const gebucht = new Set();       // gegen doppelte Abholungen
 
 function grundZustand(){
@@ -2838,7 +2939,8 @@ function grundZustand(){
            online:true, datenZeit:jetztIso(), ortungZeit:jetztIso(), offen:0,
            laeuft:false, fahrzeugOffen:false, foto:null, pruefung:null, bestaetigung:null,
            ergebnis:null, abschluss:null, problem:null, problemErgebnis:null,
-           stand:null, vorher:"auftrag", demo:true };
+           stand:null, vorher:"auftrag", demo:true,
+           offenerVersuch:null, offeneIds:[] };
 }
 const aktuell = () => (Z.heute || []).filter(a => a.status !== "fertig")[0] || null;
 const zweiter = () => (Z.heute || []).filter(a => a.status !== "fertig")[1] || null;
@@ -2971,14 +3073,33 @@ const SZENARIEN = [
       Z = z; z.pruefung = pruefungBauen(z.auftrag.container, { sicher:true });
       z.ansicht = "container"; return z; } },
 
-  { k:"veraltet", wort:"11 · Daten veraltet",
+  { k:"speicherfehler", wort:"11 · Speichern klemmt",
+    notiz:"Der Gerätespeicher nimmt den Vorgang nicht an. Das Foto bleibt, der Schritt bleibt offen, nichts wird als gespeichert behauptet.",
+    bauen(){ demoNetz = false; demoSpeicherFehler = true; demoErkennung = "passt";
+      const z = grundZustand(); z.auftrag = z.heute[0];
+      z.online = false; z.datenZeit = inMin(-3); z.ortungZeit = inMin(-3);
+      z.foto = { art:"abholung", bild:DEMOFOTO };
+      Z = z; z.pruefung = pruefungBauen(z.auftrag.container, { sicher:true });
+      z.ansicht = "container"; return z; } },
+
+  { k:"abgabeOffline", wort:"12 · Ablieferung ohne Netz",
+    notiz:"Auch das Ablieferfoto geht in den Gerätespeicher. Der Auftrag darf weitergehen, bleibt aber als „Übertragung offen“ erkennbar.",
+    bauen(){ demoNetz = false; demoErkennung = "passt";
+      const z = grundZustand(); const a = z.heute[0];
+      a.status = "entladen_fertig"; a.abholZeit = inMin(-180); a.ankunftZeit = inMin(-120);
+      a.entladeFertigZeit = inMin(-5); a.containerBestaetigt = a.container;
+      z.online = false; z.datenZeit = inMin(-3); z.ortungZeit = inMin(-3);
+      z.auftrag = a; z.foto = { art:"abgabe", bild:DEMOFOTO }; z.ansicht = "foto";
+      return z; } },
+
+  { k:"veraltet", wort:"13 · Daten veraltet",
     notiz:"Internet ist da, aber die Ortungs- und Prognosedaten sind über eine Stunde alt: grau, mit Zeitpunkt der letzten Aktualisierung.",
     bauen(){ // Die Daten sind schon alt, bevor gerechnet wird: kein neuer Alarm.
       const z = fahrtZustand(69, { datenAlterMin:65 });
       z.auftrag.gemeldet = true;      // eine frühere Warnung bleibt bestehen
       return z; } },
 
-  { k:"morgen", wort:"12 · Termin morgen",
+  { k:"morgen", wort:"14 · Termin morgen",
     notiz:"Der nächste Termin liegt am nächsten Tag. Die App schreibt „Termin morgen“ dazu, statt nur eine Uhrzeit zu zeigen.",
     bauen(){ const z = grundZustand(); const a = z.heute[0];
       const frueh = new Date(jetzt().getTime() + 86400000);
@@ -2992,13 +3113,13 @@ const SZENARIEN = [
                      ampel:TL_ZEIT.status(puffer, EINST.gruenAb) };
       z.auftrag = a; return z; } },
 
-  { k:"tagfertig", wort:"13 · Tag fertig",
+  { k:"tagfertig", wort:"15 · Tag fertig",
     notiz:"Alle heutigen Aufträge sind erledigt. Erst jetzt erscheint die Vorschau für morgen — mit Datum und als Vorschau gekennzeichnet.",
     bauen(){ const z = grundZustand();
       z.heute.forEach((a, i) => { a.status = "fertig"; a.abgabeZeit = inMin(-30 * (3 - i)); });
       z.auftrag = null; z.ansicht = "feierabend"; return z; } },
 
-  { k:"spaet", wort:"14 · Nächster zu spät",
+  { k:"spaet", wort:"16 · Nächster zu spät",
     notiz:"Auftrag abgeschlossen. Die Folgeankunft wird aus der Kette gerechnet, nicht gesetzt.",
     bauen(){ const z = grundZustand(); const erledigt = z.heute[0];
       erledigt.status = "fertig"; erledigt.abgabeZeit = jetztIso();
@@ -3019,7 +3140,7 @@ function schalterZeichnen(aktiv){
 }
 function szenario(k){
   const s = SZENARIEN.find(x => x.k === k) || SZENARIEN[0];
-  demoNetz = true; demoErkennung = "passt";
+  demoNetz = true; demoErkennung = "passt"; demoSpeicherFehler = false;
   gebucht.clear(); alarmiert.clear();
   Z = s.bauen();
   if (!Z.auftrag) Z.auftrag = aktuell();
@@ -3066,88 +3187,108 @@ function buchen(art, zeit){
   // Ein gebuchter Schritt macht weder Prognose noch Ortung frisch.
 }
 
-/* Abholung: einmal buchen, egal wie oft getippt wird.
-   Ohne Netz wird der ganze Vorgang auf dem Gerät abgelegt — erst wenn das
-   geklappt hat, verschwindet die Aufnahme vom Bildschirm. */
-async function abholungSenden(){
-  const a = Z.auftrag, p = Z.pruefung || {};
+/* Ein Weg für Abholung und Ablieferung.
+   Ohne Netz wird der ganze Vorgang zuerst auf dem Gerät abgelegt — erst
+   danach gilt der Schritt als gebucht und die Aufnahme verschwindet. */
+async function vorgangSenden(art, opt){
+  opt = opt || {};
+  const a = Z.auftrag;
   if (!a) return;
-  const id = a.id + ":abholung";
-  const zeit = a.abholZeit || jetztIso();
-  const bild = (Z.foto && Z.foto.bild) || DEMOFOTO;
-  const ungeprueft = Z.ansicht === "ungeprueft" || p.zustand === "ungueltig";
-  const abweichung = p.zustand === "abweichung";
-  const nummer = p.bestaetigt || a.container;
+  const id = a.id + ":" + art;
+  // Wiederholung: Uhrzeit und Foto des ersten Versuchs behalten
+  const alterVersuch = Z.offenerVersuch && Z.offenerVersuch.id === id ? Z.offenerVersuch : null;
+  const zeit = (alterVersuch && alterVersuch.zeit) || jetztIso();
+  const bild = (Z.foto && Z.foto.bild) || (alterVersuch && alterVersuch.foto) || DEMOFOTO;
+  const nummer = opt.nummer || a.containerBestaetigt || a.container;
+  const erledigt = a;
 
-  if (!gebucht.has(id)) {
+  const fertigBuchen = () => {
+    if (gebucht.has(id)) return;
     gebucht.add(id);
-    a.containerBestaetigt = nummer;
-    a.containerUngeprueft = ungeprueft || undefined;
-    a.abweichung = abweichung || undefined;
-    buchen("abholung", zeit);
-  }
+    if (art === "abholung") {
+      a.containerBestaetigt = nummer;
+      a.containerUngeprueft = opt.ungeprueft || undefined;
+      a.abweichung = opt.abweichung || undefined;
+    }
+    buchen(art, zeit);
+  };
 
   if (demoNetz) {
-    Z.foto = null; Z.pruefung = null;
-    Z.ergebnis = { art:"abholung", zeit, nummer, abweichung, ungeprueft, typ:"uebertragen" };
+    fertigBuchen();
+    Z.foto = null; Z.pruefung = null; Z.offenerVersuch = null;
+    if (art === "abgabe") {
+      Z.abschluss = { ort: erledigt.kunde || erledigt.zielOrt, zeit,
+                      nummer: erledigt.nummer,
+                      container: erledigt.containerBestaetigt || erledigt.container,
+                      naechster: naechsterAus(zeit, aktuell()) };
+      Z.ansicht = "abschluss"; zeichne();
+      return demoHinweis("Simulierter Versand: in der App ginge die Ablieferung jetzt ans Büro.");
+    }
+    Z.ergebnis = { art, zeit, nummer, abweichung:opt.abweichung, ungeprueft:opt.ungeprueft,
+                   typ:"uebertragen" };
     Z.ansicht = "ergebnis"; zeichne();
-    return demoHinweis(abweichung
-      ? "Simulierter Versand. In der App ginge jetzt eine hervorgehobene Meldung mit beiden Nummern, Fahrer, Uhrzeit und Foto ans Büro."
-      : ungeprueft
-      ? "Simulierter Versand. Die Nummer bleibt als ungeprüft markiert und das Büro bekäme eine Meldung."
-      : "Simulierter Versand. In der App stünde die bestätigte Abholung im Auftragsverlauf.");
+    return demoHinweis(opt.abweichung
+      ? "Simulierter Versand. In der App ginge eine hervorgehobene Meldung mit beiden Nummern, Fahrer, Uhrzeit und Foto ans Büro."
+      : opt.ungeprueft
+      ? "Simulierter Versand. Die Nummer bliebe als ungeprüft markiert und das Büro bekäme eine Meldung."
+      : "Simulierter Versand. In der App stünde der Schritt im Auftragsverlauf.");
   }
 
-  // Ohne Netz: erst ablegen, dann den Bildschirm weiterschalten
-  const vorgang = { id, auftragId:a.id, art:"abholung", zeit, nummer, abweichung, ungeprueft,
+  // Ohne Netz: erst ablegen, dann buchen
+  const vorgang = { id, auftragId:a.id, art, zeit, nummer,
+                    abweichung: !!opt.abweichung, ungeprueft: !!opt.ungeprueft,
                     foto: bild, weg:"(Demo, kein Versand)",
-                    nutzlast: { auftragId:a.id, art:"abholung", zeit, foto:bild,
-                                containerBestaetigt:nummer, containerUngeprueft:ungeprueft } };
-  const abgelegt = await TL_WARTE.legeAb(vorgang);
-  Z.offen = await TL_WARTE.anzahl();
+                    nutzlast: { auftragId:a.id, art, zeit, foto:bild,
+                                containerBestaetigt: art === "abholung" ? nummer : undefined,
+                                containerUngeprueft: opt.ungeprueft || undefined } };
+  const abgelegt = demoSpeicherFehler ? false : await TL_WARTE.legeAb(vorgang);
+  await warteschlangeZeigen();
+
   if (!abgelegt) {
-    // Aufnahme bleibt auf dem Bildschirm, damit sie nicht verloren geht
-    Z.ergebnis = { art:"abholung", zeit, nummer, abweichung, ungeprueft,
-                   typ:"fehler", gemerkt:false };
-    Z.ansicht = "ergebnis"; zeichne();
-    return demoHinweis("Speichern hat nicht geklappt. Die Aufnahme bleibt in der Ansicht.");
+    // Nichts gebucht, nichts behauptet: Foto und Daten bleiben erhalten.
+    Z.offenerVersuch = { id, art, foto:bild, zeit, opt };
+    Z.ansicht = "speicherfehler"; zeichne();
+    return demoHinweis("Speichern hat nicht geklappt. Das Foto bleibt erhalten, der Schritt bleibt offen. " +
+                       "Mit „Erneut speichern“ wird derselbe Vorgang noch einmal abgelegt.");
   }
-  Z.foto = null; Z.pruefung = null;
-  Z.ergebnis = { art:"abholung", zeit, nummer, abweichung, ungeprueft, typ:"wartet" };
+
+  fertigBuchen();
+  Z.foto = null; Z.pruefung = null; Z.offenerVersuch = null;
+  Z.ergebnis = { art, zeit, nummer, abweichung:opt.abweichung, ungeprueft:opt.ungeprueft,
+                 typ:"gespeichert" };
   Z.ansicht = "ergebnis"; zeichne();
-  warteschlangeZeigen();
   demoHinweis("Nichts gesendet. Foto, Nummer und Uhrzeit " + hhmm(zeit) +
-              " liegen im Gerätespeicher (IndexedDB) und überstehen das Neuladen.");
+              " liegen im Gerätespeicher. Der Auftrag geht weiter, bleibt aber als " +
+              "„Übertragung offen“ erkennbar.");
 }
 
-/* Erneut senden: derselbe Vorgang, dieselbe Uhrzeit, dasselbe Foto. */
+/* Erneut senden: derselbe Vorgang. Ist nichts da, wird auch nichts behauptet. */
 async function nochmalSendenDemo(){
   const liste = await TL_WARTE.alle();
   if (!liste.length) {
-    if (Z.ergebnis) Z.ergebnis.typ = "uebertragen";
+    await warteschlangeZeigen();
     zeichne();
-    return demoHinweis("Es wartet kein Vorgang mehr.");
+    return demoHinweis("Es wartet kein Vorgang. Deshalb wird hier auch keine Übertragung bestätigt.");
   }
   demoNetz = true; Z.online = true;
   const v = liste[0];
   await TL_WARTE.entferne(v.id);
-  Z.offen = await TL_WARTE.anzahl();
+  await warteschlangeZeigen();
   Z.datenZeit = jetztIso();          // neue Daten vom Büro
   // Die Ortung bleibt so alt, wie sie ist — ein Versand ortet nicht.
   Z.ergebnis = { art:v.art, zeit:v.zeit, nummer:v.nummer, abweichung:v.abweichung,
                  ungeprueft:v.ungeprueft, typ:"uebertragen" };
   Z.ansicht = "ergebnis"; zeichne();
-  warteschlangeZeigen();
   demoHinweis("Simuliert gesendet: derselbe Vorgang von " + hhmm(v.zeit) +
-              ", mit Foto und Nummer " + FA.nummer(v.nummer) +
-              ". Keine zweite Abholung, keine neue Uhrzeit.");
+              (v.nummer ? ", Nummer " + FA.nummer(v.nummer) : "") +
+              ". Keine zweite Buchung, keine neue Uhrzeit.");
 }
 
 /* Was liegt gerade im Gerätespeicher? */
 async function warteschlangeZeigen(){
   const feld = document.getElementById("warteschlange");
   const liste = await TL_WARTE.alle();
-  if (Z) Z.offen = liste.length;
+  if (Z) { Z.offen = liste.length; Z.offeneIds = liste.map(v => v.id); }
   if (!liste.length) {
     feld.innerHTML = "<b>Gerätespeicher der Vorschau:</b> kein Vorgang offen." +
       " Wartende Vorgänge werden in IndexedDB abgelegt und überleben das Neuladen." +
@@ -3184,6 +3325,7 @@ const A = {
     if (Z.ansicht === "containerFrage") { Z.ansicht = "container"; return zeichne(); }
     if (Z.ansicht === "ungeprueft")     { Z.ansicht = "container"; return zeichne(); }
     if (Z.ansicht === "laenger")        { Z.ansicht = "auftrag"; return zeichne(); }
+    if (Z.ansicht === "speicherfehler") { return A.zurueckZumFoto(); }
     Z.ansicht = "auftrag"; Z.foto = null; Z.ergebnis = null; Z.pruefung = null;
     Z.problem = null; Z.problemErgebnis = null;
     Z.auftrag = aktuell();
@@ -3216,26 +3358,8 @@ const A = {
       Z.ansicht = "container"; zeichne();
       return demoHinweis("Die Nummernerkennung ist simuliert. Prüfziffer und Vergleich rechnet die Vorschau wirklich.");
     }
-    const zeit = jetztIso(), art = Z.foto ? Z.foto.art : "abgabe";
-    Z.foto = null;
-    if (!demoNetz) {
-      buchen(art, zeit); Z.offen = (Z.offen||0)+1;
-      Z.ergebnis = { typ:"wartet", art, zeit }; Z.ansicht = "ergebnis";
-      demoHinweis("Ohne Netz bleibt die Aufnahme auf dem Handy.");
-      return zeichne();
-    }
-    const erledigt = Z.auftrag;                 // vor dem Weiterschalten festhalten
-    buchen(art, zeit);
-    if (art === "abgabe") {
-      Z.abschluss = { ort: erledigt.kunde || erledigt.zielOrt, zeit,
-                      nummer: erledigt.nummer,
-                      container: erledigt.containerBestaetigt || erledigt.container,
-                      naechster: naechsterAus(zeit, aktuell()) };
-      Z.ansicht = "abschluss";
-    } else {
-      Z.ergebnis = { typ:"uebertragen", art, zeit }; Z.ansicht = "ergebnis";
-    }
-    zeichne();
+    // Ablieferung nimmt denselben Weg wie die Abholung: erst ablegen, dann buchen.
+    vorgangSenden(Z.foto ? Z.foto.art : "abgabe", {});
   },
 
   /* Containernummer */
@@ -3255,7 +3379,22 @@ const A = {
   },
   trotzdem(){ Z.ansicht = "containerFrage"; zeichne(); },
   ungeprueftUebernehmen(){ Z.ansicht = "ungeprueft"; zeichne(); },
-  abholungBestaetigen(){ abholungSenden(); },
+  abholungBestaetigen(){
+    const p = Z.pruefung || {};
+    vorgangSenden("abholung", { nummer: p.bestaetigt || (Z.auftrag||{}).container,
+                                abweichung: p.zustand === "abweichung",
+                                ungeprueft: Z.ansicht === "ungeprueft" || p.zustand === "ungueltig" });
+  },
+  erneutSpeichern(){
+    const v = Z.offenerVersuch;
+    if (!v) { Z.ansicht = "auftrag"; return zeichne(); }
+    vorgangSenden(v.art, v.opt || {});
+  },
+  zurueckZumFoto(){
+    const v = Z.offenerVersuch;
+    if (v) Z.foto = { art:v.art, bild:v.foto };     // Foto bleibt erhalten
+    Z.ansicht = "foto"; zeichne();
+  },
 
   /* Ankunft, Warten, Entladen */
   ankunft(){ mitStand(() => { buchen("ankunft", jetztIso());
@@ -3335,6 +3474,14 @@ APP.addEventListener("click", e => {
 /* Für Prüfzwecke: Zustand und Gerätespeicher der Vorschau von außen lesbar.
    Die Fahreransicht benutzt das nicht. */
 window.VORSCHAU = { zustand: () => Z, warteschlange: TL_WARTE, plan: PLAN };
+
+/* Solange eine Aufnahme nicht gespeichert ist, warnt der Browser vor dem
+   Schließen — soweit er das zulässt. */
+window.addEventListener("beforeunload", e => {
+  if (!Z || !Z.offenerVersuch) return;
+  e.preventDefault(); e.returnValue = t("verlassenWarnung");
+  return t("verlassenWarnung");
+});
 
 szenario("passt");
 warteschlangeZeigen();

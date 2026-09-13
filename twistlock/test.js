@@ -114,7 +114,11 @@ const TESTFOTO = "data:image/jpeg;base64," + Buffer.from([
     });
   }
 
-  // 5 Verspätungsmeldung wurde erzeugt
+  // 5 Verspätungsmeldung wurde erzeugt.
+  //   Ein Alarm setzt eine aktuelle Ortung voraus — also erst orten.
+  keks = ""; await ruf("/api/anmelden","POST",{ name:fahrer.name, pin:"1111" });
+  await ruf("/api/position","POST",{ lat:53.07, lon:8.80 });
+  keks = ""; await ruf("/api/anmelden","POST",{ name:"Ahmed", pin:"1234" });
   r = await ruf("/api/dispo/uebersicht");
   pruefe("Meldung bei zu spätem Auftrag", r.daten.meldungen.some(x => x.art === "rot"),
     (r.daten.meldungen[0] || {}).text);
@@ -168,7 +172,7 @@ const TESTFOTO = "data:image/jpeg;base64," + Buffer.from([
   // 11 Position speichern
   r = await ruf("/api/position", "POST", { lat: 53.0, lon: 8.9 });
   pruefe("Position gespeichert", r.status === 200 &&
-    JSON.parse(fs.readFileSync(path.join(__dirname, "daten", "positionen.json"))).length === 1);
+    JSON.parse(fs.readFileSync(path.join(__dirname, "daten", "positionen.json"))).length >= 1);
 
   // 12 Ohne Anmeldung geht nichts
   keks = "";
@@ -355,16 +359,25 @@ const TESTFOTO = "data:image/jpeg;base64," + Buffer.from([
 
   const f4 = ue2.fahrer[0];
   const heute4 = new Date().toLocaleDateString("sv-SE");
+  const morgen4 = new Date(Date.now() + 86400000).toLocaleDateString("sv-SE");
+  const spanne = "?von=" + heute4 + "&bis=" + morgen4;
   const jetzt4 = new Date();
-  const inMin = m => hhmm((jetzt4.getHours()*60 + jetzt4.getMinutes() + m) % 1440);
+  const ZEIT = require("./web/zeit.js");
+  // Datum und Uhrzeit gehoeren zusammen: ein Termin in sieben Stunden kann
+  // schon morgen liegen.
+  const terminFelder = m => {
+    const iso = new Date(Date.now() + m*60000).toISOString();
+    return { datum: ZEIT.datumVon(iso), termin: ZEIT.uhrzeitVon(iso) };
+  };
+  const inMin = m => terminFelder(m).termin;
 
   // Reserve 5 Minuten -> orange, aber KEIN Alarm
-  const meldVorher = (await ruf("/api/dispo/uebersicht")).daten.meldungen.length;
+  const meldVorher = (await ruf("/api/dispo/uebersicht" + spanne)).daten.meldungen.length;
   r = await ruf("/api/dispo/auftrag","POST",{
     datum:heute4, status:"freigegeben", fahrerId:f4.id, zielOrt:"Orangestadt",
-    termin:inMin(65), fahrzeitMin:60, ruestzeitMin:0, container:"MSCU1234566" });
+    ...terminFelder(65), fahrzeitMin:60, ruestzeitMin:0, container:"MSCU1234566" });
   const orangeId = r.daten.id;
-  let ueO = (await ruf("/api/dispo/uebersicht")).daten;
+  let ueO = (await ruf("/api/dispo/uebersicht" + spanne)).daten;
   let ao = ueO.auftraege.find(x => x.id === orangeId);
   pruefe("Fuenf Minuten Reserve sind orange", ao.rechnung.ampel === "gelb",
     "Reserve " + ao.rechnung.puffer);
@@ -374,9 +387,9 @@ const TESTFOTO = "data:image/jpeg;base64," + Buffer.from([
   // 15 Minuten Verspaetung -> rot, aber immer noch kein Alarm
   r = await ruf("/api/dispo/auftrag","POST",{
     datum:heute4, status:"freigegeben", fahrerId:f4.id, zielOrt:"Knappstadt",
-    termin:inMin(45), fahrzeitMin:60, ruestzeitMin:0 });
+    ...terminFelder(45), fahrzeitMin:60, ruestzeitMin:0 });
   const knappId = r.daten.id;
-  let ueK = (await ruf("/api/dispo/uebersicht")).daten;
+  let ueK = (await ruf("/api/dispo/uebersicht" + spanne)).daten;
   let ak = ueK.auftraege.find(x => x.id === knappId);
   pruefe("Fuenfzehn Minuten Verspaetung sind rot", ak.rechnung.ampel === "rot",
     "Reserve " + ak.rechnung.puffer);
@@ -384,16 +397,35 @@ const TESTFOTO = "data:image/jpeg;base64," + Buffer.from([
     !ueK.meldungen.some(m => m.auftragId === knappId),
     JSON.stringify(ueK.meldungen.slice(0,1)));
 
+  // Ohne aktuelle Ortung gibt es keinen Alarm — auch bei grosser Verspaetung.
+  // Dafuer ein Fahrer, der noch nie geortet wurde.
+  await ruf("/api/dispo/fahrer","POST",{ neu:"Fahrer Ohneortung", pin:"3333" });
+  const fOhne = (await ruf("/api/dispo/uebersicht")).daten.fahrer
+    .find(x => x.name === "Fahrer Ohneortung");
+  r = await ruf("/api/dispo/auftrag","POST",{
+    datum:heute4, status:"freigegeben", fahrerId:fOhne.id, zielOrt:"Ohneortung",
+    ...terminFelder(30), fahrzeitMin:60, ruestzeitMin:0 });
+  const ohneOrtungId = r.daten.id;
+  let ueOO = (await ruf("/api/dispo/uebersicht" + spanne)).daten;
+  pruefe("Ohne aktuelle Ortung kein Alarm",
+    !ueOO.meldungen.some(m => m.auftragId === ohneOrtungId),
+    (ueOO.meldungen[0]||{}).text);
+
+  // Jetzt eine frische Ortung melden, danach ist der Alarm zulaessig
+  keks = ""; await ruf("/api/anmelden","POST",{name:f4.name,pin:"1111"});
+  await ruf("/api/position","POST",{ lat:53.07, lon:8.80 });
+  keks = ""; await ruf("/api/anmelden","POST",{name:"Ahmed",pin:"1234"});
+
   // 30 Minuten Verspaetung -> Alarm, aber nur einmal
   r = await ruf("/api/dispo/auftrag","POST",{
     datum:heute4, status:"freigegeben", fahrerId:f4.id, zielOrt:"Spaetstadt",
-    termin:inMin(30), fahrzeitMin:60, ruestzeitMin:0 });
+    ...terminFelder(30), fahrzeitMin:60, ruestzeitMin:0 });
   const spaetId = r.daten.id;
-  let ueS = (await ruf("/api/dispo/uebersicht")).daten;
+  let ueS = (await ruf("/api/dispo/uebersicht" + spanne)).daten;
   const alarme = ueS.meldungen.filter(m => m.auftragId === spaetId);
   pruefe("Ab 20 Minuten Verspaetung kommt ein Alarm", alarme.length === 1,
     (alarme[0]||{}).text);
-  ueS = (await ruf("/api/dispo/uebersicht")).daten;   // zweite Runde
+  ueS = (await ruf("/api/dispo/uebersicht" + spanne)).daten;   // zweite Runde
   pruefe("Der Alarm kommt nur einmal",
     ueS.meldungen.filter(m => m.auftragId === spaetId).length === 1);
 
@@ -404,11 +436,11 @@ const TESTFOTO = "data:image/jpeg;base64," + Buffer.from([
   pruefe("Zweiter Fahrerzugang angelegt", !!kf);
   r = await ruf("/api/dispo/auftrag","POST",{
     datum:heute4, status:"freigegeben", fahrerId:kf.id, zielOrt:"Kettenstadt",
-    termin:inMin(240), container:"MSCU1234566", abholOrt:"Bremen", fahrzeitMin:60 });
+    termin:"23:30", container:"MSCU1234566", abholOrt:"Bremen", fahrzeitMin:60 });
   const kettenId = r.daten.id;
   await ruf("/api/dispo/auftrag","POST",{
     datum:heute4, status:"freigegeben", fahrerId:kf.id, zielOrt:"Danachstadt",
-    termin:inMin(420), container:"TGHU7654320", abholOrt:"Bremen", fahrzeitMin:60 });
+    termin:"23:50", container:"TGHU7654320", abholOrt:"Bremen", fahrzeitMin:60 });
 
   keks = ""; await ruf("/api/anmelden","POST",{name:"Fahrer Kette",pin:"2222"});
   const orangeId2 = kettenId;
@@ -456,7 +488,7 @@ const TESTFOTO = "data:image/jpeg;base64," + Buffer.from([
   keks = ""; await ruf("/api/anmelden","POST",{name:"Ahmed",pin:"1234"});
   r = await ruf("/api/dispo/auftrag","POST",{
     datum:heute4, status:"freigegeben", fahrerId:f4.id, zielOrt:"Pruefstadt",
-    termin:inMin(300), container:"MSCU1234566" });
+    ...terminFelder(300), container:"MSCU1234566" });
   const abwId = r.daten.id;
   keks = ""; await ruf("/api/anmelden","POST",{name:f4.name,pin:"1111"});
   r = await ruf("/api/fahrer/ereignis","POST",{auftragId:abwId, art:"abholung", foto:TESTFOTO,
@@ -477,7 +509,7 @@ const TESTFOTO = "data:image/jpeg;base64," + Buffer.from([
   // 29 Passende Nummer erzeugt keine Warnmeldung
   r = await ruf("/api/dispo/auftrag","POST",{
     datum:heute4, status:"freigegeben", fahrerId:f4.id, zielOrt:"Pasststadt",
-    termin:inMin(300), container:"TGHU7654320" });
+    ...terminFelder(300), container:"TGHU7654320" });
   const okId = r.daten.id;
   const vorMeld = (await ruf("/api/dispo/uebersicht")).daten.meldungen.length;
   keks = ""; await ruf("/api/anmelden","POST",{name:f4.name,pin:"1111"});
@@ -537,11 +569,15 @@ const TESTFOTO = "data:image/jpeg;base64," + Buffer.from([
   keks = ""; await ruf("/api/anmelden","POST",{name:"Ahmed",pin:"1234"});
   const heute5 = new Date().toLocaleDateString("sv-SE");
   const jetzt5 = new Date();
-  const inMin5 = m => hhmm((jetzt5.getHours()*60 + jetzt5.getMinutes() + m) % 1440);
+  const terminFelder5 = m => {
+    const iso = new Date(Date.now() + m*60000).toISOString();
+    const Z5 = require("./web/zeit.js");
+    return { datum: Z5.datumVon(iso), termin: Z5.uhrzeitVon(iso) };
+  };
   const f5 = (await ruf("/api/dispo/uebersicht")).daten.fahrer[0];
   r = await ruf("/api/dispo/auftrag","POST",{
     datum:heute5, status:"freigegeben", fahrerId:f5.id, zielOrt:"Ungeprueftstadt",
-    termin:inMin5(300), container:"MSCU1234566" });
+    ...terminFelder5(300), container:"MSCU1234566" });
   const ugId = r.daten.id;
   keks = ""; await ruf("/api/anmelden","POST",{name:f5.name,pin:"1111"});
   r = await ruf("/api/fahrer/ereignis","POST",{ auftragId:ugId, art:"abholung", foto:TESTFOTO,
@@ -605,7 +641,10 @@ const TESTFOTO = "data:image/jpeg;base64," + Buffer.from([
     pruefe("Frische Daten erlauben einen Alarm", Zt.alarmErlaubt(frisch, frisch, 10) === true);
     pruefe("Alte Prognose verbietet einen Alarm", Zt.alarmErlaubt(alt, frisch, 10) === false);
     pruefe("Alte Ortung verbietet einen Alarm", Zt.alarmErlaubt(frisch, alt, 10) === false);
-    pruefe("Fehlende Ortung allein verbietet nichts", Zt.alarmErlaubt(frisch, null, 10) === true);
+    pruefe("Fehlende Ortung verbietet einen Alarm", Zt.alarmErlaubt(frisch, null, 10) === false);
+    pruefe("Unlesbare Ortung verbietet einen Alarm", Zt.alarmErlaubt(frisch, "morgen", 10) === false);
+    pruefe("Der Grund wird benannt",
+      Zt.datenZuverlaessig(frisch, null, 10).grund === "ortung_fehlt");
   }
 
   // 35 Nachgereichte Abholung behaelt die Uhrzeit des Fahrers
@@ -635,6 +674,34 @@ const TESTFOTO = "data:image/jpeg;base64," + Buffer.from([
   nga = (await ruf("/api/fahrer/tag")).daten.heute.find(x => x.id === nachId);
   pruefe("Zeiten aus der Zukunft werden nicht uebernommen",
     new Date(nga.ankunftZeit).getTime() <= Date.now() + 60000, nga.ankunftZeit);
+
+
+  // 36 Ablieferung nachgereicht: Zeit bleibt, keine zweite Buchung
+  keks = ""; await ruf("/api/anmelden","POST",{name:"Ahmed",pin:"1234"});
+  const f7 = (await ruf("/api/dispo/uebersicht")).daten.fahrer[0];
+  r = await ruf("/api/dispo/auftrag","POST",{
+    datum:new Date().toLocaleDateString("sv-SE"), status:"freigegeben", fahrerId:f7.id,
+    zielOrt:"Abgabestadt", termin:"23:40", container:"MSCU1234566" });
+  const abId = r.daten.id;
+  keks = ""; await ruf("/api/anmelden","POST",{name:f7.name,pin:"1111"});
+  const abholZeit7 = new Date(Date.now() - 90*60000).toISOString();
+  const abgabeZeit7 = new Date(Date.now() - 20*60000).toISOString();
+  await ruf("/api/fahrer/ereignis","POST",{ auftragId:abId, art:"abholung", foto:TESTFOTO,
+    zeit:abholZeit7, containerBestaetigt:"MSCU1234566" });
+  r = await ruf("/api/fahrer/ereignis","POST",{ auftragId:abId, art:"abgabe", foto:TESTFOTO,
+    zeit:abgabeZeit7 });
+  pruefe("Nachgereichte Ablieferung wird angenommen", r.status === 200);
+  let ab = (await ruf("/api/fahrer/tag")).daten.heute.find(x => x.id === abId);
+  pruefe("Die Abgabezeit ist die Zeit des Fahrers", ab.abgabeZeit === abgabeZeit7, ab.abgabeZeit);
+  pruefe("Der Auftrag ist damit fertig", ab.status === "fertig");
+  const fotosVor7 = fs.readdirSync(path.join(__dirname,"fotos")).length;
+  r = await ruf("/api/fahrer/ereignis","POST",{ auftragId:abId, art:"abgabe", foto:TESTFOTO,
+    zeit:abgabeZeit7 });
+  pruefe("Zweite Ablieferung wird als Wiederholung erkannt", r.daten.doppelt === true);
+  ab = (await ruf("/api/fahrer/tag")).daten.heute.find(x => x.id === abId);
+  pruefe("Abgabezeit bleibt unveraendert", ab.abgabeZeit === abgabeZeit7);
+  pruefe("Kein zweites Ablieferfoto",
+    fs.readdirSync(path.join(__dirname,"fotos")).length === fotosVor7);
 
   // 24 Farbkontraste der Fahreransicht (WCAG AA, mindestens 4,5:1)
   {

@@ -32,9 +32,10 @@ const APP = document.getElementById("app");
    Alles, was der Bildschirm braucht, steht hier an einer Stelle. */
 const Z = {
   ansicht:"laden", auftrag:null, heute:[], morgen:[], einst:{},
-  online:navigator.onLine, datenZeit:null, ortungZeit:null, offen:0,
+  online:navigator.onLine, datenZeit:null, ortungZeit:null, offen:0, offeneIds:[],
   laeuft:false, fahrzeugOffen:false,
   foto:null, ergebnis:null, abschluss:null, pruefung:null, bestaetigung:null,
+  offenerVersuch:null, hinweis:null,
   problem:null, problemErgebnis:null,
   stand:null, vorher:"auftrag"
 };
@@ -60,7 +61,11 @@ function installKnopf(){
    bestätigte Containernummer. Erst wenn das wirklich gespeichert ist,
    verschwindet die Aufnahme vom Bildschirm.                        */
 async function zaehleOffen(){
-  try { Z.offen = await TL_WARTE.anzahl(); } catch { Z.offen = 0; }
+  try {
+    const liste = await TL_WARTE.alle();
+    Z.offen = liste.length;
+    Z.offeneIds = liste.map(v => v.id);
+  } catch { Z.offen = 0; Z.offeneIds = []; }
 }
 
 /* Sendet die Warteschlange. Gibt zurück, ob alles weg ist.
@@ -208,6 +213,7 @@ async function ereignisSenden(auftrag, art, foto, extra){
                       naechster: antwort.naechster || null };
       Z.ansicht = "abschluss";
     } else if (art === "abholung") {
+      Z.offenerVersuch = null;
       Z.ergebnis = { typ:"uebertragen", art, zeit:jetzt,
                      nummer: extra && extra.containerBestaetigt,
                      abweichung: !!(antwort.auftrag && antwort.auftrag.abweichung),
@@ -229,17 +235,18 @@ async function ereignisSenden(auftrag, art, foto, extra){
     // weiterarbeiten kann — aber er sieht, dass noch nichts gesendet ist.
     oertlichVormerken(auftrag, art, jetzt);
     Z.online = navigator.onLine;
-    Z.ergebnis = { typ: navigator.onLine ? "fehler" : "wartet", art, zeit:jetzt, gemerkt:true,
+    Z.offenerVersuch = null;
+    Z.ergebnis = { typ:"gespeichert", art, zeit:jetzt,
                    nummer: extra && extra.containerBestaetigt,
                    ungeprueft: !!(extra && extra.containerUngeprueft) };
     Z.ansicht = "ergebnis";
   } else if (netzfehler) {
-    // Weder gesendet noch gespeichert: die Aufnahme bleibt auf dem Bildschirm,
-    // damit sie nicht verloren geht.
+    // Weder gesendet noch gespeichert: die Aufnahme bleibt erhalten und der
+    // Schritt bleibt offen. Der Versuch wird gemerkt, damit „Erneut speichern“
+    // genau denselben Vorgang wiederholt — gleiches Foto, gleiche Uhrzeit.
     gebucht.delete(schluessel);
-    Z.ergebnis = { typ:"fehler", art, zeit:jetzt, gemerkt:false,
-                   nummer: extra && extra.containerBestaetigt };
-    Z.ansicht = "ergebnis";
+    Z.offenerVersuch = { auftrag, art, foto, extra, zeit };
+    Z.ansicht = "speicherfehler";
   } else {
     gebucht.delete(schluessel);
     Z.ergebnis = { typ:"fehler", art, zeit:jetzt, text:fehlerText };
@@ -390,6 +397,19 @@ const A = {
   },
   nochmalLaden(){ Z.ansicht = "laden"; neuZeichnen(); holen(); },
   fahrzeug(){ Z.fahrzeugOffen = !Z.fahrzeugOffen; neuZeichnen(); },
+
+  /* Nach einem Speicherfehler: derselbe Vorgang, dasselbe Foto. */
+  erneutSpeichern(){
+    const v = Z.offenerVersuch;
+    if (!v) { Z.ansicht = "auftrag"; return neuZeichnen(); }
+    gebucht.delete(v.auftrag.id + ":" + v.art);
+    ereignisSenden(v.auftrag, v.art, v.foto, v.extra);
+  },
+  zurueckZumFoto(){
+    const v = Z.offenerVersuch;
+    if (v) Z.foto = { art:v.art, bild:v.foto };
+    Z.ansicht = "foto"; neuZeichnen();
+  },
   aenderungGesehen(){ mitStand(aenderungBestaetigen); },
 
   /* --- Foto --- */
@@ -472,15 +492,21 @@ const A = {
 
   /* --- Senden wiederholen --- */
   async nochmalSenden(){
+    await zaehleOffen();
+    if (!Z.offen) {                       // nichts da, also nichts behaupten
+      Z.hinweis = t("keinVorgangOffen");
+      return neuZeichnen();
+    }
     Z.laeuft = true; neuZeichnen();
     const fertig = await warteschlangeSenden();
     Z.laeuft = false;
     if (fertig) {
+      // Erst jetzt gilt die Übertragung als bestätigt.
       if (Z.ergebnis) Z.ergebnis.typ = "uebertragen";
       if (Z.problemErgebnis) Z.problemErgebnis.typ = "gesendet";
       await holen();
     } else if (Z.ergebnis) {
-      Z.ergebnis.typ = navigator.onLine ? "fehler" : "wartet";
+      Z.ergebnis.typ = "gespeichert";     // liegt weiter auf dem Gerät
     }
     neuZeichnen();
   },
@@ -502,6 +528,15 @@ APP.addEventListener("click", e => {
   if (!b) return;
   const f = A[b.dataset.tun];
   if (typeof f === "function") f(b.dataset);
+});
+
+/* Solange eine Aufnahme weder gesendet noch gespeichert ist, warnt der
+   Browser vor dem Schließen — soweit er das zulässt. */
+window.addEventListener("beforeunload", e => {
+  if (!Z.offenerVersuch) return;
+  e.preventDefault();
+  e.returnValue = t("verlassenWarnung");
+  return t("verlassenWarnung");
 });
 
 /* ============ Start ============ */

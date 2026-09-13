@@ -64,18 +64,24 @@ function zeitstatus(r, Z){
   const grenze  = (Z.einst && Z.einst.gruenAb != null) ? Z.einst.gruenAb : TL_ZEIT.GRENZE_ORANGE;
   const maxAlter = (Z.einst && Z.einst.maxDatenAlterMin != null)
                    ? Z.einst.maxDatenAlterMin : TL_ZEIT.MAX_ALTER;
-  /* Auch mit Internet können die Daten alt sein. Prognose und Ortung werden
-     getrennt geprüft: eine Fotoübertragung macht eine alte Ortung nicht frisch.
-     Eine nie vorhandene Ortung (zum Beispiel ohne https) gilt nicht als alt. */
-  const veraltet = TL_ZEIT.veraltet(Z.datenZeit, maxAlter) ||
-                   (!!Z.ortungZeit && TL_ZEIT.veraltet(Z.ortungZeit, maxAlter));
 
-  if (veraltet || !r || r.unsicher || r.puffer == null || !r.ankunft) {
-    const zusatz = veraltet
-      ? t("letzteAktualisierung", { zeit: uhr(Z.datenZeit) || "—" })
-      : (r && r.unsicher ? t("endeOffen") : "");
-    return { klasse:"grau", ico:I.frage(28), satz:t("keineDaten"), zusatz, veraltet:true };
+  /* Verlässlich ist die Ankunft nur, wenn beides stimmt: der Zeitpunkt der
+     Ankunftsberechnung und der Zeitpunkt der Ortung. Fehlt oder altert
+     einer davon, wird nichts Grünes gezeigt und nichts gemeldet. */
+  const daten = TL_ZEIT.datenZuverlaessig(Z.datenZeit, Z.ortungZeit, maxAlter);
+
+  if (!daten.ok) {
+    const grund = { ortung_fehlt:t("ortungFehlt"), ortung_alt:t("ortungFehlt"),
+                    prognose_fehlt:t("prognoseAlt"), prognose_alt:t("prognoseAlt") }[daten.grund] || "";
+    const stand = Z.datenZeit
+      ? " " + t("letzteAktualisierung", { zeit: uhr(Z.datenZeit) || "—" }) : "";
+    return { klasse:"grau", ico:I.frage(28), satz:t("ankunftUnzuverlaessig"),
+             zusatz:(grund + stand).trim(), veraltet:true, grund:daten.grund };
   }
+
+  if (!r || r.unsicher || r.puffer == null || !r.ankunft)
+    return { klasse:"grau", ico:I.frage(28), satz:t("keineDaten"),
+             zusatz: r && r.unsicher ? t("endeOffen") : "", veraltet:false };
 
   const p = Math.round(r.puffer);
   const k = TL_ZEIT.status(p, grenze);
@@ -141,7 +147,7 @@ function netzStreifen(Z){
       <span>${esc(z ? t("keinNetzStreifen",{zeit:z}) : t("keinInternet"))}</span></div>`;
   }
   if (Z.offen > 0) {
-    s += `<div class="netzstreifen">${I.sanduhr(24)}<span>${
+    s += `<div class="netzstreifen">${I.sanduhr(24)}<span>${esc(t("uebertragungOffen"))}: ${
       esc(Z.offen === 1 ? t("einerWartetAufNetz") : t("wartetAufNetz",{n:Z.offen}))
     }</span></div>`;
   }
@@ -654,19 +660,24 @@ function ansichtNummerEingeben(Z){
 function ansichtErgebnis(Z){
   const e = Z.ergebnis || {};
   const abholung = e.art === "abholung";
-  const klasse = e.typ === "uebertragen" ? "" : (e.typ === "wartet" ? "wartet" : "fehler");
+  /* Vier Zustände, klar getrennt:
+     nichtGespeichert — das Foto liegt noch nirgends (eigene Ansicht)
+     gespeichert      — auf dem Gerät, Übertragung offen
+     fehler           — gespeichert, Versand hat nicht geklappt
+     uebertragen      — vom Empfänger bestätigt                       */
+  const klasse = e.typ === "uebertragen" ? "" : (e.typ === "gespeichert" ? "wartet" : "fehler");
   const ico = e.typ === "uebertragen" ? I.haken(36)
-            : (e.typ === "wartet" ? I.sanduhr(36) : I.warnung(36));
+            : (e.typ === "gespeichert" ? I.sanduhr(36) : I.warnung(36));
   let wort, unten;
   if (e.typ === "uebertragen") {
     wort = abholung ? t("abholungUebertragen") : t("uebertragen");
     unten = t("uebertragenText");
-  } else if (e.typ === "wartet") {
-    wort = t("aufHandyGespeichert");
+  } else if (e.typ === "gespeichert") {
+    wort = t("gespeichertAufGeraet");
     unten = t("nochNichtGesendetText");
   } else {
     wort = t("nochNichtGesendet");
-    unten = e.gemerkt === false ? t("nichtGemerkt") : t("sendenFehlerText");
+    unten = t("sendenFehlerText");
   }
   return kopf(Z) + `<div class="inhalt">
     ${netzStreifen(Z)}
@@ -677,17 +688,27 @@ function ansichtErgebnis(Z){
       ${e.nummer ? `<div class="u num">${esc(t("container"))}: ${esc(nummer(e.nummer))}</div>` : ""}
       ${e.abweichung ? `<div class="u">${esc(t("alsAbweichungGemeldet"))}</div>` : ""}
       ${e.ungeprueft ? `<div class="u">${esc(t("ungeprueftMarke"))}</div>` : ""}
+      ${e.typ !== "uebertragen" ? `<div class="u">${I.sanduhr(18)} ${esc(t("uebertragungOffen"))}</div>` : ""}
     </div></div>
-    ${e.typ === "fehler" && e.gemerkt === false
-      ? `<div class="kasten warn"><span class="ico">${I.warnung(24)}</span>
-         <div>${esc(t("nichtSchliessen"))}</div></div>` : ""}
-    ${Z.demo && e.typ !== "uebertragen"
-      ? `<div class="hinweis">${esc(t("demoSpeicher"))}</div>` : ""}
-    ${Z.demo && e.typ === "uebertragen"
-      ? `<div class="hinweis">${esc(t("demoVersand"))}</div>` : ""}
+    ${Z.demo ? `<div class="hinweis">${esc(e.typ === "uebertragen"
+        ? t("demoVersand") : t("demoSpeicher"))}</div>` : ""}
   </div>` + leiste(
     hauptKnopf(t("zurueckZumAuftrag"), I.zurueck(28), "zurueck", Z),
     e.typ !== "uebertragen" ? zweitKnopf(t("nochmalSenden"), I.pfeil(24), "nochmalSenden") : "");
+}
+
+/* Speichern hat nicht geklappt: das Foto bleibt, der Schritt bleibt offen. */
+function ansichtSpeicherfehler(Z){
+  const f = Z.foto || {};
+  return kopf(Z, {ohneProblem:true}) + `<div class="inhalt">
+    <div class="ergebnis fehler"><span class="ico">${I.warnung(36)}</span><div>
+      <div class="w">${esc(t("fotoNichtGespeichert"))}</div>
+      <div class="u">${esc(t("speicherFehlerText"))}</div>
+    </div></div>
+    ${f.bild ? `<img class="vorschaubild" src="${esc(f.bild)}" alt="${esc(t("fotoTitelAbholung"))}">` : ""}
+  </div>` + leiste(
+    hauptKnopf(t("erneutSpeichern"), I.pfeil(28), "erneutSpeichern", Z),
+    zweitKnopf(t("zurueckZumFoto"), I.kamera(24), "zurueckZumFoto"));
 }
 
 function ansichtKamerahilfe(Z){
@@ -774,7 +795,9 @@ function ansichtProblemErgebnis(Z){
 /* ===========================================================
    Tagesplan und Sprache
    =========================================================== */
-function statusWort(a, jetzt){
+function statusWort(a, jetzt, offeneIds){
+  if (offeneIds && offeneIds.some(id => String(id).startsWith(a.id + ":")))
+    return { wort:t("uebertragungOffen"), klasse:"offen", ico:I.sanduhr(18) };
   if (a.status === "fertig")     return { wort:t("statusFertig"), klasse:"fertig", ico:I.haken(18) };
   if (a === jetzt)               return { wort:t("statusJetzt"),  klasse:"jetzt",  ico:I.pfeil(18) };
   if (a.status === "geladen")    return { wort:t("statusUnterwegs"), klasse:"offen", ico:I.lkw(18) };
@@ -793,7 +816,7 @@ function ansichtTagesplan(Z){
     ${netzStreifen(Z)}
     <h1 class="titel">${esc(t("tagesplan"))} <span class="marke-firma">${esc(MARKE)}</span></h1>
     ${liste.length ? liste.map(a => {
-      const s = statusWort(a, jetzt);
+      const s = statusWort(a, jetzt, Z.offeneIds);
       return `<div class="tagzeile">
         <div class="zt num">${esc(a.termin || "—")}</div>
         <div class="wo">${esc(a.kunde || a.zielOrt || t("keineAngabe"))}
@@ -868,6 +891,7 @@ function zeichne(Z){
     case "ungeprueft":      return ansichtUngeprueft(Z);
     case "nummerEingeben":  return ansichtNummerEingeben(Z);
     case "ergebnis":        return ansichtErgebnis(Z);
+    case "speicherfehler":  return ansichtSpeicherfehler(Z);
     case "kamerahilfe":     return ansichtKamerahilfe(Z);
     case "stand":           return ansichtStand(Z);
     case "laenger":         return ansichtLaenger(Z);
@@ -897,6 +921,8 @@ function zeichne(Z){
 function vorlesetext(Z){
   const a = Z.auftrag;
 
+  if (Z.ansicht === "speicherfehler")
+    return t("fotoNichtGespeichert") + " " + t("speicherFehlerText");
   if (Z.ansicht === "ungeprueft")
     return t("ungeprueftFrage") + " " + t("ungeprueftHinweis");
   if (Z.ansicht === "container") {
@@ -916,8 +942,8 @@ function vorlesetext(Z){
   if (Z.ansicht === "ergebnis") {
     const e = Z.ergebnis || {};
     return (e.typ === "uebertragen" ? t("uebertragen") + ". " + t("uebertragenText")
-          : e.typ === "wartet" ? t("aufHandyGespeichert") + ". " + t("nochNichtGesendetText")
-          : t("nochNichtGesendet") + ". " + (e.gemerkt === false ? t("nichtGemerkt") : t("sendenFehlerText")));
+          : e.typ === "gespeichert" ? t("gespeichertAufGeraet") + ". " + t("nochNichtGesendetText")
+          : t("nochNichtGesendet") + ". " + t("sendenFehlerText"));
   }
   if (Z.ansicht === "problem" || Z.ansicht === "problemFrage") return t("wasIstPassiert");
   if (Z.ansicht === "problemErgebnis") {
