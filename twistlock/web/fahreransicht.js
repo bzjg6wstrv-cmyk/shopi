@@ -397,7 +397,8 @@ function ansichtErgebnis(Z){
     unten = t("bleibtAufHandy");
   } else {
     wort = t("sendenFehlgeschlagen");
-    unten = t("sendenFehlerText");
+    // Nur behaupten, dass die Aufnahme sicher liegt, wenn sie wirklich liegt.
+    unten = e.gemerkt === false ? t("nichtGemerkt") : t("sendenFehlerText");
   }
   return kopf(Z) + `<div class="inhalt">
     ${netzStreifen(Z)}

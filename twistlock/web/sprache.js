@@ -74,6 +74,7 @@ de:{
   bleibtAufHandy:"Die Aufnahme bleibt auf dem Handy und wird von allein gesendet, sobald du Netz hast.",
   sendenFehlgeschlagen:"Senden hat nicht geklappt",
   sendenFehlerText:"Das Büro hat die Aufnahme noch nicht. Sie liegt weiter auf dem Handy.",
+  nichtGemerkt:"Die Aufnahme konnte auf dem Handy nicht gespeichert werden. Bitte im Stand noch einmal versuchen.",
   nochmalSenden:"Nochmal senden",
   weiter:"Weiter",
   /* Problem melden */
@@ -179,6 +180,7 @@ tr:{
   bleibtAufHandy:"Kayıt telefonda kalır ve internet gelince kendiliğinden gönderilir.",
   sendenFehlgeschlagen:"Gönderme olmadı",
   sendenFehlerText:"Ofiste henüz yok. Kayıt telefonda duruyor.",
+  nichtGemerkt:"Kayıt telefona kaydedilemedi. Lütfen durduğunda tekrar dene.",
   nochmalSenden:"Tekrar gönder", weiter:"Devam",
   wasIstPassiert:"Ne oldu?",
   stau:"Trafik", mussWarten:"Beklemem gerekiyor", containerFehlt:"Konteyner yok",
@@ -269,6 +271,7 @@ pl:{
   bleibtAufHandy:"Zapis zostaje w telefonie i wyśle się sam, gdy będzie sieć.",
   sendenFehlgeschlagen:"Wysyłka się nie udała",
   sendenFehlerText:"Biuro jeszcze tego nie ma. Zapis jest dalej w telefonie.",
+  nichtGemerkt:"Nie udało się zapisać w telefonie. Spróbuj jeszcze raz na postoju.",
   nochmalSenden:"Wyślij ponownie", weiter:"Dalej",
   wasIstPassiert:"Co się stało?",
   stau:"Korek", mussWarten:"Muszę czekać", containerFehlt:"Brak kontenera",
@@ -359,6 +362,7 @@ ro:{
   bleibtAufHandy:"Înregistrarea rămâne pe telefon și se trimite singură când ai semnal.",
   sendenFehlgeschlagen:"Trimiterea nu a reușit",
   sendenFehlerText:"Biroul nu are încă înregistrarea. Ea rămâne pe telefon.",
+  nichtGemerkt:"Înregistrarea nu a putut fi salvată pe telefon. Încearcă din nou din staționare.",
   nochmalSenden:"Trimite din nou", weiter:"Mai departe",
   wasIstPassiert:"Ce s-a întâmplat?",
   stau:"Ambuteiaj", mussWarten:"Trebuie să aștept", containerFehlt:"Lipsește containerul",
@@ -449,6 +453,7 @@ ar:{
   bleibtAufHandy:"تبقى الصورة في الهاتف وتُرسل تلقائياً عند توفر الشبكة.",
   sendenFehlgeschlagen:"الإرسال لم ينجح",
   sendenFehlerText:"المكتب لم يستلمها بعد. هي محفوظة في الهاتف.",
+  nichtGemerkt:"تعذّر حفظ الصورة في الهاتف. حاول مرة أخرى أثناء التوقف.",
   nochmalSenden:"أرسل مرة أخرى", weiter:"متابعة",
   wasIstPassiert:"ماذا حدث؟",
   stau:"ازدحام", mussWarten:"يجب أن أنتظر", containerFehlt:"الحاوية غير موجودة",
@@ -497,14 +502,28 @@ const STIMME     = { de:"de-DE", tr:"tr-TR", pl:"pl-PL", ro:"ro-RO", ar:"ar-SA" 
 const RTL        = { ar:true };
 
 /* Sprache wird einmal gewählt und bleibt ein Jahr gemerkt.
-   Ein Cookie, damit auch der Service Worker damit klarkommt. */
-let L = (document.cookie.match(/tl_lang=(\w\w)/) || [])[1] || "de";
+   Zuerst ein Cookie, damit auch der Service Worker damit klarkommt.
+   Manche Browser verbieten Cookies (privates Fenster, eingebettete Seite).
+   Dann darf die App nicht stehenbleiben: sie weicht auf den örtlichen
+   Speicher aus und notfalls auf Deutsch für diese Sitzung. */
+function spracheLesen(){
+  try { const m = document.cookie.match(/tl_lang=(\w\w)/); if (m) return m[1]; } catch (e) {}
+  try { const v = localStorage.getItem("tl_lang"); if (v) return v; } catch (e) {}
+  return null;
+}
+function spracheMerken(k){
+  try { document.cookie = "tl_lang=" + k + "; Path=/; Max-Age=" + 365*24*3600 + "; SameSite=Lax"; }
+  catch (e) {}
+  try { localStorage.setItem("tl_lang", k); } catch (e) {}
+}
+
+let L = spracheLesen() || "de";
 if (!W[L]) L = "de";
 
 function setzeSprache(k){
   if (!W[k]) return;
   L = k;
-  document.cookie = "tl_lang=" + k + "; Path=/; Max-Age=" + 365*24*3600 + "; SameSite=Lax";
+  spracheMerken(k);
   richtungSetzen();
 }
 function richtungSetzen(){
@@ -573,7 +592,9 @@ const I = {
 
 /* ---------- App-Installation (nur wenn der Browser sie anbietet) ---------- */
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(()=>{}));
+  window.addEventListener("load", () => {
+    try { navigator.serviceWorker.register("/sw.js").catch(()=>{}); } catch (e) {}
+  });
 }
 let installEvent = null;
 window.addEventListener("beforeinstallprompt", e => {
