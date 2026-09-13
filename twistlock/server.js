@@ -71,7 +71,8 @@ const EINST_STANDARD = {
   entladezeitStandard: 120,  // Planwert Entladung beim Kunden, in Minuten
   nacharbeitMin: 15,         // Papiere, Ladungssicherung, bevor es weitergeht
   fahrzeitZurAbholung: 60,   // Fahrt vom Kunden zur nächsten Abholstelle
-  ladezeitStandard: 30       // Warten und Laden an der Abholstelle
+  ladezeitStandard: 30,      // Warten und Laden an der Abholstelle
+  maxDatenAlterMin: 10       // ab diesem Alter gelten Prognosen als veraltet
 };
 // Gespeicherte Werte gewinnen, neue Planwerte kommen dazu.
 let einst = { ...EINST_STANDARD, ...lade("einstellungen", {}) };
@@ -469,7 +470,17 @@ const server = http.createServer(async (req, res) => {
             `abgeholt ${a.containerBestaetigt} (${nutzer.name}). Vom Büro zu prüfen.`,
             a.id, { abweichung: true, erwartet: a.containerErwartet,
                     bestaetigt: a.containerBestaetigt, foto: datei, fahrerId: nutzer.id });
-        } else if (a.containerBestaetigt) {
+        }
+        if (b.containerUngeprueft) {
+          // Die Nummer wurde übernommen, ohne dass Format und Prüfziffer
+          // stimmen. Das bleibt sichtbar und geht ans Büro.
+          a.containerUngeprueft = { zeit: jetzt, fahrer: nutzer.name, geprueft: false };
+          melde("warn",
+            `Auftrag ${a.nummer}: Containernummer ${a.containerBestaetigt} ungeprüft übernommen ` +
+            `(${nutzer.name}). Format oder Prüfziffer stimmen nicht.`,
+            a.id, { ungeprueft: true, bestaetigt: a.containerBestaetigt, foto: datei,
+                    fahrerId: nutzer.id });
+        } else if (a.containerBestaetigt && !weicht) {
           // Passt zum Auftrag: das gehört in den Auftragsverlauf, nicht in die
           // Meldungsliste — die Dispo soll dort nur Dinge sehen, die sie angehen.
           notiere(nutzer.name, `Abholung bestätigt, Container ${a.containerBestaetigt}, Auftrag ${a.nummer}`);

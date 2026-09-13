@@ -21,6 +21,7 @@ const rumpf = process.argv.includes("--rumpf");
 
 const css     = lies("einfach.css");
 const container = lies("container.js");
+const zeit      = lies("zeit.js");
 const sprache = lies("sprache.js");
 const ansicht = lies("fahreransicht.js");
 const seite   = lies("vorschau.html");
@@ -52,6 +53,9 @@ body{background:#E9EBE7; color:#15202B}
 ${inhalt}
 <script>
 ${sicher(container)}
+</script>
+<script>
+${sicher(zeit)}
 </script>
 <script>
 ${sicher(sprache)}

@@ -487,6 +487,88 @@ const TESTFOTO = "data:image/jpeg;base64," + Buffer.from([
   pruefe("Passende Abholung wird trotzdem festgehalten",
     ao2.containerBestaetigt === "TGHU7654320" && !ao2.abweichung);
 
+
+  // 30 Zeitregeln: Farbgrenzen, Alarmschwelle, Kette, Mitternacht, Datenalter
+  {
+    const Zt = require("./web/zeit.js");
+    pruefe("11 Minuten Reserve sind gruen", Zt.status(11) === "gruen");
+    pruefe("10 Minuten Reserve sind orange", Zt.status(10) === "gelb");
+    pruefe("0 Minuten Reserve sind orange", Zt.status(0) === "gelb");
+    pruefe("Minus 1 Minute ist rot", Zt.status(-1) === "rot");
+    pruefe("Ohne Prognose grau", Zt.status(null) === "grau");
+
+    pruefe("19 Minuten Verspaetung loesen keinen Alarm aus", Zt.alarmNoetig(-19) === false);
+    pruefe("20 Minuten Verspaetung loesen einen Alarm aus", Zt.alarmNoetig(-20) === true);
+    pruefe("Orange loest keinen Alarm aus", Zt.alarmNoetig(5) === false);
+
+    const teile = [{was:"nacharbeit",min:15},{was:"fahrtAbholung",min:60},
+                   {was:"laden",min:30},{was:"fahrtKunde",min:60}];
+    pruefe("Kette addiert nur die noetigen Schritte", Zt.kette(teile).min === 165);
+    pruefe("Ohne Abholung faellt der Umweg weg",
+      Zt.kette([{was:"nacharbeit",min:15},{was:"fahrtKunde",min:60}]).min === 75);
+
+    // Verlaengerung ab der aktuellen Uhrzeit
+    const jetztT = new Date();
+    const ende30 = Zt.ankunft(jetztT.toISOString(), [{was:"rest",min:30}]);
+    pruefe("„Noch 30 Minuten“ zaehlt ab jetzt",
+      Math.round((new Date(ende30) - jetztT)/60000) === 30);
+
+    // Ueber Mitternacht
+    const spaet = new Date(); spaet.setHours(23,50,0,0);
+    const nachts = Zt.ankunft(spaet.toISOString(), teile);
+    pruefe("Rechnung laeuft ueber Mitternacht",
+      new Date(nachts).getDate() !== spaet.getDate() &&
+      Math.round((new Date(nachts) - spaet)/60000) === 165,
+      new Date(nachts).toLocaleString("de-DE"));
+
+    // Datenalter zaehlt unabhaengig vom Internet
+    const alt = new Date(Date.now() - 65*60000).toISOString();
+    const frisch = new Date(Date.now() - 2*60000).toISOString();
+    pruefe("Alte Daten gelten als veraltet", Zt.veraltet(alt, 10) === true);
+    pruefe("Frische Daten gelten nicht als veraltet", Zt.veraltet(frisch, 10) === false);
+    pruefe("Fehlende Daten gelten als veraltet", Zt.veraltet(null, 10) === true);
+  }
+
+  // 31 Ungeprueft uebernommene Nummer: markiert und gemeldet
+  keks = ""; await ruf("/api/anmelden","POST",{name:"Ahmed",pin:"1234"});
+  const heute5 = new Date().toLocaleDateString("sv-SE");
+  const jetzt5 = new Date();
+  const inMin5 = m => hhmm((jetzt5.getHours()*60 + jetzt5.getMinutes() + m) % 1440);
+  const f5 = (await ruf("/api/dispo/uebersicht")).daten.fahrer[0];
+  r = await ruf("/api/dispo/auftrag","POST",{
+    datum:heute5, status:"freigegeben", fahrerId:f5.id, zielOrt:"Ungeprueftstadt",
+    termin:inMin5(300), container:"MSCU1234566" });
+  const ugId = r.daten.id;
+  keks = ""; await ruf("/api/anmelden","POST",{name:f5.name,pin:"1111"});
+  r = await ruf("/api/fahrer/ereignis","POST",{ auftragId:ugId, art:"abholung", foto:TESTFOTO,
+    containerErkannt:"MSCU1234567", containerBestaetigt:"MSCU1234567", containerUngeprueft:true });
+  pruefe("Ungepruefte Nummer wird angenommen", r.status === 200);
+  let ug = (await ruf("/api/fahrer/tag")).daten.heute.find(x => x.id === ugId);
+  pruefe("Ungepruefte Nummer bleibt markiert", !!ug.containerUngeprueft &&
+    ug.containerUngeprueft.geprueft === false);
+  pruefe("Auftragsnummer bleibt auch hier unveraendert", ug.container === "MSCU1234566");
+  keks = ""; await ruf("/api/anmelden","POST",{name:"Ahmed",pin:"1234"});
+  const ugMeld = (await ruf("/api/dispo/uebersicht")).daten.meldungen
+    .find(m => m.auftragId === ugId && m.ungeprueft);
+  pruefe("Buero bekommt eine Meldung zur ungeprueften Nummer", !!ugMeld,
+    ugMeld && ugMeld.text);
+
+  // 32 Wiederholtes Senden erzeugt keine zweite Abholung
+  const fotosVorher = fs.readdirSync(path.join(__dirname,"fotos")).length;
+  keks = ""; await ruf("/api/anmelden","POST",{name:f5.name,pin:"1111"});
+  const zeitVorher = (await ruf("/api/fahrer/tag")).daten.heute.find(x => x.id === ugId).abholZeit;
+  r = await ruf("/api/fahrer/ereignis","POST",{ auftragId:ugId, art:"abholung", foto:TESTFOTO,
+    containerBestaetigt:"MSCU1234567", containerUngeprueft:true });
+  pruefe("Zweiter Versand wird als Wiederholung erkannt", r.daten.doppelt === true);
+  const zeitNachher = (await ruf("/api/fahrer/tag")).daten.heute.find(x => x.id === ugId).abholZeit;
+  pruefe("Abholzeit bleibt die erste", zeitVorher === zeitNachher);
+  pruefe("Kein zweites Foto beim Wiederholen",
+    fs.readdirSync(path.join(__dirname,"fotos")).length === fotosVorher);
+
+  // 33 Datenalter wird mitgeliefert
+  pruefe("Grenze fuer veraltete Daten ist eingestellt",
+    (await ruf("/api/fahrer/tag")).daten.einst.maxDatenAlterMin === 10);
+
   // 24 Farbkontraste der Fahreransicht (WCAG AA, mindestens 4,5:1)
   {
     const css = fs.readFileSync(path.join(__dirname,"web","einfach.css"), "utf8");

@@ -19,6 +19,7 @@
        tabindex="-1" aria-hidden="true">
 
 <script src="/container.js"></script>
+<script src="/zeit.js"></script>
 <script src="/sprache.js"></script>
 <script src="/fahreransicht.js"></script>
 <script>
@@ -224,8 +225,10 @@ async function ereignisSenden(auftrag, art, foto, extra){
                       naechster: antwort.naechster || null };
       Z.ansicht = "abschluss";
     } else if (art === "abholung") {
-      // Foto ist beim Büro: kurze Bestätigung, dann gleich der nächste Schritt.
-      Z.ergebnis = { typ:"uebertragen", art, zeit:jetzt };
+      Z.ergebnis = { typ:"uebertragen", art, zeit:jetzt,
+                     nummer: extra && extra.containerBestaetigt,
+                     abweichung: !!(antwort.auftrag && antwort.auftrag.abweichung),
+                     ungeprueft: !!(extra && extra.containerUngeprueft) };
       Z.ansicht = "ergebnis";
     } else {
       // Kleine Schritte brauchen keine eigene Seite: kurzer Hinweis genügt.
@@ -243,7 +246,9 @@ async function ereignisSenden(auftrag, art, foto, extra){
     // weiterarbeiten kann — aber er sieht, dass noch nichts gesendet ist.
     oertlichVormerken(auftrag, art, jetzt);
     Z.online = navigator.onLine;
-    Z.ergebnis = { typ: navigator.onLine ? "fehler" : "wartet", art, zeit:jetzt, gemerkt:true };
+    Z.ergebnis = { typ: navigator.onLine ? "fehler" : "wartet", art, zeit:jetzt, gemerkt:true,
+                   nummer: extra && extra.containerBestaetigt,
+                   ungeprueft: !!(extra && extra.containerUngeprueft) };
     Z.ansicht = "ergebnis";
   } else if (netzfehler) {
     // Weder gesendet noch gemerkt: der Schritt bleibt offen, damit der
@@ -279,6 +284,26 @@ function oertlichVormerken(a, art, jetzt){
   if (art === "entladenFertig"){ a.status = "entladen_fertig"; a.entladeFertigZeit = jetzt; }
   if (art === "abgabe")        { a.status = "fertig";          a.abgabeZeit = jetzt; }
   Z.auftrag = (Z.heute || []).filter(x => x.status !== "fertig")[0] || null;
+}
+
+/* Drei getrennte Fragen zur Containernummer:
+   1. wurde sie sicher erkannt?  2. sind Format und Prüfziffer gültig?
+   3. ist es die Nummer aus dem Auftrag?
+   Eine Übereinstimmung mit dem Auftrag darf eine falsche Prüfziffer
+   nicht verdecken. */
+function pruefungBauen(erkannt, opt){
+  opt = opt || {};
+  const a = Z.auftrag || {};
+  const rein = TL_CONTAINER.rein(erkannt);
+  const pruef = TL_CONTAINER.pruefe(rein);
+  const gleich = TL_CONTAINER.vergleiche(a.container, rein) === "passt";
+  const basis = { erkannt:rein, bestaetigt:rein, gleich, gueltig:pruef.gueltig,
+                  sicher: opt.sicher !== false, eingabe: opt.eingabe || "",
+                  versucht: !!opt.versucht, demo: !!opt.demo };
+  if (!basis.sicher)  return { ...basis, zustand:"unsicher" };
+  if (!basis.gueltig) return { ...basis, zustand:"ungueltig", ungeprueft:true };
+  if (!gleich)        return { ...basis, zustand:"abweichung" };
+  return { ...basis, zustand:"passt" };
 }
 
 /* ============ Problem melden ============ */
@@ -373,6 +398,7 @@ const A = {
     if (Z.ansicht === "kamerahilfe")   { Z.ansicht = "foto"; return neuZeichnen(); }
     if (Z.ansicht === "nummerEingeben"){ Z.ansicht = "container"; return neuZeichnen(); }
     if (Z.ansicht === "containerFrage"){ Z.ansicht = "container"; return neuZeichnen(); }
+    if (Z.ansicht === "ungeprueft")    { Z.ansicht = "container"; return neuZeichnen(); }
     if (Z.ansicht === "laenger")       { Z.ansicht = "auftrag"; return neuZeichnen(); }
     Z.ansicht = "auftrag"; Z.foto = null; Z.ergebnis = null; Z.pruefung = null;
     Z.problem = null; Z.problemErgebnis = null;
@@ -407,7 +433,7 @@ const A = {
   /* --- Containernummer --- */
   nummerStimmt(){
     const a = Z.auftrag; if (!a) return;
-    Z.pruefung = { zustand:"passt", erkannt:a.container, bestaetigt:a.container };
+    Z.pruefung = pruefungBauen(a.container, { sicher:true, versucht:false });
     Z.ansicht = "container"; neuZeichnen();
   },
   nummerEingeben(){
@@ -420,24 +446,20 @@ const A = {
     const feld = document.getElementById("nummerfeld");
     const roh = feld ? feld.value : "";
     const rein = TL_CONTAINER.rein(roh);
-    const a = Z.auftrag; if (!a) return;
-    if (rein.length < 11) {
-      Z.pruefung = { ...(Z.pruefung||{}), eingabe:roh, pruefzifferWarnung:true };
-      return neuZeichnen();
-    }
-    const pruef = TL_CONTAINER.pruefe(rein);
-    const gleich = TL_CONTAINER.vergleiche(a.container, rein) === "passt";
-    Z.pruefung = { zustand: gleich ? "passt" : "abweichung", erkannt:rein, eingabe:roh,
-                   bestaetigt:rein, pruefzifferWarnung: !pruef.gueltig };
+    if (!Z.auftrag) return;
+    Z.pruefung = pruefungBauen(rein, { sicher:true, versucht:true, eingabe:roh });
     Z.ansicht = "container"; neuZeichnen();
   },
   trotzdem(){ Z.ansicht = "containerFrage"; neuZeichnen(); },
+  ungeprueftUebernehmen(){ Z.ansicht = "ungeprueft"; neuZeichnen(); },
   abholungBestaetigen(){
     const a = Z.auftrag, p = Z.pruefung || {};
     if (!a || !Z.foto) return;
+    const ungeprueft = Z.ansicht === "ungeprueft" || p.zustand === "ungueltig";
     ereignisSenden(a, "abholung", Z.foto.bild, {
       containerBestaetigt: p.bestaetigt || p.erkannt || a.container,
-      containerErkannt: p.erkannt || null
+      containerErkannt: p.erkannt || null,
+      containerUngeprueft: ungeprueft || undefined
     });
   },
 

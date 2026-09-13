@@ -61,21 +61,46 @@ function datenAlterMin(Z){
      keine Daten          → grau
    Farbe ist nie die einzige Information: immer Symbol und Satz.   */
 function zeitstatus(r, Z){
-  const grenze = (Z.einst && Z.einst.gruenAb != null) ? Z.einst.gruenAb : 10;
-  const alt = datenAlterMin(Z);
-  const veraltet = (!Z.online && (alt === null || alt > 5));
+  const grenze  = (Z.einst && Z.einst.gruenAb != null) ? Z.einst.gruenAb : TL_ZEIT.GRENZE_ORANGE;
+  const maxAlter = (Z.einst && Z.einst.maxDatenAlterMin != null)
+                   ? Z.einst.maxDatenAlterMin : TL_ZEIT.MAX_ALTER;
+  // Auch mit Internet können die Daten alt sein. Dann wird nichts Grünes gezeigt.
+  const veraltet = TL_ZEIT.veraltet(Z.datenZeit, maxAlter);
 
-  if (veraltet || !r || r.unsicher || r.puffer == null || !r.ankunft)
-    return { klasse:"grau", ico:I.frage(28), satz:t("keineDaten"),
-             zusatz: veraltet ? t("keineDatenZusatz") : (r && r.unsicher ? t("endeOffen") : "") };
+  if (veraltet || !r || r.unsicher || r.puffer == null || !r.ankunft) {
+    const zusatz = veraltet
+      ? t("letzteAktualisierung", { zeit: uhr(Z.datenZeit) || "—" })
+      : (r && r.unsicher ? t("endeOffen") : "");
+    return { klasse:"grau", ico:I.frage(28), satz:t("keineDaten"), zusatz, veraltet:true };
+  }
 
   const p = Math.round(r.puffer);
-  if (p < 0)
+  const k = TL_ZEIT.status(p, grenze);
+  if (k === "rot")
     return { klasse:"rot", ico:I.warnung(28), satz:t("zuSpaet",{min:minuten(-p)}), zusatz:"" };
-  if (p <= grenze)
+  if (k === "gelb")
     return { klasse:"gelb", ico:I.sanduhr(28), satz:t("knapp",{min:minuten(p)}), zusatz:"" };
   return { klasse:"gruen", ico:I.haken(28), satz:t("reserve",{min:minuten(p)}), zusatz:"" };
 }
+
+/* Ab der Alarmschwelle weiß das Büro Bescheid. Das sagt die App dem Fahrer,
+   damit er keinen Druck verspürt, schneller zu fahren. */
+function alarmHinweis(r, Z){
+  if (!r || r.puffer == null) return "";
+  const schwelle = (Z.einst && Z.einst.verspaetungAb != null)
+    ? Z.einst.verspaetungAb : TL_ZEIT.GRENZE_ALARM;
+  if (!TL_ZEIT.alarmNoetig(Math.round(r.puffer), schwelle)) return "";
+  return `<div class="hinweis">${esc(t("bueroSiehtVerspaetung"))}</div>`;
+}
+
+/* Wenn die Daten alt sind und das Büro schon gewarnt wurde, bleibt die
+   Warnung stehen — sie ist nicht erledigt, nur weil nichts Neues da ist. */
+function warnungKasten(a, s){
+  if (!s.veraltet || !a || !a.gemeldet) return "";
+  return `<div class="kasten warn"><span class="ico">${I.warnung(24)}</span>
+    <div>${esc(t("warnungBleibt"))}</div></div>`;
+}
+
 function statusStreifen(s){
   return `<div class="status ${s.klasse}" role="status">
     <span class="ico">${s.ico}</span>
@@ -243,6 +268,7 @@ function ansichtFahren(Z){
     ${heuteZeile(Z)}
     <h1 class="titel">${esc(t("jetztFahren"))}</h1>
     ${statusStreifen(s)}
+    ${warnungKasten(a, s)}
     ${aenderungKasten(a)}
     ${ortBlock(t("ziel"), o.firma, o.adresse, o.tor)}
     <div class="zeiten">
@@ -250,6 +276,7 @@ function ansichtFahren(Z){
       ${zeitFeld(t("ankunftEtwa"), uhr(r.ankunft) || "—", s.klasse)}
     </div>
     <div class="hinweis">${esc(t("schaetzung"))}</div>
+    ${alarmHinweis(r, Z)}
     ${a.notiz ? `<div class="kasten"><span class="ico">${I.info(24)}</span>
         <div>${esc(a.notiz)}</div></div>` : ""}
     ${fahrzeugKlapp(Z, a)}
@@ -331,7 +358,8 @@ function ansichtEntladen(Z){
         ${zeitFeld(t("ankunftEtwa"), n.unsicher ? "—" : (uhr(n.ankunft) || "—"), s.klasse,
                    { ico:s.ico, satz:s.satz })}
       </div>
-      <div class="hinweis">${esc(t("schaetzung"))}</div>`
+      <div class="hinweis">${esc(t("schaetzung"))}</div>
+      ${alarmHinweis(n, Z)}`
     : `<div class="hinweis">${esc(t("keinWeiterer"))}</div>`}
 
     <div class="zeiten">
@@ -488,18 +516,42 @@ function ansichtContainer(Z){
       zweitKnopf(t("neinAndereNummer"), I.stift(24), "nummerEingeben"));
   }
 
-  if (p.zustand === "passt") {
+  /* Nicht sicher erkannt — das heißt nicht „falscher Container“. */
+  if (p.zustand === "unsicher") {
     return kopf(Z, {zurueck:true, ohneProblem:true}) + `<div class="inhalt">
-      <div class="ergebnis"><span class="ico">${I.haken(36)}</span><div>
-        <div class="w">${esc(t("containerPasst"))}</div></div></div>
-      <div class="nummer-gross num">${esc(nummer(p.erkannt || erwartet))}</div>
+      <div class="ergebnis wartet"><span class="ico">${I.frage(36)}</span><div>
+        <div class="w">${esc(t("nummerUnsicher"))}</div>
+        <div class="u">${esc(t("nummerUnsicherText"))}</div></div></div>
+      <div class="etikett">${esc(t("imAuftrag"))}</div>
+      <div class="nummer-gross num">${esc(nummer(erwartet))}</div>
       ${p.demo ? `<div class="hinweis">${esc(t("erkennungDemo"))}</div>` : ""}
-      ${datenZeile(t("auftragsnummer"), a.nummer)}
     </div>` + leiste(
-      hauptKnopf(t("abholungBestaetigen"), I.haken(30), "abholungBestaetigen", Z),
-      zweitKnopf(t("nochEinmalFoto"), I.kamera(24), "fotoNeu"));
+      hauptKnopf(t("nochEinmalFoto"), I.kamera(30), "fotoNeu", Z),
+      zweitKnopf(t("nummerEingeben"), I.stift(24), "nummerEingeben"));
   }
 
+  /* Format oder Prüfziffer stimmen nicht — auch dann, wenn die Nummer
+     zufällig zum Auftrag passt. Eine Übereinstimmung verdeckt das nicht. */
+  if (p.zustand === "ungueltig") {
+    return kopf(Z, {zurueck:true, ohneProblem:true}) + `<div class="inhalt">
+      <div class="ergebnis wartet"><span class="ico">${I.warnung(36)}</span><div>
+        <div class="w">${esc(t("nummerPruefen"))}</div>
+        <div class="u">${esc(t("formatFalsch"))}</div></div></div>
+      <div class="etikett">${esc(t("erkannt"))}</div>
+      <div class="nummer-gross num">${esc(nummer(p.erkannt))}</div>
+      <div class="etikett">${esc(t("imAuftrag"))}</div>
+      <div class="nummer-gross num">${esc(nummer(erwartet))}</div>
+      ${p.gleich ? `<div class="hinweis">${esc(t("gleichAberUngueltig"))}</div>` : ""}
+      ${p.demo ? `<div class="hinweis">${esc(t("erkennungDemo"))}</div>` : ""}
+      ${p.versucht ? `<button class="zweit-btn leise" data-tun="ungeprueftUebernehmen">
+         ${I.pfeil(24)} ${esc(t("ungeprueftUebernehmen"))}</button>
+         <div class="hinweis">${esc(t("ungeprueftHinweis"))}</div>` : ""}
+    </div>` + leiste(
+      hauptKnopf(t("nochEinmalFoto"), I.kamera(30), "fotoNeu", Z),
+      zweitKnopf(t("nummerKorrigieren"), I.stift(24), "nummerEingeben"));
+  }
+
+  /* Gültig, aber eine andere Nummer als im Auftrag */
   if (p.zustand === "abweichung") {
     return kopf(Z, {zurueck:true, ohneProblem:true}) + `<div class="inhalt">
       <div class="ergebnis fehler"><span class="ico">${I.warnung(36)}</span><div>
@@ -516,17 +568,33 @@ function ansichtContainer(Z){
       zweitKnopf(t("trotzdemAbholen"), I.pfeil(24), "trotzdem"));
   }
 
-  /* nicht sicher erkannt */
+  /* Passt zum Auftrag und ist gültig */
   return kopf(Z, {zurueck:true, ohneProblem:true}) + `<div class="inhalt">
-    <div class="ergebnis wartet"><span class="ico">${I.frage(36)}</span><div>
-      <div class="w">${esc(t("nummerUnsicher"))}</div>
-      <div class="u">${esc(t("nummerUnsicherText"))}</div></div></div>
-    <div class="etikett">${esc(t("imAuftrag"))}</div>
-    <div class="nummer-gross num">${esc(nummer(erwartet))}</div>
+    <div class="ergebnis"><span class="ico">${I.haken(36)}</span><div>
+      <div class="w">${esc(t("containerPasst"))}</div>
+      <div class="u">${I.haken(18)} ${esc(t("pruefzifferStimmt"))}</div></div></div>
+    <div class="nummer-gross num">${esc(nummer(p.erkannt || erwartet))}</div>
+    ${p.ungeprueft ? `<div class="kasten warn"><span class="ico">${I.warnung(24)}</span>
+      <div>${esc(t("ungeprueftMarke"))}</div></div>` : ""}
     ${p.demo ? `<div class="hinweis">${esc(t("erkennungDemo"))}</div>` : ""}
+    ${datenZeile(t("auftragsnummer"), a.nummer)}
   </div>` + leiste(
-    hauptKnopf(t("nochEinmalFoto"), I.kamera(30), "fotoNeu", Z),
-    zweitKnopf(t("nummerEingeben"), I.stift(24), "nummerEingeben"));
+    hauptKnopf(t("abholungBestaetigen"), I.haken(30), "abholungBestaetigen", Z),
+    zweitKnopf(t("nochEinmalFoto"), I.kamera(24), "fotoNeu"));
+}
+
+/* Ungeprüfte Nummer: der Fahrer kommt weiter, die Nummer bleibt markiert. */
+function ansichtUngeprueft(Z){
+  const p = Z.pruefung || {};
+  return kopf(Z, {zurueck:true, ohneProblem:true}) + `<div class="inhalt">
+    <h1 class="titel">${esc(t("ungeprueftFrage"))}</h1>
+    <div class="kasten warn"><span class="ico">${I.warnung(24)}</span>
+      <div>${esc(t("ungeprueftHinweis"))}</div></div>
+    <div class="etikett">${esc(t("erkannt"))}</div>
+    <div class="nummer-gross num">${esc(nummer(p.erkannt))}</div>
+  </div>` + leiste(
+    hauptKnopf(t("jaAbholungBestaetigen"), I.haken(30), "abholungBestaetigen", Z),
+    zweitKnopf(t("zurueck"), I.zurueck(24), "zurueck"));
 }
 
 /* Rückfrage vor „Trotzdem abholen“ */
@@ -569,14 +637,17 @@ function ansichtNummerEingeben(Z){
    =========================================================== */
 function ansichtErgebnis(Z){
   const e = Z.ergebnis || {};
+  const abholung = e.art === "abholung";
   const klasse = e.typ === "uebertragen" ? "" : (e.typ === "wartet" ? "wartet" : "fehler");
   const ico = e.typ === "uebertragen" ? I.haken(36)
             : (e.typ === "wartet" ? I.sanduhr(36) : I.warnung(36));
   let wort, unten;
   if (e.typ === "uebertragen") {
-    wort = t("uebertragen"); unten = t("uebertragenText");
+    wort = abholung ? t("abholungUebertragen") : t("uebertragen");
+    unten = t("uebertragenText");
   } else if (e.typ === "wartet") {
-    wort = t("aufHandyGespeichert"); unten = t("nochNichtGesendetText");
+    wort = t("aufHandyGespeichert");
+    unten = t("nochNichtGesendetText");
   } else {
     wort = t("nochNichtGesendet");
     unten = e.gemerkt === false ? t("nichtGemerkt") : t("sendenFehlerText");
@@ -587,7 +658,12 @@ function ansichtErgebnis(Z){
       <div class="w">${esc(wort)}</div>
       <div class="z num">${esc(uhr(e.zeit) || "")}</div>
       <div class="u">${esc(unten)}</div>
+      ${e.nummer ? `<div class="u num">${esc(t("container"))}: ${esc(nummer(e.nummer))}</div>` : ""}
+      ${e.abweichung ? `<div class="u">${esc(t("alsAbweichungGemeldet"))}</div>` : ""}
+      ${e.ungeprueft ? `<div class="u">${esc(t("ungeprueftMarke"))}</div>` : ""}
     </div></div>
+    ${Z.demo && e.typ !== "uebertragen"
+      ? `<div class="hinweis">${esc(t("demoSpeicher"))}</div>` : ""}
   </div>` + leiste(
     hauptKnopf(t("zurueckZumAuftrag"), I.zurueck(28), "zurueck", Z),
     e.typ !== "uebertragen" ? zweitKnopf(t("nochmalSenden"), I.pfeil(24), "nochmalSenden") : "");
@@ -768,6 +844,7 @@ function zeichne(Z){
     case "foto":            return ansichtFoto(Z);
     case "container":       return ansichtContainer(Z);
     case "containerFrage":  return ansichtContainerFrage(Z);
+    case "ungeprueft":      return ansichtUngeprueft(Z);
     case "nummerEingeben":  return ansichtNummerEingeben(Z);
     case "ergebnis":        return ansichtErgebnis(Z);
     case "kamerahilfe":     return ansichtKamerahilfe(Z);
@@ -799,8 +876,13 @@ function zeichne(Z){
 function vorlesetext(Z){
   const a = Z.auftrag;
 
+  if (Z.ansicht === "ungeprueft")
+    return t("ungeprueftFrage") + " " + t("ungeprueftHinweis");
   if (Z.ansicht === "container") {
     const p = Z.pruefung || {};
+    if (p.zustand === "ungueltig")
+      return t("nummerPruefen") + ". " + t("formatFalsch") + " " +
+             t("erkannt") + " " + nummer(p.erkannt) + ". " + t("imAuftrag") + " " + nummer(a && a.container);
     if (p.zustand === "passt")
       return t("containerPasst") + ". " + nummer(p.erkannt || (a && a.container)) + ". " + t("abholungBestaetigen");
     if (p.zustand === "abweichung")

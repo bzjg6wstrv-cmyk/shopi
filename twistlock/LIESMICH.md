@@ -133,14 +133,24 @@ wird nie stillschweigend überschrieben.
   Meldung mit erwarteter Nummer, bestätigter Nummer, Fahrer, Uhrzeit und Foto.
 - Unsicher: „Nummer nicht sicher erkannt“ — die App behauptet nicht, es sei der falsche
   Container, und bietet neue Aufnahme oder Eingabe von Hand an.
-- Die Prüfziffer nach ISO 6346 rechnet die App selbst (`web/container.js`). Eine richtige
-  Prüfziffer beweist aber nicht, dass es der richtige Container ist.
+- Die App beantwortet drei Fragen getrennt: **sicher erkannt?**, **Format und
+  Prüfziffer gültig?** (ISO 6346, `web/container.js`), **dieselbe Nummer wie im Auftrag?**
+  Eine Übereinstimmung mit dem Auftrag verdeckt eine falsche Prüfziffer nicht.
+  Bei ungültiger Nummer: „Nummer bitte prüfen“ mit „Noch einmal fotografieren“ und
+  „Nummer korrigieren“; erst nach einem Korrekturversuch gibt es „Ungeprüft übernehmen“ —
+  dann bleibt die Nummer als ungeprüft markiert und das Büro bekommt eine Meldung.
+- Eine richtige Prüfziffer beweist nicht, dass es der richtige Container ist.
 
 **Noch nicht angebunden:** Das automatische Auslesen der Nummer aus dem Foto.
 Solange fragt die App einmal nach: „Steht diese Nummer auf dem Container?“
 
 ### Was die App sagt und was sie nicht sagt
 
+- Alle Zeitregeln stehen an einer Stelle: `web/zeit.js` (Reserve, Farbgrenzen,
+  Alarmschwelle, Kette, Datenalter). App, Vorschau und Tests rechnen damit dasselbe.
+- Prognosen gelten ab `maxDatenAlterMin` (10) als veraltet — **auch mit Internet**.
+  Dann steht dort grau „Ankunft gerade nicht verfügbar“ plus „Letzte Aktualisierung“,
+  und eine bereits gemeldete Verspätung bleibt sichtbar statt still zu verschwinden.
 - Reserve = Kundentermin minus erwartete Ankunft.
   Mehr als **10 Minuten** Reserve: grün („15 Minuten Reserve“).
   **0 bis 10 Minuten**: orange („Es wird knapp – 7 Minuten Reserve“).
