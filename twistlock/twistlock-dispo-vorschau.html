@@ -357,6 +357,25 @@ dialog::backdrop{background:rgba(21,32,43,.55)}
 .kam-kopf b{flex:1 1 200px}
 .kam-ereignis p{margin:6px 0;font-size:15px;color:var(--soft)}
 
+/* Lagemeldung und nächster Auftrag */
+.smartleiste{display:flex;flex-wrap:wrap;gap:12px;align-items:center;
+  border:2px solid var(--linie);border-left-width:8px;border-left-color:var(--marine);
+  border-radius:0 var(--radius) var(--radius) 0;background:var(--paper);
+  padding:11px 14px;margin-bottom:12px}
+.smartleiste.achtung{border-left-color:var(--gelb);background:var(--gelb-flaeche)}
+.sl-text{flex:1 1 320px;display:flex;flex-direction:column;gap:2px}
+.sl-text b{font-size:17px}
+.sl-text span{font-size:15px;color:var(--soft)}
+.smartleiste.achtung .sl-text span{color:#5E3A00}
+.naechster-gross{border:2px solid var(--marine);border-radius:var(--radius);
+  background:var(--marine-flaeche);padding:14px;margin-bottom:12px;
+  display:flex;flex-direction:column;gap:3px}
+.ng-wort{font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--marine)}
+.ng-zeit{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.ng-ziel{font-size:18px;font-weight:600}
+.ng-cont{font-size:16px;color:var(--soft)}
+
 /* Freigabelinks in der Dispo */
 .link-kasten{
   border:1px solid var(--linie2); border-radius:var(--radius);
@@ -1856,7 +1875,7 @@ let U = {                     // Oberfläche
   formular:null,
   fehler:{},
   notiz:null,
-  fahrzeugId:null,
+  fahrzeugId:null, importText:"", importErgebnis:null,
   wennAuftrag:null, wennFall:"entladen30", wennErgebnis:null,
   kiFrage:"", kiAntwort:null,
   extern:null,         // {token, auftragId, demo} — nur in der Vorschau gesetzt
@@ -2403,9 +2422,24 @@ function alarmePruefen(){
   });
   return neu;
 }
+/* Meldungen sollen die Dispo zum Handeln bringen, nicht zuschütten.
+   Gibt es zu demselben Auftrag und derselben Art schon eine ungesehene
+   Meldung, wird sie ergänzt statt eine zweite danebenzustellen. */
 function meldungAnlegen(m){
-  D.meldungen.unshift(Object.assign({ id:"m"+Date.now()+Math.random().toString(36).slice(2,6),
-                                      zeit:jetztIso(), gesehen:false }, m));
+  const gleich = D.meldungen.find(x => !x.gesehen && x.art === m.art &&
+                                       x.auftragId === m.auftragId &&
+                                       (x.zugId || null) === (m.zugId || null));
+  if (gleich) {
+    gleich.zeit = jetztIso();
+    gleich.wiederholt = (gleich.wiederholt || 1) + 1;
+    if (m.titel && m.titel !== gleich.titel) gleich.titel = m.titel;
+    if (m.text && m.text !== gleich.text) gleich.text = m.text;
+    return gleich;
+  }
+  const neu = Object.assign({ id:"m"+Date.now()+Math.random().toString(36).slice(2,6),
+                              zeit:jetztIso(), gesehen:false, wiederholt:1 }, m);
+  D.meldungen.unshift(neu);
+  return neu;
 }
 
 /* ===========================================================
@@ -3108,6 +3142,7 @@ function zeichne(){
   else if (U.bereich === "auftraege") html += ansichtAuftraege();
   else if (U.bereich === "smart") html += ansichtSmart();
   else if (U.bereich === "flotte") html += ansichtFlotte();
+  else if (U.bereich === "import") html += ansichtImport();
   else if (U.bereich === "fahrzeug") html += ansichtFahrzeug();
   else if (U.bereich === "stamm") html += ansichtStamm();
   else if (U.bereich === "meldungen") html += ansichtMeldungen();
@@ -3166,6 +3201,8 @@ function ansichtTagesplan(){
     zahlFeld(nichtZug, "Noch nicht zugewiesen", nichtZug > 0) +
     zahlFeld(alarme, "Verspätungsalarme (ungesehen)", alarme > 0) +
     '</div>';
+
+  h += smartLeiste(tag, alle);
 
   h += '<div class="filter" role="group" aria-label="Filter">' +
     filterKnopf("alle","Alle") + filterKnopf("nichtzug","Nicht zugewiesen") +
@@ -3241,6 +3278,36 @@ function ansichtTagesplan(){
        'sichtbar wird; die Überschneidungen sind daher echt und keine Anzeigefehler.</div>';
   return h;
 }
+/* ---- Kleine Lagemeldung über dem Tagesplan ----
+   Wenige Sätze, keine Diagramme. Sie sagen, ob überhaupt etwas zu tun
+   ist — und führen von dort in den Assistenten. */
+function smartLeiste(tag, alle){
+  const brauchen = alle.filter(a => {
+    const r = risikoVon(a);
+    return konflikte(a).length || (r && r.stufe === "hoch") ||
+           !a.planung.fahrerId || !a.planung.zugmaschineId;
+  }).length;
+  const hoch = alle.filter(a => { const r = risikoVon(a); return r && r.stufe === "hoch"; }).length;
+  const unvollstaendig = alle.filter(a =>
+    !a.planung.fahrerId || !a.planung.zugmaschineId || !a.planung.chassisId).length;
+  const vorschlaege = alle.some(a => (a.vorschlaege||[]).some(v => !v.erledigt));
+
+  const punkte = [];
+  punkte.push(alle.length + (alle.length === 1 ? " Auftrag" : " Aufträge"));
+  punkte.push(brauchen
+    ? brauchen + (brauchen === 1 ? " braucht Aufmerksamkeit" : " brauchen Aufmerksamkeit")
+    : "nichts Auffälliges");
+  if (hoch) punkte.push(hoch + " mit hohem Verspätungsrisiko");
+  if (unvollstaendig) punkte.push(unvollstaendig + " noch nicht vollständig disponiert");
+  if (vorschlaege) punkte.push("offene Bestätigungen aus der Automatik");
+
+  return '<div class="smartleiste' + (brauchen ? " achtung" : "") + '">' +
+    '<div class="sl-text"><b>' + esc(tag === HEUTE() ? "Heute" : tagKurz(tag)) + '</b>' +
+    '<span>' + punkte.map(esc).join(" · ") + '</span></div>' +
+    '<button class="btn haupt" data-tun="bereich" data-wert="smart">Smart Dispo öffnen</button>' +
+    '</div>';
+}
+
 function zahlFeld(n, wort, achtung){
   return '<div class="zahl-feld'+(achtung ? ' achtung' : '')+'">' +
          '<div class="gross">'+n+'</div><div class="wort">'+esc(wort)+'</div></div>';
@@ -3421,7 +3488,9 @@ function ansichtAuftraege(){
   const liste = D.auftraege.slice().sort((x,y) =>
     (x.tag+"").localeCompare(y.tag+"") || String(x.abhol.zeit||"").localeCompare(String(y.abhol.zeit||"")));
   let h = '<div class="leiste"><h2 style="font-size:22px">Alle Aufträge</h2>' +
-    '<button class="btn haupt gross" data-tun="neu" style="margin-left:auto">+ Neuer Auftrag</button></div>';
+    '<button class="btn" data-tun="bereich" data-wert="import" style="margin-left:auto">' +
+    'Auftrag importieren</button>' +
+    '<button class="btn haupt gross" data-tun="neu">+ Neuer Auftrag</button></div>';
   h += '<div class="hinweis">In der Dispo bleiben alle Tage zugänglich. Der Fahrer sieht ' +
        'dagegen nur seinen aktuellen Arbeitstag — der nächste Tag erscheint bei ihm erst, ' +
        'wenn alle heutigen Aufträge abgeschlossen sind, und startet dort keine Tour automatisch.</div>';
@@ -3683,7 +3752,17 @@ function ansichtDetail(){
   h += '<div class="karte"><h2>Fotos</h2><div class="fotos">' +
     fotoFeld("Abholfoto", a.fotos.abholung) + fotoFeld("Ablieferfoto", a.fotos.abgabe) +
     '</div><p style="margin-top:8px;color:#47525D;font-size:15px">' + simMarke("Simuliert") +
-    ' Demo-Bilder, keine Kamera und keine Nummernerkennung.</p></div>';
+    ' Demo-Bilder, keine Kamera und keine Nummernerkennung.</p>' +
+    '<h3 style="margin-top:14px">Containerfoto auswerten ' + simMarke("Foto-KI – Demo") + '</h3>' +
+    '<p style="color:#47525D;font-size:15px">Die Erkennung liefert immer eine Sicherheit mit. ' +
+    'Ist sie zu niedrig oder stimmt die Prüfziffer nicht, wird nichts bestätigt — dann liest ' +
+    'der Fahrer ab.</p>' +
+    '<div class="btn-reihe" style="margin-top:8px">' +
+    '<button class="btn" data-tun="fotoKi" data-art="treffer">Foto: Nummer stimmt</button>' +
+    '<button class="btn" data-tun="fotoKi" data-art="abweichung">Foto: andere Nummer</button>' +
+    '<button class="btn" data-tun="fotoKi" data-art="unsicher">Foto: unsichere Erkennung</button>' +
+    '<button class="btn" data-tun="fotoKi" data-art="unlesbar">Foto: unlesbar</button>' +
+    '</div></div>';
 
   /* Dokumente */
   h += '<div class="karte"><h2>Dokumente</h2>';
@@ -3730,6 +3809,24 @@ function ansichtDetail(){
                  : nk === "rot" ? "m-rot" : nk === "gelb" ? "m-gelb" : "m-gruen";
     const satz = nres == null ? "Ankunft unklar"
                : nres < 0 ? Math.abs(nres)+" Min. verspätet" : nres+" Min. Reserve";
+    /* Für den Fahrer ist das die einzige Frage, die zählt: was kommt
+       jetzt? Deshalb zuerst groß und mit dem Weg dorthin. */
+    h += '<div class="naechster-gross">' +
+      '<span class="ng-wort">Nächster Auftrag</span>' +
+      '<span class="ng-zeit">' + esc(nm.zeit ? nm.zeit + " Uhr" : "ohne Termin") + '</span>' +
+      '<span class="ng-ziel">' + esc(naechster.abhol.firma || "—") + ' → ' +
+        esc(kurzOrt(naechster.liefer.adresse) || naechster.liefer.firma || "—") + '</span>' +
+      (naechster.container.erwartet
+        ? '<span class="ng-cont">Container ' + esc(contLesbar(naechster.container.erwartet)) + '</span>'
+        : '<span class="ng-cont">Container noch offen</span>') +
+      '<div class="btn-reihe" style="margin-top:10px">' +
+      '<button class="btn haupt gross" data-tun="navigation" data-wert="'+esc(naechster.id)+'">' +
+        'Navigation starten</button>' +
+      '<button class="btn" data-tun="oeffnen" data-wert="'+esc(naechster.id)+'">Auftrag öffnen</button>' +
+      '</div>' +
+      '<p class="sim-satz">Der Fahrer muss dafür nichts auswählen — TWISTLOCK bestimmt den ' +
+      'nächsten Auftrag aus der Tourfolge desselben Fahrers am selben Einsatztag.</p>' +
+      '</div>';
     h += '<div class="paar">' +
       zeile("Auftrag", naechster.nummer + " · " + naechster.kunde) +
       zeile("Maßgeblicher Termin", (nm.zeit ? nm.zeit+" Uhr" : "—") + " — " + nm.art) +
@@ -4753,6 +4850,7 @@ function ansichtMeldungen(){
     h += '<div class="meldung '+klasse+'">' +
       '<h3>'+esc(m.titel)+'</h3>' +
       '<p class="wann">'+esc(tagKurz(tagVon(m.zeit)))+', '+esc(hhmm(m.zeit))+' Uhr' +
+        (m.wiederholt > 1 ? ' · ' + m.wiederholt + '× aufgetreten' : '') +
         (a ? ' · Auftrag '+esc(a.nummer)+' · '+esc(a.kunde) : '')+
         (a && a.planung.fahrerId ? ' · Fahrer '+esc((fahrerVon(a.planung.fahrerId)||{}).name) : '')+'</p>' +
       (m.text ? '<p style="margin-top:6px">'+esc(m.text)+'</p>' : '');
@@ -6021,6 +6119,287 @@ function ansichtFahrzeug(){
 }
 
 /* ===========================================================
+   15 · Auftrag aus Text übernehmen
+
+   Eine E-Mail oder ein PDF-Text wird gelesen und in Feldvorschläge
+   zerlegt. Das ist echte Mustererkennung über den eingefügten Text —
+   kein Sprachmodell. Was nicht sicher erkannt wurde, bleibt leer und
+   wird als „nicht gefunden“ benannt.
+
+   Entstehen darf daraus nur ein ENTWURF. Freigegeben wird nie
+   automatisch; das bleibt die Entscheidung der Dispo.
+   =========================================================== */
+const IMPORT_BEISPIELE = {
+  mail:
+"Von: disposition@poco-walsrode.example\n" +
+"An: dispo@im-cargo.de\n" +
+"Betreff: Transportauftrag POCO-88131 – Container MSCU1234566\n\n" +
+"Guten Tag,\n\n" +
+"wir bitten um Durchführung des folgenden Transports.\n\n" +
+"Auftraggeber: Poco Einrichtungsmarkt Walsrode\n" +
+"Unsere Referenz: POCO-88131\n" +
+"Container: MSCU 123456-6, 40 ft Standard\n" +
+"Siegel: SL 4711\n\n" +
+"Abholung: Hansa Terminal Bremen, Am Speicher 12, 28197 Bremen\n" +
+"Abholtermin: 22.09.2026, 08:15 Uhr\n" +
+"Freistellungsreferenz: FRST-5511\n\n" +
+"Anlieferung: Poco Einrichtungsmarkt Walsrode, Zum Gewerbegebiet 5, 29664 Walsrode\n" +
+"Liefertermin: 22.09.2026, 10:30 Uhr\n" +
+"Ansprechpartner: Frau Ehlers, Tel. 05161 60110\n\n" +
+"Hinweis: Anlieferung Rampe 3, bitte vorher anmelden.\n\n" +
+"Mit freundlichen Grüßen\n" +
+"Disposition Poco Walsrode",
+  pdf:
+"TRANSPORTAUFTRAG\n" +
+"Nordsee Handel KG\n" +
+"Referenz: NSH-10250\n" +
+"Container-Nr.: TGHU7654320   Typ: 40 ft\n" +
+"Beladeort: Hansa Terminal Bremen, Am Speicher 12, 28197 Bremen\n" +
+"Datum/Zeit Beladung: 23.09.2026 06:00\n" +
+"Entladeort: Nordsee Handel KG, Industriestraße 7, 29664 Walsrode\n" +
+"Datum/Zeit Entladung: 23.09.2026 08:30\n" +
+"Bemerkung: Fruehtermin, Beladung am Vortag pruefen."
+};
+
+/* Datum in „TT.MM.JJJJ“ oder „JJJJ-MM-TT“ → internes Format. */
+function datumLesen(text){
+  let m = text.match(/\b(\d{1,2})\.(\d{1,2})\.(\d{4})\b/);
+  if (m) {
+    const p = n => String(n).padStart(2,"0");
+    return m[3] + "-" + p(m[2]) + "-" + p(m[1]);
+  }
+  m = text.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
+  return m ? m[0] : null;
+}
+/* Uhrzeit aus einer Zeile. Zuerst fliegen alle Datumsangaben heraus:
+   „22.09.2026, 08:15 Uhr“ enthält sonst mit „22.09“ ein Muster, das wie
+   eine Uhrzeit aussieht — und die falsche Zahl wäre schlimmer als gar
+   keine. Danach gilt zuerst „HH:MM“, ersatzweise „HH.MM Uhr“. */
+function zeitLesen(text){
+  const ohneDatum = String(text||"")
+    .replace(/\b\d{1,2}\.\d{1,2}\.\d{2,4}\b/g, " ")
+    .replace(/\b\d{4}-\d{2}-\d{2}\b/g, " ");
+  let m = ohneDatum.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
+  if (!m) m = ohneDatum.match(/\b([01]?\d|2[0-3])\.([0-5]\d)\s*Uhr\b/i);
+  if (!m) return null;
+  return String(m[1]).padStart(2,"0") + ":" + m[2];
+}
+/* Zeile zu einem Stichwort holen. Mehrere Schreibweisen je Feld. */
+function zeileMit(text, woerter){
+  const zeilen = String(text||"").split(/\r?\n/);
+  for (const w of woerter) {
+    const z = zeilen.find(x => x.toLowerCase().indexOf(w.toLowerCase()) >= 0);
+    if (z) {
+      const i = z.indexOf(":");
+      return { zeile:z, wert: i >= 0 ? z.slice(i+1).trim() : z.trim(), stichwort:w };
+    }
+  }
+  return null;
+}
+
+function importLesen(text){
+  const felder = [];
+  const nimm = (schluessel, wort, wert, quelle) => {
+    felder.push({ schluessel, wort, wert: wert || null,
+                  quelle: wert ? (quelle || "aus dem Text") : "nicht gefunden" });
+  };
+
+  const ag = zeileMit(text, ["Auftraggeber", "Kunde:"]);
+  /* Firmenname mit einem bekannten Auftraggeber abgleichen — die
+     Verknüpfung läuft über die interne ID, nie über den Namen allein. */
+  let kundeId = null, kundeName = ag ? ag.wert : null;
+  if (!kundeName) {
+    const treffer = (D.auftraggeber||[]).find(k => text.indexOf(k.firma) >= 0);
+    if (treffer) { kundeName = treffer.firma; kundeId = treffer.id; }
+  } else {
+    const treffer = (D.auftraggeber||[]).find(k =>
+      k.firma.toLowerCase() === kundeName.toLowerCase());
+    if (treffer) kundeId = treffer.id;
+  }
+  nimm("kunde", "Auftraggeber", kundeName, ag ? "Zeile „" + ag.stichwort + "“" : "Firmenname im Text erkannt");
+  felder.push({ schluessel:"auftraggeberId", wort:"Interne Auftraggeber-ID",
+                wert:kundeId,
+                quelle: kundeId ? "Stammdaten-Treffer" : "kein Stammdatensatz gefunden" });
+
+  const ref = zeileMit(text, ["Unsere Referenz", "Referenz", "Kundenreferenz"]);
+  nimm("kundenRef", "Kundenreferenz", ref ? ref.wert : null, ref ? "Zeile „" + ref.stichwort + "“" : null);
+
+  /* Containernummer: Muster plus die vorhandene ISO-Prüfziffer. */
+  const cm = text.replace(/[\s-]/g, "").match(/\b([A-Z]{4}\d{7})\b/);
+  const cont = cm ? cm[1] : null;
+  felder.push({ schluessel:"contErwartet", wort:"Containernummer", wert:cont,
+    quelle: cont ? (contGueltig(cont) ? "Muster erkannt, Prüfziffer stimmt"
+                                      : "Muster erkannt, ABER Prüfziffer stimmt nicht")
+                 : "nicht gefunden",
+    warnung: cont && !contGueltig(cont) });
+
+  const sg = zeileMit(text, ["Siegel"]);
+  nimm("contSiegel", "Siegelnummer", sg ? sg.wert : null, sg ? "Zeile „Siegel“" : null);
+
+  const ab = zeileMit(text, ["Abholung", "Beladeort", "Abholort"]);
+  nimm("abholAdresse", "Abholadresse", ab ? ab.wert : null, ab ? "Zeile „" + ab.stichwort + "“" : null);
+  const abz = zeileMit(text, ["Abholtermin", "Datum/Zeit Beladung", "Beladung:"]);
+  nimm("abholDatum", "Abholdatum", abz ? datumLesen(abz.zeile) : null, abz ? "aus der Terminzeile" : null);
+  nimm("abholZeit", "Abholzeit", abz ? zeitLesen(abz.zeile) : null, abz ? "aus der Terminzeile" : null);
+  const fr = zeileMit(text, ["Freistellungsreferenz", "Freistellung"]);
+  nimm("abholRef", "Freistellungsreferenz", fr ? fr.wert : null, fr ? "Zeile „Freistellung“" : null);
+
+  const li = zeileMit(text, ["Anlieferung", "Entladeort", "Lieferort"]);
+  nimm("lieferAdresse", "Lieferadresse", li ? li.wert : null, li ? "Zeile „" + li.stichwort + "“" : null);
+  const liz = zeileMit(text, ["Liefertermin", "Datum/Zeit Entladung", "Entladung:"]);
+  nimm("lieferDatum", "Lieferdatum", liz ? datumLesen(liz.zeile) : null, liz ? "aus der Terminzeile" : null);
+  nimm("lieferZeit", "Lieferzeit", liz ? zeitLesen(liz.zeile) : null, liz ? "aus der Terminzeile" : null);
+  const an = zeileMit(text, ["Ansprechpartner"]);
+  nimm("lieferAnsprech", "Ansprechpartner", an ? an.wert.split(",")[0].trim() : null,
+       an ? "Zeile „Ansprechpartner“" : null);
+  const tm = text.match(/Tel\.?\s*:?\s*([\d\s\/+()-]{7,})/i);
+  nimm("lieferTelefon", "Telefon", tm ? tm[1].trim() : null, tm ? "Telefonmuster" : null);
+  const hw = zeileMit(text, ["Hinweis", "Bemerkung"]);
+  nimm("lieferHinweis", "Hinweis", hw ? hw.wert : null, hw ? "Zeile „" + hw.stichwort + "“" : null);
+
+  /* Firmennamen aus den Adresszeilen ziehen — alles vor dem ersten Komma. */
+  const firma = w => w ? w.split(",")[0].trim() : null;
+  felder.push({ schluessel:"abholFirma", wort:"Abholstelle (Firma)",
+                wert:firma(ab ? ab.wert : null),
+                quelle: ab ? "erster Teil der Adresszeile" : "nicht gefunden" });
+  felder.push({ schluessel:"lieferFirma", wort:"Empfänger (Firma)",
+                wert:firma(li ? li.wert : null),
+                quelle: li ? "erster Teil der Adresszeile" : "nicht gefunden" });
+
+  const fehlend = felder.filter(f => !f.wert).length;
+  return { felder, fehlend, gefunden:felder.length - fehlend };
+}
+
+/* Aus dem Ergebnis einen Entwurf machen — nie eine Freigabe. */
+function importEntwurf(erg){
+  const w = k => (erg.felder.find(f => f.schluessel === k) || {}).wert || "";
+  D.laufNummer++;
+  const a = {
+    id:"a"+Date.now(), nummer:String(D.laufNummer), storniert:false,
+    tag: w("lieferDatum") || w("abholDatum") || HEUTE(),
+    freigegeben:false,
+    kunde: w("kunde"), kundenRef: w("kundenRef"),
+    auftraggeberId: w("auftraggeberId") || null,
+    abhol:{ firma:w("abholFirma") || "Hansa Terminal Bremen",
+            adresse:w("abholAdresse") || "", datum:w("abholDatum") || HEUTE(),
+            zeit:w("abholZeit") || null, referenz:w("abholRef"), hinweis:"" },
+    liefer:{ firma:w("lieferFirma"), adresse:w("lieferAdresse"),
+             datum:w("lieferDatum") || HEUTE(), zeit:w("lieferZeit") || null,
+             ansprech:w("lieferAnsprech"), telefon:w("lieferTelefon"),
+             hinweis:w("lieferHinweis") },
+    container:{ erwartet:w("contErwartet"), bestaetigt:null, groesse:"40 ft", typ:"Standard",
+                siegel:w("contSiegel"), beladen:"beladen",
+                rueckgabeOrt:"Depot Bremen Hemelingen", rueckgabeTermin:null,
+                ungeprueft:false, abweichung:false, trotzdem:false },
+    planung:{ fahrerId:null, zugmaschineId:null, chassisId:null,
+              ladenMin:PLAN.laden, wartenAbholMin:0, wartenMin:0,
+              entladenMin:PLAN.entladen, pufferMin:PLAN.puffer },
+    ablauf:{ abholung:null, ankunft:null, warten:null, entladenStart:null,
+             entladenEnde:null, abgabe:null },
+    entladeVerlaengerung:null, fotos:{abholung:null,abgabe:null}, dokumente:[],
+    bestaetigt:null, dispoNotiz:"", entwurf:null,
+    beladung:{ art:"selberTag", datum:null, zeit:null, stelle:"", hinweis:"" },
+    auftraggeberId2:null, bilder:[], standort:null,
+    automatik:{ an:true, korrigiert:null, letzterWechsel:null }, zonen:[], risiko:null,
+    ortungZeit:null, datenZeit:null, prognoseZeit:null, prognose:null,
+    alarmGesendet:false,
+    verlauf:[ v(jetztIso(), "Aus Text übernommen (" + erg.gefunden + " Felder erkannt, " +
+                erg.fehlend + " offen). Als Entwurf angelegt – nicht freigegeben.", "system") ]
+  };
+  delete a.auftraggeberId2;
+  D.auftraege.push(a);
+  speichern();
+  return a;
+}
+
+/* ---------- Ansicht: Auftrag importieren ---------- */
+function ansichtImport(){
+  let h = '<div class="leiste"><button class="btn" data-tun="bereich" data-wert="auftraege">← Zurück zu: Aufträge</button>' +
+    '<h2 style="font-size:22px">Auftrag importieren</h2></div>';
+  h += '<div class="hinweis">' + simMarke("Demo-Erkennung") +
+    ' Der Text wird nach festen Mustern durchsucht — Stichwortzeilen, Datums-, Zeit- und ' +
+    'Containerformate. Das ist kein Sprachmodell und keine externe Anfrage. ' +
+    '<b>Es entsteht immer nur ein Entwurf</b>, nie eine Freigabe. Was nicht sicher erkannt ' +
+    'wurde, bleibt leer und wird als „nicht gefunden“ ausgewiesen.</div>';
+
+  h += '<div class="karte"><h2>Text einfügen</h2>' +
+    '<div class="btn-reihe" style="margin-bottom:10px">' +
+    '<button class="btn" data-tun="importBeispiel" data-wert="mail">Beispiel-E-Mail einfügen</button>' +
+    '<button class="btn" data-tun="importBeispiel" data-wert="pdf">Beispiel-PDF-Text einfügen</button>' +
+    '</div>' +
+    '<div class="feld"><label for="importText">E-Mail- oder PDF-Text</label>' +
+    '<textarea id="importText" style="min-height:220px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px">' +
+    esc(U.importText||"") + '</textarea></div>' +
+    '<div class="btn-reihe" style="margin-top:10px">' +
+    '<button class="btn haupt" data-tun="importLesen">Text auswerten</button>' +
+    (U.importErgebnis ? '<button class="btn" data-tun="importVerwerfen">Ergebnis verwerfen</button>' : '') +
+    '</div></div>';
+
+  if (U.importErgebnis) {
+    const e = U.importErgebnis;
+    h += '<div class="karte"><h2>Erkannte Angaben</h2>' +
+      '<p style="margin-top:0;color:#47525D">' + e.gefunden + ' von ' + e.felder.length +
+      ' Feldern erkannt, ' + e.fehlend + ' offen.</p>' +
+      '<div class="tabellen-karte" style="padding:0"><table class="tabelle vergleich"><thead><tr>' +
+      '<th>Feld</th><th>Erkannt</th><th>Woher</th></tr></thead><tbody>' +
+      e.felder.map(f =>
+        '<tr' + (f.warnung ? ' class="nichtzug"' : '') + '>' +
+        '<td data-titel="Feld">' + esc(f.wort) + '</td>' +
+        '<td data-titel="Erkannt">' + (f.wert ? esc(f.wert) : '<span class="neben">—</span>') + '</td>' +
+        '<td data-titel="Woher"><span class="neben">' + esc(f.quelle) + '</span></td></tr>').join("") +
+      '</tbody></table></div>';
+    const cf = e.felder.find(f => f.schluessel === "contErwartet");
+    if (cf && cf.warnung)
+      h += '<div class="warnkasten" style="margin-top:12px"><b>Containernummer nicht sicher.</b> ' +
+           'Das Muster passt, aber die Prüfziffer nach ISO 6346 stimmt nicht. Sie wird ' +
+           'übernommen und im Entwurf als zu prüfen markiert — nicht stillschweigend ' +
+           'korrigiert.</div>';
+    h += '<div class="btn-reihe" style="margin-top:12px">' +
+      '<button class="btn haupt gross" data-tun="importEntwurf">Auftragsentwurf erstellen</button>' +
+      '</div>' +
+      '<p class="sim-satz">Der Entwurf ist nicht freigegeben und wird keinem Fahrer angezeigt. ' +
+      'Kontrolle und Freigabe bleiben bei der Dispo.</p></div>';
+  }
+  return h;
+}
+
+/* ===========================================================
+   16 · Foto-KI für Containernummern
+
+   Simuliert die spätere Erkennung aus einem Foto. Sie liefert immer eine
+   Sicherheit mit. Ist die zu niedrig, wird NICHT bestätigt, sondern der
+   Fahrer gefragt — das ist der ganze Punkt.
+   Geprüft wird die erkannte Nummer mit der vorhandenen ISO-6346-Prüfung.
+   =========================================================== */
+function fotoKiLesen(a, fall){
+  const erwartet = (a.container.erwartet || "").toUpperCase();
+  let erkannt = erwartet, sicherheit = 0.97;
+  if (fall === "abweichung") { erkannt = "TGHU7654320"; sicherheit = 0.94; }
+  if (fall === "unsicher")   { erkannt = erwartet ? erwartet.slice(0,-1) + "0" : "MSCU1234560";
+                               sicherheit = 0.61; }
+  if (fall === "unlesbar")   { erkannt = null; sicherheit = 0.22; }
+
+  const gueltig = erkannt ? contGueltig(erkannt) : false;
+  const passt = !!erkannt && !!erwartet && erkannt === erwartet;
+  const sicher = sicherheit >= 0.9 && gueltig;
+  return {
+    erkannt, sicherheit:Math.round(sicherheit*100), gueltig, passt, sicher, erwartet,
+    satz: !erkannt
+      ? "Nummer nicht sicher erkannt – Fahrer bitte prüfen."
+      : !gueltig
+        ? "Erkannt „" + contLesbar(erkannt) + "“, aber die Prüfziffer stimmt nicht. " +
+          "Nummer nicht sicher erkannt – Fahrer bitte prüfen."
+        : !sicher
+          ? "Erkannt „" + contLesbar(erkannt) + "“ mit nur " + Math.round(sicherheit*100) +
+            " % Sicherheit. Nummer nicht sicher erkannt – Fahrer bitte prüfen."
+          : passt
+            ? "Erkannt „" + contLesbar(erkannt) + "“ – stimmt mit dem Auftrag überein."
+            : "Erkannt „" + contLesbar(erkannt) + "“ – weicht vom Auftrag ab (" +
+              contLesbar(erwartet) + ")."
+  };
+}
+
+/* ===========================================================
    11 · Dialoge
    =========================================================== */
 const dlg = document.getElementById("dlg");
@@ -6098,6 +6477,106 @@ document.addEventListener("click", e => {
     }
     if (tun === "bild") { bildZeigen(wert || "Foto", el.getAttribute("src")); return; }
     return;                       // alles andere ist hier nicht bedienbar
+  }
+
+  if (tun === "navigation") {
+    const ziel = auftragVon(wert);
+    if (!ziel) return;
+    const z = zugVon(ziel.planung.zugmaschineId);
+    const r = routeBerechnen(
+      (z && z.telematik && z.telematik.ort) || ziel.abhol.adresse,
+      ziel.abhol.adresse, z, jetztIso());
+    frage("Navigation starten",
+      "<p><b>" + esc(ziel.abhol.firma || "—") + "</b><br>" + esc(ziel.abhol.adresse || "") + "</p>" +
+      "<p>Termin " + esc(massgeblich(ziel).zeit || "—") + " Uhr · " +
+      (r.km != null ? esc(String(r.km)) + " km · " : "") +
+      (r.minuten != null ? esc(String(r.minuten)) + " Min. Fahrzeit" : "Fahrzeit unbekannt") + "</p>" +
+      "<p>Auf dem Gerät des Fahrers öffnet sich hier die Navigation mit diesem Ziel. " +
+      "Er muss nichts eintippen und nichts auswählen.</p>" +
+      '<p class="sim-satz"><span class="sim">Simuliert</span> In dieser Vorschau wird keine ' +
+      "Navigation gestartet. Routing: " + esc(anbieterSatz("routing")) + ".</p>",
+      [{ wort:"Schließen", haupt:true }]);
+    return;
+  }
+
+  /* ---- Auftrag importieren ---- */
+  if (tun === "importBeispiel") {
+    U.importText = IMPORT_BEISPIELE[wert] || "";
+    U.importErgebnis = null; zeichne(); return;
+  }
+  if (tun === "importLesen") {
+    const t = (document.getElementById("importText")||{}).value || "";
+    U.importText = t;
+    U.importErgebnis = t.trim() ? importLesen(t) : null;
+    U.notiz = t.trim() ? null : "Bitte zuerst einen Text einfügen.";
+    zeichne(); return;
+  }
+  if (tun === "importVerwerfen") { U.importErgebnis = null; zeichne(); return; }
+  if (tun === "importEntwurf") {
+    if (!U.importErgebnis) return;
+    const e = U.importErgebnis;
+    frage("Auftragsentwurf erstellen?",
+      "<p>" + e.gefunden + " von " + e.felder.length + " Feldern wurden erkannt, " +
+      e.fehlend + " bleiben offen.</p>" +
+      "<p>Der Auftrag entsteht als <b>Entwurf</b>. Er ist nicht freigegeben und wird keinem " +
+      "Fahrer angezeigt, bis die Dispo ihn geprüft und freigegeben hat.</p>",
+      [{ wort:"Abbrechen" },
+       { wort:"Entwurf erstellen", haupt:true, tun:() => {
+           const a = importEntwurf(e);
+           U.importErgebnis = null; U.importText = "";
+           U.vorher = "auftraege"; U.auftragId = a.id; U.bereich = "detail";
+           U.notiz = "Entwurf " + a.nummer + " angelegt. Bitte prüfen und ergänzen — " +
+                     "freigegeben ist er nicht.";
+           ketteRechnen(); risikoRechnen(); zeichne(); window.scrollTo(0,0);
+         } }]);
+    return;
+  }
+
+  /* ---- Foto-KI ---- */
+  if (tun === "fotoKi") {
+    if (!a) return;
+    const erg = fotoKiLesen(a, art);
+    const bild = fotoBild(erg.erkannt ? contLesbar(erg.erkannt) : "nicht lesbar",
+                          erg.sicher ? "#0A6B31" : "#8A5200");
+    frage("Containerfoto auswerten " + (erg.sicher ? "" : "– unsicher"),
+      '<img class="foto" src="'+esc(bild)+'" alt="Demo-Containerfoto" style="margin-bottom:10px">' +
+      "<p><b>" + esc(erg.satz) + "</b></p>" +
+      "<p>Erkennungssicherheit: " + erg.sicherheit + " % · Prüfziffer nach ISO 6346: " +
+      (erg.erkannt ? (erg.gueltig ? "stimmt" : "stimmt nicht") : "nicht prüfbar") + "</p>" +
+      "<p>Im Auftrag steht: " + esc(contLesbar(erg.erwartet) || "keine Nummer") + "</p>" +
+      (erg.sicher
+        ? "<p>Die Erkennung ist eindeutig. Übernommen wird sie trotzdem erst mit einem Klick.</p>"
+        : "<p><b>Es wird nichts automatisch bestätigt.</b> Bei dieser Sicherheit muss der " +
+          "Fahrer die Nummer selbst ablesen.</p>") +
+      '<p class="sim-satz">' + '<span class="sim">Simuliert</span>' +
+      " Keine Kamera, keine Bilderkennung — die Erkennung ist in dieser Vorschau nachgestellt.</p>",
+      erg.sicher
+        ? [{ wort:"Verwerfen" },
+           { wort:"Nummer übernehmen", haupt:true, tun:() => {
+               a.container.bestaetigt = erg.erkannt;
+               a.container.abweichung = !erg.passt;
+               a.container.ungeprueft = false;
+               a.fotos.abholung = bild;
+               protokoll(a, "system", "Containernummer aus Foto übernommen: " +
+                 contLesbar(erg.erkannt) + " (" + erg.sicherheit + " % Sicherheit)" +
+                 (erg.passt ? "" : " – weicht vom Auftrag ab"));
+               if (!erg.passt) alarmePruefen();
+               speichern(); U.notiz = erg.passt
+                 ? "Containernummer übernommen."
+                 : "Containernummer übernommen und als Abweichung markiert.";
+               zeichne();
+             } }]
+        : [{ wort:"Schließen" },
+           { wort:"Als ungeprüft vermerken", tun:() => {
+               a.container.ungeprueft = true;
+               a.fotos.abholung = bild;
+               protokoll(a, "system", "Foto ausgewertet, Nummer nicht sicher erkannt (" +
+                 erg.sicherheit + " % Sicherheit) – als ungeprüft vermerkt.");
+               alarmePruefen(); speichern();
+               U.notiz = "Als ungeprüft vermerkt. Der Fahrer muss die Nummer ablesen.";
+               zeichne();
+             } }]);
+    return;
   }
 
   /* ---- Fahrzeuge, Kamera, Sicherheit ---- */

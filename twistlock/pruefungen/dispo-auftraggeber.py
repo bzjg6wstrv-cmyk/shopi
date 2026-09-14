@@ -160,7 +160,12 @@ with sync_playwright() as p:
        "keine echte Serveraktualisierung" in pg.inner_text("#dlg"))
     pg.click('#dlg-fuss button'); pg.wait_for_timeout(250)
     pg.click('[data-tun="externZurueck"]'); pg.wait_for_timeout(350)
-    pr("zurueck in der Dispo", pg.locator('[data-tun="bereich"]').count() == 7)
+    # Die Zahl der Hauptbereiche waechst mit der Anwendung. Geprueft wird,
+    # dass die Navigation ueberhaupt wieder da ist und der Tagesplan traegt.
+    pr("zurueck in der Dispo",
+       pg.locator('#navi [data-tun="bereich"]').count() >= 5 and
+       pg.evaluate("DISPO.zustand().U.bereich") != "extern" and
+       pg.evaluate("!DISPO.zustand().U.extern"))
 
     print("\nK) Bedienung in der Dispo")
     pg.click('[data-tun="bereich"][data-wert="stamm"]'); pg.wait_for_timeout(350)
