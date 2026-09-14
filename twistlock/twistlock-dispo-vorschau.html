@@ -1366,7 +1366,8 @@ let U = {                     // Oberfläche
   formular:null,
   fehler:{},
   notiz:null,
-  extern:null          // {token, auftragId, demo} — nur in der Vorschau gesetzt
+  extern:null,         // {token, auftragId, demo} — nur in der Vorschau gesetzt
+  externRueckweg:null  // wohin „Zurück zur Dispo“ führt
 };
 
 function start(){
@@ -3744,8 +3745,15 @@ document.addEventListener("click", e => {
      Steht zuerst: in dieser Ansicht gibt es keine Dispo-Bedienung. */
   if (U.extern) {
     if (tun === "externZurueck") {
-      U.extern = null; U.bereich = U.vorher || "tagesplan"; zeichne();
-      window.scrollTo(0,0); return;
+      const zurueck = U.externRueckweg;
+      U.extern = null; U.externRueckweg = null;
+      if (zurueck) {
+        U.bereich = zurueck.bereich; U.auftragId = zurueck.auftragId;
+        U.vorher = zurueck.vorher;
+      } else {
+        U.bereich = U.vorher || "tagesplan";
+      }
+      zeichne(); window.scrollTo(0,0); return;
     }
     if (tun === "externAuftrag") {
       /* Geöffnet wird nur, was der Link ohnehin freigibt — geprüft wird
@@ -3823,8 +3831,9 @@ document.addEventListener("click", e => {
     return;
   }
   if (tun === "linkVorschau") {
-    U.vorher = U.bereich === "detail" || U.bereich === "formular"
-      ? (U.vorher || "tagesplan") : U.bereich;
+    /* Merkt sich die Stelle, von der aus geschaut wurde — „Zurück zur
+       Dispo“ führt sonst irgendwohin statt an den Auftrag zurück. */
+    U.externRueckweg = { bereich:U.bereich, auftragId:U.auftragId, vorher:U.vorher };
     externOeffnen(wert, null, true);
     return;
   }
