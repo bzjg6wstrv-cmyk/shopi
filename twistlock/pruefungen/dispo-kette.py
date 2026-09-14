@@ -176,9 +176,24 @@ with sync_playwright() as p:
     pr("keine sofortige Abfahrt: Belegung offen", d2["bel"]["offen"] is True, "True", d2["bel"]["offen"])
     pr("abhaengige Folgeankunft unklar", d2["a2"]["unklar"] is True, "True", d2["a2"]["unklar"])
 
-    print("\nE) Zeitstempel: fehlend, ungueltig, veraltet, unplausibel zukuenftig")
+    print("\nE) Zeitstempel der ERFORDERLICHEN Quelle")
+    # Geprueft wird der Auftrag, der die Live-Daten wirklich traegt: 7702
+    # bekommt eine eigene laufende Prognose. Frueher standen die kaputten
+    # Zeitstempel auf einem Folgeauftrag ohne eigene Live-Daten — dann ist
+    # nicht der Zeitstempel das Problem, sondern der Vorgaenger.
     faelle = pg.evaluate("""() => {
+      const A1=D.auftraege.find(x=>x.nummer==="7701");
       const A=D.auftraege.find(x=>x.nummer==="7702");
+      // Vorgaenger sauber abschliessen, damit die Kette nicht selbst unklar ist
+      A1.ablauf.entladenEnde = new Date(jetzt().getTime()-5*60000).toISOString();
+      A1.entladeVerlaengerung = null;
+      // 7702 traegt jetzt eigene Live-Daten
+      A.ablauf.abholung = new Date(jetzt().getTime()-40*60000).toISOString();
+      A.ablauf.ankunft = null;
+      const termin = new Date(jetzt().getTime()+60*60000); termin.setSeconds(0,0);
+      A.liefer.datum = termin.toISOString().slice(0,10);
+      A.liefer.zeit = String(termin.getHours()).padStart(2,"0")+":"+String(termin.getMinutes()).padStart(2,"0");
+      A.prognose = new Date(termin.getTime()+30*60000).toISOString();   // 30 Min. zu spaet
       const setz = (o,p) => { A.ortungZeit=o; A.prognoseZeit=p; A.datenZeit=p;
         A.alarmGesendet=false; ketteRechnen();
         const vor=D.meldungen.filter(m=>m.art==="verspaetung"&&m.auftragId===A.id).length;

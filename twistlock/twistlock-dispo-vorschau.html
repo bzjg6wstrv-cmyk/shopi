@@ -1935,6 +1935,10 @@ function migrieren(){
     if (!a.automatik) a.automatik = { an:true, korrigiert:null, letzterWechsel:null };
     if (!Array.isArray(a.zonen)) a.zonen = [];        // erlebte Geofence-Ereignisse
     if (!("risiko" in a)) a.risiko = null;
+    /* Berechnungszeitpunkt ist neu und getrennt von den Zeitstempeln der
+       Ausgangsdaten. Fehlt er, wird er beim nächsten Rechnen gesetzt —
+       vorhandene Ortungs- und Prognosezeitpunkte bleiben unberührt. */
+    if (!("rechnungZeit" in a)) a.rechnungZeit = null;
     (a.dokumente || []).forEach(dk => { if (!("extern" in dk)) dk.extern = false; });
     /* Verlaufseinträge ohne Quelle stammen aus der Zeit vor dem
        Ereignisprotokoll — sie gelten als Eintrag der Dispo. */
@@ -2029,58 +2033,165 @@ function tourErgebnis(a){
    Abholankunft und Kundenankunft werden getrennt geführt: „Termin 11:00“
    heißt je nach Stand Abholung oder Anlieferung, und beide Ankünfte
    verschieben sich unterschiedlich. */
-function prognose(a){
-  const m = massgeblich(a);
-  if (!m.iso) return { iso:null, grund:"Kein Termin hinterlegt" };
-  if (a.ablauf.abgabe) return { iso:null, grund:"Auftrag ist abgeschlossen" };
+/* ===========================================================
+   Eine Auswertung für Anzeige UND Alarm
 
-  /* Ist der Fahrer schon da, ist die Ankunft keine Vorhersage mehr,
-     sondern eine Tatsache. */
-  if (m.art === "Anlieferung" && a.ablauf.ankunft)
-    return { iso:a.ablauf.ankunft, grund:null, istAnkunft:true };
-  if (m.art === "Abholung" && a.ablauf.abholung)
-    return { iso:a.ablauf.abholung, grund:null, istAnkunft:true };
+   Vorher prüften Anzeige und Alarmprüfung verschiedene Zeitstempel: die
+   Anzeige nahm prognoseZeit, die Alarmprüfung das allgemeine datenZeit.
+   Dadurch konnte „20 Min. verspätet“ dastehen, ohne dass ein Alarm
+   entstand. Ab hier gibt es genau eine Auswertung, und beide lesen sie.
 
-  /* Prognosezeitpunkt und Ortungszeitpunkt werden getrennt geführt und
-     einzeln geprüft. Neu gerechnet wird oft, geortet nicht. */
-  const zuv = datenZuverlaessig(a.prognoseZeit || a.datenZeit, a.ortungZeit);
-  if (!zuv.ok) return { iso:null, grund:zuv.grund };
+   Geprüft werden ausschließlich die Daten, die für DIESE Aussage
+   gebraucht werden — und zwar dort, wo sie herkommen:
+     · eigene laufende Ortung   → deren Zeitstempel
+     · Meldung des Fahrers      → deren Zeitstempel
+     · eingetretenes Ereignis   → altert nicht
+     · Vorgänger in der Tour    → dessen Quelle, nicht der eigene Datensatz
+   Das allgemeine datenZeit ist kein Tor mehr. Es bleibt als Angabe
+   erhalten, blockiert aber keinen Alarm, wenn die tatsächlich benutzte
+   Grundlage frisch ist.
+   =========================================================== */
 
-  const r = tourErgebnis(a);
-  if (!r) return { iso:null, grund:"Keine Berechnung vorhanden" };
-  if (r.unklar) return { iso:null, grund:r.grund };
+/* Trägt die Grundlage, auf der die Kette hier steht?
 
-  const iso = m.art === "Abholung" ? r.abholAnkunft : r.kundenAnkunft;
-  if (!iso) return { iso:null, grund:r.grund || "Keine Berechnung vorhanden" };
-  return { iso, grund:null, ausKette:!!r.ausKette, nurPlan:!!r.nurPlan, bezug:m.art };
+   Welche Zeitstempel erforderlich sind, hängt von der Art der Quelle ab:
+     "ortung"   – die laufende Prognose eines fahrenden Fahrzeugs. Sie
+                  braucht zwingend eine Position; ohne Ortungszeitpunkt
+                  steht sie auf nichts.
+     "meldung"  – eine Angabe des Fahrers (etwa die Restzeit der
+                  Entladung). Dafür braucht es keine Ortung, nur den
+                  Zeitpunkt der Meldung.
+     "tatsache" – ein eingetretenes Ereignis. Es altert nicht.
+   Das allgemeine datenZeit gehört zu keiner dieser Gruppen und ist
+   deshalb kein Tor mehr. */
+function quellePruefen(q){
+  if (!q) return { ok:true, grund:null };                     // reine Planung
+  if (q.art === "tatsache") return { ok:true, grund:null };   // altert nicht
+
+  const wo = q.nummer ? "Auftrag " + q.nummer : "dem vorherigen Auftrag";
+
+  if (q.art === "ortung") {
+    /* Position ist Pflicht. Liegen beide Zeitstempel vor, entscheidet
+       dieselbe Prüfung wie bisher — sie bleibt die einzige Stelle, die
+       „zu alt“ definiert. */
+    if (!q.ortungZeit)
+      return { ok:false, grund:"Kein Ortungszeitpunkt vorhanden (Grundlage: laufende Ortung von " + wo + ")" };
+    if (q.prognoseZeit) {
+      const beide = datenZuverlaessig(q.prognoseZeit, q.ortungZeit);
+      return beide.ok ? { ok:true, grund:null }
+                      : { ok:false, grund:beide.grund + " (Grundlage: laufende Daten von " + wo + ")" };
+    }
+    const o = zeitstempelPruefen(q.ortungZeit, "Ortungszeitpunkt");
+    return o.ok ? { ok:true, grund:null }
+                : { ok:false, grund:o.grund + " (Grundlage: laufende Ortung von " + wo + ")" };
+  }
+
+  /* Meldung des Fahrers: nur ihr eigener Zeitpunkt zählt. */
+  if (!q.prognoseZeit)
+    return { ok:false, grund:"Zur Meldung von " + wo + " fehlt der Zeitpunkt" };
+  const pz = zeitstempelPruefen(q.prognoseZeit, "Prognosezeitpunkt");
+  return pz.ok ? { ok:true, grund:null }
+               : { ok:false,
+                   grund:pz.grund + " (Grundlage: " + (q.was || "Meldung") + " von " + wo + ")" };
 }
 
-/* Zeitstatus: Farbe plus der Satz, der sie erklärt. */
-function zeitstatus(a){
+/* Die zentrale Auswertung. Rückgabe:
+     terminIso/terminArt  – der maßgebliche Termin, auf den sich alles bezieht
+     ankunft/istAnkunft   – die zugehörige Ankunft (Tatsache oder Prognose)
+     res                  – Reserve in Minuten, nur wenn belastbar
+     nurPlan              – reine Planung, ausdrücklich keine Live-Aussage
+     ok/grund             – ob die Aussage trägt, und wenn nicht: warum
+     quelle/gerechnetAm   – woher die Grundlage stammt, wann zuletzt gerechnet wurde */
+function lage(a){
   const m = massgeblich(a);
-  const p = prognose(a);
-  if (a.storniert) return { klasse:"m-grau", satz:"Storniert", res:null, ankunft:null };
-  if (a.ablauf.abgabe) return { klasse:"m-gruen", satz:"Abgeliefert", res:null, ankunft:null };
-  if (!p.iso) return { klasse:"m-grau", satz:"Ankunft unklar", zusatz:p.grund, res:null, ankunft:null };
+  const raus = { terminIso:m.iso, terminArt:m.art, terminZeit:m.zeit,
+                 ankunft:null, istAnkunft:false, res:null, nurPlan:false,
+                 ok:false, grund:null, quelle:null, gerechnetAm:a.rechnungZeit || null,
+                 erledigt:false, storniert:false };
+  if (a.storniert) { raus.storniert = true; raus.grund = "Storniert"; return raus; }
+  if (a.ablauf.abgabe) { raus.erledigt = true; raus.grund = "Auftrag ist abgeschlossen"; return raus; }
+  if (!m.iso) { raus.grund = "Kein Termin hinterlegt"; return raus; }
+
+  /* Tatsachen zuerst: wer da ist, ist da. Das braucht keine Ortung. */
+  if (m.art === "Anlieferung" && a.ablauf.ankunft) {
+    raus.ankunft = a.ablauf.ankunft; raus.istAnkunft = true; raus.ok = true;
+    raus.res = reserve(m.iso, raus.ankunft); return raus;
+  }
+  if (m.art === "Abholung" && a.ablauf.abholung) {
+    raus.ankunft = a.ablauf.abholung; raus.istAnkunft = true; raus.ok = true;
+    raus.res = reserve(m.iso, raus.ankunft); return raus;
+  }
+
+  const r = tourErgebnis(a);
+  if (!r) { raus.grund = "Keine Berechnung vorhanden"; return raus; }
+  raus.gerechnetAm = r.gerechnetAm || a.rechnungZeit || null;
+  raus.quelle = r.quelle || null;
+  raus.ausKette = !!r.ausKette;
+  if (r.unklar) { raus.grund = r.grund; return raus; }
+
+  const iso = m.art === "Abholung" ? r.abholAnkunft : r.kundenAnkunft;
+  if (!iso) { raus.grund = r.grund || "Keine Berechnung vorhanden"; return raus; }
+
+  /* Reiner Plan: gültige Aussage, aber ausdrücklich Planung. Daraus
+     entsteht keine Reserve und kein Alarm — die Daten geben das nicht her. */
+  if (r.nurPlan) { raus.ankunft = iso; raus.nurPlan = true; raus.ok = true; return raus; }
+
+  /* Live-Aussage: genau die Grundlage prüfen, auf der sie steht. */
+  const pr = quellePruefen(r.quelle);
+  if (!pr.ok) { raus.grund = pr.grund; return raus; }
+
+  raus.ankunft = iso; raus.ok = true;
+  raus.res = reserve(m.iso, iso);
+  return raus;
+}
+
+/* Voraussichtliche Ankunft am maßgeblichen Termin.
+   Bleibt in Form und Bedeutung wie bisher — liest aber dieselbe
+   Auswertung wie Anzeige und Alarm. */
+function prognose(a){
+  const l = lage(a);
+  if (!l.ankunft) return { iso:null, grund:l.grund, gerechnetAm:l.gerechnetAm, quelle:l.quelle };
+  return { iso:l.ankunft, grund:null, istAnkunft:l.istAnkunft,
+           ausKette:!!l.ausKette, nurPlan:!!l.nurPlan, bezug:l.terminArt,
+           gerechnetAm:l.gerechnetAm, quelle:l.quelle };
+}
+
+/* Zeitstatus: Farbe plus der Satz, der sie erklärt.
+   Liest dieselbe Auswertung wie die Alarmprüfung — Farbe und Alarm
+   können deshalb nicht mehr auseinanderlaufen.
+
+   Regeln unverändert:
+     über 10 Min. Reserve → grün · 0 bis 10 → orange · negativ → rot
+     keine tragfähigen Daten → grau mit Grund */
+function zeitstatus(a){
+  const l = lage(a);
+  if (l.storniert) return { klasse:"m-grau", satz:"Storniert", res:null, ankunft:null, lage:l };
+  if (l.erledigt)  return { klasse:"m-gruen", satz:"Abgeliefert", res:null, ankunft:null, lage:l };
+  if (!l.ankunft)
+    return { klasse:"m-grau", satz:"Ankunft unklar", zusatz:l.grund,
+             res:null, ankunft:null, lage:l };
+
   /* Reiner Plan ohne Ortung und ohne Verzug: sachlich „nach Plan“, nicht
      „0 Min. Reserve“. Eine knappe Lage wäre eine Behauptung ohne Daten. */
-  if (p.nurPlan)
+  if (l.nurPlan)
     return { klasse:"m-marine", satz:"Nach Plan",
              zusatz:"noch keine Ortung, keine Abweichung berechnet",
-             res:null, ankunft:p.iso, nurPlan:true };
-  const res = reserve(m.iso, p.iso);
+             res:null, ankunft:l.ankunft, nurPlan:true, lage:l };
+
+  const res = l.res;
   const k = ampel(res);
   /* Bereits angekommen: das ist Vergangenheit, keine Vorhersage. */
-  if (p.istAnkunft) {
+  if (l.istAnkunft) {
     if (res < 0) return { klasse:"m-rot", satz:Math.abs(res)+" Min. zu spät angekommen",
-                          zusatz:"Fahrzeug ist vor Ort", res, ankunft:p.iso, istAnkunft:true };
+                          zusatz:"Fahrzeug ist vor Ort", res, ankunft:l.ankunft,
+                          istAnkunft:true, lage:l };
     return { klasse:"m-gruen", satz:"Pünktlich angekommen",
-             zusatz:"Fahrzeug ist vor Ort", res, ankunft:p.iso, istAnkunft:true };
+             zusatz:"Fahrzeug ist vor Ort", res, ankunft:l.ankunft, istAnkunft:true, lage:l };
   }
-  if (k === "rot")   return { klasse:"m-rot",  satz:Math.abs(res)+" Min. verspätet", res, ankunft:p.iso };
-  if (k === "gelb")  return { klasse:"m-gelb", satz:res+" Min. Reserve", res, ankunft:p.iso };
-  if (k === "gruen") return { klasse:"m-gruen",satz:res+" Min. Reserve", res, ankunft:p.iso };
-  return { klasse:"m-grau", satz:"Ankunft unklar", res:null, ankunft:null };
+  if (k === "rot")   return { klasse:"m-rot",  satz:Math.abs(res)+" Min. verspätet", res, ankunft:l.ankunft, lage:l };
+  if (k === "gelb")  return { klasse:"m-gelb", satz:res+" Min. Reserve", res, ankunft:l.ankunft, lage:l };
+  if (k === "gruen") return { klasse:"m-gruen",satz:res+" Min. Reserve", res, ankunft:l.ankunft, lage:l };
+  return { klasse:"m-grau", satz:"Ankunft unklar", res:null, ankunft:null, lage:l };
 }
 
 /* ===========================================================
@@ -2396,19 +2507,27 @@ function alarmePruefen(){
        Ein Verspätungsalarm ist eine Vorhersage, keine Nachricht über
        etwas, das bereits eingetreten und im Ablauf sichtbar ist. */
     if (a.ablauf.ankunft) return;
-    const zuv = datenZuverlaessig(a.datenZeit, a.ortungZeit);
-    if (!zuv.ok) return;                       // unzuverlässig → kein Alarm
-    const s = zeitstatus(a);
-    if (s.res == null || s.res > -GRENZE_ALARM) return;
+
+    /* Genau dieselbe Auswertung wie die Anzeige. Trägt sie nicht, gibt es
+       keinen Alarm — und die Anzeige steht dann ebenfalls auf grau. Ein
+       veraltetes allgemeines datenZeit blockiert hier nichts mehr; geprüft
+       wird die Grundlage, auf der die Prognose wirklich steht. */
+    const l = lage(a);
+    if (!l.ok || l.nurPlan || l.istAnkunft) return;
+    if (l.res == null || l.res > -GRENZE_ALARM) return;
+
     a.alarmGesendet = true;
     meldungAnlegen({
       art:"verspaetung", auftragId:a.id,
-      titel:"Voraussichtlich " + Math.abs(s.res) + " Minuten verspätet.",
-      text:"Kunde " + a.kunde + ", Termin " + (massgeblich(a).zeit || "—") + " Uhr (" +
-           massgeblich(a).art + "). Alarm ab " + GRENZE_ALARM +
-           " Minuten, einmal je Auftrag."
+      titel:"Voraussichtlich " + Math.abs(l.res) + " Minuten verspätet.",
+      text:"Kunde " + a.kunde + ", Termin " + (l.terminZeit || "—") + " Uhr (" +
+           l.terminArt + "). Alarm ab " + GRENZE_ALARM +
+           " Minuten, einmal je Auftrag." +
+           (l.quelle && l.quelle.nummer && l.quelle.auftragId !== a.id
+             ? " Grundlage: laufende Daten von Auftrag " + l.quelle.nummer + "."
+             : "")
     });
-    a.verlauf.push(v(jetztIso(), "Verspätungsalarm ausgelöst (" + Math.abs(s.res) + " Min.)"));
+    a.verlauf.push(v(jetztIso(), "Verspätungsalarm ausgelöst (" + Math.abs(l.res) + " Min.)", "system"));
     neu++;
   });
 
@@ -2849,7 +2968,9 @@ function externAnkunft(a){
   if (r.nurPlan)
     return { iso:r.kundenAnkunft, text:"wie geplant " + hhmm(r.kundenAnkunft) + " Uhr",
              sicher:true, nurPlan:true, hinweis:null };
-  if (!datenZuverlaessig(a.prognoseZeit || a.datenZeit, a.ortungZeit).ok) return unklar;
+  /* Dieselbe zentrale Auswertung wie Anzeige und Alarm — die externe
+     Ansicht bekommt keine eigene Zuverlässigkeitsprüfung. */
+  if (!lage(a).ok) return unklar;
   return { iso:r.kundenAnkunft, text:"ca. " + hhmm(r.kundenAnkunft) + " Uhr",
            sicher:true, hinweis:null };
 }
@@ -4120,6 +4241,17 @@ function tourRechnen(folge){
   let vorher = null;          // vorheriger Auftrag (für die Übergangsfahrt)
   let unklarGrund = null;     // ab hier ist die Kette nicht mehr bestimmbar
 
+  /* Woher stammen die Live-Daten, auf denen die Kette ab hier steht?
+     Das wird mitgeschleppt, denn eine Folgeankunft ist nur so belastbar
+     wie die Ortung des Vorgängers, aus der sie abgeleitet wurde.
+       art "ortung"   – laufende Ortung eines Fahrzeugs, altert
+       art "meldung"  – Meldung des Fahrers, altert wie eine Ortung
+       art "tatsache" – eingetretenes Ereignis, altert NICHT
+     Eine Neuberechnung ändert daran nichts: hier stehen die Zeitpunkte
+     der Ausgangsdaten, nicht der Zeitpunkt des Rechnens. */
+  let quelle = null;
+  const gerechnetAm = jetztIso();
+
   folge.forEach(o => {
     const p = o.planung || {};
     const schritte = [];
@@ -4135,7 +4267,9 @@ function tourRechnen(folge){
     if (o.ablauf.abgabe) {
       o.rechnung2 = { abholAnkunft:o.ablauf.abholung, kundenAnkunft:o.ablauf.ankunft,
                       entladeEnde:o.ablauf.entladenEnde, belegungVon:null, belegungBis:null,
-                      abschnitte:[], unklar:false, grund:null, erledigt:true, ausKette:false };
+                      abschnitte:[], unklar:false, grund:null, erledigt:true, ausKette:false,
+                      quelle:null, gerechnetAm };
+      o.rechnungZeit = gerechnetAm;
       freiAb = o.ablauf.abgabe; vorher = o; return;
     }
 
@@ -4147,7 +4281,9 @@ function tourRechnen(folge){
     } else if (unklarGrund) {
       o.rechnung2 = { abholAnkunft:null, kundenAnkunft:null, entladeEnde:null,
                       belegungVon:null, belegungBis:null, abschnitte:[],
-                      unklar:true, grund:unklarGrund, ausKette:true };
+                      unklar:true, grund:unklarGrund, ausKette:true,
+                      quelle, gerechnetAm };
+      o.rechnungZeit = gerechnetAm;
       vorher = o; return;
     } else if (freiAb) {
       /* Verfügbarkeit nach dem Vorgänger, zuzüglich Übergangsfahrt. */
@@ -4174,7 +4310,8 @@ function tourRechnen(folge){
       o.rechnung2 = { abholAnkunft:null, kundenAnkunft:null, entladeEnde:null,
                       belegungVon:null, belegungBis:null, abschnitte:schritte,
                       unklar:true, grund:"Kein Abhol- oder Liefertermin hinterlegt",
-                      ausKette:false };
+                      ausKette:false, quelle, gerechnetAm };
+      o.rechnungZeit = gerechnetAm;
       vorher = o; return;
     }
     if (!abholAnkunft)
@@ -4184,12 +4321,17 @@ function tourRechnen(folge){
     let kundenAnkunft, t = abholAnkunft;
     if (o.ablauf.ankunft) {
       kundenAnkunft = o.ablauf.ankunft;                 // Tatsache
+      quelle = { art:"tatsache", auftragId:o.id, nummer:o.nummer,
+                 zeit:o.ablauf.ankunft, was:"Ankunft beim Kunden" };
       schritt(0, "Beim Kunden angekommen", kundenAnkunft);
-    } else if (o.ablauf.abholung && o.prognose &&
-               datenZuverlaessig(o.prognoseZeit || o.datenZeit, o.ortungZeit).ok) {
+    } else if (o.ablauf.abholung && o.prognose) {
       /* Fahrzeug rollt: seine eigene laufende Prognose ist die bessere
-         Auskunft als eine Rechnung vom Vorgängerstopp. */
+         Auskunft als eine Rechnung vom Vorgängerstopp. Ob sie belastbar
+         ist, entscheidet nicht die Rechnung, sondern die Auswertung —
+         hier wird nur festgehalten, WORAUF sie beruht. */
       kundenAnkunft = o.prognose;
+      quelle = { art:"ortung", auftragId:o.id, nummer:o.nummer,
+                 ortungZeit:o.ortungZeit, prognoseZeit:o.prognoseZeit || o.datenZeit };
       schritt(0, "Unterwegs, Ankunft beim Kunden voraussichtlich", kundenAnkunft);
     } else if (vortagBeladen(o)) {
       /* Am Vortag beladen: es wird nur noch gefahren. Frühestens los geht
@@ -4212,11 +4354,22 @@ function tourRechnen(folge){
     let entladeEnde = null, entladeUnklar = null;
     if (o.ablauf.entladenEnde) {
       entladeEnde = o.ablauf.entladenEnde;
+      quelle = { art:"tatsache", auftragId:o.id, nummer:o.nummer,
+                 zeit:o.ablauf.entladenEnde, was:"Entladung fertig gemeldet" };
       schritt(0, "Entladung fertig gemeldet", entladeEnde);
     } else if (o.ablauf.entladenStart) {
       const rest = entladeRest(o);
       if (rest.unklar) { entladeUnklar = rest.grund; }
-      else { entladeEnde = inMin(rest.min); schritt(rest.min, "Restliche Entladung", entladeEnde); }
+      else {
+        entladeEnde = inMin(rest.min);
+        /* Die Restzeit beruht auf einer Meldung des Fahrers. Sie altert
+           wie eine Ortung — deshalb wird ihr Zeitpunkt mitgeführt. */
+        const ver = o.entladeVerlaengerung;
+        quelle = { art:"meldung", auftragId:o.id, nummer:o.nummer,
+                   prognoseZeit:(ver && ver.ab) || o.ablauf.entladenStart,
+                   ortungZeit:null, was:"Restzeit der Entladung" };
+        schritt(rest.min, "Restliche Entladung", entladeEnde);
+      }
     } else {
       /* Vor dem Liefertermin wird gewartet; Entladen beginnt nicht früher. */
       let start = kundenAnkunft;
@@ -4266,10 +4419,15 @@ function tourRechnen(folge){
     const nurPlan = !ausKette && !o.ablauf.abholung && !o.ablauf.ankunft &&
                     !o.ablauf.entladenStart && !o.prognose;
 
+    /* Ein reiner Planauftrag steht auf keiner Live-Quelle — das muss auch
+       so in der Rechnung stehen, sonst erbt er die Quelle des Vorgängers,
+       ohne von ihr abzuhängen. */
     o.rechnung2 = { abholAnkunft, kundenAnkunft, entladeEnde,
                     belegungVon, belegungBis, geplantBelegungBis,
                     abschnitte:schritte, unklar:!!entladeUnklar,
-                    grund:entladeUnklar, ausKette, nurPlan };
+                    grund:entladeUnklar, ausKette, nurPlan,
+                    quelle: nurPlan ? null : quelle, gerechnetAm };
+    o.rechnungZeit = gerechnetAm;
     vorher = o;
   });
 }
@@ -4691,8 +4849,10 @@ function formSpeichern(fuerFreigabe){
   }
 
   /* Eine Planänderung verschiebt die ganze Tour: alles neu rechnen,
-     damit Tagesplan, Detail, Konflikte und Alarme dieselbe Zahl benutzen. */
-  a.prognoseZeit = jetztIso();
+     damit Tagesplan, Detail, Konflikte und Alarme dieselbe Zahl benutzen.
+     Der Zeitpunkt des Rechnens landet in rechnungZeit — die Zeitstempel
+     der Ausgangsdaten bleiben unberührt. Eine Planänderung ist keine
+     neue Ortung. */
   ketteRechnen();
   const kf = konflikte(a);
   alarmePruefen();
@@ -7113,7 +7273,7 @@ document.addEventListener("click", e => {
       a.bestaetigt = null;
       a.verlauf.push(v(jetztIso(), "Wesentliche Änderung — Fahrerbestätigung ist wieder offen"));
     }
-    a.prognoseZeit = jetztIso();
+    /* Freigeben rechnet neu, ortet aber nicht. */
     ketteRechnen(); alarmePruefen(); speichern();
     U.notiz = '<b>Demo-Freigabe.</b> Die Änderungen sind jetzt der freigegebene Stand.' +
       (wesentlich ? ' Die Fahrerbestätigung ist wieder offen.' : '') +
@@ -7384,6 +7544,7 @@ window.DISPO = {
   zustand: () => ({ D, U }),
   linkAufloesen, linkZustand, linkAdresse, kundeVon, tokenBauen,
   jetztIso, minZw, hhmm, MAX_ALTER, GRENZE_ALARM, IMPORT_BEISPIELE,
+  lage, quellePruefen, tourErgebnis,
   wegfahrsperreErlaubt, wegfahrsperreVormerken, wegfahrsperreAktivieren,
   importLesen, fotoKiLesen, vorschlaegeSammeln, tagOptimieren, wasWaereWenn,
   assistentAntwort, simulieren, tagesLage, externAnkunft, prognose,
