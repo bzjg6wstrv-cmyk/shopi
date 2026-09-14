@@ -15,9 +15,9 @@ with sync_playwright() as p:
     pg.goto(URL, wait_until="load"); pg.wait_for_timeout(600)
 
     print("\nA) Startseite Tagesplan")
-    pr("sechs Hauptbereiche vorhanden (Smart Dispo ergaenzt)",
+    pr("sieben Hauptbereiche vorhanden (Smart Dispo und Flotte ergaenzt)",
        pg.eval_on_selector_all('#navi button','e=>e.map(x=>x.textContent.replace(/\\d+$/,"").trim())')
-       == ["Tagesplan","Wochenplan","Aufträge","Smart Dispo","Stammdaten","Meldungen"])
+       == ["Tagesplan","Wochenplan","Aufträge","Smart Dispo","Flotte live","Stammdaten","Meldungen"])
     pr("Tabelle wird angezeigt", pg.locator("table.tabelle").count() == 1)
     pr("Schaltflaeche 'Neuer Auftrag'", pg.locator('[data-tun="neu"]').count() >= 1)
     pr("kein horizontales Scrollen der Seite",

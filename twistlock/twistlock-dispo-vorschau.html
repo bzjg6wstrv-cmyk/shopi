@@ -325,6 +325,38 @@ dialog::backdrop{background:rgba(21,32,43,.55)}
 .ki-antwort ul{margin:8px 0 0 18px}
 .ki-antwort li{padding:3px 0}
 
+/* Flotte und Fahrzeuge */
+.flottenkarte{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.fk-ort{border:2px solid var(--linie);border-radius:var(--radius);padding:10px;
+  background:var(--grau-flaeche);min-height:104px}
+.fk-ort h3{font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--soft);
+  margin-bottom:8px}
+.fk-leer{color:var(--soft);font-size:15px;margin:0}
+.fk-fahrzeug{display:block;width:100%;text-align:left;border:2px solid var(--marine);
+  background:var(--paper);color:var(--ink);border-radius:8px;padding:8px 10px;margin-bottom:7px;
+  cursor:pointer;font:inherit;min-height:46px}
+.fk-fahrzeug:hover{background:var(--marine-flaeche)}
+.fk-fahrzeug b{display:block;font-size:16px}
+.fk-fahrzeug span{font-size:14px;color:var(--soft)}
+.fk-fahrzeug.dieb{border-color:var(--rot);background:var(--rot-flaeche)}
+.fz-zeile{border:2px solid var(--linie);border-radius:var(--radius);padding:12px;
+  margin-bottom:12px;background:var(--paper)}
+.fz-zeile.dieb{border-color:var(--rot);border-width:3px}
+.fz-kopf{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-bottom:10px}
+.fz-kennz{font-weight:800;font-size:19px;font-variant-numeric:tabular-nums}
+.fz-werte{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:9px}
+.fz-werte span{display:block;font-size:16px;font-weight:600}
+.fz-werte i{display:block;font-style:normal;font-size:13px;color:var(--soft);font-weight:400}
+.fz-auff{margin:10px 0 0;padding-left:18px;font-size:15px}
+.fz-auff li{padding:3px 0;color:#5E1013}
+.kam-liste{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.kam-ereignis{border:2px solid var(--linie);border-radius:var(--radius);padding:10px;
+  background:var(--paper)}
+.kam-ereignis.gesehen{opacity:.65;background:var(--grau-flaeche)}
+.kam-kopf{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+.kam-kopf b{flex:1 1 200px}
+.kam-ereignis p{margin:6px 0;font-size:15px;color:var(--soft)}
+
 /* Freigabelinks in der Dispo */
 .link-kasten{
   border:1px solid var(--linie2); border-radius:var(--radius);
@@ -1824,6 +1856,7 @@ let U = {                     // Oberfläche
   formular:null,
   fehler:{},
   notiz:null,
+  fahrzeugId:null,
   wennAuftrag:null, wennFall:"entladen30", wennErgebnis:null,
   kiFrage:"", kiAntwort:null,
   extern:null,         // {token, auftragId, demo} — nur in der Vorschau gesetzt
@@ -2671,6 +2704,7 @@ const BEREICHE = [
   { k:"wochenplan", wort:"Wochenplan" },
   { k:"auftraege",  wort:"Aufträge" },
   { k:"smart",      wort:"Smart Dispo" },
+  { k:"flotte",     wort:"Flotte live" },
   { k:"stamm",      wort:"Stammdaten" },
   { k:"meldungen",  wort:"Meldungen" }
 ];
@@ -3073,6 +3107,8 @@ function zeichne(){
   else if (U.bereich === "wochenplan") html += ansichtWochenplan();
   else if (U.bereich === "auftraege") html += ansichtAuftraege();
   else if (U.bereich === "smart") html += ansichtSmart();
+  else if (U.bereich === "flotte") html += ansichtFlotte();
+  else if (U.bereich === "fahrzeug") html += ansichtFahrzeug();
   else if (U.bereich === "stamm") html += ansichtStamm();
   else if (U.bereich === "meldungen") html += ansichtMeldungen();
   else if (U.bereich === "detail") html += ansichtDetail();
@@ -5562,6 +5598,429 @@ function wennErgebnisHtml(e){
 }
 
 /* ===========================================================
+   14 · Fahrzeuge: Telematik, Kamera, Sicherheit
+
+   Sicherheitsregel, die dieser Code nicht verletzen kann:
+   TWISTLOCK schaltet niemals einen laufenden Motor ab. Es gibt keine
+   Funktion „Motor aus“ und keinen Weg, die Wegfahrsperre bei fahrendem
+   Fahrzeug aktiv zu setzen. Sie lässt sich nur vormerken; aktiv wird sie
+   erst bei 0 km/h und ausgeschalteter Zündung.
+   =========================================================== */
+
+/* Darf die Wegfahrsperre jetzt aktiv werden? Die einzige Stelle, die
+   das entscheidet. */
+function wegfahrsperreErlaubt(z){
+  const t = (z && z.telematik) || {};
+  if (!t.verbunden)
+    return { ok:false, grund:"Das Telematikgerät ist nicht verbunden." };
+  if (!zeitstempelPruefen(t.letzteMeldung, "Ortungszeitpunkt").ok)
+    return { ok:false, grund:"Die letzte Meldung ist zu alt – der aktuelle Zustand ist unbekannt." };
+  if (t.geschwindigkeit > 0 || t.bewegung)
+    return { ok:false, fahrend:true,
+             grund:"Fahrzeug fährt noch. Wegfahrsperre wird erst nach sicherem Stillstand " +
+                   "und ausgeschalteter Zündung aktiviert." };
+  if (t.zuendung)
+    return { ok:false, fahrend:true,
+             grund:"Die Zündung ist noch an. Wegfahrsperre wird erst nach ausgeschalteter " +
+                   "Zündung aktiviert." };
+  return { ok:true, grund:"Fahrzeug steht, Zündung aus – sichere Aktivierung möglich." };
+}
+
+/* Vormerken ist immer erlaubt: es passiert dabei nichts am Fahrzeug. */
+function wegfahrsperreVormerken(z){
+  z.sicherung = z.sicherung || sicherungStandard();
+  z.sicherung.wegfahrsperre = "vorgemerkt";
+  z.sicherung.vorgemerktAm = jetztIso();
+  z.sicherung.fehlerGrund = null;
+  speichern();
+  return true;
+}
+/* Aktivieren geht nur durch dieses Nadelöhr. */
+function wegfahrsperreAktivieren(z){
+  const pr = wegfahrsperreErlaubt(z);
+  if (!pr.ok) {
+    z.sicherung.wegfahrsperre = "vorgemerkt";
+    z.sicherung.fehlerGrund = pr.grund;
+    speichern();
+    return { ok:false, grund:pr.grund };
+  }
+  z.sicherung.wegfahrsperre = "aktiv";
+  z.sicherung.aktivSeit = jetztIso();
+  z.sicherung.fehlerGrund = null;
+  speichern();
+  return { ok:true };
+}
+function wegfahrsperreLoesen(z){
+  z.sicherung.wegfahrsperre = "aus";
+  z.sicherung.aktivSeit = null;
+  z.sicherung.vorgemerktAm = null;
+  z.sicherung.fehlerGrund = null;
+  speichern();
+}
+
+/* Auffälligkeiten an einem Fahrzeug — jede mit einem Satz, der sie erklärt. */
+function fahrzeugAuffaellig(z){
+  const t = (z && z.telematik) || {};
+  const raus = [];
+  if (!t.verbunden) raus.push({ art:"offline", wort:"Gerät nicht verbunden",
+    satz:"Seit der letzten Meldung kommt nichts mehr an." });
+  if (t.verbunden && !zeitstempelPruefen(t.letzteMeldung, "Ortungszeitpunkt").ok)
+    raus.push({ art:"alt", wort:"Ortung veraltet",
+      satz:"Letzte Meldung " + (t.letzteMeldung ? hhmm(t.letzteMeldung) + " Uhr" : "unbekannt") +
+           ", älter als " + MAX_ALTER + " Minuten." });
+  if (t.jamming) raus.push({ art:"jamming", wort:"Störsender vermutet",
+    satz:"Das Gerät meldet auffällige Funkstörung." });
+  if (t.manipulation) raus.push({ art:"manipulation", wort:"Manipulation gemeldet",
+    satz:"Das Gerät meldet einen Eingriff am Gehäuse oder an der Verkabelung." });
+  if (t.stromversorgung === false) raus.push({ art:"strom", wort:"Bordspannung getrennt",
+    satz:"Das Gerät läuft auf der Stützbatterie." });
+  if (z.sicherung && z.sicherung.wegfahrsperre === "fehler")
+    raus.push({ art:"sperre", wort:"Wegfahrsperre meldet Fehler",
+      satz:z.sicherung.fehlerGrund || "Der Ausgang antwortet nicht." });
+  const kam = (z.kamera && z.kamera.ereignisse || []).filter(e => !e.gesehen);
+  if (kam.length) raus.push({ art:"kamera", wort:kam.length + " Kameraereignis" + (kam.length>1?"se":""),
+    satz:kam.map(e => e.titel).join(", ") + "." });
+  /* Bewegung ohne Auftrag: fährt, aber für diesen Tag ist nichts offen. */
+  if (t.verbunden && t.bewegung && !laufenderAuftrag(z.id))
+    raus.push({ art:"ohneAuftrag", wort:"Bewegung ohne offenen Auftrag",
+      satz:"Das Fahrzeug bewegt sich, für heute ist ihm aber kein laufender Auftrag zugeordnet." });
+  return raus;
+}
+function laufenderAuftrag(zugId){
+  return D.auftraege.find(a => a.planung.zugmaschineId === zugId && !a.storniert &&
+    a.tag === HEUTE() && !a.ablauf.abgabe) || null;
+}
+
+/* Diebstahl-Modus: markiert, priorisiert die Anzeige und schreibt eine
+   simulierte Positionsspur mit. Er schaltet nichts am Fahrzeug. */
+function diebstahlModus(z, an){
+  z.sicherung = z.sicherung || sicherungStandard();
+  z.sicherung.diebstahlModus = !!an;
+  z.sicherung.diebstahlSeit = an ? jetztIso() : null;
+  if (an) {
+    const t = z.telematik || {};
+    /* Demo-Spur: die letzten Positionen, wie sie ein Gerät gemeldet hätte. */
+    z.sicherung.spur = [0,6,12,18].map(m => ({
+      zeit: inMin(-m),
+      ort:  t.ort || "unbekannt",
+      lat:  t.latitude, lng:t.longitude,
+      tempo: Math.max(0, (t.geschwindigkeit || 0) - m)
+    }));
+    meldungAnlegen({ art:"sicherheit", auftragId:(laufenderAuftrag(z.id)||{}).id || null,
+      titel:"Diebstahl-Modus für " + z.kennzeichen + " eingeschaltet.",
+      text:"Live-Position wird bevorzugt angezeigt. Es wird nichts am Fahrzeug geschaltet." });
+  } else {
+    z.sicherung.spur = [];
+  }
+  speichern();
+}
+
+/* Ein Kameraereignis simulieren — so, wie es später vom Gerät käme. */
+const KAMERA_FAELLE = [
+  { k:"bremsung",   titel:"Starke Bremsung erkannt",
+    text:"Verzögerung über dem eingestellten Schwellwert. Aufnahme liegt im Gerät." },
+  { k:"erschuetterung", titel:"Erschütterung im Stillstand",
+    text:"Bewegung am stehenden Fahrzeug erkannt." },
+  { k:"unfall",     titel:"Unfallereignis erkannt",
+    text:"Starke Verzögerung und Aufprallmuster. Aufnahme liegt im Gerät." },
+  { k:"anfrage",    titel:"Bild auf Anforderung",
+    text:"Von der Dispo angefordert." }
+];
+function kameraEreignis(z, art){
+  const f = KAMERA_FAELLE.find(x => x.k === art) || KAMERA_FAELLE[0];
+  z.kamera = z.kamera || kameraStandard();
+  z.kamera.verbunden = true;
+  z.kamera.letzteMeldung = jetztIso();
+  const bild = fotoBild(f.titel + " · " + hhmm(jetztIso()),
+    art === "unfall" ? "#A3161D" : art === "bremsung" ? "#8A5200" : "#1B4C78");
+  z.kamera.letztesBild = bild;
+  z.kamera.ereignisse.unshift({ id:"ke"+Date.now(), zeit:jetztIso(), art,
+    titel:f.titel, text:f.text, bild, gesehen:false });
+  if (z.kamera.ereignisse.length > 20) z.kamera.ereignisse.length = 20;
+  if (art !== "anfrage") {
+    meldungAnlegen({ art:"kamera", auftragId:(laufenderAuftrag(z.id)||{}).id || null,
+      titel:"Kameraereignis bei " + z.kennzeichen + ": " + f.titel,
+      text:f.text + " Die Aufnahme bleibt intern und wird nicht an Auftraggeber freigegeben." });
+  }
+  speichern();
+}
+
+/* Geofence-Ereignis simulieren: Fahrzeug in eine Zone setzen oder
+   herausnehmen. Danach läuft die normale Automatik. */
+function fahrzeugSetzen(z, zielArt, auftrag){
+  const t = z.telematik = z.telematik || telematikStandard();
+  t.verbunden = true; t.gpsGueltig = true; t.signal = "gut";
+  t.letzteMeldung = jetztIso();
+  if (zielArt === "strecke") {
+    const o = ORTE.verden;
+    t.latitude = o.lat; t.longitude = o.lng; t.ort = "A27 Höhe Verden";
+    t.geschwindigkeit = 78; t.bewegung = true; t.zuendung = true;
+  } else {
+    const a = auftrag || laufenderAuftrag(z.id);
+    if (!a) return false;
+    const zone = zielArt === "abholung"
+      ? geofenceFuer(a.abhol.adresse, a.abhol.firma)
+      : geofenceFuer(a.liefer.adresse, a.liefer.firma);
+    if (!zone) return false;
+    t.latitude = zone.lat; t.longitude = zone.lng; t.ort = zone.name;
+    t.geschwindigkeit = 0; t.bewegung = false; t.zuendung = false;
+  }
+  automatikLauf();
+  ketteRechnen(); risikoRechnen(); alarmePruefen(); speichern();
+  return true;
+}
+
+/* ---------- Flotte live ---------- */
+function ansichtFlotte(){
+  let h = '<div class="leiste"><h2 style="font-size:22px">Flotte live</h2>' +
+    '<span class="tag">' + esc(anbieterSatz("karten")) + '</span></div>';
+  h += '<div class="hinweis">' + simMarke("Simuliert") +
+    ' Positionen, Geschwindigkeiten und Zustände stammen aus dieser Vorschau. ' +
+    'Die Karte ist schematisch — es ist kein Kartendienst angebunden. ' +
+    'Später tritt hier ein echter Kartenprovider an dieselbe Stelle.</div>';
+
+  /* Schematische Karte: die bekannten Orte als Raster, Fahrzeuge daneben.
+     Bewusst kein nachgebautes Straßenbild — das wäre eine Behauptung. */
+  const orte = ["bremen","hemelingen","verden","walsrode","delmenhorst"];
+  /* Jedes Fahrzeug steht an GENAU einem Ort: dem nächstgelegenen. Ein
+     Umkreis von einigen Kilometern trifft rund um Bremen mehrere Orte
+     gleichzeitig — dann stünde dasselbe Fahrzeug dreimal auf der Karte. */
+  const zuOrt = {};
+  orte.forEach(k => { zuOrt[k] = []; });
+  const ohneOrt = [];
+  D.zugmaschinen.forEach(z => {
+    const t = z.telematik || {};
+    if (!t.verbunden || typeof t.latitude !== "number") { ohneOrt.push(z); return; }
+    let bester = null, kuerzeste = Infinity;
+    orte.forEach(k => {
+      const d = luftlinieKm(t.latitude, t.longitude, ORTE[k].lat, ORTE[k].lng);
+      if (d != null && d < kuerzeste) { kuerzeste = d; bester = k; }
+    });
+    if (bester) zuOrt[bester].push(z); else ohneOrt.push(z);
+  });
+  h += '<div class="karte"><h2>Übersicht</h2><div class="flottenkarte">';
+  orte.forEach(k => {
+    h += '<div class="fk-ort"><h3>' + esc(ORTE[k].wort) + '</h3>' +
+      (zuOrt[k].length
+        ? zuOrt[k].map(z => fahrzeugPunkt(z)).join("")
+        : '<p class="fk-leer">kein Fahrzeug</p>') + '</div>';
+  });
+  if (ohneOrt.length)
+    h += '<div class="fk-ort"><h3>Ohne Ortung</h3>' +
+      ohneOrt.map(z => fahrzeugPunkt(z)).join("") + '</div>';
+  h += '</div><p class="sim-satz">Jedes Fahrzeug steht beim nächstgelegenen bekannten Ort. ' +
+       'Das ist eine Einordnung, keine Karte — Entfernungen sind echt gerechnet, ' +
+       'der Straßenverlauf ist es nicht.</p></div>';
+
+  h += '<div class="karte"><h2>Fahrzeuge</h2>';
+  D.zugmaschinen.forEach(z => { h += flottenZeile(z); });
+  h += '</div>';
+  return h;
+}
+
+function fahrzeugPunkt(z){
+  const t = z.telematik || {};
+  const dieb = z.sicherung && z.sicherung.diebstahlModus;
+  return '<button class="fk-fahrzeug' + (dieb ? " dieb" : "") + '" data-tun="fahrzeugDetail" ' +
+    'data-wert="' + esc(z.id) + '"><b>' + esc(z.kennzeichen) + '</b>' +
+    '<span>' + (t.bewegung ? esc(String(t.geschwindigkeit)) + " km/h" : "steht") + '</span></button>';
+}
+
+function flottenZeile(z){
+  const t = z.telematik || {};
+  const a = laufenderAuftrag(z.id);
+  const auff = fahrzeugAuffaellig(z);
+  const frisch = zeitstempelPruefen(t.letzteMeldung, "Ortungszeitpunkt").ok;
+  const dieb = z.sicherung && z.sicherung.diebstahlModus;
+  const p = a ? prognose(a) : null;
+
+  let h = '<div class="fz-zeile' + (dieb ? " dieb" : "") + '">' +
+    '<div class="fz-kopf">' +
+      '<span class="fz-kennz">' + esc(z.kennzeichen) + '</span>' +
+      '<span class="marke ' + (!t.verbunden ? "m-grau" : frisch ? "m-gruen" : "m-gelb") + '">' +
+        (!t.verbunden ? "Nicht verbunden" : frisch ? "Ortung aktuell" : "Ortung veraltet") + '</span>' +
+      (dieb ? '<span class="marke m-rot">Diebstahl-Modus</span>' : '') +
+      (z.sicherung && z.sicherung.wegfahrsperre !== "aus"
+        ? '<span class="marke ' + (z.sicherung.wegfahrsperre === "aktiv" ? "m-rot" :
+            z.sicherung.wegfahrsperre === "fehler" ? "m-gelb" : "m-marine") + '">Wegfahrsperre ' +
+          esc(z.sicherung.wegfahrsperre) + '</span>' : '') +
+      '<button class="btn" data-tun="fahrzeugDetail" data-wert="' + esc(z.id) +
+        '" style="margin-left:auto">Fahrzeug ansehen</button>' +
+    '</div>' +
+    '<div class="fz-werte">' +
+      '<span><i>Position</i>' + esc(t.ort || "—") + '</span>' +
+      '<span><i>Tempo</i>' + (t.verbunden ? esc(String(t.geschwindigkeit||0)) + " km/h" : "—") + '</span>' +
+      '<span><i>Zündung</i>' + (t.verbunden ? (t.zuendung ? "Ein" : "Aus") : "—") + '</span>' +
+      '<span><i>Letzte Meldung</i>' + (t.letzteMeldung ? esc(hhmm(t.letzteMeldung)) + " Uhr" : "—") + '</span>' +
+      '<span><i>Aktueller Auftrag</i>' + (a ? esc(a.nummer + " · " + (a.kunde||"—")) : "keiner offen") + '</span>' +
+      '<span><i>Nächstes Ziel</i>' + (a ? esc(a.ablauf.abholung ? a.liefer.firma : a.abhol.firma) : "—") + '</span>' +
+      '<span><i>ETA</i>' + (p && p.iso ? esc(hhmm(p.iso)) + " Uhr" : "—") + '</span>' +
+    '</div>';
+  if (auff.length)
+    h += '<ul class="fz-auff">' + auff.map(x =>
+      '<li><b>' + esc(x.wort) + '</b> — ' + esc(x.satz) + '</li>').join("") + '</ul>';
+  return h + '</div>';
+}
+
+/* ---------- Fahrzeugdetail ---------- */
+function ansichtFahrzeug(){
+  const z = zugVon(U.fahrzeugId);
+  if (!z) return '<div class="karte"><p class="leer">Fahrzeug nicht gefunden.</p></div>';
+  const t = z.telematik || {};
+  const k = z.kamera || kameraStandard();
+  const sich = z.sicherung || sicherungStandard();
+  const a = laufenderAuftrag(z.id);
+  const frisch = zeitstempelPruefen(t.letzteMeldung, "Ortungszeitpunkt").ok;
+  const erlaubt = wegfahrsperreErlaubt(z);
+
+  let h = '<div class="leiste"><button class="btn" data-tun="zurueckFlotte">← Zurück zu: Flotte live</button>' +
+    '<h2 style="font-size:22px">' + esc(z.kennzeichen) + '</h2>' +
+    (sich.diebstahlModus ? '<span class="marke m-rot" style="margin-left:auto">Diebstahl-Modus</span>' : '') +
+    '</div>';
+
+  if (sich.diebstahlModus)
+    h += '<div class="warnkasten"><b>Diebstahl-Modus ist eingeschaltet.</b> Die Position wird ' +
+         'bevorzugt angezeigt und mitgeschrieben. Am Fahrzeug wird dadurch nichts geschaltet.</div>';
+
+  h += '<div class="karte"><h2>Telematik</h2><div class="paar">' +
+    zeile("Gerät", (t.geraet || "—") + " · " + anbieterSatz("telematik")) +
+    zeile("Verbindung", t.verbunden ? "Verbunden" : "Nicht verbunden") +
+    zeile("GPS", !t.verbunden ? "—" : (t.gpsGueltig ? (frisch ? "Aktuell" : "Veraltet") : "Kein Fix")) +
+    zeile("Letzte Meldung", t.letzteMeldung ? hhmm(t.letzteMeldung) + " Uhr" : "—") +
+    zeile("Position", t.ort || "—") +
+    zeile("Geschwindigkeit", t.verbunden ? (t.geschwindigkeit||0) + " km/h" : "—") +
+    zeile("Zündung", t.verbunden ? (t.zuendung ? "Ein" : "Aus") : "—") +
+    zeile("Signal", t.signal || "—") +
+    zeile("Stromversorgung", t.stromversorgung ? "Bordnetz" : "Stützbatterie") +
+    zeile("Störsender", t.jamming ? "vermutet" : "nichts erkannt") +
+    zeile("Manipulation", t.manipulation ? "gemeldet" : "nichts gemeldet") +
+    '</div>' +
+    '<p class="sim-satz">' + simMarke("Simuliert") + ' Es besteht keine Verbindung zu einem ' +
+    'echten Gerät. Die Felder entsprechen dem, was ein FMC650 später liefern würde.</p></div>';
+
+  h += '<div class="karte"><h2>Lkw-Vorgaben für das Routing</h2><div class="paar">' +
+    zeile("Höhe", (z.routing||{}).hoeheM + " m") +
+    zeile("Breite", (z.routing||{}).breiteM + " m") +
+    zeile("Länge", (z.routing||{}).laengeM + " m") +
+    zeile("Gewicht", (z.routing||{}).gewichtT + " t") +
+    zeile("Achslast", (z.routing||{}).achslastT ? (z.routing.achslastT + " t") : "nicht hinterlegt") +
+    zeile("Gefahrgut", (z.routing||{}).gefahrgut ? "ja" : "nein") +
+    '</div><p class="sim-satz">Diese Angaben gehen später an den Lkw-Routingdienst, damit ' +
+    'Brücken, Tunnel und Fahrverbote berücksichtigt werden. Heute rechnet ' +
+    esc(anbieterSatz("routing")) + ' damit nur einen Zuschlag.</p></div>';
+
+  h += '<div class="karte"><h2>Aktueller Auftrag</h2>';
+  if (!a) h += '<p style="color:#47525D">Für heute ist diesem Fahrzeug kein offener Auftrag zugeordnet.</p>';
+  else {
+    const p = prognose(a);
+    h += '<div class="paar">' +
+      zeile("Auftrag", a.nummer + " · " + (a.kunde || "—")) +
+      zeile("Zustand", (STATUS_WOERTER[transportStatus(a)]||{}).intern || "—") +
+      zeile("Nächstes Ziel", a.ablauf.abholung ? a.liefer.firma : a.abhol.firma) +
+      zeile("ETA", p.iso ? hhmm(p.iso) + " Uhr" : "nicht belastbar bestimmbar") +
+      '</div><div class="btn-reihe" style="margin-top:10px">' +
+      '<button class="btn" data-tun="oeffnenAus" data-wert="'+esc(a.id)+'" data-aus="flotte">Auftrag öffnen</button>' +
+      '</div>';
+  }
+  h += '</div>';
+
+  /* Kamera */
+  h += '<div class="karte"><h2>Kamera</h2><div class="paar">' +
+    zeile("Gerät", ANBIETER.kamera.geraet + " · " + anbieterSatz("kamera")) +
+    zeile("Verbindung", k.verbunden ? "Verbunden" : "Nicht verbunden") +
+    zeile("Letzte Meldung", k.letzteMeldung ? hhmm(k.letzteMeldung) + " Uhr" : "—") +
+    '</div>';
+  if (k.letztesBild)
+    h += '<img class="foto" style="margin-top:10px" src="'+esc(k.letztesBild)+'" alt="Letztes Kamerabild" ' +
+         'data-tun="bild" data-wert="Letztes Kamerabild">';
+  h += '<div class="btn-reihe" style="margin-top:10px">' +
+    '<button class="btn" data-tun="kamBild" data-wert="'+esc(z.id)+'">Neues Bild anfordern (Demo)</button>' +
+    '<button class="btn" data-tun="kamEreignis" data-wert="'+esc(z.id)+'" data-art="bremsung">Ereignis: starke Bremsung</button>' +
+    '<button class="btn" data-tun="kamEreignis" data-wert="'+esc(z.id)+'" data-art="erschuetterung">Ereignis: Erschütterung</button>' +
+    '<button class="btn gefahr" data-tun="kamEreignis" data-wert="'+esc(z.id)+'" data-art="unfall">Ereignis: Unfall</button>' +
+    '</div>';
+  if (k.ereignisse.length) {
+    h += '<h3 style="margin-top:14px">Ereignisse</h3><div class="kam-liste">' +
+      k.ereignisse.map(e =>
+        '<div class="kam-ereignis' + (e.gesehen ? " gesehen" : "") + '">' +
+        '<div class="kam-kopf"><b>' + esc(e.titel) + '</b>' +
+          '<span class="neben">' + esc(tagKurz(tagVon(e.zeit))) + ' ' + esc(hhmm(e.zeit)) + ' Uhr</span>' +
+          (e.gesehen ? '<span class="marke m-grau">Gesehen</span>'
+                     : '<button class="btn" data-tun="kamGesehen" data-wert="'+esc(z.id)+'" data-art="'+esc(e.id)+'">Gesehen</button>') +
+        '</div>' +
+        '<p>' + esc(e.text) + '</p>' +
+        (e.bild ? '<img class="foto" src="'+esc(e.bild)+'" alt="'+esc(e.titel)+'" data-tun="bild" data-wert="'+esc(e.titel)+'">' : '') +
+        '</div>').join("") + '</div>';
+  }
+  h += '<p class="sim-satz">' + simMarke("Simuliert") + ' Es wird kein Bild und kein Video ' +
+    'übertragen. <b>Kameraaufnahmen bleiben intern</b> und gelangen nie automatisch in einen ' +
+    'Auftraggeber-Link — dort erscheinen nur Bilder, die ausdrücklich für den Auftrag ' +
+    'freigegeben wurden.</p></div>';
+
+  /* Sicherheit */
+  h += '<div class="karte"><h2>Fahrzeugsicherheit</h2>';
+  const auff = fahrzeugAuffaellig(z);
+  if (auff.length)
+    h += '<ul class="fz-auff" style="margin-bottom:12px">' + auff.map(x =>
+      '<li><b>' + esc(x.wort) + '</b> — ' + esc(x.satz) + '</li>').join("") + '</ul>';
+  else
+    h += '<p style="color:#47525D">Keine Auffälligkeit.</p>';
+
+  h += '<div class="paar">' +
+    '<div class="zeile"><div class="was">Wegfahrsperre</div><div class="wert">' +
+      '<span class="marke ' + (sich.wegfahrsperre === "aktiv" ? "m-rot" :
+        sich.wegfahrsperre === "vorgemerkt" ? "m-marine" :
+        sich.wegfahrsperre === "fehler" ? "m-gelb" : "m-grau") + '">' +
+      esc({aus:"Aus", vorgemerkt:"Vorgemerkt", aktiv:"Aktiv", fehler:"Fehler"}[sich.wegfahrsperre] || "Aus") +
+      '</span></div></div>' +
+    zeile("Vorgemerkt seit", sich.vorgemerktAm ? hhmm(sich.vorgemerktAm) + " Uhr" : "—") +
+    zeile("Aktiv seit", sich.aktivSeit ? hhmm(sich.aktivSeit) + " Uhr" : "—") +
+    '</div>';
+
+  h += '<div class="' + (erlaubt.ok ? "hinweis" : "warnkasten") + '" style="margin-top:10px">' +
+       esc(erlaubt.grund) + '</div>';
+
+  h += '<div class="btn-reihe" style="margin-top:10px">' +
+    (sich.wegfahrsperre === "aus"
+      ? '<button class="btn" data-tun="sperreVormerken" data-wert="'+esc(z.id)+'">Wegfahrsperre vormerken</button>'
+      : '') +
+    (sich.wegfahrsperre === "vorgemerkt" || sich.wegfahrsperre === "fehler"
+      ? '<button class="btn gefahr" data-tun="sperreAktivieren" data-wert="'+esc(z.id)+'">Jetzt aktivieren</button>'
+      : '') +
+    (sich.wegfahrsperre !== "aus"
+      ? '<button class="btn" data-tun="sperreLoesen" data-wert="'+esc(z.id)+'">Aufheben</button>'
+      : '') +
+    '<button class="btn' + (sich.diebstahlModus ? '' : ' gefahr') + '" data-tun="diebstahl" data-wert="'+esc(z.id)+'">' +
+      (sich.diebstahlModus ? "Diebstahl-Modus beenden" : "Diebstahl-Modus") + '</button>' +
+    '</div>';
+
+  h += '<p class="sim-satz"><b>TWISTLOCK schaltet niemals einen laufenden Motor ab.</b> ' +
+    'Es gibt keine Bedienung „Motor jetzt ausschalten“. Die Wegfahrsperre lässt sich nur ' +
+    'vormerken; aktiv wird sie erst bei 0 km/h und ausgeschalteter Zündung, und auch dann ' +
+    'erst nach einer zweiten Bestätigung. ' + simMarke("Simuliert") + ' Es ist kein Relais ' +
+    'angeschlossen.</p>';
+
+  if (sich.diebstahlModus && sich.spur.length) {
+    h += '<h3 style="margin-top:14px">Positionsverlauf ' + simMarke("Demo") + '</h3>' +
+      '<ul class="verlauf">' + sich.spur.map(s =>
+        '<li><b>' + esc(hhmm(s.zeit)) + ' Uhr</b> — ' + esc(s.ort) + ', ' +
+        esc(String(Math.round(s.tempo))) + ' km/h</li>').join("") + '</ul>';
+  }
+  h += '</div>';
+
+  /* Demo-Steuerung */
+  h += '<div class="karte"><h2>Lage simulieren ' + simMarke("Demo") + '</h2>' +
+    '<p style="margin-top:0;color:#47525D">Damit sich die Automatik erleben lässt: das Fahrzeug ' +
+    'in eine Zone setzen oder auf die Strecke. Danach läuft dieselbe Erkennung wie im Betrieb.</p>' +
+    '<div class="btn-reihe">' +
+    '<button class="btn" data-tun="zoneSetzen" data-wert="'+esc(z.id)+'" data-art="abholung">In die Abholzone</button>' +
+    '<button class="btn" data-tun="zoneSetzen" data-wert="'+esc(z.id)+'" data-art="kunde">In die Kundenzone</button>' +
+    '<button class="btn" data-tun="zoneSetzen" data-wert="'+esc(z.id)+'" data-art="strecke">Auf die Strecke</button>' +
+    '</div></div>';
+  return h;
+}
+
+/* ===========================================================
    11 · Dialoge
    =========================================================== */
 const dlg = document.getElementById("dlg");
@@ -5639,6 +6098,111 @@ document.addEventListener("click", e => {
     }
     if (tun === "bild") { bildZeigen(wert || "Foto", el.getAttribute("src")); return; }
     return;                       // alles andere ist hier nicht bedienbar
+  }
+
+  /* ---- Fahrzeuge, Kamera, Sicherheit ---- */
+  if (tun === "fahrzeugDetail") {
+    U.fahrzeugId = wert; U.bereich = "fahrzeug"; U.notiz = null;
+    zeichne(); window.scrollTo(0,0); return;
+  }
+  if (tun === "zurueckFlotte") { U.bereich = "flotte"; U.notiz = null; zeichne(); return; }
+  if (tun === "kamBild") {
+    const z = zugVon(wert); if (!z) return;
+    kameraEreignis(z, "anfrage");
+    U.notiz = "Neues Bild angefordert. " +
+      "Demo – es wurde nichts übertragen; das Bild entsteht in dieser Vorschau.";
+    zeichne(); return;
+  }
+  if (tun === "kamEreignis") {
+    const z = zugVon(wert); if (!z) return;
+    kameraEreignis(z, art);
+    U.notiz = "Kameraereignis simuliert. Es steht als Meldung in der Dispo und bleibt intern.";
+    zeichne(); return;
+  }
+  if (tun === "kamGesehen") {
+    const z = zugVon(wert); if (!z) return;
+    const e = (z.kamera.ereignisse||[]).find(x => x.id === art);
+    if (e) { e.gesehen = true; speichern(); }
+    zeichne(); return;
+  }
+  if (tun === "sperreVormerken") {
+    const z = zugVon(wert); if (!z) return;
+    const pr = wegfahrsperreErlaubt(z);
+    frage("Wegfahrsperre vormerken?",
+      "<p>Vormerken schaltet nichts am Fahrzeug. Es hält nur fest, dass die Sperre " +
+      "greifen soll, sobald das sicher möglich ist.</p>" +
+      "<p><b>Aktuelle Lage:</b> " + esc(pr.grund) + "</p>" +
+      "<p>TWISTLOCK schaltet niemals einen laufenden Motor ab.</p>",
+      [{ wort:"Abbrechen" },
+       { wort:"Vormerken", haupt:true, tun:() => {
+           wegfahrsperreVormerken(z);
+           U.notiz = "Wegfahrsperre vorgemerkt. Aktiv wird sie erst bei Stillstand und Zündung aus.";
+           zeichne();
+         } }]);
+    return;
+  }
+  if (tun === "sperreAktivieren") {
+    const z = zugVon(wert); if (!z) return;
+    const pr = wegfahrsperreErlaubt(z);
+    if (!pr.ok) {
+      /* Kein Weg vorbei: bei fahrendem Fahrzeug gibt es hier keine
+         Schaltfläche, die trotzdem aktiviert. */
+      frage("Aktivierung nicht möglich",
+        "<p>" + esc(pr.grund) + "</p>" +
+        "<p>Die Wegfahrsperre bleibt vorgemerkt. Sobald das Fahrzeug steht und die Zündung " +
+        "aus ist, lässt sie sich hier aktivieren.</p>",
+        [{ wort:"Verstanden", haupt:true }]);
+      z.sicherung.wegfahrsperre = "vorgemerkt";
+      z.sicherung.fehlerGrund = pr.grund;
+      speichern(); zeichne(); return;
+    }
+    frage("Wegfahrsperre jetzt aktivieren?",
+      "<p>Das Fahrzeug steht, die Zündung ist aus. Die Sperre verhindert den nächsten Start.</p>" +
+      "<p><b>Zweite Bestätigung:</b> Das Fahrzeug lässt sich danach erst wieder starten, " +
+      "wenn die Sperre hier aufgehoben wird.</p>" +
+      "<p>" + '<span class="sim">Simuliert</span>' + " Es ist kein Relais angeschlossen.</p>",
+      [{ wort:"Abbrechen" },
+       { wort:"Jetzt aktivieren", gefahr:true, tun:() => {
+           const erg = wegfahrsperreAktivieren(z);
+           U.notiz = erg.ok
+             ? "Wegfahrsperre aktiv (simuliert)."
+             : "Nicht aktiviert: " + erg.grund;
+           zeichne();
+         } }]);
+    return;
+  }
+  if (tun === "sperreLoesen") {
+    const z = zugVon(wert); if (!z) return;
+    wegfahrsperreLoesen(z);
+    U.notiz = "Wegfahrsperre aufgehoben.";
+    zeichne(); return;
+  }
+  if (tun === "diebstahl") {
+    const z = zugVon(wert); if (!z) return;
+    const an = !(z.sicherung && z.sicherung.diebstahlModus);
+    if (!an) { diebstahlModus(z, false); U.notiz = "Diebstahl-Modus beendet."; zeichne(); return; }
+    frage("Diebstahl-Modus einschalten?",
+      "<p>Das Fahrzeug wird deutlich markiert, die Position bevorzugt angezeigt und " +
+      "mitgeschrieben.</p>" +
+      "<p><b>Es wird nichts am Fahrzeug geschaltet.</b> Der Motor läuft unberührt weiter. " +
+      "Eine Wegfahrsperre bleibt eine eigene Entscheidung und greift auch dann erst im " +
+      "Stillstand.</p>",
+      [{ wort:"Abbrechen" },
+       { wort:"Einschalten", gefahr:true, tun:() => {
+           diebstahlModus(z, true);
+           U.notiz = "Diebstahl-Modus eingeschaltet. Am Fahrzeug wurde nichts geschaltet.";
+           zeichne();
+         } }]);
+    return;
+  }
+  if (tun === "zoneSetzen") {
+    const z = zugVon(wert); if (!z) return;
+    const ok = fahrzeugSetzen(z, art);
+    U.notiz = ok
+      ? "Lage gesetzt. Die Automatik hat daraus abgeleitet, was sicher messbar ist — " +
+        "alles andere steht als Vorschlag am Auftrag."
+      : "Dafür fehlt eine hinterlegte Zone oder ein offener Auftrag.";
+    zeichne(); return;
   }
 
   /* ---- Dispo-Assistent ---- */
