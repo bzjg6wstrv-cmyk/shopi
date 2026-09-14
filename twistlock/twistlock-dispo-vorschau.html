@@ -1148,9 +1148,12 @@ function laden(){
 function speicherNotizZeichnen(){
   const n = document.getElementById("speicher-notiz");
   if (speicherGeht) {
-    n.innerHTML = '<b>Simuliert:</b> Ortung, Fahrzeiten, Nummernerkennung, Freigabe an den Fahrer, ' +
-      'Anruf und jeder Versand. <b>Echt gerechnet:</b> Reserve und Farbe, die Alarmschwelle, ' +
-      'Entladezeit und Folgeankunft, Prüfziffer der Containernummer, Doppelbelegungen. ' +
+    n.innerHTML = '<b>Simuliert:</b> GPS und Telematik (kein Gerät verbunden), Verkehr und ' +
+      'Lkw-Routing, FMS/CAN, DashCam, Foto- und Texterkennung, lernende Prognose, ' +
+      'Tagesoptimierung, Wegfahrsperre, Freigabe an den Fahrer, Anruf und jeder Versand. ' +
+      '<b>Echt gerechnet:</b> Reserve und Farbe, die Alarmschwelle, Entladezeit und ' +
+      'Folgeankunft, Tourketten und Doppelbelegungen, Entfernungen aus Koordinaten, ' +
+      'Prüfziffer der Containernummer nach ISO 6346, Mittelwerte der Erfahrungsdaten. ' +
       'Eingaben werden in diesem Browser gespeichert (localStorage).';
   } else {
     n.innerHTML = '<b>Speichern nicht möglich:</b> ' + esc(speicherGrund) +
@@ -1976,6 +1979,10 @@ function vortagBeladen(a){
 const FRUEH_AB = "07:30";
 function fruehterminHinweis(a){
   if (vortagBeladen(a)) return null;
+  /* An einem abgeschlossenen Transport ist nichts mehr zu prüfen —
+     der Hinweis wäre nur noch Lärm in der Liste. */
+  if (a.ablauf && a.ablauf.abgabe) return null;
+  if (a.storniert) return null;
   const m = massgeblich(a);
   const zeit = (a.abhol && a.abhol.zeit) || m.zeit;
   if (!zeit || zeit >= FRUEH_AB) return null;
