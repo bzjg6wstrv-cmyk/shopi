@@ -15,9 +15,16 @@ with sync_playwright() as p:
     pg.goto(URL, wait_until="load"); pg.wait_for_timeout(600)
 
     print("\nA) Startseite Tagesplan")
-    pr("sieben Hauptbereiche vorhanden (Smart Dispo und Flotte ergaenzt)",
-       pg.eval_on_selector_all('#navi button','e=>e.map(x=>x.textContent.replace(/\\d+$/,"").trim())')
-       == ["Tagesplan","Wochenplan","Aufträge","Smart Dispo","Flotte live","Stammdaten","Meldungen"])
+    pr("vier Hauptbereiche fuer den Tagesbetrieb",
+       pg.eval_on_selector_all('#navi > button','e=>e.map(x=>x.textContent.replace(/\\d+$/,"").trim())')
+       == ["Tagesplan","Aufträge","Fahrer & Fahrzeuge","Meldungen"],
+       pg.eval_on_selector_all('#navi > button','e=>e.map(x=>x.textContent.trim())'))
+    pr("Zusatzbereiche sind vorhanden, aber eingeklappt",
+       pg.locator("#navi details.navi-weiter").count() == 1 and
+       pg.evaluate("!document.querySelector('#navi details.navi-weiter').open") and
+       pg.locator("#navi details.navi-weiter button").count() == 3)
+    pr("Wochenplanung ist vom Tagesplan aus erreichbar",
+       pg.locator('[data-tun="planAnsicht"][data-wert="woche"]').count() == 1)
     pr("Tabelle wird angezeigt", pg.locator("table.tabelle").count() == 1)
     pr("Schaltflaeche 'Neuer Auftrag'", pg.locator('[data-tun="neu"]').count() >= 1)
     pr("kein horizontales Scrollen der Seite",

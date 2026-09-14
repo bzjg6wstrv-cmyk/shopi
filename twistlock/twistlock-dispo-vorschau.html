@@ -376,6 +376,21 @@ dialog::backdrop{background:rgba(21,32,43,.55)}
 .ng-ziel{font-size:18px;font-weight:600}
 .ng-cont{font-size:16px;color:var(--soft)}
 
+/* Navigation: Hauptbereiche und eingeklappte Zusatzbereiche */
+.navi-weiter{margin-top:10px;border-top:2px solid var(--linie2);padding-top:10px}
+.navi-weiter>summary{cursor:pointer;font-size:15px;font-weight:700;padding:8px 6px;
+  min-height:40px;display:flex;align-items:center;gap:8px;color:var(--soft)}
+.navi-weiter>summary:hover{color:var(--ink)}
+.navi-weiter[open]>summary{color:var(--ink)}
+.navi-weiter .navi-hinweis{font-size:13px;color:var(--soft);margin:6px 4px 0;line-height:1.35}
+.planwahl{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+/* Eingeklappte Zusatzkarten im Auftragsdetail */
+.karte details.zusatz>summary{cursor:pointer;font-size:20px;font-weight:700;
+  padding:4px 0;min-height:40px;display:flex;align-items:center;gap:10px}
+.karte details.zusatz>summary:hover{text-decoration:underline}
+.karte details.zusatz>summary .sim{font-size:13px}
+.karte details.zusatz[open]>summary{margin-bottom:10px}
+
 /* Freigabelinks in der Dispo */
 .link-kasten{
   border:1px solid var(--linie2); border-radius:var(--radius);
@@ -2859,14 +2874,19 @@ const simMarke = txt => '<span class="sim">'+esc(txt||"Simuliert")+'</span>';
 /* ===========================================================
    10 · Zeichnen
    =========================================================== */
+/* Vier Bereiche für die tägliche Arbeit. Alles Weitere bleibt vorhanden,
+   steht aber gebündelt unter „Weitere Funktionen – Vorschau“ — es gehört
+   nicht in den Weg, wenn eine Dispo einen Tag fährt. */
 const BEREICHE = [
   { k:"tagesplan",  wort:"Tagesplan" },
-  { k:"wochenplan", wort:"Wochenplan" },
   { k:"auftraege",  wort:"Aufträge" },
-  { k:"smart",      wort:"Smart Dispo" },
-  { k:"flotte",     wort:"Flotte live" },
-  { k:"stamm",      wort:"Stammdaten" },
+  { k:"stamm",      wort:"Fahrer & Fahrzeuge" },
   { k:"meldungen",  wort:"Meldungen" }
+];
+const BEREICHE_WEITER = [
+  { k:"smart",      wort:"Dispo-Assistent" },
+  { k:"flotte",     wort:"Flotte live" },
+  { k:"import",     wort:"Auftrag importieren" }
 ];
 
 /* ===========================================================
@@ -3280,17 +3300,34 @@ function zeichne(){
 }
 function naviZeichnen(){
   const offeneMeldungen = D.meldungen.filter(m => !m.gesehen).length;
-  document.getElementById("navi").innerHTML = BEREICHE.map(b => {
+  /* Der Wochenplan ist kein eigener Bereich mehr, sondern eine Ansicht
+     des Tagesplans — die Markierung gehört deshalb dorthin. */
+  const zuTagesplan = ["tagesplan", "wochenplan"];
+  const knopf = b => {
     /* Detail und Formular gehören optisch zu dem Bereich, aus dem sie
        geöffnet wurden — sonst springt die Markierung willkürlich. */
-    const aktiv = (U.bereich === b.k) ||
-                  ((U.bereich === "detail" || U.bereich === "formular") &&
-                   b.k === (U.vorher || "tagesplan"));
+    const herkunft = (U.bereich === "detail" || U.bereich === "formular")
+      ? (U.vorher || "tagesplan") : U.bereich;
+    const aktiv = b.k === "tagesplan"
+      ? zuTagesplan.indexOf(herkunft) >= 0
+      : herkunft === b.k;
     const zahl = (b.k === "meldungen" && offeneMeldungen)
       ? '<span class="zahl">'+offeneMeldungen+'</span>' : "";
     return '<button data-tun="bereich" data-wert="'+b.k+'"'+
            (aktiv ? ' aria-current="page"' : '')+'>'+esc(b.wort)+zahl+'</button>';
-  }).join("");
+  };
+  const weiterAktiv = BEREICHE_WEITER.some(b => b.k === U.bereich) ||
+                      U.bereich === "fahrzeug" ||
+                      ((U.bereich === "detail" || U.bereich === "formular") &&
+                       BEREICHE_WEITER.some(b => b.k === U.vorher));
+  document.getElementById("navi").innerHTML =
+    BEREICHE.map(knopf).join("") +
+    '<details class="navi-weiter"' + (weiterAktiv || U.weiterOffen ? " open" : "") + '>' +
+    '<summary>Weitere Funktionen <span class="sim">Vorschau</span></summary>' +
+    BEREICHE_WEITER.map(knopf).join("") +
+    '<p class="navi-hinweis">Diese Bereiche zeigen, was TWISTLOCK später ' +
+    'können soll. Sie sind bedienbar, aber simuliert.</p>' +
+    '</details>';
 }
 
 /* ---------- Tagesplan ---------- */
@@ -3315,7 +3352,8 @@ function ansichtTagesplan(){
     return new Date(mx) - new Date(my);
   });
 
-  let h = '<div class="leiste">' +
+  let h = planUmschalter("tag");
+  h += '<div class="leiste">' +
     '<button class="btn" data-tun="tag" data-wert="heute">Heute</button>' +
     '<button class="btn" data-tun="tag" data-wert="morgen">Morgen</button>' +
     '<label for="tagwahl" style="font-size:15px;font-weight:600">Datum</label>' +
@@ -3436,6 +3474,19 @@ function smartLeiste(tag, alle){
     '</div>';
 }
 
+/* Tag und Woche sind zwei Ansichten derselben Planung — deshalb ein
+   Umschalter im Tagesplan statt zweier Hauptbereiche. Der Bereich
+   „wochenplan“ bleibt vollständig erhalten, er wird nur von hier aus
+   erreicht. */
+function planUmschalter(welche){
+  const knopf = (k, wort) =>
+    '<button class="btn' + (welche === k ? " haupt" : "") + '" data-tun="planAnsicht" ' +
+    'data-wert="' + k + '"' + (welche === k ? ' aria-current="page"' : '') + '>' +
+    esc(wort) + '</button>';
+  return '<div class="planwahl" role="group" aria-label="Planungsansicht">' +
+    knopf("tag", "Tagesplan") + knopf("woche", "Wochenplanung") + '</div>';
+}
+
 function zahlFeld(n, wort, achtung){
   return '<div class="zahl-feld'+(achtung ? ' achtung' : '')+'">' +
          '<div class="gross">'+n+'</div><div class="wort">'+esc(wort)+'</div></div>';
@@ -3480,7 +3531,8 @@ function ansichtWochenplan(){
   const tage = [];
   for (let i = 0; i < 7; i++) tage.push(tagPlusVon(start, i));
 
-  let h = '<div class="leiste">' +
+  let h = planUmschalter("woche");
+  h += '<div class="leiste">' +
     '<button class="btn" data-tun="wocheZurueck">← Vorige Woche</button>' +
     '<button class="btn" data-tun="wocheHeute">Diese Woche</button>' +
     '<button class="btn" data-tun="wocheVor">Nächste Woche →</button>' +
@@ -3881,7 +3933,8 @@ function ansichtDetail(){
     fotoFeld("Abholfoto", a.fotos.abholung) + fotoFeld("Ablieferfoto", a.fotos.abgabe) +
     '</div><p style="margin-top:8px;color:#47525D;font-size:15px">' + simMarke("Simuliert") +
     ' Demo-Bilder, keine Kamera und keine Nummernerkennung.</p>' +
-    '<h3 style="margin-top:14px">Containerfoto auswerten ' + simMarke("Foto-KI – Demo") + '</h3>' +
+    '<details class="zusatz" style="margin-top:12px">' +
+    '<summary>Containerfoto auswerten ' + simMarke("Foto-KI – Demo") + '</summary>' +
     '<p style="color:#47525D;font-size:15px">Die Erkennung liefert immer eine Sicherheit mit. ' +
     'Ist sie zu niedrig oder stimmt die Prüfziffer nicht, wird nichts bestätigt — dann liest ' +
     'der Fahrer ab.</p>' +
@@ -3890,7 +3943,7 @@ function ansichtDetail(){
     '<button class="btn" data-tun="fotoKi" data-art="abweichung">Foto: andere Nummer</button>' +
     '<button class="btn" data-tun="fotoKi" data-art="unsicher">Foto: unsichere Erkennung</button>' +
     '<button class="btn" data-tun="fotoKi" data-art="unlesbar">Foto: unlesbar</button>' +
-    '</div></div>';
+    '</div></details></div>';
 
   /* Dokumente */
   h += '<div class="karte"><h2>Dokumente</h2>';
@@ -4028,7 +4081,8 @@ function karteRouteEta(a){
   const g = datenGuete(a);
   const auto = automatisierungsGrad(a);
 
-  let h = '<div class="karte"><h2>Route &amp; ETA</h2>';
+  let h = "";
+  const fertig = (inhalt) => zusatzKarte("Route & ETA", inhalt, "Simuliert", false);
 
   if (!t || !t.verbunden) {
     h += '<p style="color:#47525D">Für ' +
@@ -4036,8 +4090,8 @@ function karteRouteEta(a){
       'Ohne Position lässt sich keine Reststrecke bestimmen; es gilt die Planung.</p>';
     h += '<div class="paar" style="margin-top:10px">' +
       zeile("Automatisierung", auto.wort) +
-      zeile("Routing", anbieterSatz("routing")) + '</div></div>';
-    return h;
+      zeile("Routing", anbieterSatz("routing")) + '</div>';
+    return fertig(h);
   }
 
   /* Wohin geht es als Nächstes? Vor der Abholung zur Abholstelle,
@@ -4118,7 +4172,7 @@ function karteRouteEta(a){
     h += '<p>Für diesen Auftraggeber liegen noch zu wenige eigene Standzeiten vor – ' +
          'es wird mit dem Planwert gerechnet.</p>';
   h += '</div>';
-  return h + '</div>';
+  return fertig(h);
 }
 
 /* ---------- Automatisierung, Vorschläge und Korrektur ---------- */
@@ -4127,8 +4181,7 @@ function karteAutomatik(a){
   const st = transportStatus(a);
   const offen = (a.vorschlaege || []).filter(x => !x.erledigt);
 
-  let h = '<div class="karte"><h2>Automatischer Status</h2>' +
-    '<div class="paar">' +
+  let h = '<div class="paar">' +
     '<div class="zeile"><div class="was">Automatisierung</div><div class="wert">' +
       '<span class="marke ' + auto.klasse + '">' + esc(auto.wort) + '</span></div></div>' +
     zeile("Aktueller Zustand", (STATUS_WOERTER[st]||{}).intern || st) +
@@ -4159,7 +4212,20 @@ function karteAutomatik(a){
     '<button class="btn" data-tun="automatikSchalten">' +
       (a.automatik && a.automatik.an === false ? "Automatik wieder einschalten" : "Automatik ausschalten") +
     '</button></div>';
-  return h + '</div>';
+  /* Offene Vorschläge warten auf eine Entscheidung — die darf nicht hinter
+     einem zugeklappten Titel verschwinden. Sonst bleibt die Karte zu. */
+  return zusatzKarte("Automatischer Status" + (offen.length ? " – " + offen.length +
+    (offen.length === 1 ? " Bestätigung offen" : " Bestätigungen offen") : ""),
+    h, null, offen.length > 0);
+}
+
+/* Eine Zusatzkarte, die standardmäßig zugeklappt ist. Der Inhalt bleibt
+   vollständig erhalten und ist einen Klick entfernt — nur der Tagesbetrieb
+   soll nicht daran vorbeiscrollen müssen. */
+function zusatzKarte(titel, inhalt, marke, offen){
+  return '<div class="karte"><details class="zusatz"' + (offen ? " open" : "") + '>' +
+    '<summary>' + esc(titel) + (marke ? ' ' + simMarke(marke) : '') + '</summary>' +
+    inhalt + '</details></div>';
 }
 
 function zeile(was, wert){
@@ -4897,21 +4963,22 @@ function linkZeile(l){
 }
 
 function karteFreigabelink(a){
-  let h = '<div class="karte"><h2>Auftraggeber-Link</h2>';
+  let h = "";
+  const fertig = inhalt => zusatzKarte("Auftraggeber-Link", inhalt, "Vorschau", false);
   const k = a.auftraggeberId ? kundeVon(a.auftraggeberId) : null;
   if (!k) {
-    return h + '<p style="color:#47525D">Diesem Auftrag ist kein Auftraggeber zugeordnet. ' +
+    return fertig('<p style="color:#47525D">Diesem Auftrag ist kein Auftraggeber zugeordnet. ' +
       'Ein Freigabelink hängt immer an genau einem Auftraggeber — nicht am Firmennamen ' +
       'im Auftrag. Ohne Zuordnung entsteht kein Link.</p>' +
       '<div class="btn-reihe" style="margin-top:10px">' +
-      '<button class="btn" data-tun="bearbeiten">Auftraggeber zuordnen</button></div></div>';
+      '<button class="btn" data-tun="auftraggeberZuordnen">Auftraggeber zuordnen</button></div>');
   }
   h += '<p style="margin-top:0">Auftraggeber: <b>'+esc(k.firma)+'</b> ' +
        '<span class="neben">'+esc(k.id)+'</span></p>';
   if (!k.externErlaubt) {
-    return h + '<div class="warnkasten">Für diesen Auftraggeber ist die externe Ansicht ' +
+    return fertig(h + '<div class="warnkasten">Für diesen Auftraggeber ist die externe Ansicht ' +
       'abgeschaltet. Bestehende Links zeigen keine Daten. Freigeben lässt sich das unter ' +
-      '<b>Stammdaten → Auftraggeber</b>.</div></div>';
+      '<b>Fahrer &amp; Fahrzeuge → Auftraggeber</b>.</div>');
   }
   const l = (D.links || []).find(x => x.art === "einzel" && x.auftragId === a.id);
   if (!l) {
@@ -4924,7 +4991,7 @@ function karteFreigabelink(a){
   h += '<p class="sim-satz">'+simMarke("Simuliert")+' Simulierter Freigabelink – kein echter ' +
     'Online-Zugriff. Die Adresse enthält keine Auftragsnummer: sie verweist nur auf einen ' +
     'Eintrag, der festlegt, was freigegeben ist.</p>';
-  return h + '</div>';
+  return fertig(h);
 }
 
 /* ---------- Auftraggeber in den Stammdaten ---------- */
@@ -7023,6 +7090,15 @@ document.addEventListener("click", e => {
     zeichne(); return;
   }
 
+  /* Führt in dieselbe Bearbeitung wie „Bearbeiten“, hat aber einen eigenen
+     Namen: sonst gäbe es zwei Schaltflächen mit derselben Kennung, von
+     denen eine in einer zugeklappten Karte steckt. */
+  if (tun === "auftraggeberZuordnen") {
+    if (!a) return;
+    U.formular = formAus(a); U.fehler = {}; U.bereich = "formular"; U.notiz = null;
+    zeichne(); window.scrollTo(0,0); return;
+  }
+
   /* ---- Freigabelinks ---- */
   if (tun === "linkEinzelNeu") {
     const ziel = auftragVon(wert);
@@ -7142,6 +7218,11 @@ document.addEventListener("click", e => {
     U.notiz = null; U.fehler = {}; zeichne();
     document.getElementById("inhalt").focus();
     return;
+  }
+  if (tun === "planAnsicht") {
+    U.bereich = wert === "woche" ? "wochenplan" : "tagesplan";
+    U.vorher = U.bereich; U.notiz = null;
+    zeichne(); window.scrollTo(0,0); return;
   }
   if (tun === "tag") {
     U.tag = wert === "heute" ? HEUTE() : TAG_PLUS(1);

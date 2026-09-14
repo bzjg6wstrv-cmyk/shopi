@@ -18,6 +18,14 @@ with sync_playwright() as p:
     pg.evaluate("localStorage.clear()"); pg.reload(wait_until="load"); pg.wait_for_timeout(900)
     D = lambda js: pg.evaluate("(()=>{const D=DISPO.zustand().D;const U=DISPO.zustand().U;return %s;})()" % js)
 
+    def bereich(k):
+        """Die Zusatzbereiche stehen jetzt in einer eingeklappten Gruppe —
+        erst aufklappen, dann klicken, wie ein Mensch es auch tut."""
+        pg.evaluate("(()=>{const d=document.querySelector('#navi details.navi-weiter');"
+                    "if(d) d.open=true;})()")
+        pg.wait_for_timeout(150)
+        pg.click('[data-tun="bereich"][data-wert="%s"]' % k)
+
     print("\nA) Anbieter und Telematik")
     arten = pg.evaluate("Object.keys(DISPO.ANBIETER).map(k=>k+':'+DISPO.ANBIETER[k].art)")
     pr("sechs Anbieter, alle auf demo", len(arten) == 6 and all(a.endswith(":demo") for a in arten), arten)
@@ -160,7 +168,7 @@ with sync_playwright() as p:
     pr("kuenftiger Plantag bekommt kein Live-Risiko", zuk is None or zuk["stufe"]=="keins", zuk)
 
     print("\nH) Smart Dispo")
-    pg.click('[data-tun="bereich"][data-wert="smart"]'); pg.wait_for_timeout(1500)
+    bereich("smart"); pg.wait_for_timeout(1500)
     t = pg.inner_text("#inhalt")
     pr("Bereich oeffnet sich", "Dispo-Assistent" in t)
     pr("als Demo gekennzeichnet", "Assistent – Demo" in t or "Assistent - Demo" in t)
@@ -209,7 +217,7 @@ with sync_playwright() as p:
        "verstehe ich nicht" in pg.inner_text(".ki-antwort"))
 
     print("\nL) Flotte und Fahrzeug")
-    pg.click('[data-tun="bereich"][data-wert="flotte"]'); pg.wait_for_timeout(700)
+    bereich("flotte"); pg.wait_for_timeout(700)
     pr("Flotte zeigt alle Fahrzeuge",
        pg.locator(".fz-zeile").count() == D("D.zugmaschinen.length"))
     pr("jedes Fahrzeug steht genau einmal auf der Karte",
@@ -245,7 +253,7 @@ with sync_playwright() as p:
        D("D.zugmaschinen.find(z=>z.id==='%s').sicherung.wegfahrsperre" % steht) == "aktiv")
 
     print("\nN) Kamera")
-    pg.click('[data-tun="bereich"][data-wert="flotte"]'); pg.wait_for_timeout(500)
+    bereich("flotte"); pg.wait_for_timeout(500)
     pg.locator('.fz-zeile', has_text="HB-TL 742").locator('[data-tun="fahrzeugDetail"]').click()
     pg.wait_for_timeout(600)
     ft = pg.inner_text("#inhalt")
@@ -276,7 +284,7 @@ with sync_playwright() as p:
     print("\nP) Import aus Text")
     pg.evaluate("localStorage.clear()"); pg.reload(wait_until="load"); pg.wait_for_timeout(900)
     pg.click('[data-tun="bereich"][data-wert="auftraege"]'); pg.wait_for_timeout(400)
-    pg.click('[data-tun="bereich"][data-wert="import"]'); pg.wait_for_timeout(400)
+    bereich("import"); pg.wait_for_timeout(400)
     pg.click('[data-tun="importBeispiel"][data-wert="mail"]'); pg.wait_for_timeout(300)
     pg.click('[data-tun="importLesen"]'); pg.wait_for_timeout(600)
     it = pg.inner_text("#inhalt")
@@ -300,6 +308,9 @@ with sync_playwright() as p:
     pg.click('[data-tun="bereich"][data-wert="auftraege"]'); pg.wait_for_timeout(500)
     aid2 = D("D.auftraege.find(a=>a.nummer==='4801').id")
     pg.locator('[data-tun="oeffnenAus"][data-wert="%s"]' % aid2).first.click(); pg.wait_for_timeout(600)
+    # Foto-KI sitzt in einer eingeklappten Zusatzkarte — aufklappen wie ein Mensch.
+    pg.evaluate("document.querySelectorAll('details.zusatz').forEach(d=>d.open=true)")
+    pg.wait_for_timeout(200)
     for art, erwartet in [("unsicher", False), ("unlesbar", False)]:
         pg.click('[data-tun="fotoKi"][data-art="%s"]' % art); pg.wait_for_timeout(600)
         dt2 = pg.inner_text("#dlg")

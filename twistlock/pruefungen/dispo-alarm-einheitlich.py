@@ -304,6 +304,82 @@ with sync_playwright() as p:
            const l=DISPO.lage(a);
            return l.istAnkunft || l.erledigt || (l.ok && !l.nurPlan); })"""))
 
+    print("\nJ) Aufgeraeumte Hauptansicht (Punkt 3)")
+    pg.evaluate("localStorage.clear()"); pg.reload(wait_until="load"); pg.wait_for_timeout(800)
+    haupt = pg.eval_on_selector_all('#navi > button','e=>e.map(x=>x.textContent.replace(/\\d+$/,"").trim())')
+    pr("vier Bereiche im Hauptmenue", haupt == ["Tagesplan","Aufträge","Fahrer & Fahrzeuge","Meldungen"],
+       ["Tagesplan","Aufträge","Fahrer & Fahrzeuge","Meldungen"], haupt)
+    pr("Zusatzbereiche eingeklappt vorhanden",
+       pg.evaluate("!document.querySelector('#navi details.navi-weiter').open") and
+       pg.locator("#navi details.navi-weiter button").count() == 3,
+       "eingeklappt, 3 Eintraege",
+       pg.locator("#navi details.navi-weiter button").count())
+    pr("Gruppe ist als Vorschau gekennzeichnet",
+       "Vorschau" in pg.inner_text("#navi details.navi-weiter summary"))
+    pg.evaluate("document.querySelector('#navi details.navi-weiter').open=true")
+    pg.wait_for_timeout(200)
+    weiter = pg.eval_on_selector_all('#navi details.navi-weiter button','e=>e.map(x=>x.textContent.trim())')
+    pr("aufgeklappt sind alle drei bedienbar",
+       weiter == ["Dispo-Assistent","Flotte live","Auftrag importieren"], weiter)
+    for k in ["smart","flotte","import"]:
+        pg.evaluate("document.querySelector('#navi details.navi-weiter').open=true")
+        pg.wait_for_timeout(120)
+        pg.click('[data-tun="bereich"][data-wert="%s"]' % k); pg.wait_for_timeout(900)
+        pr("Bereich '%s' laesst sich oeffnen" % k,
+           pg.evaluate("DISPO.zustand().U.bereich") == k)
+
+    print("\nK) Wochenplanung im Tagesplan")
+    pg.click('[data-tun="bereich"][data-wert="tagesplan"]'); pg.wait_for_timeout(500)
+    pr("Umschalter Tag/Woche vorhanden",
+       pg.locator('[data-tun="planAnsicht"]').count() == 2)
+    pg.click('[data-tun="planAnsicht"][data-wert="woche"]'); pg.wait_for_timeout(600)
+    pr("Wochenplanung wird gezeigt",
+       pg.evaluate("DISPO.zustand().U.bereich") == "wochenplan" and
+       pg.locator("table.woche").count() == 1)
+    pr("Tagesplan bleibt im Hauptmenue markiert",
+       pg.evaluate("""document.querySelector('#navi > button[data-wert="tagesplan"]')
+         .getAttribute('aria-current') === 'page'"""))
+    pg.click('[data-tun="planAnsicht"][data-wert="tag"]'); pg.wait_for_timeout(500)
+    pr("zurueck zum Tagesplan", pg.evaluate("DISPO.zustand().U.bereich") == "tagesplan")
+
+    print("\nL) Eingeklappte Zusatzkarten und unveraenderte Auftragseingabe")
+    pg.click('[data-tun="bereich"][data-wert="auftraege"]'); pg.wait_for_timeout(500)
+    aid = pg.evaluate("""(()=>{const D=DISPO.zustand().D;
+      const a=D.auftraege.find(x=>x.planung.zugmaschineId && !x.storniert); return a?a.id:null;})()""")
+    pg.locator('[data-tun="oeffnenAus"][data-wert="%s"]' % aid).first.click(); pg.wait_for_timeout(700)
+    zahl = pg.locator("details.zusatz").count()
+    pr("Zusatzkarten sind eingeklappt", zahl >= 3 and
+       pg.evaluate("""[...document.querySelectorAll('details.zusatz')]
+         .filter(d=>!d.open).length >= 3"""), ">= 3 zugeklappt", zahl)
+    pg.evaluate("""(()=>{const d=[...document.querySelectorAll('details.zusatz')]
+      .find(x=>/Route/.test(x.querySelector('summary').textContent)); if(d) d.open=true;})()""")
+    pg.wait_for_timeout(250)
+    pr("Route & ETA laesst sich oeffnen und zeigt den Inhalt",
+       "Reststrecke" in pg.inner_text("#inhalt") or "Automatisierung" in pg.inner_text("#inhalt"))
+    # Auftragseingabe, Entwurf, Freigabe unveraendert
+    vorAnz = pg.evaluate("DISPO.zustand().D.auftraege.length")
+    pg.click('[data-tun="bereich"][data-wert="auftraege"]'); pg.wait_for_timeout(400)
+    pg.click('[data-tun="neu"]'); pg.wait_for_timeout(500)
+    pg.fill("#f_kunde", "Aufraeum-Testkunde")
+    pg.click('[data-tun="entwurf"]'); pg.wait_for_timeout(600)
+    neuId = pg.evaluate("DISPO.zustand().U.auftragId")
+    pr("Entwurf laesst sich weiterhin anlegen",
+       pg.evaluate("DISPO.zustand().D.auftraege.length") == vorAnz + 1)
+    pr("Entwurf ist nicht freigegeben",
+       pg.evaluate("DISPO.zustand().D.auftraege.find(a=>a.id==='%s').freigegeben" % neuId) is False)
+    pg.click('[data-tun="bearbeiten"]'); pg.wait_for_timeout(500)
+    pg.fill("#f_lieferFirma","Aufraeum-Empfaenger")
+    pg.fill("#f_lieferAdresse","Teststrasse 1, 29664 Walsrode")
+    pg.fill("#f_lieferZeit","15:30")
+    pg.select_option("#f_fahrerId", index=1)
+    pg.select_option("#f_zugId", index=1)
+    pg.select_option("#f_chsId", index=1)
+    pg.uncheck("#f_contUnbekannt"); pg.wait_for_timeout(300)
+    pg.fill("#f_contErwartet","MSCU1234566")
+    pg.click('[data-tun="freigabeSpeichern"]'); pg.wait_for_timeout(700)
+    pr("Freigabe funktioniert unveraendert",
+       pg.evaluate("DISPO.zustand().D.auftraege.find(a=>a.id==='%s').freigegeben" % neuId) is True)
+
     print("\nJS-Fehler:", errs if errs else "keine")
     ok_all = ok_all and not errs
     b.close()

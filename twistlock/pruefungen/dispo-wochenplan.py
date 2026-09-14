@@ -16,7 +16,7 @@ with sync_playwright() as p:
     pg.reload(wait_until="load"); pg.wait_for_timeout(800)
 
     print("\n1) Wochenplan als Bereich")
-    pg.click('[data-tun="bereich"][data-wert="wochenplan"]'); pg.wait_for_timeout(500)
+    pg.click('[data-tun="planAnsicht"][data-wert="woche"]'); pg.wait_for_timeout(500)
     pr("Bereich wird angezeigt", pg.evaluate("DISPO.zustand().U.bereich") == "wochenplan")
     kopf = pg.eval_on_selector_all("table.woche thead th", "e=>e.map(x=>x.textContent)")
     pr("Montag bis Sonntag als Spalten",
@@ -127,7 +127,7 @@ with sync_playwright() as p:
     pr("aus Tagesplan zurueck zum Tagesplan", pg.evaluate("DISPO.zustand().U.bereich") == "tagesplan")
 
     print("\n9) Wochenwechsel")
-    pg.click('[data-tun="bereich"][data-wert="wochenplan"]'); pg.wait_for_timeout(400)
+    pg.click('[data-tun="planAnsicht"][data-wert="woche"]'); pg.wait_for_timeout(400)
     w1 = pg.evaluate("DISPO.zustand().U.woche || DISPO.wochenStart(new Date().toISOString().slice(0,10))")
     pg.click('[data-tun="wocheVor"]'); pg.wait_for_timeout(400)
     w2 = pg.evaluate("DISPO.zustand().U.woche")
@@ -140,14 +140,16 @@ with sync_playwright() as p:
          "DISPO.wochenStart(new Date().toISOString().slice(0,10))"))
 
     print("\n10) Keine toten Schaltflaechen im Wochenplan")
+    # Statt einer handgepflegten Liste: gegen den Code pruefen, ob es zu
+    # jeder Kennung wirklich einen Zweig gibt. Eine Liste veraltet lautlos.
     tote = pg.evaluate("""() => {
-      const bekannt = ["bereich","tag","tagwahl","filter","oeffnen","oeffnenAus","bearbeitenAus",
-        "fahrerAendernAus","zurueck","abbrechen","neu","bearbeiten","entwurf","freigabeSpeichern",
-        "freigeben","fahrerAendern","kopieren","anrufen","stornieren","notizSpeichern","dok","bild",
-        "fahrerschritt","gesehen","stammNeu","stammBearbeiten","reset","entwurfFreigeben",
-        "entwurfVerwerfen","wocheZurueck","wocheVor","wocheHeute","vorlesen"];
+      const quelle=[...document.querySelectorAll('script')].map(x=>x.textContent).join('\\n');
+      const behandelt=new Set(); const re=/tun === "([a-zA-Z0-9_]+)"/g; let m;
+      while((m=re.exec(quelle))) behandelt.add(m[1]);
+      // Felder werden ueber ihre id im change-Ereignis behandelt, nicht per Klick
+      ["tagwahl"].forEach(x=>behandelt.add(x));
       const gefunden=[...document.querySelectorAll('[data-tun]')].map(e=>e.dataset.tun);
-      return [...new Set(gefunden)].filter(x=>bekannt.indexOf(x)<0); }""")
+      return [...new Set(gefunden)].filter(x=>!behandelt.has(x)); }""")
     pr("alle Schaltflaechen haben eine Aktion", tote == [], tote)
 
     print("\nJS-Fehler:", errs if errs else "keine")

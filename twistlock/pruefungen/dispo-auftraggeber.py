@@ -10,6 +10,12 @@ def pr(n, ok, d=""):
     global ok_all; ok_all = ok_all and ok
     print(("  OK   " if ok else "  FEHL ") + n + ("  → " + str(d) if d else ""))
 
+def zusatzOeffnen(pg):
+    """Zusatzkarten im Auftragsdetail sind eingeklappt. Ein Mensch klappt sie
+    auf, bevor er darin etwas bedient — hier dasselbe."""
+    pg.evaluate("document.querySelectorAll('details.zusatz').forEach(d=>d.open=true)")
+    pg.wait_for_timeout(200)
+
 INTERN_WOERTER = ["Konfliktprüfung", "Belegung offen", "rechnung2", "alarmGesendet",
                   "Planwert", "Entwurf", "Zugmaschine", "Chassis", "Disponent",
                   "Dispo-Notiz", "Marge", "Maut", "Einkaufspreis"]
@@ -205,12 +211,22 @@ with sync_playwright() as p:
     pg.click('[data-tun="bereich"][data-wert="auftraege"]'); pg.wait_for_timeout(400)
     aid = pg.evaluate("DISPO.zustand().D.auftraege.find(a=>a.nummer==='5101').id")
     pg.locator('[data-tun="oeffnenAus"][data-wert="%s"]' % aid).first.click(); pg.wait_for_timeout(400)
+    zusatzOeffnen(pg)
     t = pg.inner_text("#inhalt")
     pr("Auftraggeber steht im Auftrag", "Auftraggeber" in t and "kunde_poco" in t)
     pr("Freigabelink erzeugbar oder vorhanden",
        pg.locator('[data-tun="linkEinzelNeu"]').count() + pg.locator('[data-tun="linkKopieren"]').count() > 0)
+    # Die Karte ist jetzt eingeklappt. Im zugeklappten Zustand traegt schon
+    # die Ueberschrift die Kennzeichnung; der ganze Satz steht nach dem Oeffnen.
+    # Die Kennzeichnung sitzt auf der Kartenueberschrift, nicht erst im
+    # Inhalt — sie ist damit auch im zugeklappten Zustand zu sehen.
+    pr("Kennzeichnung sitzt auf der Kartenueberschrift",
+       pg.evaluate("""(()=>{const d=[...document.querySelectorAll('details.zusatz')]
+         .find(x=>/Auftraggeber-Link/.test(x.querySelector('summary').textContent));
+         return !!d && /Vorschau/.test(d.querySelector('summary').textContent);})()"""))
+    zusatzOeffnen(pg)
     pr("als simuliert gekennzeichnet",
-       "Simulierter Freigabelink – kein echter Online-Zugriff." in t)
+       "Simulierter Freigabelink – kein echter Online-Zugriff." in pg.inner_text("#inhalt"))
     pr("Dokument einzeln freigebbar", pg.locator('[data-tun="dokExtern"]').count() >= 2)
     vor = pg.evaluate("DISPO.zustand().D.auftraege.find(a=>a.nummer==='5101')"
                       ".dokumente.filter(d=>d.extern).length")
@@ -254,6 +270,7 @@ with sync_playwright() as p:
     pg.click('[data-tun="bereich"][data-wert="auftraege"]'); pg.wait_for_timeout(350)
     aid4 = pg.evaluate("DISPO.zustand().D.auftraege.find(a=>a.nummer==='5104').id")
     pg.locator('[data-tun="oeffnenAus"][data-wert="%s"]' % aid4).first.click(); pg.wait_for_timeout(400)
+    zusatzOeffnen(pg)
     pg.locator('[data-tun="linkVorschau"]').first.click(); pg.wait_for_timeout(450)
     pr("Vorschau aus dem Auftrag heraus zeigt genau diesen Transport",
        "Transport 5104" in pg.inner_text("body")
