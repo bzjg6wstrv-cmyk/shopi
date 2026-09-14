@@ -355,6 +355,25 @@ function tagVon(iso){
   const p = n => String(n).padStart(2,"0");
   return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate());
 }
+/* Langer Zufallstoken. Aus ihm lässt sich nichts über den Auftrag
+   ableiten — er verweist nur auf einen Link-Datensatz, und erst dieser
+   legt fest, was freigegeben ist. Deshalb steht nie eine Auftragsnummer
+   in der Adresse. */
+function tokenBauen(){
+  const zeichen = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let t = "";
+  for (let i = 0; i < 24; i++) t += zeichen[Math.floor(Math.random()*zeichen.length)];
+  return t;
+}
+/* Datum plus n Tage, wieder als „JJJJ-MM-TT“. 12:00 als Anker, damit
+   die Sommerzeitumstellung den Tag nicht verschiebt. */
+function tagPlusTage(datum, n){
+  if (!datum) return null;
+  const d = new Date(datum + "T12:00:00");
+  if (isNaN(d)) return null;
+  d.setDate(d.getDate() + n);
+  return tagVon(d.toISOString());
+}
 function tagLang(datum){
   if (!datum) return "—";
   const d = new Date(datum+"T12:00:00");
@@ -465,7 +484,7 @@ function fahrzeit(vonAdresse, nachAdresse){
    Demo-Eingaben liegen im localStorage dieses Browsers. Klappt das
    nicht, wird das ehrlich gesagt — es wird nichts behauptet.
    =========================================================== */
-const SCHLUESSEL = "twistlock-dispo-demo-v1";
+const SCHLUESSEL = "twistlock-dispo-demo-v2";
 let speicherGeht = true;
 let speicherGrund = "";
 
@@ -542,6 +561,20 @@ function demoDaten(){
   const T5 = demoTermin(360, 15);
   const T9 = demoTermin(150, 30);
 
+  /* Auftraggeber: eigene Stammdaten mit interner ID. Der externe Link
+     haengt an dieser ID, nicht am angezeigten Firmennamen. */
+  const auftraggeber = [
+    { id:"kunde_poco", firma:"Poco Einrichtungsmarkt Walsrode",
+      ansprech:"Frau Ehlers", telefon:"05161 60110", email:"disposition@poco-walsrode.example",
+      externErlaubt:true },
+    { id:"kunde_nordsee", firma:"Nordsee Handel KG",
+      ansprech:"Herr Brandt", telefon:"05161 44120", email:"logistik@nordsee-handel.example",
+      externErlaubt:true },
+    { id:"kunde_moeller", firma:"Möller Baustoffe GmbH",
+      ansprech:"Frau Möller", telefon:"05161 998812", email:"dispo@moeller-baustoffe.example",
+      externErlaubt:false }
+  ];
+
   const fahrer = [
     { id:"f1", name:"Andrej Kollmann", telefon:"0170 1234567", sprache:"Deutsch", aktiv:true },
     { id:"f2", name:"Mehmet Yilmaz",   telefon:"0170 7654321", sprache:"Türkisch", aktiv:true }
@@ -579,6 +612,9 @@ function demoDaten(){
       bestaetigt:null,                     // ISO, wenn Fahrer gesehen und bestätigt hat
       dispoNotiz:"",
       beladung:{ art:"selberTag", datum:null, zeit:null, stelle:"", hinweis:"" },
+      auftraggeberId:null,          // Verknüpfung für die externe Ansicht
+      bilder:[],                    // Fahrerfotos mit Zeitpunkt und Bezeichnung
+      standort:null,                // simulierte Position, nur waehrend der Fahrt
       ortungZeit:inMin(-2), datenZeit:inMin(-2), prognoseZeit:inMin(-2), entwurf:null,
       prognose:null,                       // ISO, simulierte Ankunft am maßgeblichen Termin
       alarmGesendet:false,
@@ -949,7 +985,111 @@ function demoDaten(){
       verlauf:[ v(inMin(-1400), "Auftrag angelegt für " + tagLang(tag)) ]
     }));
   });
-  return { fahrer, zugmaschinen, chassis, auftraege, meldungen:[], laufNummer:4950 };
+  /* ---- Auftraggeber den Aufträgen zuordnen ----
+     Die Zuordnung läuft über die interne ID, nicht über den Firmennamen.
+     Der externe Link darf später ausschließlich darüber auflösen. */
+  const kundeNachFirma = {
+    "Poco Einrichtungsmarkt Walsrode":"kunde_poco",
+    "Nordsee Handel KG":"kunde_nordsee",
+    "Möller Baustoffe GmbH":"kunde_moeller"
+  };
+  auftraege.forEach(a => { a.auftraggeberId = kundeNachFirma[a.kunde] || null; });
+
+  /* ---- Poco: eine volle Woche zum Durchprobieren ----
+     Geplant, laufend, verspätet und fertig — damit die Kundenansicht
+     alle Zustände zeigt. */
+  const pocoAdresse = "Zum Gewerbegebiet 5, 29664 Walsrode";
+  const pocoWoche = [
+    { nr:"5101", n:0, ab:"04:45", li:"06:30", cont:"MSCU1234566", zustand:"fertig",
+      ref:"POCO-12345" },
+    { nr:"5102", n:0, ab:"09:15", li:"11:00", cont:"TGHU7654320", zustand:"unterwegs",
+      ref:"POCO-12346" },
+    { nr:"5103", n:0, ab:"11:45", li:"13:30", cont:"", zustand:"geplant", ref:"POCO-12347" },
+    { nr:"5104", n:1, ab:"07:00", li:"09:00", cont:"HLXU9988779", zustand:"verspaetet",
+      ref:"POCO-12348" },
+    { nr:"5105", n:2, ab:"08:30", li:"10:30", cont:"CAIU4567890", zustand:"geplant",
+      ref:"POCO-12349" },
+    { nr:"5106", n:4, ab:"06:00", li:"07:45", cont:"MSCU1234566", zustand:"geplant",
+      ref:"POCO-12350" }
+  ];
+  pocoWoche.forEach(w => {
+    const tag = woTag(w.n);
+    const a = auf({
+      nummer:w.nr, tag, kunde:"Poco Einrichtungsmarkt Walsrode", kundenRef:w.ref,
+      auftraggeberId:"kunde_poco", freigegeben:true,
+      abhol:{ firma:"Hansa Terminal Bremen", adresse:"Am Speicher 12, 28197 Bremen",
+              datum:tag, zeit:w.ab, referenz:"FRST-"+w.nr, hinweis:"Tor 2" },
+      liefer:{ firma:"Poco Einrichtungsmarkt Walsrode", adresse:pocoAdresse, datum:tag,
+               zeit:w.li, ansprech:"Frau Ehlers", telefon:"05161 60110", hinweis:"" },
+      container:{ erwartet:w.cont, bestaetigt:null, groesse:"40 ft", typ:"Standard", siegel:"SL 4711",
+                  beladen:"beladen", rueckgabeOrt:"Depot Bremen Hemelingen", rueckgabeTermin:null,
+                  ungeprueft:false, abweichung:false, trotzdem:false },
+      planung:{ fahrerId:(w.n % 2 ? "f2" : "f1"), zugmaschineId:(w.n % 2 ? "z2" : "z1"),
+                chassisId:(w.n % 2 ? "c2" : "c1"),
+                ladenMin:30, wartenAbholMin:0, wartenMin:0, entladenMin:90, pufferMin:15 },
+      verlauf:[ v(inMin(-1500), "Auftrag angelegt für " + tagLang(tag)) ]
+    });
+    const uhr = (hhmmText, minuten) => {
+      const d = new Date(tag + "T" + hhmmText + ":00");
+      return new Date(d.getTime() + (minuten||0)*60000).toISOString();
+    };
+    if (w.zustand === "fertig") {
+      a.container.bestaetigt = w.cont;
+      a.ablauf = { abholung:uhr(w.ab), ankunft:uhr(w.li, 1), warten:uhr(w.li, 3),
+                   entladenStart:uhr(w.li, 5), entladenEnde:uhr(w.li, 72),
+                   abgabe:uhr(w.li, 78) };
+      a.bestaetigt = uhr(w.ab, -40);
+      a.bilder = [
+        { zeit:uhr(w.ab, -6), bez:"Container übernommen", bild:fotoBild(w.cont, "#1B4C78") },
+        { zeit:uhr(w.ab, -5), bez:"Containernummer", bild:fotoBild(w.cont, "#0A6B31") },
+        { zeit:uhr(w.ab, -4), bez:"Siegel SL 4711", bild:fotoBild("SIEGEL SL 4711", "#8A5200") },
+        { zeit:uhr(w.li, 74), bez:"Ablieferung", bild:fotoBild("Abliefernachweis", "#0A6B31") }
+      ];
+      a.dokumente = [
+        { art:"CMR", name:"CMR-"+w.nr+".pdf", stand:"vorhanden (Demo)", extern:true },
+        { art:"Lieferschein", name:"LS-"+w.nr+".pdf", stand:"vorhanden (Demo)", extern:true },
+        { art:"EIR", name:"EIR-"+w.nr+".pdf", stand:"vorhanden (Demo)", extern:false }
+      ];
+    } else if (w.zustand === "unterwegs" || w.zustand === "verspaetet") {
+      a.container.bestaetigt = w.cont;
+      a.ablauf.abholung = uhr(w.ab);
+      a.bestaetigt = uhr(w.ab, -35);
+      a.bilder = [
+        { zeit:uhr(w.ab, -6), bez:"Container übernommen", bild:fotoBild(w.cont, "#1B4C78") },
+        { zeit:uhr(w.ab, -4), bez:"Siegel SL 4711", bild:fotoBild("SIEGEL SL 4711", "#8A5200") }
+      ];
+      /* Simulierte Ortung: für die laufende Fahrt frisch, sonst gibt es
+         keine belastbare Ankunft. */
+      a.ortungZeit = inMin(-3); a.prognoseZeit = inMin(-3); a.datenZeit = inMin(-3);
+      a.standort = { text:"A27 bei Verden", zeit:inMin(-3) };
+      const termin = zeitpunkt(tag, w.li);
+      a.prognose = w.zustand === "verspaetet"
+        ? inMin(18, termin)        // 18 Minuten zu spät
+        : inMin(-6, termin);       // 6 Minuten früher
+    }
+    auftraege.push(a);
+  });
+
+  /* ---- Links: Token statt Auftragsnummer ----
+     Ein Token verweist auf einen Datensatz, der festlegt, WAS er freigibt.
+     Aus dem Token allein lässt sich nichts anderes ableiten. */
+  const nachNummer = nr => { const t = auftraege.find(x => x.nummer === nr); return t ? t.id : null; };
+  const links = [
+    { token: tokenBauen(), art:"woche", auftraggeberId:"kunde_poco",
+      wocheStart: woTag(0), auftragId:null,
+      erstellt: inMin(-2880), gueltigBis: tagPlusTage(woTag(6), 7),
+      status:"aktiv" },
+    { token: tokenBauen(), art:"einzel", auftraggeberId:"kunde_poco",
+      wocheStart:null, auftragId: nachNummer("5102"),
+      erstellt: inMin(-1440), gueltigBis: tagPlusTage(woTag(0), 14),
+      status:"aktiv" },
+    { token: tokenBauen(), art:"woche", auftraggeberId:"kunde_nordsee",
+      wocheStart: woTag(0), auftragId:null,
+      erstellt: inMin(-4320), gueltigBis: tagPlusTage(woTag(6), 7),
+      status:"deaktiviert" }
+  ];
+  return { auftraggeber, fahrer, zugmaschinen, chassis, auftraege, links,
+           meldungen:[], laufNummer:4950 };
 }
 function v(zeit, text){ return { zeit, text }; }
 
@@ -991,6 +1131,16 @@ let U = {                     // Oberfläche
 function start(){
   const gespeichert = laden();
   D = gespeichert || demoDaten();
+  /* Ein Stand aus einer aelteren Fassung kennt die neuen Bereiche noch
+     nicht. Fehlende Listen werden ergaenzt, nichts Bestehendes ersetzt. */
+  if (!Array.isArray(D.auftraggeber)) D.auftraggeber = [];
+  if (!Array.isArray(D.links)) D.links = [];
+  D.auftraege.forEach(a => {
+    if (!("auftraggeberId" in a)) a.auftraggeberId = null;
+    if (!Array.isArray(a.bilder)) a.bilder = [];
+    if (!("standort" in a)) a.standort = null;
+    (a.dokumente || []).forEach(dk => { if (!("extern" in dk)) dk.extern = false; });
+  });
   if (!gespeichert) { alarmePruefen(); speichern(); }
   U.tag = HEUTE();
   speicherNotizZeichnen();
@@ -2686,6 +2836,7 @@ function formSpeichern(fuerFreigabe){
       bestaetigt:null, dispoNotiz:"", entwurf:null,
       ortungZeit:null, datenZeit:null, prognoseZeit:null, prognose:null,
       alarmGesendet:false, verlauf:[ v(jetztIso(),"Auftrag angelegt") ],
+      auftraggeberId:null, bilder:[], standort:null,
       container:{}, planung:{}, abhol:{}, liefer:{},
       beladung:{ art:"selberTag", datum:null, zeit:null, stelle:"", hinweis:"" }
     };
