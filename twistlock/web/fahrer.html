@@ -167,13 +167,16 @@ function uebernehmen(){
 }
 
 /* ============ Ereignis senden (Abholung, Ankunft, Abgabe) ============ */
-async function ereignisSenden(auftrag, art, foto, extra){
+async function ereignisSenden(auftrag, art, foto, extra, zeitVorgabe){
   const schluessel = auftrag.id + ":" + art;
   if (Z.laeuft || gebucht.has(schluessel)) return;   // Doppeltipp läuft ins Leere
   gebucht.add(schluessel);
   Z.laeuft = true; neuZeichnen();
 
-  const zeit = new Date().toISOString();      // Zeitpunkt der Bestätigung
+  /* Zeitpunkt der Bestätigung. Beim Wiederholen nach einem Speicherfehler
+     wird der ursprüngliche Zeitpunkt weitergereicht — eine Wiederholung
+     verschiebt nicht, wann der Fahrer den Schritt bestätigt hat. */
+  const zeit = zeitVorgabe || new Date().toISOString();
   const nutzlast = { auftragId:auftrag.id, art, foto, schluessel, zeit,
                      lat:gps&&gps.lat, lon:gps&&gps.lon, ...(extra || {}) };
   const vorgang = { id: schluessel, auftragId: auftrag.id, art, zeit,
@@ -403,7 +406,7 @@ const A = {
     const v = Z.offenerVersuch;
     if (!v) { Z.ansicht = "auftrag"; return neuZeichnen(); }
     gebucht.delete(v.auftrag.id + ":" + v.art);
-    ereignisSenden(v.auftrag, v.art, v.foto, v.extra);
+    ereignisSenden(v.auftrag, v.art, v.foto, v.extra, v.zeit);
   },
   zurueckZumFoto(){
     const v = Z.offenerVersuch;
