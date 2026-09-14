@@ -17,7 +17,7 @@ with sync_playwright() as p:
     print("\nA) Startseite Tagesplan")
     pr("fuenf Hauptbereiche vorhanden (Wochenplan ergaenzt)",
        pg.eval_on_selector_all('#navi button','e=>e.map(x=>x.textContent.replace(/\\d+$/,"").trim())')
-       == ["Tagesplan","Wochenplan","Aufträge","Fahrer & Fahrzeuge","Meldungen"])
+       == ["Tagesplan","Wochenplan","Aufträge","Stammdaten","Meldungen"])
     pr("Tabelle wird angezeigt", pg.locator("table.tabelle").count() == 1)
     pr("Schaltflaeche 'Neuer Auftrag'", pg.locator('[data-tun="neu"]').count() >= 1)
     pr("kein horizontales Scrollen der Seite",
