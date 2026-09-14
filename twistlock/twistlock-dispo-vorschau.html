@@ -1,0 +1,2278 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#15202B">
+<title>TWISTLOCK Dispo — Demo-Vorschau</title>
+<style>
+/* ===========================================================
+   TWISTLOCK Dispo — Demo-Vorschau für I&M CARGO, Bremen
+
+   Eine Datei, keine Anhänge, kein Server. Farben und Begriffe
+   sind bewusst dieselben wie in der Fahrer-Vorschau, damit beides
+   als ein Produkt wirkt.
+
+   Grundsatz der Gestaltung: Farbe ist nie die einzige Information.
+   Neben jeder Farbe steht immer ein Satz, der sie erklärt.
+   =========================================================== */
+:root{
+  --ink:#15202B;          /* Text                                 */
+  --soft:#47525D;         /* Nebentext, Kontrast 7,4:1 auf Weiß   */
+  --paper:#FFFFFF;
+  --seite:#E9EBE7;
+  --linie:#CBD0CC;
+  --linie2:#E3E6E2;
+
+  --gruen:#0A6B31;  --gruen-flaeche:#E4F1E9;
+  --gelb:#8A5200;   --gelb-flaeche:#FBEFD6;
+  --rot:#A3161D;    --rot-flaeche:#FAE8E8;
+  --marine:#1B4C78; --marine-flaeche:#E8F0F7;
+  --grau-flaeche:#F2F3F1;
+
+  --rand:16px;
+  --radius:10px;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--seite);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:17px;
+  line-height:1.45;
+  -webkit-text-size-adjust:100%;
+}
+h1,h2,h3{margin:0;line-height:1.2}
+p{margin:0}
+button{font-family:inherit}
+
+:focus-visible{outline:3px solid var(--marine);outline-offset:2px;border-radius:4px}
+
+/* ---------- Demo-Kopf ---------- */
+.demo-kopf{background:var(--ink);color:#fff;padding:12px var(--rand)}
+.demo-kopf .zeile{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.demo-marke{display:inline-block;padding:3px 9px;border-radius:4px;font-weight:700;
+  background:#FFD34D;color:#2A1D00;letter-spacing:.06em;font-size:14px}
+.demo-kopf h1{font-size:20px;font-weight:700}
+.demo-kopf .uhr{margin-left:auto;font-size:15px;color:#D6DBD9;font-variant-numeric:tabular-nums}
+.demo-kopf .unter{font-size:15px;color:#D6DBD9;margin-top:6px;max-width:96ch}
+
+.demo-notiz{background:#FFF8E1;border-left:8px solid #B07100;color:#5E3A00;
+  padding:10px 14px;font-size:15px}
+.demo-notiz b{color:#4A2E00}
+
+/* ---------- Gerüst ---------- */
+.rahmen{display:flex;align-items:flex-start;gap:0;min-height:60vh}
+.navi{flex:0 0 232px;background:var(--paper);border-right:2px solid var(--linie);
+  padding:12px;position:sticky;top:0}
+.navi button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  padding:13px 12px;margin-bottom:8px;border:2px solid var(--linie);border-radius:var(--radius);
+  background:var(--paper);color:var(--ink);font-size:17px;font-weight:600;cursor:pointer}
+.navi button:hover{background:var(--grau-flaeche)}
+.navi button[aria-current="page"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.navi .zahl{margin-left:auto;font-size:15px;font-weight:700;padding:1px 8px;border-radius:999px;
+  background:var(--rot);color:#fff}
+.navi button[aria-current="page"] .zahl{background:#fff;color:var(--rot)}
+
+.inhalt{flex:1 1 auto;min-width:0;padding:var(--rand)}
+
+/* ---------- Bausteine ---------- */
+.karte{background:var(--paper);border:2px solid var(--linie);border-radius:var(--radius);
+  padding:14px;margin-bottom:14px}
+.karte > h2{font-size:20px;margin-bottom:10px}
+.karte > h3{font-size:17px;margin-bottom:8px}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border:2px solid var(--ink);
+  border-radius:var(--radius);background:var(--paper);color:var(--ink);
+  padding:11px 15px;font-size:16px;font-weight:600;cursor:pointer;min-height:46px}
+.btn:hover{background:var(--grau-flaeche)}
+.btn.haupt{background:var(--ink);color:#fff}
+.btn.haupt:hover{background:#25313D}
+.btn.gross{font-size:18px;padding:14px 20px;min-height:54px}
+.btn.gefahr{border-color:var(--rot);color:var(--rot)}
+.btn.gefahr:hover{background:var(--rot-flaeche)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn-reihe{display:flex;flex-wrap:wrap;gap:10px}
+
+/* Statusfarben — immer mit erklärendem Text daneben */
+.marke{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;
+  border:2px solid;font-size:15px;font-weight:700;white-space:nowrap}
+.m-gruen{color:var(--gruen);background:var(--gruen-flaeche);border-color:var(--gruen)}
+.m-gelb {color:var(--gelb); background:var(--gelb-flaeche); border-color:var(--gelb)}
+.m-rot  {color:var(--rot);  background:var(--rot-flaeche);  border-color:var(--rot)}
+.m-grau {color:var(--soft); background:var(--grau-flaeche); border-color:var(--soft)}
+.m-marine{color:var(--marine);background:var(--marine-flaeche);border-color:var(--marine)}
+.m-ink  {color:#fff;background:var(--ink);border-color:var(--ink)}
+
+.sim{display:inline-block;padding:1px 8px;border-radius:4px;background:#FFD34D;color:#2A1D00;
+  font-size:13px;font-weight:700;letter-spacing:.04em;white-space:nowrap}
+
+.hinweis{background:var(--marine-flaeche);border-left:8px solid var(--marine);color:#16324B;
+  padding:10px 13px;border-radius:0 6px 6px 0;font-size:15px;margin-bottom:12px}
+.warnkasten{background:var(--rot-flaeche);border-left:8px solid var(--rot);color:#5E1013;
+  padding:10px 13px;border-radius:0 6px 6px 0;font-size:15px;margin-bottom:12px}
+
+/* Kennzahlen — bewusst nur drei, als Text, ohne Diagramme */
+.zahlen{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.zahl-feld{flex:1 1 190px;border:2px solid var(--linie);border-radius:var(--radius);
+  background:var(--paper);padding:11px 13px}
+.zahl-feld .gross{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.zahl-feld .wort{font-size:15px;color:var(--soft)}
+.zahl-feld.achtung{border-color:var(--rot);background:var(--rot-flaeche)}
+.zahl-feld.achtung .gross{color:var(--rot)}
+
+/* Datumsleiste + Filter */
+.leiste{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.leiste .tag{font-weight:700;font-size:18px}
+input[type=date],input[type=time],input[type=text],input[type=tel],input[type=number],select,textarea{
+  font-family:inherit;font-size:16px;padding:10px;border:2px solid var(--linie);
+  border-radius:8px;background:var(--paper);color:var(--ink);min-height:46px;width:100%}
+textarea{min-height:72px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--marine);outline:none}
+
+.filter{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.filter button{border:2px solid var(--linie);background:var(--paper);color:var(--ink);
+  border-radius:999px;padding:8px 14px;font-size:16px;font-weight:600;cursor:pointer;min-height:44px}
+.filter button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* Tabelle */
+/* Die Tabelle hat viele Spalten. Statt sie abzuschneiden, darf dieser
+   eine Kasten waagerecht rollen — die Seite selbst nie. Ohne das wäre
+   die Schaltfläche „Öffnen“ am rechten Rand unerreichbar. */
+.tabellen-karte{overflow-x:auto}
+.tabelle{width:100%;border-collapse:collapse;background:var(--paper);min-width:940px}
+.tabelle th,.tabelle td{text-align:left;padding:9px 8px;border-bottom:2px solid var(--linie2);
+  vertical-align:top;font-size:16px}
+.tabelle td:first-child,.tabelle th:first-child{white-space:nowrap}
+.tabelle th{background:var(--grau-flaeche);font-size:15px;border-bottom:2px solid var(--linie)}
+.tabelle tr.nichtzug{background:#FFF8E1}
+.tabelle tr.nichtzug td{border-bottom-color:#E8D9A8}
+.tabelle .haupt-zelle{font-weight:700}
+.tabelle .neben{display:block;font-size:14px;color:var(--soft);font-weight:400}
+.num{font-variant-numeric:tabular-nums}
+
+.leer{padding:22px;text-align:center;color:var(--soft);background:var(--paper);font-size:17px}
+
+/* Formular */
+.gruppe{border:2px solid var(--linie);border-radius:var(--radius);padding:13px;margin-bottom:14px;
+  background:var(--paper)}
+.gruppe > legend{font-weight:700;font-size:18px;padding:0 6px}
+.felder{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.feld label{display:block;font-size:15px;font-weight:600;margin-bottom:4px}
+.feld .erklaer{font-size:14px;color:var(--soft);margin-top:3px}
+.feld.breit{grid-column:1/-1}
+.feld .fehler{display:block;font-size:15px;color:var(--rot);font-weight:600;margin-top:4px}
+.feld.hatfehler input,.feld.hatfehler select,.feld.hatfehler textarea{border-color:var(--rot);background:#FFF9F9}
+
+/* Detail */
+.paar{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.paar .zeile{border-bottom:1px solid var(--linie2);padding:7px 0}
+.paar .was{font-size:14px;color:var(--soft)}
+.paar .wert{font-size:17px;font-weight:600}
+
+.ablauf{list-style:none;margin:0;padding:0}
+.ablauf li{display:flex;gap:10px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--linie2)}
+.ablauf .zeit{flex:0 0 66px;font-weight:700;font-variant-numeric:tabular-nums}
+.ablauf .offen{color:var(--soft);font-weight:400}
+
+.foto{width:100%;max-width:340px;border:2px solid var(--linie);border-radius:8px;
+  background:var(--ink);cursor:pointer;display:block}
+.fotos{display:flex;flex-wrap:wrap;gap:12px}
+
+.verlauf{list-style:none;margin:0;padding:0;font-size:15px}
+.verlauf li{padding:6px 0;border-bottom:1px solid var(--linie2);color:var(--soft)}
+.verlauf b{color:var(--ink)}
+
+/* Meldungen */
+.meldung{border:2px solid var(--linie);border-left-width:8px;border-radius:var(--radius);
+  padding:12px;margin-bottom:10px;background:var(--paper)}
+.meldung.warn{border-left-color:var(--rot);background:var(--rot-flaeche)}
+.meldung.info{border-left-color:var(--marine);background:var(--marine-flaeche)}
+.meldung.erledigt{opacity:.62;background:var(--grau-flaeche);border-left-color:var(--soft)}
+.meldung h3{font-size:17px;margin-bottom:4px}
+.meldung .wann{font-size:14px;color:var(--soft)}
+.gegenueber{display:flex;flex-wrap:wrap;gap:12px;margin:10px 0}
+.gegenueber div{flex:1 1 190px;border:2px solid var(--linie);border-radius:8px;padding:9px;
+  background:var(--paper)}
+.gegenueber .was{font-size:14px;color:var(--soft)}
+.gegenueber .wert{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+
+/* Dialog */
+dialog{border:3px solid var(--ink);border-radius:12px;padding:0;max-width:560px;width:calc(100% - 28px);
+  background:var(--paper);color:var(--ink)}
+dialog::backdrop{background:rgba(21,32,43,.55)}
+.dlg-kopf{padding:14px;border-bottom:2px solid var(--linie);font-size:19px;font-weight:700}
+.dlg-leib{padding:14px;font-size:17px}
+.dlg-fuss{padding:14px;border-top:2px solid var(--linie);display:flex;gap:10px;flex-wrap:wrap;
+  justify-content:flex-end}
+.bild-dlg{max-width:92vw}
+.bild-dlg img{width:100%;display:block;background:var(--ink)}
+
+/* Stammdaten */
+.liste-zeile{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:11px 0;
+  border-bottom:2px solid var(--linie2)}
+.liste-zeile .name{font-weight:700;font-size:17px;flex:1 1 180px}
+.liste-zeile .neben{font-size:15px;color:var(--soft)}
+
+/* Handy: Tabellen werden zu Karten, damit nichts quer gescrollt werden muss */
+@media (max-width:820px){
+  .rahmen{flex-direction:column}
+  .navi{flex:1 1 auto;width:100%;position:static;border-right:0;border-bottom:2px solid var(--linie);
+    display:flex;gap:8px;overflow-x:auto;padding:10px}
+  .navi button{width:auto;margin-bottom:0;white-space:nowrap;flex:0 0 auto}
+  .inhalt{padding:12px}
+  .tabellen-karte{overflow-x:visible}
+  .tabelle{min-width:0}
+  .tabelle thead{display:none}
+  .tabelle,.tabelle tbody,.tabelle tr,.tabelle td{display:block;width:100%}
+  .tabelle tr{border:2px solid var(--linie);border-radius:var(--radius);margin-bottom:12px;
+    background:var(--paper);padding:6px}
+  .tabelle tr.nichtzug{border-color:#B07100}
+  .tabelle td{border-bottom:1px solid var(--linie2);padding:8px 6px}
+  .tabelle td:last-child{border-bottom:0}
+  .tabelle td::before{content:attr(data-titel);display:block;font-size:13px;color:var(--soft);
+    font-weight:600;margin-bottom:2px}
+}
+@media (max-width:820px){
+  /* Beim Umbruch soll der Demo-Zeitpunkt links stehen, nicht mittig hängen. */
+  .demo-kopf .uhr{margin-left:0;flex-basis:100%}
+}
+@media (max-width:520px){
+  body{font-size:16px}
+  .demo-kopf h1{font-size:18px}
+}
+</style>
+</head>
+<body>
+
+<header class="demo-kopf">
+  <div class="zeile">
+    <span class="demo-marke">DEMO</span>
+    <h1>TWISTLOCK Dispo — I&amp;M CARGO, Bremen</h1>
+    <span class="uhr" id="uhr">Demo-Uhr: —</span>
+  </div>
+  <p class="unter">Klickbare Vorschau mit Beispieldaten. Kein Server, keine echte Ortung, keine KI,
+     kein Nachrichtenversand. Eingaben bleiben nur in diesem Browser.</p>
+</header>
+
+<p class="demo-notiz" id="speicher-notiz"></p>
+
+<div class="rahmen">
+  <nav class="navi" id="navi" aria-label="Hauptbereiche"></nav>
+  <main class="inhalt" id="inhalt" tabindex="-1"></main>
+</div>
+
+<dialog id="dlg">
+  <div class="dlg-kopf" id="dlg-kopf"></div>
+  <div class="dlg-leib" id="dlg-leib"></div>
+  <div class="dlg-fuss" id="dlg-fuss"></div>
+</dialog>
+
+<dialog id="bilddlg" class="bild-dlg">
+  <div class="dlg-kopf" id="bild-kopf"></div>
+  <div id="bild-leib"></div>
+  <div class="dlg-fuss">
+    <button class="btn haupt" id="bild-zu">Schließen</button>
+  </div>
+</dialog>
+
+<script>
+"use strict";
+
+/* ===========================================================
+   1 · Zeitrechnung
+   Dieselben Regeln wie in der Fahrer-Vorschau:
+     Reserve = Termin minus voraussichtliche Ankunft
+       über 10 Min.      → grün
+       0 bis 10 Min.     → orange
+       unter 0           → rot
+       keine/alte Daten  → grau
+     Alarm erst ab 20 Min. berechneter Verspätung, einmal je Auftrag,
+     und nur wenn Prognose und Ortung frisch genug sind.
+   =========================================================== */
+const GRENZE_ORANGE = 10;    // bis hierhin orange
+const GRENZE_ALARM  = 20;    // ab hier Dispo-Alarm
+const MAX_ALTER     = 10;    // Minuten, bis Daten als veraltet gelten
+
+/* Fester Demo-Zeitpunkt: heutiges Datum, 10:30 Uhr Ortszeit.
+   Absichtlich nicht die echte Uhr — sonst sähe der Beispieltag je nach
+   Aufrufzeit anders aus und nachts läge er sogar auf dem Vortag.
+   Die Ortung ist ohnehin simuliert; ein fester Zeitpunkt macht das ehrlich
+   sichtbar und hält die Farben nachvollziehbar. */
+const DEMO_JETZT = (() => { const d = new Date(); d.setHours(10,30,0,0); return d; })();
+const jetzt    = () => new Date(DEMO_JETZT.getTime());
+const jetztIso = () => jetzt().toISOString();
+const inMin    = (m, ab) => new Date((ab ? new Date(ab) : jetzt()).getTime() + m*60000).toISOString();
+const minZw    = (a, b) => (new Date(b) - new Date(a)) / 60000;
+
+function hhmm(iso){
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d)) return null;
+  return d.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",hour12:false});
+}
+function tagVon(iso){
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d)) return null;
+  const p = n => String(n).padStart(2,"0");
+  return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate());
+}
+function tagLang(datum){
+  if (!datum) return "—";
+  const d = new Date(datum+"T12:00:00");
+  if (isNaN(d)) return datum;
+  return d.toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"});
+}
+function tagKurz(datum){
+  if (!datum) return "—";
+  const d = new Date(datum+"T12:00:00");
+  if (isNaN(d)) return datum;
+  return d.toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"});
+}
+/* Datum + Uhrzeit zu einem echten Zeitpunkt. Fehlt eines, gibt es keinen. */
+function zeitpunkt(datum, uhrzeit){
+  if (!datum || !uhrzeit) return null;
+  const d = new Date(datum+"T"+uhrzeit+":00");
+  return isNaN(d) ? null : d.toISOString();
+}
+const HEUTE   = () => tagVon(jetztIso());
+const TAG_PLUS = n => tagVon(inMin(n*1440));
+
+/* Reserve in Minuten. Ohne beide Zeitpunkte gibt es keine Reserve. */
+function reserve(terminIso, ankunftIso){
+  if (!terminIso || !ankunftIso) return null;
+  return Math.round(minZw(ankunftIso, terminIso));
+}
+function ampel(res){
+  if (res == null) return "grau";
+  if (res < 0) return "rot";
+  if (res <= GRENZE_ORANGE) return "gelb";
+  return "gruen";
+}
+/* Sind Prognose und Ortung frisch genug, um überhaupt etwas zu behaupten? */
+function datenZuverlaessig(datenZeit, ortungZeit){
+  if (!ortungZeit) return {ok:false, grund:"Keine Ortung vorhanden"};
+  if (minZw(ortungZeit, jetztIso()) > MAX_ALTER)
+    return {ok:false, grund:"Ortung ist älter als "+MAX_ALTER+" Minuten"};
+  if (!datenZeit) return {ok:false, grund:"Keine Berechnung vorhanden"};
+  if (minZw(datenZeit, jetztIso()) > MAX_ALTER)
+    return {ok:false, grund:"Berechnung ist älter als "+MAX_ALTER+" Minuten"};
+  return {ok:true, grund:null};
+}
+
+/* ===========================================================
+   2 · Demo-Planwerte
+   Ausdrücklich Planwerte dieser Vorschau, keine Verkehrsdaten
+   und keine Tachographendaten.
+   =========================================================== */
+const PLAN = {
+  fahrtBremenWalsrode: 75,
+  fahrtWalsrodeBremen: 75,
+  fahrtOrtsnah:        20,
+  laden:               30,
+  entladen:           120,
+  nacharbeit:          15,
+  depotstopp:          20,
+  pause:               45,
+  puffer:              15
+};
+
+/* ===========================================================
+   3 · Speicherung
+   Demo-Eingaben liegen im localStorage dieses Browsers. Klappt das
+   nicht, wird das ehrlich gesagt — es wird nichts behauptet.
+   =========================================================== */
+const SCHLUESSEL = "twistlock-dispo-demo-v1";
+let speicherGeht = true;
+let speicherGrund = "";
+
+function speichern(){
+  if (!speicherGeht) return false;
+  try {
+    localStorage.setItem(SCHLUESSEL, JSON.stringify(D));
+    return true;
+  } catch (e) {
+    speicherGeht = false;
+    speicherGrund = (e && e.message) || "Browser erlaubt kein Speichern";
+    speicherNotizZeichnen();
+    return false;
+  }
+}
+function laden(){
+  try {
+    const roh = localStorage.getItem(SCHLUESSEL);
+    if (!roh) return null;
+    return JSON.parse(roh);
+  } catch (e) {
+    speicherGeht = false;
+    speicherGrund = (e && e.message) || "Browser erlaubt kein Speichern";
+    return null;
+  }
+}
+function speicherNotizZeichnen(){
+  const n = document.getElementById("speicher-notiz");
+  if (speicherGeht) {
+    n.innerHTML = '<b>Simuliert:</b> Ortung, Fahrzeiten, Nummernerkennung, Freigabe an den Fahrer, ' +
+      'Anruf und jeder Versand. <b>Echt gerechnet:</b> Reserve und Farbe, die Alarmschwelle, ' +
+      'Entladezeit und Folgeankunft, Prüfziffer der Containernummer, Doppelbelegungen. ' +
+      'Eingaben werden in diesem Browser gespeichert (localStorage).';
+  } else {
+    n.innerHTML = '<b>Speichern nicht möglich:</b> ' + esc(speicherGrund) +
+      '. Eingaben gelten nur, solange diese Seite offen bleibt — beim Neuladen sind sie weg. ' +
+      'Es wird hier nichts als gespeichert angezeigt, was nicht gespeichert ist.';
+  }
+}
+
+/* ===========================================================
+   4 · Beispieldaten
+   Termine liegen bewusst relativ zur Demo-Uhr, damit die Farben
+   immer dasselbe zeigen — unabhängig davon, wann die Datei geöffnet wird.
+   =========================================================== */
+/* Ein Termin liegt immer auf einer vollen Minute: „HH:MM“ kennt keine
+   Sekunden. Würde die Prognose Sekunden behalten, wäre die Reserve um
+   eine Minute daneben — aus 15 Min. würden 14. Deshalb wird hier beides
+   auf dieselbe volle Minute gesetzt. */
+const _termine = new Map();
+function demoTermin(inMinuten, reserveMin){
+  const schluessel = inMinuten + "/" + (reserveMin == null ? "-" : reserveMin);
+  if (_termine.has(schluessel)) return _termine.get(schluessel);
+  const d = new Date(jetzt().getTime() + inMinuten*60000);
+  d.setSeconds(0,0);
+  const iso = d.toISOString();
+  const t = { datum:tagVon(iso), zeit:hhmm(iso), iso,
+              prognose: reserveMin == null ? null : inMin(-reserveMin, iso) };
+  // Gemerkt, damit Datum und Uhrzeit derselben Stelle nie aus zwei
+  // verschiedenen Minuten stammen — sonst bricht es genau um Mitternacht.
+  _termine.set(schluessel, t);
+  return t;
+}
+
+function demoDaten(){
+  const heute = HEUTE();
+  const morgen = TAG_PLUS(1);
+
+  /* Termine auf volle Minuten, damit die Reserven exakt stimmen. */
+  const T1 = demoTermin(270, 15);
+  const T2 = demoTermin(210, 5);
+  const T3 = demoTermin(120, -12);
+  const T4 = demoTermin(36, -24);
+  const T5 = demoTermin(360, 15);
+  const T9 = demoTermin(150, 30);
+
+  const fahrer = [
+    { id:"f1", name:"Andrej Kollmann", telefon:"0170 1234567", sprache:"Deutsch", aktiv:true },
+    { id:"f2", name:"Mehmet Yilmaz",   telefon:"0170 7654321", sprache:"Türkisch", aktiv:true }
+  ];
+  const zugmaschinen = [
+    { id:"z1", kennzeichen:"HB-TL 412", aktiv:true },
+    { id:"z2", kennzeichen:"HB-TL 508", aktiv:true, grund:"" }
+  ];
+  const chassis = [
+    { id:"c1", nummer:"CH-01", groesse:"40 ft Standard", gemietet:false },
+    { id:"c2", nummer:"CH-04", groesse:"20 ft / 40 ft kombi", gemietet:true }
+  ];
+
+  /* Hilfsfunktion: Auftrag mit Grundgerüst */
+  let lauf = 4800;
+  function auf(o){
+    lauf++;
+    return Object.assign({
+      id:"a"+lauf, nummer:String(lauf), tag:heute, freigegeben:true, storniert:false,
+      kunde:"", kundenRef:"",
+      abhol:{ firma:"Hansa Terminal Bremen", adresse:"Am Speicher 12, 28197 Bremen",
+              datum:heute, zeit:null, referenz:"", hinweis:"" },
+      liefer:{ firma:"", adresse:"", datum:heute, zeit:null, ansprech:"", telefon:"", hinweis:"" },
+      container:{ erwartet:"", bestaetigt:null, groesse:"40 ft", typ:"Standard", siegel:"",
+                  beladen:"beladen", rueckgabeOrt:"", rueckgabeTermin:null,
+                  ungeprueft:false, abweichung:false, trotzdem:false },
+      planung:{ fahrerId:null, zugmaschineId:null, chassisId:null,
+                ladenMin:PLAN.laden, wartenMin:0, entladenMin:PLAN.entladen, pufferMin:PLAN.puffer },
+      ablauf:{ abholung:null, ankunft:null, warten:null, entladenStart:null,
+               entladenEnde:null, abgabe:null },
+      entladeVerlaengerung:null,          // {min, ab, unbekannt}
+      fotos:{ abholung:null, abgabe:null },
+      dokumente:[],
+      bestaetigt:null,                     // ISO, wenn Fahrer gesehen und bestätigt hat
+      dispoNotiz:"",
+      ortungZeit:inMin(-2), datenZeit:inMin(-2),
+      prognose:null,                       // ISO, simulierte Ankunft am maßgeblichen Termin
+      alarmGesendet:false,
+      verlauf:[]
+    }, o);
+  }
+
+  const FOTO_CONT = fotoBild("MSCU 123456-6", "#1B4C78");
+  const FOTO_ABW  = fotoBild("TGHU 765432-0", "#8A5200");
+  const FOTO_ABG  = fotoBild("Abliefernachweis", "#0A6B31");
+
+  const auftraege = [];
+
+  /* (1) Pünktlich — grün. Liefertermin in gut zwei Stunden, Ankunft 15 Min. davor. */
+  auftraege.push(auf({
+    kunde:"Möller Baustoffe GmbH", kundenRef:"BST-9912",
+    abhol:{ firma:"Hansa Terminal Bremen", adresse:"Am Speicher 12, 28197 Bremen",
+            datum:demoTermin(-150).datum, zeit:demoTermin(-150).zeit, referenz:"FRST-4471", hinweis:"Tor 2" },
+    liefer:{ firma:"Möller Baustoffe GmbH", adresse:"Lange Straße 4, 29664 Walsrode",
+             datum:T1.datum, zeit:T1.zeit, ansprech:"Frau Möller", telefon:"05161 998812",
+             hinweis:"Anmeldung beim Pförtner, Tor 3 benutzen." },
+    container:{ erwartet:"MSCU1234566", bestaetigt:"MSCU1234566", groesse:"40 ft", typ:"Standard",
+                siegel:"SL 88213", beladen:"beladen", rueckgabeOrt:"Depot Bremen Hemelingen",
+                rueckgabeTermin:null, ungeprueft:false, abweichung:false, trotzdem:false },
+    planung:{ fahrerId:"f1", zugmaschineId:"z1", chassisId:"c1",
+              ladenMin:30, wartenMin:0, entladenMin:120, pufferMin:15 },
+    ablauf:{ abholung:inMin(-120), ankunft:null, warten:null, entladenStart:null,
+             entladenEnde:null, abgabe:null },
+    fotos:{ abholung:FOTO_CONT, abgabe:null },
+    bestaetigt:inMin(-155),
+    prognose:T1.prognose,
+    verlauf:[ v(inMin(-200),"Auftrag angelegt"), v(inMin(-170),"Für Fahrer freigegeben (Demo)"),
+              v(inMin(-155),"Fahrer hat gesehen und bestätigt"),
+              v(inMin(-120),"Abholung bestätigt, Containernummer stimmt") ]
+  }));
+
+  /* (2) Knapp — orange, 5 Minuten Reserve. Kein Alarm. */
+  auftraege.push(auf({
+    kunde:"Nordsee Handel KG", kundenRef:"NSH-4471",
+    abhol:{ firma:"Hansa Terminal Bremen", adresse:"Am Speicher 12, 28197 Bremen",
+            datum:demoTermin(-95).datum, zeit:demoTermin(-95).zeit, referenz:"FRST-4488", hinweis:"Tor 2" },
+    liefer:{ firma:"Nordsee Handel KG", adresse:"Industriestraße 7, 29664 Walsrode",
+             datum:T2.datum, zeit:T2.zeit, ansprech:"Herr Brandt", telefon:"05161 44120",
+             hinweis:"" },
+    container:{ erwartet:"TGHU7654320", bestaetigt:"TGHU7654320", groesse:"40 ft", typ:"Standard",
+                siegel:"SL 88990", beladen:"beladen", rueckgabeOrt:"Depot Bremen Hemelingen",
+                rueckgabeTermin:null, ungeprueft:false, abweichung:false, trotzdem:false },
+    planung:{ fahrerId:"f2", zugmaschineId:"z2", chassisId:"c2",
+              ladenMin:30, wartenMin:0, entladenMin:60, pufferMin:15 },
+    ablauf:{ abholung:inMin(-65), ankunft:null, warten:null, entladenStart:null,
+             entladenEnde:null, abgabe:null },
+    fotos:{ abholung:FOTO_CONT, abgabe:null },
+    bestaetigt:inMin(-100),
+    prognose:T2.prognose,
+    verlauf:[ v(inMin(-140),"Auftrag angelegt"), v(inMin(-120),"Für Fahrer freigegeben (Demo)"),
+              v(inMin(-100),"Fahrer hat gesehen und bestätigt"),
+              v(inMin(-65),"Abholung bestätigt") ]
+  }));
+
+  /* (3) 12 Minuten verspätet — rot, aber ausdrücklich KEIN Alarm. */
+  auftraege.push(auf({
+    kunde:"Weserhof Logistik GmbH & Co. KG", kundenRef:"WH-7781",
+    abhol:{ firma:"Hansa Terminal Bremen", adresse:"Am Speicher 12, 28197 Bremen",
+            datum:demoTermin(-180).datum, zeit:demoTermin(-180).zeit, referenz:"FRST-4502", hinweis:"" },
+    liefer:{ firma:"Weserhof Logistik GmbH & Co. KG",
+             adresse:"Annenheider Damm 145, 27755 Delmenhorst", datum:T3.datum,
+             zeit:T3.zeit, ansprech:"Herr Sander", telefon:"04221 55010",
+             hinweis:"Rampe 5" },
+    container:{ erwartet:"HLXU9988779", bestaetigt:"HLXU9988779", groesse:"20 ft", typ:"Standard",
+                siegel:"SL 77004", beladen:"beladen", rueckgabeOrt:"Depot Bremen Hemelingen",
+                rueckgabeTermin:null, ungeprueft:false, abweichung:false, trotzdem:false },
+    planung:{ fahrerId:"f1", zugmaschineId:"z1", chassisId:"c1",
+              ladenMin:30, wartenMin:0, entladenMin:60, pufferMin:15 },
+    ablauf:{ abholung:inMin(-150), ankunft:null, warten:null, entladenStart:null,
+             entladenEnde:null, abgabe:null },
+    fotos:{ abholung:FOTO_CONT, abgabe:null },
+    bestaetigt:inMin(-185),
+    prognose:T3.prognose,
+    verlauf:[ v(inMin(-220),"Auftrag angelegt"), v(inMin(-200),"Für Fahrer freigegeben (Demo)"),
+              v(inMin(-185),"Fahrer hat gesehen und bestätigt"),
+              v(inMin(-150),"Abholung bestätigt") ]
+  }));
+
+  /* (4) 24 Minuten verspätet — rot UND genau ein Alarm. */
+  auftraege.push(auf({
+    kunde:"Hanse Bau Delmenhorst GmbH", kundenRef:"HBD-2210",
+    abhol:{ firma:"Hansa Terminal Bremen", adresse:"Am Speicher 12, 28197 Bremen",
+            datum:demoTermin(-210).datum, zeit:demoTermin(-210).zeit, referenz:"FRST-4510", hinweis:"" },
+    liefer:{ firma:"Hanse Bau Delmenhorst GmbH", adresse:"Stedinger Straße 22, 27749 Delmenhorst",
+             datum:T4.datum, zeit:T4.zeit, ansprech:"Frau Ricken", telefon:"04221 30188",
+             hinweis:"" },
+    container:{ erwartet:"CAIU4567890", bestaetigt:"CAIU4567890", groesse:"40 ft", typ:"High Cube",
+                siegel:"SL 66120", beladen:"beladen", rueckgabeOrt:"Depot Bremen Hemelingen",
+                rueckgabeTermin:null, ungeprueft:false, abweichung:false, trotzdem:false },
+    planung:{ fahrerId:"f2", zugmaschineId:"z2", chassisId:"c2",
+              ladenMin:30, wartenMin:0, entladenMin:90, pufferMin:15 },
+    ablauf:{ abholung:inMin(-180), ankunft:null, warten:null, entladenStart:null,
+             entladenEnde:null, abgabe:null },
+    fotos:{ abholung:FOTO_CONT, abgabe:null },
+    bestaetigt:inMin(-215),
+    prognose:T4.prognose,
+    verlauf:[ v(inMin(-250),"Auftrag angelegt"), v(inMin(-230),"Für Fahrer freigegeben (Demo)"),
+              v(inMin(-215),"Fahrer hat gesehen und bestätigt"),
+              v(inMin(-180),"Abholung bestätigt") ]
+  }));
+
+  /* (5) Containerabweichung — Fahrer hat „Trotzdem abholen“ gewählt. */
+  auftraege.push(auf({
+    kunde:"Aller Papier GmbH", kundenRef:"AP-3390",
+    abhol:{ firma:"Hansa Terminal Bremen", adresse:"Am Speicher 12, 28197 Bremen",
+            datum:demoTermin(-70).datum, zeit:demoTermin(-70).zeit, referenz:"FRST-4533", hinweis:"Tor 2" },
+    liefer:{ firma:"Aller Papier GmbH", adresse:"Bahnhofstraße 60, 29664 Walsrode",
+             datum:T5.datum, zeit:T5.zeit, ansprech:"Herr Otte", telefon:"05161 77300",
+             hinweis:"" },
+    container:{ erwartet:"MSCU1234566", bestaetigt:"TGHU7654320", groesse:"40 ft", typ:"Standard",
+                siegel:"SL 88771", beladen:"beladen", rueckgabeOrt:"Depot Bremen Hemelingen",
+                rueckgabeTermin:null, ungeprueft:false, abweichung:true, trotzdem:true },
+    planung:{ fahrerId:"f2", zugmaschineId:"z2", chassisId:"c2",
+              ladenMin:30, wartenMin:0, entladenMin:120, pufferMin:15 },
+    ablauf:{ abholung:inMin(-40), ankunft:null, warten:null, entladenStart:null,
+             entladenEnde:null, abgabe:null },
+    fotos:{ abholung:FOTO_ABW, abgabe:null },
+    bestaetigt:inMin(-80),
+    prognose:T5.prognose,
+    verlauf:[ v(inMin(-120),"Auftrag angelegt"), v(inMin(-100),"Für Fahrer freigegeben (Demo)"),
+              v(inMin(-80),"Fahrer hat gesehen und bestätigt"),
+              v(inMin(-40),"Abholung mit abweichender Containernummer bestätigt") ]
+  }));
+
+  /* (6) Entladung läuft und wurde verlängert — Folgeauftrag dadurch gefährdet. */
+  auftraege.push(auf({
+    kunde:"Möller Baustoffe GmbH", kundenRef:"BST-9940",
+    abhol:{ firma:"Hansa Terminal Bremen", adresse:"Am Speicher 12, 28197 Bremen",
+            datum:demoTermin(-260).datum, zeit:demoTermin(-260).zeit, referenz:"FRST-4540", hinweis:"" },
+    liefer:{ firma:"Möller Baustoffe GmbH", adresse:"Lange Straße 4, 29664 Walsrode",
+             datum:demoTermin(-90).datum, zeit:demoTermin(-90).zeit, ansprech:"Frau Möller", telefon:"05161 998812",
+             hinweis:"" },
+    container:{ erwartet:"MSCU1234566", bestaetigt:"MSCU1234566", groesse:"40 ft", typ:"Standard",
+                siegel:"SL 88301", beladen:"beladen", rueckgabeOrt:"Depot Bremen Hemelingen",
+                rueckgabeTermin:null, ungeprueft:false, abweichung:false, trotzdem:false },
+    planung:{ fahrerId:"f1", zugmaschineId:"z1", chassisId:"c1",
+              ladenMin:30, wartenMin:15, entladenMin:120, pufferMin:15 },
+    ablauf:{ abholung:inMin(-260), ankunft:inMin(-100), warten:inMin(-98),
+             entladenStart:inMin(-85), entladenEnde:null, abgabe:null },
+    entladeVerlaengerung:{ min:60, ab:inMin(-10), unbekannt:false },
+    fotos:{ abholung:FOTO_CONT, abgabe:null },
+    bestaetigt:inMin(-280),
+    prognose:null,
+    verlauf:[ v(inMin(-300),"Auftrag angelegt"), v(inMin(-290),"Für Fahrer freigegeben (Demo)"),
+              v(inMin(-280),"Fahrer hat gesehen und bestätigt"),
+              v(inMin(-260),"Abholung bestätigt"), v(inMin(-100),"Ankunft beim Kunden gemeldet"),
+              v(inMin(-98),"Fahrer meldet Warten"), v(inMin(-85),"Entladung gestartet"),
+              v(inMin(-10),"Fahrer meldet: dauert 60 Minuten länger") ]
+  }));
+
+  /* (7) Folgeauftrag zu (6) — noch nicht begonnen, hängt an der Entladung. */
+  auftraege.push(auf({
+    kunde:"Nordsee Handel KG", kundenRef:"NSH-4502",
+    abhol:{ firma:"Hansa Terminal Bremen", adresse:"Am Speicher 12, 28197 Bremen",
+            datum:demoTermin(330).datum, zeit:demoTermin(330).zeit, referenz:"FRST-4566", hinweis:"Tor 2" },
+    liefer:{ firma:"Nordsee Handel KG", adresse:"Industriestraße 7, 29664 Walsrode",
+             datum:demoTermin(450).datum, zeit:demoTermin(450).zeit, ansprech:"Herr Brandt", telefon:"05161 44120",
+             hinweis:"" },
+    container:{ erwartet:"", bestaetigt:null, groesse:"40 ft", typ:"Standard", siegel:"",
+                beladen:"beladen", rueckgabeOrt:"Depot Bremen Hemelingen", rueckgabeTermin:null,
+                ungeprueft:false, abweichung:false, trotzdem:false },
+    planung:{ fahrerId:"f1", zugmaschineId:"z1", chassisId:"c1",
+              ladenMin:30, wartenMin:0, entladenMin:120, pufferMin:15 },
+    bestaetigt:null,
+    prognose:null,
+    verlauf:[ v(inMin(-180),"Auftrag angelegt"), v(inMin(-175),"Für Fahrer freigegeben (Demo)") ]
+  }));
+
+  /* (8) Nicht zugewiesen — muss auffallen. */
+  auftraege.push(auf({
+    kunde:"Lüneburger Holzwerke GmbH", kundenRef:"LHW-1180", freigegeben:false,
+    abhol:{ firma:"Hansa Terminal Bremen", adresse:"Am Speicher 12, 28197 Bremen",
+            datum:demoTermin(200).datum, zeit:demoTermin(200).zeit, referenz:"FRST-4590", hinweis:"" },
+    liefer:{ firma:"Lüneburger Holzwerke GmbH", adresse:"Sägewerkstraße 3, 29664 Walsrode",
+             datum:demoTermin(320).datum, zeit:demoTermin(320).zeit, ansprech:"", telefon:"", hinweis:"" },
+    container:{ erwartet:"", bestaetigt:null, groesse:"40 ft", typ:"Standard", siegel:"",
+                beladen:"beladen", rueckgabeOrt:"", rueckgabeTermin:null,
+                ungeprueft:false, abweichung:false, trotzdem:false },
+    planung:{ fahrerId:null, zugmaschineId:null, chassisId:null,
+              ladenMin:30, wartenMin:0, entladenMin:120, pufferMin:15 },
+    bestaetigt:null, prognose:null,
+    verlauf:[ v(inMin(-60),"Auftrag angelegt, noch kein Fahrer zugewiesen") ]
+  }));
+
+  /* (9) Alte Ortung — grau, „Ankunft unklar“, ausdrücklich kein Alarm. */
+  auftraege.push(auf({
+    kunde:"Elbe Stahlhandel GmbH", kundenRef:"ESH-6620",
+    abhol:{ firma:"Hansa Terminal Bremen", adresse:"Am Speicher 12, 28197 Bremen",
+            datum:demoTermin(-135).datum, zeit:demoTermin(-135).zeit, referenz:"FRST-4577", hinweis:"" },
+    liefer:{ firma:"Elbe Stahlhandel GmbH", adresse:"Hafenstraße 9, 28237 Bremen",
+             datum:T9.datum, zeit:T9.zeit, ansprech:"", telefon:"", hinweis:"" },
+    container:{ erwartet:"MSCU1234566", bestaetigt:"MSCU1234566", groesse:"20 ft", typ:"Standard",
+                siegel:"", beladen:"beladen", rueckgabeOrt:"Depot Bremen Hemelingen",
+                rueckgabeTermin:null, ungeprueft:true, abweichung:false, trotzdem:false },
+    planung:{ fahrerId:"f2", zugmaschineId:"z2", chassisId:"c2",
+              ladenMin:30, wartenMin:0, entladenMin:45, pufferMin:15 },
+    ablauf:{ abholung:inMin(-105), ankunft:null, warten:null, entladenStart:null,
+             entladenEnde:null, abgabe:null },
+    fotos:{ abholung:FOTO_CONT, abgabe:null },
+    bestaetigt:inMin(-140),
+    ortungZeit:inMin(-42), datenZeit:inMin(-42),     // älter als 10 Minuten → grau
+    prognose:T9.prognose,
+    verlauf:[ v(inMin(-170),"Auftrag angelegt"), v(inMin(-160),"Für Fahrer freigegeben (Demo)"),
+              v(inMin(-140),"Fahrer hat gesehen und bestätigt"),
+              v(inMin(-105),"Abholung bestätigt, Nummer konnte nicht geprüft werden") ]
+  }));
+
+  /* (10) Fertig — zum Vergleich, mit Ablieferfoto. */
+  auftraege.push(auf({
+    kunde:"Möller Baustoffe GmbH", kundenRef:"BST-9901",
+    abhol:{ firma:"Hansa Terminal Bremen", adresse:"Am Speicher 12, 28197 Bremen",
+            datum:demoTermin(-420).datum, zeit:demoTermin(-420).zeit, referenz:"FRST-4450", hinweis:"" },
+    liefer:{ firma:"Möller Baustoffe GmbH", adresse:"Lange Straße 4, 29664 Walsrode",
+             datum:demoTermin(-250).datum, zeit:demoTermin(-250).zeit, ansprech:"Frau Möller", telefon:"05161 998812",
+             hinweis:"" },
+    container:{ erwartet:"MSCU1234566", bestaetigt:"MSCU1234566", groesse:"40 ft", typ:"Standard",
+                siegel:"SL 88100", beladen:"beladen", rueckgabeOrt:"Depot Bremen Hemelingen",
+                rueckgabeTermin:null, ungeprueft:false, abweichung:false, trotzdem:false },
+    planung:{ fahrerId:"f1", zugmaschineId:"z1", chassisId:"c1",
+              ladenMin:30, wartenMin:10, entladenMin:120, pufferMin:15 },
+    ablauf:{ abholung:inMin(-420), ankunft:inMin(-330), warten:inMin(-328),
+             entladenStart:inMin(-318), entladenEnde:inMin(-205), abgabe:inMin(-200) },
+    fotos:{ abholung:FOTO_CONT, abgabe:FOTO_ABG },
+    dokumente:[ {art:"EIR", name:"EIR-4450.pdf", stand:"vorhanden (Demo)"},
+                {art:"CMR", name:"CMR-4450.pdf", stand:"vorhanden (Demo)"} ],
+    bestaetigt:inMin(-440), prognose:null,
+    verlauf:[ v(inMin(-470),"Auftrag angelegt"), v(inMin(-450),"Für Fahrer freigegeben (Demo)"),
+              v(inMin(-440),"Fahrer hat gesehen und bestätigt"),
+              v(inMin(-420),"Abholung bestätigt"), v(inMin(-330),"Ankunft beim Kunden"),
+              v(inMin(-318),"Entladung gestartet"), v(inMin(-205),"Entladung fertig"),
+              v(inMin(-200),"Ablieferung bestätigt") ]
+  }));
+
+  /* ---- Montagsbeispiel: drei Termine, ein Lkw, offener Konflikt ----
+     Ausdrücklich festgelegt, worauf sich die Uhrzeiten beziehen:
+       06:30 = Abholtermin am Terminal Bremen (Auftrag A)
+       11:00 = Liefertermin beim Kunden in Walsrode (Auftrag B)
+       13:30 = Abholtermin am Terminal Bremen (Auftrag C)
+     Alle drei sind bewusst demselben Lkw zugewiesen, damit die
+     Vorschau den Konflikt zeigt statt ihn zu verschweigen. */
+  const montag = naechsterMontag();
+  auftraege.push(auf({
+    nummer:"4901", tag:montag, kunde:"Möller Baustoffe GmbH", kundenRef:"BST-10012",
+    abhol:{ firma:"Hansa Terminal Bremen", adresse:"Am Speicher 12, 28197 Bremen",
+            datum:montag, zeit:"06:30", referenz:"FRST-5001", hinweis:"Tor 2, Frühschicht" },
+    liefer:{ firma:"Möller Baustoffe GmbH", adresse:"Lange Straße 4, 29664 Walsrode",
+             datum:montag, zeit:"09:00", ansprech:"Frau Möller", telefon:"05161 998812", hinweis:"" },
+    container:{ erwartet:"MSCU1234566", bestaetigt:null, groesse:"40 ft", typ:"Standard",
+                siegel:"", beladen:"beladen", rueckgabeOrt:"Depot Bremen Hemelingen",
+                rueckgabeTermin:null, ungeprueft:false, abweichung:false, trotzdem:false },
+    planung:{ fahrerId:"f1", zugmaschineId:"z1", chassisId:"c1",
+              ladenMin:30, wartenMin:0, entladenMin:120, pufferMin:15 },
+    bestaetigt:null, prognose:null,
+    verlauf:[ v(inMin(-1400),"Auftrag angelegt für Montag") ]
+  }));
+  auftraege.push(auf({
+    nummer:"4902", tag:montag, kunde:"Nordsee Handel KG", kundenRef:"NSH-10013",
+    abhol:{ firma:"Hansa Terminal Bremen", adresse:"Am Speicher 12, 28197 Bremen",
+            datum:montag, zeit:null, referenz:"FRST-5002", hinweis:"Tor 2" },
+    liefer:{ firma:"Nordsee Handel KG", adresse:"Industriestraße 7, 29664 Walsrode",
+             datum:montag, zeit:"11:00", ansprech:"Herr Brandt", telefon:"05161 44120",
+             hinweis:"Feste Anlieferzeit, kein späteres Zeitfenster." },
+    container:{ erwartet:"TGHU7654320", bestaetigt:null, groesse:"40 ft", typ:"Standard",
+                siegel:"", beladen:"beladen", rueckgabeOrt:"Depot Bremen Hemelingen",
+                rueckgabeTermin:null, ungeprueft:false, abweichung:false, trotzdem:false },
+    planung:{ fahrerId:"f1", zugmaschineId:"z1", chassisId:"c1",
+              ladenMin:30, wartenMin:0, entladenMin:120, pufferMin:15 },
+    bestaetigt:null, prognose:null,
+    verlauf:[ v(inMin(-1400),"Auftrag angelegt für Montag") ]
+  }));
+  auftraege.push(auf({
+    nummer:"4903", tag:montag, kunde:"Aller Papier GmbH", kundenRef:"AP-10014",
+    abhol:{ firma:"Hansa Terminal Bremen", adresse:"Am Speicher 12, 28197 Bremen",
+            datum:montag, zeit:"13:30", referenz:"FRST-5003", hinweis:"Tor 2" },
+    liefer:{ firma:"Aller Papier GmbH", adresse:"Bahnhofstraße 60, 29664 Walsrode",
+             datum:montag, zeit:"16:00", ansprech:"Herr Otte", telefon:"05161 77300", hinweis:"" },
+    container:{ erwartet:"", bestaetigt:null, groesse:"40 ft", typ:"Standard", siegel:"",
+                beladen:"beladen", rueckgabeOrt:"Depot Bremen Hemelingen", rueckgabeTermin:null,
+                ungeprueft:false, abweichung:false, trotzdem:false },
+    planung:{ fahrerId:"f1", zugmaschineId:"z1", chassisId:"c1",
+              ladenMin:30, wartenMin:0, entladenMin:120, pufferMin:15 },
+    bestaetigt:null, prognose:null,
+    verlauf:[ v(inMin(-1400),"Auftrag angelegt für Montag") ]
+  }));
+
+  /* Morgen: ein ruhiger Tag, damit die Datumsauswahl etwas zeigt. */
+  auftraege.push(auf({
+    nummer:"4850", tag:morgen, kunde:"Weserhof Logistik GmbH & Co. KG", kundenRef:"WH-7802",
+    abhol:{ firma:"Hansa Terminal Bremen", adresse:"Am Speicher 12, 28197 Bremen",
+            datum:morgen, zeit:"08:00", referenz:"FRST-4700", hinweis:"" },
+    liefer:{ firma:"Weserhof Logistik GmbH & Co. KG",
+             adresse:"Annenheider Damm 145, 27755 Delmenhorst",
+             datum:morgen, zeit:"10:30", ansprech:"Herr Sander", telefon:"04221 55010", hinweis:"" },
+    container:{ erwartet:"HLXU9988779", bestaetigt:null, groesse:"20 ft", typ:"Standard", siegel:"",
+                beladen:"beladen", rueckgabeOrt:"Depot Bremen Hemelingen", rueckgabeTermin:null,
+                ungeprueft:false, abweichung:false, trotzdem:false },
+    planung:{ fahrerId:"f2", zugmaschineId:"z2", chassisId:"c2",
+              ladenMin:30, wartenMin:0, entladenMin:120, pufferMin:15 },
+    bestaetigt:null, prognose:null,
+    verlauf:[ v(inMin(-600),"Auftrag angelegt für morgen") ]
+  }));
+
+  return { fahrer, zugmaschinen, chassis, auftraege, meldungen:[], laufNummer:4950 };
+}
+function v(zeit, text){ return { zeit, text }; }
+
+function naechsterMontag(){
+  const d = jetzt();
+  const tage = (8 - d.getDay()) % 7 || 7;   // immer der kommende Montag
+  return tagVon(inMin(tage*1440));
+}
+
+/* Ein einfaches Demo-Foto als SVG — kein echtes Bild, nichts geladen. */
+function fotoBild(text, farbe){
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="480" height="300">' +
+    '<rect width="480" height="300" fill="#15202B"/>' +
+    '<rect x="24" y="120" width="432" height="120" rx="6" fill="none" stroke="'+farbe+'" stroke-width="5"/>' +
+    '<text x="240" y="70" fill="#D6DBD9" font-family="sans-serif" font-size="21" text-anchor="middle">' +
+      'Demo-Foto, keine Kamera</text>' +
+    '<text x="240" y="192" fill="#FFFFFF" font-family="monospace" font-size="30" text-anchor="middle" ' +
+      'letter-spacing="2">'+text+'</text></svg>';
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
+
+/* ===========================================================
+   5 · Zustand
+   =========================================================== */
+let D = null;                 // Daten
+let U = {                     // Oberfläche
+  bereich:"tagesplan",
+  tag:null,
+  filter:"alle",
+  auftragId:null,
+  formular:null,
+  fehler:{},
+  notiz:null
+};
+
+function start(){
+  const gespeichert = laden();
+  D = gespeichert || demoDaten();
+  if (!gespeichert) { alarmePruefen(); speichern(); }
+  U.tag = HEUTE();
+  speicherNotizZeichnen();
+  alarmePruefen();
+  zeichne();
+  uhrZeigen();
+  setInterval(uhrZeigen, 20000);
+}
+function uhrZeigen(){
+  document.getElementById("uhr").textContent =
+    "Demo-Zeitpunkt (fest): " + jetzt().toLocaleString("de-DE",
+      {weekday:"short", day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"}) + " Uhr";
+}
+
+/* ===========================================================
+   6 · Auswertung eines Auftrags
+   =========================================================== */
+const fahrerVon = id => D.fahrer.find(x => x.id === id) || null;
+const zugVon    = id => D.zugmaschinen.find(x => x.id === id) || null;
+const chsVon    = id => D.chassis.find(x => x.id === id) || null;
+const auftragVon= id => D.auftraege.find(x => x.id === id) || null;
+
+/* Welcher Termin ist für diesen Auftrag gerade der maßgebliche?
+   Vor der Abholung zählt der Abholtermin, danach der Liefertermin.
+   Das muss sichtbar sein — „Termin 11:00“ allein ist zweideutig. */
+function massgeblich(a){
+  if (!a.ablauf.abholung && a.abhol.zeit)
+    return { art:"Abholung", ort:a.abhol.firma, datum:a.abhol.datum, zeit:a.abhol.zeit,
+             iso:zeitpunkt(a.abhol.datum, a.abhol.zeit) };
+  return { art:"Anlieferung", ort:a.liefer.firma, datum:a.liefer.datum, zeit:a.liefer.zeit,
+           iso:zeitpunkt(a.liefer.datum, a.liefer.zeit) };
+}
+
+/* Aktueller Arbeitsschritt in Worten. */
+function schritt(a){
+  if (a.storniert)           return { wort:"Storniert", klasse:"m-grau" };
+  if (!a.planung.fahrerId)   return { wort:"Nicht zugewiesen", klasse:"m-gelb" };
+  if (!a.freigegeben)        return { wort:"Entwurf", klasse:"m-grau" };
+  if (a.ablauf.abgabe)       return { wort:"Fertig", klasse:"m-gruen" };
+  if (a.ablauf.entladenEnde) return { wort:"Entladen fertig", klasse:"m-marine" };
+  if (a.ablauf.entladenStart)return { wort:"Entladung läuft", klasse:"m-marine" };
+  if (a.ablauf.warten)       return { wort:"Wartet", klasse:"m-gelb" };
+  if (a.ablauf.ankunft)      return { wort:"Angekommen", klasse:"m-marine" };
+  if (a.ablauf.abholung)     return { wort:"Unterwegs", klasse:"m-marine" };
+  return { wort:"Geplant", klasse:"m-grau" };
+}
+
+/* Verbleibende Entladezeit in Minuten, oder null wenn offen. */
+function entladeRest(a){
+  if (!a.ablauf.entladenStart || a.ablauf.entladenEnde) return null;
+  const ver = a.entladeVerlaengerung;
+  if (ver && ver.unbekannt) return null;              // ausdrücklich unbekannt
+  if (ver) {
+    // Die neue Restzeit zählt ab dem Zeitpunkt der Eingabe.
+    return Math.max(0, ver.min - minZw(ver.ab, jetztIso()));
+  }
+  const verbraucht = minZw(a.ablauf.entladenStart, jetztIso());
+  return Math.max(0, a.planung.entladenMin - verbraucht);
+}
+
+/* Voraussichtliche Ankunft am maßgeblichen Termin.
+   Läuft die Entladung, wird aus der Restzeit gerechnet — sonst wird
+   der hinterlegte Demo-Wert benutzt. Beides ist simuliert. */
+function prognose(a){
+  const m = massgeblich(a);
+  if (!m.iso) return { iso:null, grund:"Kein Termin hinterlegt" };
+  if (a.ablauf.abgabe) return { iso:null, grund:"Auftrag ist abgeschlossen" };
+
+  /* Ist der Fahrer schon da, ist die Ankunft keine Vorhersage mehr, sondern
+     eine Tatsache. Dann wird die tatsächliche Ankunft gegen den Termin
+     gehalten — und nicht etwa das Entladeende, das gar nicht gemeint ist. */
+  if (a.ablauf.ankunft) return { iso:a.ablauf.ankunft, grund:null, istAnkunft:true };
+
+  const zuv = datenZuverlaessig(a.datenZeit, a.ortungZeit);
+  if (!zuv.ok) return { iso:null, grund:zuv.grund };
+
+  if (a.ablauf.entladenStart && !a.ablauf.entladenEnde) {
+    const rest = entladeRest(a);
+    if (rest == null) return { iso:null, grund:"Entladeende noch unbekannt" };
+    return { iso:inMin(rest), grund:null };
+  }
+  if (a.prognose) return { iso:a.prognose, grund:null };
+  return { iso:null, grund:"Keine Berechnung vorhanden" };
+}
+
+/* Zeitstatus: Farbe plus der Satz, der sie erklärt. */
+function zeitstatus(a){
+  const m = massgeblich(a);
+  const p = prognose(a);
+  if (a.storniert) return { klasse:"m-grau", satz:"Storniert", res:null, ankunft:null };
+  if (a.ablauf.abgabe) return { klasse:"m-gruen", satz:"Abgeliefert", res:null, ankunft:null };
+  if (!p.iso) return { klasse:"m-grau", satz:"Ankunft unklar", zusatz:p.grund, res:null, ankunft:null };
+  const res = reserve(m.iso, p.iso);
+  const k = ampel(res);
+  /* Bereits angekommen: das ist Vergangenheit, keine Vorhersage. */
+  if (p.istAnkunft) {
+    if (res < 0) return { klasse:"m-rot", satz:Math.abs(res)+" Min. zu spät angekommen",
+                          zusatz:"Fahrzeug ist vor Ort", res, ankunft:p.iso, istAnkunft:true };
+    return { klasse:"m-gruen", satz:"Pünktlich angekommen",
+             zusatz:"Fahrzeug ist vor Ort", res, ankunft:p.iso, istAnkunft:true };
+  }
+  if (k === "rot")   return { klasse:"m-rot",  satz:Math.abs(res)+" Min. verspätet", res, ankunft:p.iso };
+  if (k === "gelb")  return { klasse:"m-gelb", satz:res+" Min. Reserve", res, ankunft:p.iso };
+  if (k === "gruen") return { klasse:"m-gruen",satz:res+" Min. Reserve", res, ankunft:p.iso };
+  return { klasse:"m-grau", satz:"Ankunft unklar", res:null, ankunft:null };
+}
+
+/* ===========================================================
+   7 · Alarme
+   Erst ab 20 Minuten berechneter Verspätung, nur einmal je Auftrag,
+   und niemals aus unzuverlässigen Daten.
+   =========================================================== */
+function alarmePruefen(){
+  let neu = 0;
+  D.auftraege.forEach(a => {
+    if (a.storniert || a.ablauf.abgabe || a.alarmGesendet) return;
+    /* Wer schon da ist, kommt nicht mehr voraussichtlich zu spät.
+       Ein Verspätungsalarm ist eine Vorhersage, keine Nachricht über
+       etwas, das bereits eingetreten und im Ablauf sichtbar ist. */
+    if (a.ablauf.ankunft) return;
+    const zuv = datenZuverlaessig(a.datenZeit, a.ortungZeit);
+    if (!zuv.ok) return;                       // unzuverlässig → kein Alarm
+    const s = zeitstatus(a);
+    if (s.res == null || s.res > -GRENZE_ALARM) return;
+    a.alarmGesendet = true;
+    meldungAnlegen({
+      art:"verspaetung", auftragId:a.id,
+      titel:"Voraussichtlich " + Math.abs(s.res) + " Minuten verspätet.",
+      text:"Kunde " + a.kunde + ", Termin " + (massgeblich(a).zeit || "—") + " Uhr (" +
+           massgeblich(a).art + "). Alarm ab " + GRENZE_ALARM +
+           " Minuten, einmal je Auftrag."
+    });
+    a.verlauf.push(v(jetztIso(), "Verspätungsalarm ausgelöst (" + Math.abs(s.res) + " Min.)"));
+    neu++;
+  });
+
+  // Containerabweichung und ungeprüfte Nummer als Meldung, einmalig
+  D.auftraege.forEach(a => {
+    if (a.container.abweichung && !D.meldungen.some(m => m.auftragId===a.id && m.art==="abweichung")) {
+      meldungAnlegen({ art:"abweichung", auftragId:a.id,
+        titel:"Containernummer stimmt nicht überein.",
+        text:"Kunde " + a.kunde + "." });
+      neu++;
+    }
+    if (a.container.ungeprueft && !D.meldungen.some(m => m.auftragId===a.id && m.art==="ungeprueft")) {
+      meldungAnlegen({ art:"ungeprueft", auftragId:a.id,
+        titel:"Containernummer noch ungeprüft.",
+        text:"Die Nummer konnte nicht sicher gelesen werden. Kunde " + a.kunde + "." });
+      neu++;
+    }
+  });
+  return neu;
+}
+function meldungAnlegen(m){
+  D.meldungen.unshift(Object.assign({ id:"m"+Date.now()+Math.random().toString(36).slice(2,6),
+                                      zeit:jetztIso(), gesehen:false }, m));
+}
+
+/* ===========================================================
+   8 · Doppelbelegung
+   Eine gefährdete Planung darf gespeichert werden, bleibt aber
+   sichtbar als Konflikt stehen.
+   =========================================================== */
+function belegung(a){
+  /* Der Zeitraum, in dem Fahrer, Zugmaschine und Chassis am Lieferstopp
+     wirklich gebunden sind: von der Ankunft (Liefertermin minus Anfahrt-
+     puffer) bis zum Ende der geplanten Entladung zuzüglich Puffer.
+     Bewusst nicht der ganze Auftrag — sonst überlappt an einem dichten
+     Tag alles mit allem und die Warnung sagt nichts mehr aus. */
+  const anIso = zeitpunkt(a.liefer.datum, a.liefer.zeit);
+  if (!anIso) return null;
+  return { von: inMin(-30, anIso),
+           bis: inMin(a.planung.entladenMin + a.planung.pufferMin, anIso) };
+}
+function konflikte(a){
+  const raus = [];
+  const b = belegung(a);
+  /* Ein abgeschlossener Auftrag bindet niemanden mehr. */
+  if (!b || a.storniert || a.ablauf.abgabe) return raus;
+  D.auftraege.forEach(o => {
+    if (o.id === a.id || o.storniert || o.ablauf.abgabe || o.tag !== a.tag) return;
+    const ob = belegung(o);
+    if (!ob) return;
+    const ueberlappt = new Date(b.von) < new Date(ob.bis) && new Date(ob.von) < new Date(b.bis);
+    if (!ueberlappt) return;
+    if (a.planung.fahrerId && a.planung.fahrerId === o.planung.fahrerId)
+      raus.push({ was:"Fahrer", wer:(fahrerVon(a.planung.fahrerId)||{}).name, mit:o });
+    if (a.planung.zugmaschineId && a.planung.zugmaschineId === o.planung.zugmaschineId)
+      raus.push({ was:"Zugmaschine", wer:(zugVon(a.planung.zugmaschineId)||{}).kennzeichen, mit:o });
+    if (a.planung.chassisId && a.planung.chassisId === o.planung.chassisId)
+      raus.push({ was:"Chassis", wer:(chsVon(a.planung.chassisId)||{}).nummer, mit:o });
+  });
+  return raus;
+}
+
+/* ===========================================================
+   9 · Kleine Helfer für die Anzeige
+   =========================================================== */
+function esc(x){
+  return String(x == null ? "" : x)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+/* Containernummer lesbar: MSCU 123456-6 */
+function contLesbar(s){
+  if (!s) return "—";
+  const t = String(s).toUpperCase().replace(/[^A-Z0-9]/g,"");
+  if (t.length !== 11) return String(s);
+  return t.slice(0,4)+" "+t.slice(4,10)+"-"+t.slice(10);
+}
+/* Prüfziffer nach ISO 6346 — das rechnet die Vorschau wirklich. */
+function contGueltig(s){
+  const t = String(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  if (!/^[A-Z]{4}\d{7}$/.test(t)) return false;
+  const werte = {A:10,B:12,C:13,D:14,E:15,F:16,G:17,H:18,I:19,J:20,K:21,L:23,M:24,N:25,
+                 O:26,P:27,Q:28,R:29,S:30,T:31,U:32,V:34,W:35,X:36,Y:37,Z:38};
+  let summe = 0;
+  for (let i=0;i<10;i++){
+    const z = t[i];
+    const w = /\d/.test(z) ? Number(z) : werte[z];
+    summe += w * Math.pow(2,i);
+  }
+  return (summe % 11) % 10 === Number(t[10]);
+}
+function marke(klasse, text, zusatz){
+  return '<span class="marke '+klasse+'">'+esc(text)+'</span>' +
+         (zusatz ? '<span class="neben">'+esc(zusatz)+'</span>' : '');
+}
+const simMarke = txt => '<span class="sim">'+esc(txt||"Simuliert")+'</span>';
+
+/* ===========================================================
+   10 · Zeichnen
+   =========================================================== */
+const BEREICHE = [
+  { k:"tagesplan", wort:"Tagesplan" },
+  { k:"auftraege", wort:"Aufträge" },
+  { k:"stamm",     wort:"Fahrer & Fahrzeuge" },
+  { k:"meldungen", wort:"Meldungen" }
+];
+
+function zeichne(){
+  naviZeichnen();
+  const el = document.getElementById("inhalt");
+  let html = "";
+  if (U.notiz) html += '<div class="hinweis">'+U.notiz+'</div>';
+  if (U.bereich === "tagesplan") html += ansichtTagesplan();
+  else if (U.bereich === "auftraege") html += ansichtAuftraege();
+  else if (U.bereich === "stamm") html += ansichtStamm();
+  else if (U.bereich === "meldungen") html += ansichtMeldungen();
+  else if (U.bereich === "detail") html += ansichtDetail();
+  else if (U.bereich === "formular") html += ansichtFormular();
+  el.innerHTML = html;
+}
+function naviZeichnen(){
+  const offeneMeldungen = D.meldungen.filter(m => !m.gesehen).length;
+  document.getElementById("navi").innerHTML = BEREICHE.map(b => {
+    const aktiv = (U.bereich === b.k) ||
+                  (b.k === "tagesplan" && (U.bereich === "detail" || U.bereich === "formular"));
+    const zahl = (b.k === "meldungen" && offeneMeldungen)
+      ? '<span class="zahl">'+offeneMeldungen+'</span>' : "";
+    return '<button data-tun="bereich" data-wert="'+b.k+'"'+
+           (aktiv ? ' aria-current="page"' : '')+'>'+esc(b.wort)+zahl+'</button>';
+  }).join("");
+}
+
+/* ---------- Tagesplan ---------- */
+function ansichtTagesplan(){
+  const tag = U.tag;
+  const alle = D.auftraege.filter(a => a.tag === tag && !a.storniert);
+  const offen = alle.filter(a => !a.ablauf.abgabe).length;
+  const nichtZug = alle.filter(a => !a.planung.fahrerId).length;
+  const alarme = D.meldungen.filter(m => m.art === "verspaetung" && !m.gesehen).length;
+
+  const gefiltert = alle.filter(a => {
+    if (U.filter === "alle") return true;
+    if (U.filter === "nichtzug") return !a.planung.fahrerId;
+    if (U.filter === "unterwegs") return a.ablauf.abholung && !a.ablauf.ankunft && !a.ablauf.abgabe;
+    if (U.filter === "warten") return (a.ablauf.ankunft || a.ablauf.warten || a.ablauf.entladenStart)
+                                      && !a.ablauf.abgabe;
+    if (U.filter === "fertig") return !!a.ablauf.abgabe;
+    return true;
+  }).sort((x,y) => {
+    const mx = massgeblich(x).iso, my = massgeblich(y).iso;
+    if (!mx) return 1; if (!my) return -1;
+    return new Date(mx) - new Date(my);
+  });
+
+  let h = '<div class="leiste">' +
+    '<button class="btn" data-tun="tag" data-wert="heute">Heute</button>' +
+    '<button class="btn" data-tun="tag" data-wert="morgen">Morgen</button>' +
+    '<label for="tagwahl" style="font-size:15px;font-weight:600">Datum</label>' +
+    '<input type="date" id="tagwahl" value="'+esc(tag)+'" style="width:auto" data-tun="tagwahl">' +
+    '<span class="tag">'+esc(tagLang(tag))+'</span>' +
+    '<button class="btn haupt gross" data-tun="neu" style="margin-left:auto">+ Neuer Auftrag</button>' +
+    '</div>';
+
+  h += '<div class="zahlen">' +
+    zahlFeld(offen, "Offene Aufträge an diesem Tag", false) +
+    zahlFeld(nichtZug, "Noch nicht zugewiesen", nichtZug > 0) +
+    zahlFeld(alarme, "Verspätungsalarme (ungesehen)", alarme > 0) +
+    '</div>';
+
+  h += '<div class="filter" role="group" aria-label="Filter">' +
+    filterKnopf("alle","Alle") + filterKnopf("nichtzug","Nicht zugewiesen") +
+    filterKnopf("unterwegs","Unterwegs") + filterKnopf("warten","Warten / Entladen") +
+    filterKnopf("fertig","Fertig") + '</div>';
+
+  if (!gefiltert.length) {
+    h += '<div class="karte"><p class="leer">Für diesen Tag und Filter gibt es keinen Auftrag.</p></div>';
+    return h;
+  }
+
+  h += '<div class="karte tabellen-karte" style="padding:0"><table class="tabelle"><thead><tr>' +
+    '<th>Termin</th><th>Kunde und Strecke</th><th>Fahrer und Kennzeichen</th><th>Chassis</th>' +
+    '<th>Schritt</th><th>Ankunft</th><th>Reserve</th><th>Fahrer bestätigt</th><th>Öffnen</th>' +
+    '</tr></thead><tbody>';
+
+  gefiltert.forEach(a => {
+    const m = massgeblich(a);
+    const s = zeitstatus(a);
+    const sc = schritt(a);
+    const f = fahrerVon(a.planung.fahrerId);
+    const z = zugVon(a.planung.zugmaschineId);
+    const c = chsVon(a.planung.chassisId);
+    const kf = konflikte(a);
+
+    h += '<tr'+(a.planung.fahrerId ? '' : ' class="nichtzug"')+'>' +
+      '<td data-titel="Termin"><span class="haupt-zelle num">'+esc(m.zeit || "—")+' Uhr</span>' +
+        '<span class="neben">'+esc(m.art)+'</span></td>' +
+      '<td data-titel="Kunde und Strecke"><span class="haupt-zelle">'+esc(a.kunde || "—")+'</span>' +
+        '<span class="neben">'+esc(kurzOrt(a.abhol.adresse))+' → '+esc(kurzOrt(a.liefer.adresse))+'</span>' +
+        '<span class="neben">Auftrag '+esc(a.nummer)+'</span></td>' +
+      '<td data-titel="Fahrer und Kennzeichen">' +
+        (f ? '<span class="haupt-zelle">'+esc(f.name)+'</span>'
+           : '<span class="marke m-gelb">Nicht zugewiesen</span>') +
+        '<span class="neben">'+esc(z ? z.kennzeichen : "keine Zugmaschine")+'</span></td>' +
+      '<td data-titel="Chassis">'+esc(c ? c.nummer : "—")+
+        (c ? '<span class="neben">'+esc(c.groesse)+'</span>' : '')+'</td>' +
+      '<td data-titel="Schritt"><span class="marke '+sc.klasse+'">'+esc(sc.wort)+'</span>' +
+        (kf.length ? '<span class="neben" style="color:#A3161D;font-weight:600">Konflikt: '+
+                     esc(kf[0].was)+' doppelt</span>' : '')+'</td>' +
+      '<td data-titel="Voraussichtliche Ankunft" class="num">'+
+        (s.ankunft ? esc(hhmm(s.ankunft))+' Uhr' : '—')+
+        '<span class="neben">'+(s.ankunft ? "simuliert" : esc(s.zusatz || ""))+'</span></td>' +
+      '<td data-titel="Reserve"><span class="marke '+s.klasse+'">'+esc(s.satz)+'</span></td>' +
+      '<td data-titel="Fahrer bestätigt">'+
+        (a.bestaetigt
+          ? '<span class="marke m-gruen">Gesehen</span><span class="neben">'+esc(hhmm(a.bestaetigt))+' Uhr</span>'
+          : '<span class="marke m-grau">Noch nicht</span>')+'</td>' +
+      '<td data-titel="Aktion"><button class="btn" data-tun="oeffnen" data-wert="'+a.id+'">Öffnen</button></td>' +
+      '</tr>';
+  });
+  h += '</tbody></table></div>';
+
+  h += '<div class="hinweis"><b>Zur Lesart:</b> „Termin“ nennt immer dazu, ob es der ' +
+       'Abholtermin oder der Anlieferungstermin ist. Die Spalte „Ankunft“ ist eine ' +
+       simMarke("simulierte Berechnung") + ' aus Demo-Planwerten — keine Ortung in Echtzeit, ' +
+       'keine Verkehrsdaten und keine Aussage über die gesetzliche Lenkzeit.</div>';
+  return h;
+}
+function zahlFeld(n, wort, achtung){
+  return '<div class="zahl-feld'+(achtung ? ' achtung' : '')+'">' +
+         '<div class="gross">'+n+'</div><div class="wort">'+esc(wort)+'</div></div>';
+}
+function filterKnopf(k, wort){
+  return '<button data-tun="filter" data-wert="'+k+'" aria-pressed="'+(U.filter===k)+'">'+esc(wort)+'</button>';
+}
+function kurzOrt(adresse){
+  if (!adresse) return "—";
+  const teile = String(adresse).split(",");
+  const letzter = teile[teile.length-1].trim();
+  return letzter.replace(/^\d{5}\s*/,"") || adresse;
+}
+
+/* ---------- Aufträge (alle Tage) ---------- */
+function ansichtAuftraege(){
+  const liste = D.auftraege.slice().sort((x,y) =>
+    (x.tag+"").localeCompare(y.tag+"") || String(x.abhol.zeit||"").localeCompare(String(y.abhol.zeit||"")));
+  let h = '<div class="leiste"><h2 style="font-size:22px">Alle Aufträge</h2>' +
+    '<button class="btn haupt gross" data-tun="neu" style="margin-left:auto">+ Neuer Auftrag</button></div>';
+  h += '<div class="hinweis">In der Dispo bleiben alle Tage zugänglich. Der Fahrer sieht ' +
+       'dagegen nur seinen aktuellen Arbeitstag — der nächste Tag erscheint bei ihm erst, ' +
+       'wenn alle heutigen Aufträge abgeschlossen sind, und startet dort keine Tour automatisch.</div>';
+  h += '<div class="karte tabellen-karte" style="padding:0"><table class="tabelle"><thead><tr>' +
+    '<th>Tag</th><th>Auftrag</th><th>Kunde</th><th>Zustand</th><th>Fahrer</th><th>Öffnen</th>' +
+    '</tr></thead><tbody>';
+  liste.forEach(a => {
+    const f = fahrerVon(a.planung.fahrerId);
+    const sc = schritt(a);
+    h += '<tr'+(a.storniert ? ' style="opacity:.55"' : '')+'>' +
+      '<td data-titel="Tag">'+esc(tagKurz(a.tag))+'</td>' +
+      '<td data-titel="Auftrag"><span class="haupt-zelle">'+esc(a.nummer)+'</span>' +
+        '<span class="neben">'+esc(a.kundenRef || "ohne Referenz")+'</span></td>' +
+      '<td data-titel="Kunde">'+esc(a.kunde || "—")+'</td>' +
+      '<td data-titel="Zustand"><span class="marke '+sc.klasse+'">'+esc(sc.wort)+'</span>' +
+        (a.freigegeben ? '' : '<span class="neben">Entwurf, nicht freigegeben</span>')+'</td>' +
+      '<td data-titel="Fahrer">'+esc(f ? f.name : "—")+'</td>' +
+      '<td data-titel="Aktion"><button class="btn" data-tun="oeffnen" data-wert="'+a.id+'">Öffnen</button></td>' +
+      '</tr>';
+  });
+  h += '</tbody></table></div>';
+  h += '<div class="btn-reihe"><button class="btn gefahr" data-tun="reset">Demodaten zurücksetzen</button></div>';
+  return h;
+}
+
+/* ---------- Detail ---------- */
+function ansichtDetail(){
+  const a = auftragVon(U.auftragId);
+  if (!a) return '<div class="karte"><p class="leer">Auftrag nicht gefunden.</p></div>';
+  const f = fahrerVon(a.planung.fahrerId), z = zugVon(a.planung.zugmaschineId), c = chsVon(a.planung.chassisId);
+  const m = massgeblich(a), s = zeitstatus(a), sc = schritt(a);
+  const kf = konflikte(a);
+
+  let h = '<div class="leiste"><button class="btn" data-tun="zurueck">← Zurück zum Tagesplan</button>' +
+    '<h2 style="font-size:22px">Auftrag '+esc(a.nummer)+' — '+esc(a.kunde||"ohne Kunde")+'</h2>' +
+    '<span class="marke '+sc.klasse+'" style="margin-left:auto">'+esc(sc.wort)+'</span></div>';
+
+  if (a.storniert)
+    h += '<div class="warnkasten"><b>Dieser Auftrag ist storniert.</b> Er zählt nicht mehr im Tagesplan.</div>';
+
+  if (kf.length) {
+    h += '<div class="warnkasten"><b>Planungskonflikt — bleibt bestehen, bis er aufgelöst wird:</b><ul style="margin:6px 0 0 18px">';
+    kf.forEach(k => {
+      h += '<li>'+esc(k.was)+' '+esc(k.wer||"")+' ist im selben Zeitraum auch für Auftrag '+
+           esc(k.mit.nummer)+' ('+esc(k.mit.kunde)+') eingeplant.</li>';
+    });
+    h += '</ul><p style="margin-top:6px">Die Planung darf so gespeichert werden. Sie wird aber ' +
+         'nicht als machbar dargestellt.</p></div>';
+  }
+
+  /* Zeitlage */
+  h += '<div class="karte"><h2>Zeitlage</h2><div class="paar">' +
+    zeile("Maßgeblicher Termin", (m.zeit ? m.zeit+" Uhr" : "—") + " — " + m.art + " bei " + (m.ort||"—")) +
+    zeile("Voraussichtliche Ankunft", (s.ankunft ? hhmm(s.ankunft)+" Uhr" : "—")) +
+    '<div class="zeile"><div class="was">Reserve oder Verspätung</div>' +
+      '<div class="wert"><span class="marke '+s.klasse+'">'+esc(s.satz)+'</span></div>' +
+      (s.zusatz ? '<div class="was">'+esc(s.zusatz)+'</div>' : '') + '</div>' +
+    zeile("Betrieblicher Puffer", a.planung.pufferMin + " Min. (getrennt von der Fahrzeit)") +
+    '</div>' +
+    '<p class="hinweis" style="margin-top:12px">' + simMarke("Simuliert") +
+      ' Ortung und Ankunftsberechnung. Zuletzt gerechnet: ' + esc(hhmm(a.datenZeit)||"—") +
+      ' Uhr, Ortung: ' + esc(hhmm(a.ortungZeit)||"—") + ' Uhr. Fahrzeiten sind Demo-Planwerte. ' +
+      'Eine gesetzliche Restlenkzeit wird nicht angezeigt — dafür fehlen Tachographendaten.</p>' +
+    '</div>';
+
+  /* Stammdaten des Auftrags */
+  h += '<div class="karte"><h2>Auftrag</h2><div class="paar">' +
+    zeile("Interne Auftragsnummer", a.nummer) +
+    zeile("Kunde", a.kunde) + zeile("Kundenreferenz", a.kundenRef || "—") +
+    zeile("Einsatztag", tagLang(a.tag)) +
+    zeile("Freigabe", a.freigegeben ? "Für Fahrer freigegeben (Demo)" : "Entwurf, nicht freigegeben") +
+    '</div></div>';
+
+  h += '<div class="karte"><h2>Abholung</h2><div class="paar">' +
+    zeile("Firma / Terminal / Depot", a.abhol.firma) + zeile("Adresse", a.abhol.adresse) +
+    zeile("Abholtermin", (a.abhol.zeit ? tagKurz(a.abhol.datum)+", "+a.abhol.zeit+" Uhr" : "ohne feste Uhrzeit")) +
+    zeile("Referenz / Freistellnummer", a.abhol.referenz || "—") +
+    zeile("Hinweis", a.abhol.hinweis || "—") +
+    '</div></div>';
+
+  h += '<div class="karte"><h2>Anlieferung</h2><div class="paar">' +
+    zeile("Firma", a.liefer.firma) + zeile("Adresse", a.liefer.adresse) +
+    zeile("Liefertermin", (a.liefer.zeit ? tagKurz(a.liefer.datum)+", "+a.liefer.zeit+" Uhr" : "—")) +
+    zeile("Ansprechpartner", a.liefer.ansprech || "—") +
+    zeile("Telefon", a.liefer.telefon || "—") +
+    zeile("Hinweis für den Fahrer", a.liefer.hinweis || "—") +
+    '</div></div>';
+
+  /* Container: erwartet und bestätigt getrennt */
+  h += '<div class="karte"><h2>Container</h2>' +
+    '<div class="gegenueber">' +
+      '<div><div class="was">Erwartete Nummer (Dispo)</div>' +
+        '<div class="wert">'+esc(contLesbar(a.container.erwartet) || "Noch unbekannt")+'</div></div>' +
+      '<div><div class="was">Vom Fahrer bestätigt</div>' +
+        '<div class="wert">'+(a.container.bestaetigt ? esc(contLesbar(a.container.bestaetigt))
+                                                     : "Noch nicht bestätigt")+'</div></div>' +
+    '</div>';
+  if (a.container.abweichung) {
+    h += '<div class="warnkasten"><b>Die Nummern stimmen nicht überein.</b> ' +
+      (a.container.trotzdem
+        ? 'Der Fahrer hat ausdrücklich „Trotzdem abholen“ gewählt. Das ist die Entscheidung ' +
+          'des Fahrers und <b>keine Genehmigung durch die Dispo</b>.'
+        : 'Der Fahrer hat nicht „Trotzdem abholen“ gewählt.') + '</div>';
+  }
+  if (a.container.ungeprueft)
+    h += '<div class="warnkasten">Die Nummer ist als <b>ungeprüft</b> markiert — sie konnte nicht sicher gelesen werden.</div>';
+  h += '<div class="paar">' +
+    zeile("Größe und Typ", a.container.groesse + " " + a.container.typ) +
+    zeile("Siegelnummer", a.container.siegel || "—") +
+    zeile("Zustand", a.container.beladen === "leer" ? "Leer" : "Beladen") +
+    zeile("Leercontainer-Rückgabe", a.container.rueckgabeOrt || "—") +
+    zeile("Rückgabetermin", a.container.rueckgabeTermin || "—") +
+    '</div></div>';
+
+  /* Planung */
+  h += '<div class="karte"><h2>Planung</h2><div class="paar">' +
+    zeile("Fahrer", f ? f.name + " · " + f.telefon : "Nicht zugewiesen") +
+    zeile("Zugmaschine", z ? z.kennzeichen : "—") +
+    zeile("Chassis", c ? c.nummer + " · " + c.groesse : "—") +
+    zeile("Geplante Ladezeit", a.planung.ladenMin + " Min.") +
+    zeile("Geplante Wartezeit", a.planung.wartenMin + " Min.") +
+    zeile("Geplante Entladezeit", a.planung.entladenMin + " Min.") +
+    zeile("Betrieblicher Puffer", a.planung.pufferMin + " Min.") +
+    '</div></div>';
+
+  /* Fahrerbestätigung */
+  h += '<div class="karte"><h2>Fahrerbestätigung</h2>' +
+    (a.bestaetigt
+      ? '<p>' + marke("m-gruen","Gesehen und bestätigt") + ' am ' + esc(tagKurz(tagVon(a.bestaetigt))) +
+        ' um ' + esc(hhmm(a.bestaetigt)) + ' Uhr.</p>'
+      : '<p>' + marke("m-grau","Noch nicht bestätigt") +
+        ' Der Fahrer hat den Auftrag noch nicht als gesehen markiert.</p>') +
+    '<p class="hinweis" style="margin-top:10px">Nach einer wesentlichen Änderung (Adressen, Termine, ' +
+    'Fahrer, Fahrzeug, Chassis oder erwartete Containernummer) muss der Fahrer erneut bestätigen. ' +
+    'Eine reine interne Dispo-Notiz setzt die Bestätigung nicht zurück.</p></div>';
+
+  /* Ablauf */
+  h += '<div class="karte"><h2>Ablauf</h2><ul class="ablauf">' +
+    ablaufZeile("Abholung", a.ablauf.abholung) +
+    ablaufZeile("Ankunft beim Kunden", a.ablauf.ankunft) +
+    ablaufZeile("Warten gemeldet", a.ablauf.warten) +
+    ablaufZeile("Entladebeginn", a.ablauf.entladenStart) +
+    ablaufZeile("Entladeende", a.ablauf.entladenEnde) +
+    ablaufZeile("Ablieferung", a.ablauf.abgabe) +
+    '</ul>';
+  h += '<p style="margin-top:10px;color:#47525D;font-size:15px">Ankunft bedeutet nicht, dass die ' +
+       'Entladung begonnen hat — das sind getrennte Schritte.</p>';
+
+  if (a.ablauf.entladenStart && !a.ablauf.entladenEnde) {
+    const rest = entladeRest(a);
+    h += '<div class="hinweis" style="margin-top:10px"><b>Entladung läuft.</b> ' +
+      (a.entladeVerlaengerung && a.entladeVerlaengerung.unbekannt
+        ? 'Der Fahrer hat „Weiß ich noch nicht“ gewählt. Es wird bewusst keine nächste Ankunft vorhergesagt.'
+        : (rest == null ? 'Restzeit unbekannt.'
+           : 'Verbleibend etwa <b>'+Math.round(rest)+' Min.</b>' +
+             (a.entladeVerlaengerung
+               ? ' — verlängert um '+a.entladeVerlaengerung.min+' Min., gezählt ab '+
+                 esc(hhmm(a.entladeVerlaengerung.ab))+' Uhr.'
+               : ''))) +
+      ' Ein ablaufender Timer schließt den Auftrag nicht ab; das macht nur der Fahrer.</div>';
+    h += '<div class="btn-reihe" style="margin-top:10px">' +
+      '<button class="btn" data-tun="fahrerschritt" data-wert="verlaengern30">Demo: Fahrer meldet +30 Min.</button>' +
+      '<button class="btn" data-tun="fahrerschritt" data-wert="verlaengern60">Demo: Fahrer meldet +60 Min.</button>' +
+      '<button class="btn" data-tun="fahrerschritt" data-wert="unbekannt">Demo: „Weiß ich noch nicht“</button>' +
+      '<button class="btn haupt" data-tun="fahrerschritt" data-wert="entladenFertig">Demo: Entladung fertig</button>' +
+      '</div>';
+  }
+  h += '<div class="paar" style="margin-top:12px">' +
+    zeile("Geplante Warte-/Entladezeit", a.planung.wartenMin + " / " + a.planung.entladenMin + " Min.") +
+    zeile("Tatsächliche Entladezeit",
+      (a.ablauf.entladenStart && a.ablauf.entladenEnde)
+        ? Math.round(minZw(a.ablauf.entladenStart, a.ablauf.entladenEnde)) + " Min."
+        : "noch nicht abgeschlossen") +
+    '</div></div>';
+
+  /* Fotos */
+  h += '<div class="karte"><h2>Fotos</h2><div class="fotos">' +
+    fotoFeld("Abholfoto", a.fotos.abholung) + fotoFeld("Ablieferfoto", a.fotos.abgabe) +
+    '</div><p style="margin-top:8px;color:#47525D;font-size:15px">' + simMarke("Simuliert") +
+    ' Demo-Bilder, keine Kamera und keine Nummernerkennung.</p></div>';
+
+  /* Dokumente */
+  h += '<div class="karte"><h2>Dokumente</h2>';
+  if (!a.dokumente.length) {
+    h += '<p style="color:#47525D">Noch kein Dokument hinterlegt.</p>';
+  } else {
+    h += '<ul style="margin:0;padding-left:18px">' + a.dokumente.map(d =>
+      '<li><b>'+esc(d.art)+'</b> — '+esc(d.name)+' <span class="neben">('+esc(d.stand)+')</span></li>').join("") +
+      '</ul>';
+  }
+  h += '<div class="btn-reihe" style="margin-top:10px">' +
+    ['EIR','CMR','Lieferschein'].map(art =>
+      '<button class="btn" data-tun="dok" data-wert="'+art+'">'+art+' hinterlegen (Demo)</button>').join("") +
+    '</div></div>';
+
+  /* Nächster Auftrag */
+  const naechster = naechsterAuftrag(a);
+  h += '<div class="karte"><h2>Nächster Auftrag</h2>';
+  if (!naechster) {
+    h += '<p style="color:#47525D">Für diesen Fahrer ist an diesem Tag kein weiterer Auftrag geplant.</p>';
+  } else {
+    const np = folgePrognose(a, naechster);
+    const nm = massgeblich(naechster);
+    const nres = np.iso ? reserve(nm.iso, np.iso) : null;
+    const nk = ampel(nres);
+    const klasse = nres == null ? "m-grau"
+                 : nk === "rot" ? "m-rot" : nk === "gelb" ? "m-gelb" : "m-gruen";
+    const satz = nres == null ? "Ankunft unklar"
+               : nres < 0 ? Math.abs(nres)+" Min. verspätet" : nres+" Min. Reserve";
+    h += '<div class="paar">' +
+      zeile("Auftrag", naechster.nummer + " · " + naechster.kunde) +
+      zeile("Maßgeblicher Termin", (nm.zeit ? nm.zeit+" Uhr" : "—") + " — " + nm.art) +
+      zeile("Prognostizierte Ankunft", np.iso ? hhmm(np.iso)+" Uhr" : "—") +
+      '<div class="zeile"><div class="was">Zeitreserve</div><div class="wert">' +
+        '<span class="marke '+klasse+'">'+esc(satz)+'</span></div></div>' +
+      '</div>';
+    if (np.rechnung) {
+      h += '<p style="margin-top:10px;font-size:15px;color:#47525D"><b>So gerechnet ('+
+        simMarke("Demo-Planwerte")+'):</b><br>' + np.rechnung.map(esc).join("<br>") + '</p>';
+    }
+    if (np.grund) h += '<div class="hinweis" style="margin-top:10px">'+esc(np.grund)+'</div>';
+  }
+  h += '</div>';
+
+  /* Verlauf */
+  h += '<div class="karte"><h2>Verlauf</h2><ul class="verlauf">' +
+    a.verlauf.slice().reverse().map(e =>
+      '<li><b>'+esc(tagKurz(tagVon(e.zeit)))+' '+esc(hhmm(e.zeit))+' Uhr</b> — '+esc(e.text)+'</li>').join("") +
+    '</ul></div>';
+
+  /* Dispo-Notiz */
+  h += '<div class="karte"><h2>Interne Dispo-Notiz</h2>' +
+    '<div class="feld"><label for="notizfeld">Nur für die Dispo sichtbar. Ändert die Fahrerbestätigung nicht.</label>' +
+    '<textarea id="notizfeld">'+esc(a.dispoNotiz||"")+'</textarea></div>' +
+    '<div class="btn-reihe" style="margin-top:10px">' +
+    '<button class="btn" data-tun="notizSpeichern">Notiz speichern</button></div></div>';
+
+  /* Aktionen */
+  h += '<div class="karte"><h2>Aktionen</h2><div class="btn-reihe">' +
+    '<button class="btn haupt" data-tun="bearbeiten">Bearbeiten</button>' +
+    '<button class="btn" data-tun="fahrerAendern">Fahrer ändern</button>' +
+    '<button class="btn" data-tun="kopieren">Auftrag kopieren</button>' +
+    '<button class="btn" data-tun="anrufen">Fahrer anrufen</button>' +
+    (a.freigegeben ? '' : '<button class="btn" data-tun="freigeben">Für Fahrer freigeben</button>') +
+    (a.storniert ? '' : '<button class="btn gefahr" data-tun="stornieren">Stornieren</button>') +
+    '</div></div>';
+  return h;
+}
+function zeile(was, wert){
+  return '<div class="zeile"><div class="was">'+esc(was)+'</div><div class="wert">'+esc(wert==null?"—":wert)+'</div></div>';
+}
+function ablaufZeile(wort, iso){
+  return '<li><span class="zeit'+(iso?'':' offen')+'">'+(iso ? esc(hhmm(iso)) : "—")+'</span>' +
+         '<span'+(iso?'':' class="offen"')+'>'+esc(wort)+(iso?'':' — noch offen')+'</span></li>';
+}
+function fotoFeld(wort, bild){
+  if (!bild) return '<div><div class="was" style="font-size:14px;color:#47525D">'+esc(wort)+'</div>' +
+                    '<p style="color:#47525D">Noch kein Foto.</p></div>';
+  return '<div><div class="was" style="font-size:14px;color:#47525D;margin-bottom:4px">'+esc(wort)+'</div>' +
+         '<img class="foto" src="'+esc(bild)+'" alt="'+esc(wort)+'" data-tun="bild" data-wert="'+esc(wort)+'"></div>';
+}
+
+/* Nächster Auftrag desselben Fahrers am selben Tag, der noch aussteht. */
+function naechsterAuftrag(a){
+  if (!a.planung.fahrerId) return null;
+  const m = massgeblich(a);
+  return D.auftraege.filter(o => o.id !== a.id && !o.storniert && o.tag === a.tag &&
+      o.planung.fahrerId === a.planung.fahrerId && !o.ablauf.abgabe)
+    .sort((x,y) => {
+      const mx = massgeblich(x).iso, my = massgeblich(y).iso;
+      if (!mx) return 1; if (!my) return -1;
+      return new Date(mx) - new Date(my);
+    })
+    .find(o => {
+      const om = massgeblich(o).iso;
+      return !m.iso || !om || new Date(om) >= new Date(m.iso);
+    }) || null;
+}
+
+/* Prognose für den Folgeauftrag: nur was noch aussteht wird gezählt. */
+function folgePrognose(a, n){
+  const rechnung = [];
+  let start, grund = null;
+
+  if (a.ablauf.abgabe) {
+    start = a.ablauf.abgabe;
+    rechnung.push("Aktueller Auftrag ist abgeliefert um " + hhmm(start) + " Uhr.");
+  } else if (a.ablauf.entladenStart && !a.ablauf.entladenEnde) {
+    const rest = entladeRest(a);
+    if (rest == null)
+      return { iso:null, rechnung:null,
+               grund:"Der Fahrer hat „Weiß ich noch nicht“ gewählt. Solange das Entladeende offen ist, " +
+                     "wird hier keine nächste Ankunft vorhergesagt." };
+    start = inMin(rest);
+    rechnung.push("Restliche Entladung " + Math.round(rest) + " Min. → fertig etwa " + hhmm(start) + " Uhr.");
+  } else if (a.ablauf.entladenEnde) {
+    start = a.ablauf.entladenEnde;
+    rechnung.push("Entladung fertig um " + hhmm(start) + " Uhr.");
+  } else if (a.ablauf.ankunft) {
+    start = inMin(a.planung.entladenMin, a.ablauf.ankunft);
+    rechnung.push("Angekommen " + hhmm(a.ablauf.ankunft) + " Uhr, geplante Entladung " +
+                  a.planung.entladenMin + " Min.");
+  } else {
+    const mi = massgeblich(a).iso;
+    if (!mi) return { iso:null, rechnung:null, grund:"Für den aktuellen Auftrag fehlt ein Termin." };
+    start = inMin(a.planung.entladenMin, mi);
+    rechnung.push("Geplanter Termin " + hhmm(mi) + " Uhr zuzüglich Entladung " +
+                  a.planung.entladenMin + " Min.");
+  }
+
+  let t = start;
+  const schrittRechnen = (min, wort) => {
+    if (!min) return;
+    t = inMin(min, t);
+    rechnung.push("+ " + min + " Min. " + wort + " → " + hhmm(t) + " Uhr");
+  };
+  schrittRechnen(PLAN.nacharbeit, "Restarbeiten am aktuellen Auftrag");
+  if (a.container.rueckgabeOrt) schrittRechnen(PLAN.depotstopp, "Rückgabe-/Depotstopp");
+  schrittRechnen(PLAN.pause, "eingeplante Pause");
+  schrittRechnen(PLAN.fahrtWalsrodeBremen, "Fahrt zur nächsten Abholung (Demo-Planwert)");
+  schrittRechnen(n.planung.ladenMin, "Warte- und Ladezeit dort");
+  schrittRechnen(PLAN.fahrtBremenWalsrode, "Fahrt zum nächsten Kunden (Demo-Planwert)");
+
+  return { iso:t, rechnung, grund:null };
+}
+
+/* ---------- Formular ---------- */
+const LEER_FORM = () => ({
+  id:null, nummer:null, tag:HEUTE(), freigegeben:false, kunde:"", kundenRef:"",
+  abholFirma:"Hansa Terminal Bremen", abholAdresse:"Am Speicher 12, 28197 Bremen",
+  abholDatum:HEUTE(), abholZeit:"", abholRef:"", abholHinweis:"",
+  lieferFirma:"", lieferAdresse:"", lieferDatum:HEUTE(), lieferZeit:"",
+  lieferAnsprech:"", lieferTelefon:"", lieferHinweis:"",
+  contErwartet:"", contUnbekannt:false, contGroesse:"40 ft", contTyp:"Standard",
+  contSiegel:"", contBeladen:"beladen", contRueckgabe:"Depot Bremen Hemelingen", contRueckTermin:"",
+  fahrerId:"", zugId:"", chsId:"",
+  ladenMin:PLAN.laden, wartenMin:0, entladenMin:PLAN.entladen, pufferMin:PLAN.puffer
+});
+
+function formAus(a){
+  return {
+    id:a.id, nummer:a.nummer, tag:a.tag, freigegeben:a.freigegeben,
+    kunde:a.kunde, kundenRef:a.kundenRef,
+    abholFirma:a.abhol.firma, abholAdresse:a.abhol.adresse, abholDatum:a.abhol.datum,
+    abholZeit:a.abhol.zeit||"", abholRef:a.abhol.referenz, abholHinweis:a.abhol.hinweis,
+    lieferFirma:a.liefer.firma, lieferAdresse:a.liefer.adresse, lieferDatum:a.liefer.datum,
+    lieferZeit:a.liefer.zeit||"", lieferAnsprech:a.liefer.ansprech, lieferTelefon:a.liefer.telefon,
+    lieferHinweis:a.liefer.hinweis,
+    contErwartet:a.container.erwartet, contUnbekannt:!a.container.erwartet,
+    contGroesse:a.container.groesse, contTyp:a.container.typ, contSiegel:a.container.siegel,
+    contBeladen:a.container.beladen, contRueckgabe:a.container.rueckgabeOrt,
+    contRueckTermin:a.container.rueckgabeTermin||"",
+    fahrerId:a.planung.fahrerId||"", zugId:a.planung.zugmaschineId||"", chsId:a.planung.chassisId||"",
+    ladenMin:a.planung.ladenMin, wartenMin:a.planung.wartenMin,
+    entladenMin:a.planung.entladenMin, pufferMin:a.planung.pufferMin
+  };
+}
+
+function ansichtFormular(){
+  const F = U.formular, E = U.fehler;
+  const neu = !F.id;
+  let h = '<div class="leiste"><button class="btn" data-tun="abbrechen">← Abbrechen</button>' +
+    '<h2 style="font-size:22px">'+(neu ? "Neuer Auftrag" : "Auftrag "+esc(F.nummer)+" bearbeiten")+'</h2></div>';
+
+  if (Object.keys(E).length)
+    h += '<div class="warnkasten"><b>Zur Freigabe fehlen noch Angaben.</b> Die markierten Felder ' +
+         'unten erklären, was gebraucht wird. Als <b>Entwurf</b> lässt sich der Auftrag trotzdem speichern.</div>';
+
+  h += '<fieldset class="gruppe"><legend>Auftrag</legend><div class="felder">' +
+    feldText("nummerAnzeige","Interne Auftragsnummer", neu ? "wird beim Speichern vergeben" : F.nummer, true) +
+    feld("kunde","Kunde", F.kunde, E, "text", "Name des Kunden") +
+    feld("kundenRef","Kundenreferenz", F.kundenRef, E, "text", "optional") +
+    feld("tag","Einsatztag", F.tag, E, "date") +
+    '</div></fieldset>';
+
+  h += '<fieldset class="gruppe"><legend>Abholung</legend><div class="felder">' +
+    feld("abholFirma","Firma / Terminal / Depot", F.abholFirma, E, "text") +
+    feld("abholAdresse","Vollständige Adresse", F.abholAdresse, E, "text", "Straße, PLZ und Ort") +
+    feld("abholDatum","Datum der Abholung", F.abholDatum, E, "date") +
+    feld("abholZeit","Uhrzeit der Abholung", F.abholZeit, E, "time", "leer lassen, wenn nicht vorgegeben") +
+    feld("abholRef","Referenz / Freistellnummer", F.abholRef, E, "text", "optional") +
+    feld("abholHinweis","Kurzer Hinweis", F.abholHinweis, E, "text", "zum Beispiel „Tor 3“") +
+    '</div></fieldset>';
+
+  h += '<fieldset class="gruppe"><legend>Anlieferung</legend><div class="felder">' +
+    feld("lieferFirma","Firma", F.lieferFirma, E, "text") +
+    feld("lieferAdresse","Vollständige Adresse", F.lieferAdresse, E, "text", "Straße, PLZ und Ort") +
+    feld("lieferDatum","Datum der Anlieferung", F.lieferDatum, E, "date") +
+    feld("lieferZeit","Uhrzeit der Anlieferung", F.lieferZeit, E, "time") +
+    feld("lieferAnsprech","Ansprechpartner", F.lieferAnsprech, E, "text", "optional") +
+    feld("lieferTelefon","Telefon", F.lieferTelefon, E, "tel", "optional") +
+    feld("lieferHinweis","Hinweis für den Fahrer", F.lieferHinweis, E, "text", "optional") +
+    '</div></fieldset>';
+
+  h += '<fieldset class="gruppe"><legend>Container</legend><div class="felder">' +
+    '<div class="feld breit"><label><input type="checkbox" id="f_contUnbekannt" style="width:auto;min-height:0"'+
+      (F.contUnbekannt ? " checked" : "")+'> Containernummer noch unbekannt</label>' +
+      '<div class="erklaer">Ein Entwurf darf ohne Nummer gespeichert werden. Zur Freigabe muss ' +
+      'entweder eine gültige Nummer eingetragen oder „noch unbekannt“ gesetzt sein.</div></div>' +
+    feld("contErwartet","Erwartete Containernummer",
+         F.contUnbekannt ? "" : F.contErwartet, E, "text",
+         F.contUnbekannt
+           ? "Gesperrt, weil „noch unbekannt“ angekreuzt ist. Der Fahrer bekommt dann keine Nummer vorgegeben."
+           : "11 Zeichen, zum Beispiel MSCU1234566 — die Prüfziffer wird wirklich gerechnet",
+         F.contUnbekannt) +
+    feldAuswahl("contGroesse","Größe", F.contGroesse, ["20 ft","40 ft","45 ft"], E) +
+    feldAuswahl("contTyp","Typ", F.contTyp, ["Standard","High Cube","Kühlcontainer","Open Top","Tank"], E) +
+    feld("contSiegel","Siegelnummer", F.contSiegel, E, "text", "optional") +
+    feldAuswahl("contBeladen","Zustand", F.contBeladen, ["beladen","leer"], E) +
+    feld("contRueckgabe","Leercontainer-Rückgabe / Depot", F.contRueckgabe, E, "text", "optional") +
+    feld("contRueckTermin","Rückgabetermin", F.contRueckTermin, E, "date", "optional") +
+    '</div></fieldset>';
+
+  const fahrerOpt = D.fahrer.map(f => ({ w:f.id, t:f.name + (f.aktiv ? "" : " — nicht verfügbar") }));
+  const zugOpt = D.zugmaschinen.map(z => ({ w:z.id, t:z.kennzeichen + (z.aktiv ? "" : " — "+(z.grund||"nicht verfügbar")) }));
+  const chsOpt = D.chassis.map(c => ({ w:c.id, t:c.nummer + " · " + c.groesse + (c.gemietet ? " · gemietet" : "") }));
+
+  h += '<fieldset class="gruppe"><legend>Planung</legend><div class="felder">' +
+    feldAuswahlObj("fahrerId","Fahrer", F.fahrerId, fahrerOpt, E, "— noch offen —") +
+    feldAuswahlObj("zugId","Zugmaschine", F.zugId, zugOpt, E, "— noch offen —") +
+    feldAuswahlObj("chsId","Chassis", F.chsId, chsOpt, E, "— noch offen —") +
+    feld("ladenMin","Geplante Ladezeit (Min.)", F.ladenMin, E, "number") +
+    feld("wartenMin","Geplante Wartezeit (Min.)", F.wartenMin, E, "number") +
+    feld("entladenMin","Geplante Entladezeit (Min.)", F.entladenMin, E, "number",
+         "Standard 120 Minuten, hier änderbar") +
+    feld("pufferMin","Betrieblicher Puffer (Min.)", F.pufferMin, E, "number",
+         "bleibt getrennt von der Fahrzeit") +
+    '</div>' +
+    '<p class="hinweis" style="margin-top:12px">' + simMarke("Demo-Planwerte") +
+    ' Fahrzeiten dieser Vorschau: Bremen → Walsrode ' + PLAN.fahrtBremenWalsrode +
+    ' Min., zurück ' + PLAN.fahrtWalsrodeBremen + ' Min., Restarbeiten ' + PLAN.nacharbeit +
+    ' Min., Depotstopp ' + PLAN.depotstopp + ' Min., eingeplante Pause ' + PLAN.pause +
+    ' Min. Das sind keine Verkehrsdaten und keine Tachographendaten.</p></fieldset>';
+
+  h += '<div class="btn-reihe" style="margin-bottom:24px">' +
+    '<button class="btn" data-tun="entwurf">Entwurf speichern</button>' +
+    '<button class="btn haupt gross" data-tun="freigabeSpeichern">Für Fahrer freigeben</button>' +
+    '<button class="btn" data-tun="abbrechen">Abbrechen</button>' +
+    '</div>';
+  return h;
+}
+function feld(name, wort, wert, E, typ, erklaer, gesperrt){
+  const f = E[name];
+  return '<div class="feld'+(f ? ' hatfehler' : '')+'">' +
+    '<label for="f_'+name+'">'+esc(wort)+'</label>' +
+    '<input type="'+(typ||"text")+'" id="f_'+name+'" value="'+esc(wert==null?"":wert)+'"'+
+      (gesperrt ? ' disabled style="background:#F2F3F1;color:#47525D"' : '')+'>' +
+    (erklaer ? '<div class="erklaer">'+esc(erklaer)+'</div>' : '') +
+    (f ? '<span class="fehler">'+esc(f)+'</span>' : '') + '</div>';
+}
+function feldText(id, wort, wert, nurLesen){
+  return '<div class="feld"><label for="f_'+id+'">'+esc(wort)+'</label>' +
+    '<input type="text" id="f_'+id+'" value="'+esc(wert)+'"'+(nurLesen?' readonly style="background:#F2F3F1"':'')+'></div>';
+}
+function feldAuswahl(name, wort, wert, werte, E){
+  return feldAuswahlObj(name, wort, wert, werte.map(w => ({w, t:w})), E, null);
+}
+function feldAuswahlObj(name, wort, wert, opts, E, leerText){
+  const f = E[name];
+  return '<div class="feld'+(f ? ' hatfehler' : '')+'">' +
+    '<label for="f_'+name+'">'+esc(wort)+'</label><select id="f_'+name+'">' +
+    (leerText ? '<option value="">'+esc(leerText)+'</option>' : '') +
+    opts.map(o => '<option value="'+esc(o.w)+'"'+(String(wert)===String(o.w)?" selected":"")+'>'+
+                  esc(o.t)+'</option>').join("") +
+    '</select>' + (f ? '<span class="fehler">'+esc(f)+'</span>' : '') + '</div>';
+}
+
+/* Formular aus den Feldern einlesen */
+function formLesen(){
+  const F = U.formular;
+  const g = id => { const e = document.getElementById("f_"+id); return e ? e.value : ""; };
+  const c = id => { const e = document.getElementById("f_"+id); return e ? e.checked : false; };
+  ["kunde","kundenRef","tag","abholFirma","abholAdresse","abholDatum","abholZeit","abholRef",
+   "abholHinweis","lieferFirma","lieferAdresse","lieferDatum","lieferZeit","lieferAnsprech",
+   "lieferTelefon","lieferHinweis","contErwartet","contGroesse","contTyp","contSiegel",
+   "contBeladen","contRueckgabe","contRueckTermin","fahrerId","zugId","chsId"].forEach(k => F[k] = g(k));
+  ["ladenMin","wartenMin","entladenMin","pufferMin"].forEach(k => F[k] = Number(g(k)) || 0);
+  F.contUnbekannt = c("contUnbekannt");
+  return F;
+}
+
+/* Prüfung. Entwürfe dürfen unvollständig sein, Freigaben nicht. */
+function pruefen(F, fuerFreigabe){
+  const E = {};
+  if (!fuerFreigabe) {
+    // Ein Entwurf braucht nur etwas, woran man ihn wiedererkennt.
+    if (!F.kunde.trim()) E.kunde = "Bitte wenigstens den Kunden eintragen, damit der Entwurf auffindbar bleibt.";
+    return E;
+  }
+  if (!F.kunde.trim())        E.kunde = "Ohne Kunde kann der Fahrer den Auftrag nicht zuordnen.";
+  if (!F.tag)                 E.tag = "Bitte den Einsatztag angeben.";
+  if (!F.abholFirma.trim())   E.abholFirma = "Bitte angeben, wo abgeholt wird.";
+  if (!F.abholAdresse.trim()) E.abholAdresse = "Der Fahrer braucht die vollständige Abholadresse.";
+  if (!F.abholDatum)          E.abholDatum = "Bitte das Datum der Abholung angeben.";
+  if (!F.lieferFirma.trim())  E.lieferFirma = "Bitte angeben, wohin geliefert wird.";
+  if (!F.lieferAdresse.trim())E.lieferAdresse = "Der Fahrer braucht die vollständige Lieferadresse.";
+  if (!F.lieferDatum)         E.lieferDatum = "Bitte das Datum der Anlieferung angeben.";
+  if (!F.lieferZeit)          E.lieferZeit = "Ohne Liefertermin lässt sich keine Reserve berechnen.";
+  if (!F.fahrerId)            E.fahrerId = "Bitte einen Fahrer zuweisen.";
+  if (!F.zugId)               E.zugId = "Bitte eine Zugmaschine zuweisen.";
+  if (!F.chsId)               E.chsId = "Bitte ein Chassis zuweisen.";
+
+  const nr = (F.contErwartet||"").trim();
+  if (!F.contUnbekannt) {
+    if (!nr) E.contErwartet = "Bitte die Nummer eintragen — oder „noch unbekannt“ ankreuzen.";
+    else if (!contGueltig(nr))
+      E.contErwartet = "Diese Nummer ist nicht gültig: vier Buchstaben, sieben Ziffern, " +
+                       "und die Prüfziffer muss stimmen.";
+  }
+  if (F.entladenMin <= 0) E.entladenMin = "Bitte eine Entladezeit größer als 0 angeben.";
+  return E;
+}
+
+/* Auftrag aus dem Formular bauen oder aktualisieren. */
+function formSpeichern(fuerFreigabe){
+  const F = formLesen();
+  const E = pruefen(F, fuerFreigabe);
+  U.fehler = E;
+  if (Object.keys(E).length) {
+    U.notiz = fuerFreigabe
+      ? "Die Freigabe ist noch nicht möglich. Die rot markierten Felder erklären, was fehlt."
+      : "Der Entwurf braucht mindestens einen Kunden.";
+    zeichne();
+    const erstes = document.querySelector(".feld.hatfehler input, .feld.hatfehler select");
+    if (erstes) erstes.focus();
+    return;
+  }
+
+  let a = F.id ? auftragVon(F.id) : null;
+  const istNeu = !a;
+  let wesentlichGeaendert = false;
+
+  if (istNeu) {
+    D.laufNummer++;
+    a = {
+      id:"a"+Date.now(), nummer:String(D.laufNummer), storniert:false,
+      ablauf:{ abholung:null, ankunft:null, warten:null, entladenStart:null,
+               entladenEnde:null, abgabe:null },
+      entladeVerlaengerung:null, fotos:{abholung:null,abgabe:null}, dokumente:[],
+      bestaetigt:null, dispoNotiz:"", ortungZeit:null, datenZeit:null, prognose:null,
+      alarmGesendet:false, verlauf:[ v(jetztIso(),"Auftrag angelegt") ],
+      container:{}, planung:{}, abhol:{}, liefer:{}
+    };
+    D.auftraege.push(a);
+  } else {
+    // Was gilt als wesentlich? Alles, was der Fahrer für seine Fahrt braucht.
+    const vorher = JSON.stringify([a.abhol, a.liefer, a.planung.fahrerId,
+      a.planung.zugmaschineId, a.planung.chassisId, a.container.erwartet, a.tag]);
+    const nachher = JSON.stringify([
+      { firma:F.abholFirma, adresse:F.abholAdresse, datum:F.abholDatum,
+        zeit:F.abholZeit||null, referenz:F.abholRef, hinweis:F.abholHinweis },
+      { firma:F.lieferFirma, adresse:F.lieferAdresse, datum:F.lieferDatum,
+        zeit:F.lieferZeit||null, ansprech:F.lieferAnsprech, telefon:F.lieferTelefon,
+        hinweis:F.lieferHinweis },
+      F.fahrerId||null, F.zugId||null, F.chsId||null,
+      F.contUnbekannt ? "" : (F.contErwartet||"").trim().toUpperCase(), F.tag]);
+    wesentlichGeaendert = vorher !== nachher;
+  }
+
+  a.tag = F.tag; a.kunde = F.kunde.trim(); a.kundenRef = F.kundenRef.trim();
+  a.abhol = { firma:F.abholFirma.trim(), adresse:F.abholAdresse.trim(), datum:F.abholDatum,
+              zeit:F.abholZeit||null, referenz:F.abholRef.trim(), hinweis:F.abholHinweis.trim() };
+  a.liefer = { firma:F.lieferFirma.trim(), adresse:F.lieferAdresse.trim(), datum:F.lieferDatum,
+               zeit:F.lieferZeit||null, ansprech:F.lieferAnsprech.trim(),
+               telefon:F.lieferTelefon.trim(), hinweis:F.lieferHinweis.trim() };
+  a.container = Object.assign({}, a.container, {
+    erwartet: F.contUnbekannt ? "" : (F.contErwartet||"").trim().toUpperCase(),
+    groesse:F.contGroesse, typ:F.contTyp, siegel:F.contSiegel.trim(),
+    beladen:F.contBeladen, rueckgabeOrt:F.contRueckgabe.trim(),
+    rueckgabeTermin:F.contRueckTermin||null,
+    bestaetigt: a.container.bestaetigt || null,
+    ungeprueft: !!a.container.ungeprueft, abweichung: !!a.container.abweichung,
+    trotzdem: !!a.container.trotzdem
+  });
+  a.planung = { fahrerId:F.fahrerId||null, zugmaschineId:F.zugId||null, chassisId:F.chsId||null,
+                ladenMin:F.ladenMin, wartenMin:F.wartenMin,
+                entladenMin:F.entladenMin, pufferMin:F.pufferMin };
+
+  if (fuerFreigabe) {
+    const warFrei = a.freigegeben;
+    a.freigegeben = true;
+    a.verlauf.push(v(jetztIso(), warFrei ? "Änderung freigegeben (Demo)" : "Für Fahrer freigegeben (Demo)"));
+  } else if (istNeu) {
+    a.freigegeben = false;
+    a.verlauf.push(v(jetztIso(), "Als Entwurf gespeichert"));
+  } else {
+    a.verlauf.push(v(jetztIso(), "Auftrag bearbeitet"));
+  }
+
+  if (wesentlichGeaendert && a.bestaetigt) {
+    a.bestaetigt = null;
+    a.verlauf.push(v(jetztIso(), "Wesentliche Änderung — Fahrerbestätigung ist wieder offen"));
+  }
+
+  const kf = konflikte(a);
+  alarmePruefen();
+  speichern();
+
+  U.fehler = {}; U.formular = null; U.auftragId = a.id; U.bereich = "detail";
+  U.notiz = (fuerFreigabe
+      ? '<b>Demo-Freigabe.</b> Der Auftrag ist in dieser Vorschau als freigegeben markiert. ' +
+        'Es wurde nichts zugestellt — die Fahrer-App ist noch nicht verbunden.'
+      : '<b>Entwurf gespeichert.</b> Entwürfe dürfen unvollständig bleiben und werden dem Fahrer nicht gezeigt.') +
+    (wesentlichGeaendert ? ' Die Fahrerbestätigung wurde zurückgesetzt.' : '') +
+    (kf.length ? ' <b>Achtung:</b> Es besteht ein Planungskonflikt — siehe unten.' : '');
+  zeichne();
+}
+
+/* ---------- Stammdaten ---------- */
+function ansichtStamm(){
+  let h = '<h2 style="font-size:22px;margin-bottom:12px">Fahrer &amp; Fahrzeuge</h2>';
+  h += '<div class="hinweis">Diese Einträge stehen in den Auftragsformularen zur Auswahl. ' +
+       'Bewusst nur das Nötige — keine Personalverwaltung.</div>';
+
+  h += '<div class="karte"><h2>Fahrer</h2>';
+  D.fahrer.forEach(f => {
+    h += '<div class="liste-zeile"><span class="name">'+esc(f.name)+
+      '<span class="neben">'+esc(f.telefon)+' · '+esc(f.sprache)+'</span></span>' +
+      '<span class="marke '+(f.aktiv?"m-gruen":"m-grau")+'">'+(f.aktiv?"Aktiv":"Nicht verfügbar")+'</span>' +
+      '<button class="btn" data-tun="stammBearbeiten" data-art="fahrer" data-wert="'+f.id+'">Bearbeiten</button>' +
+      '</div>';
+  });
+  h += '<div class="btn-reihe" style="margin-top:12px">' +
+    '<button class="btn" data-tun="stammNeu" data-art="fahrer">+ Fahrer anlegen</button></div></div>';
+
+  h += '<div class="karte"><h2>Zugmaschinen</h2>';
+  D.zugmaschinen.forEach(z => {
+    h += '<div class="liste-zeile"><span class="name">'+esc(z.kennzeichen)+
+      (z.grund ? '<span class="neben">'+esc(z.grund)+'</span>' : '')+'</span>' +
+      '<span class="marke '+(z.aktiv?"m-gruen":"m-gelb")+'">'+(z.aktiv?"Aktiv":"Werkstatt")+'</span>' +
+      '<button class="btn" data-tun="stammBearbeiten" data-art="zug" data-wert="'+z.id+'">Bearbeiten</button>' +
+      '</div>';
+  });
+  h += '<div class="btn-reihe" style="margin-top:12px">' +
+    '<button class="btn" data-tun="stammNeu" data-art="zug">+ Zugmaschine anlegen</button></div></div>';
+
+  h += '<div class="karte"><h2>Chassis</h2>';
+  D.chassis.forEach(c => {
+    h += '<div class="liste-zeile"><span class="name">'+esc(c.nummer)+
+      '<span class="neben">'+esc(c.groesse)+'</span></span>' +
+      '<span class="marke '+(c.gemietet?"m-marine":"m-grau")+'">'+(c.gemietet?"Gemietet":"Eigenes")+'</span>' +
+      '<button class="btn" data-tun="stammBearbeiten" data-art="chassis" data-wert="'+c.id+'">Bearbeiten</button>' +
+      '</div>';
+  });
+  h += '<div class="btn-reihe" style="margin-top:12px">' +
+    '<button class="btn" data-tun="stammNeu" data-art="chassis">+ Chassis anlegen</button></div></div>';
+  return h;
+}
+
+/* ---------- Meldungen ---------- */
+function ansichtMeldungen(){
+  let h = '<h2 style="font-size:22px;margin-bottom:12px">Meldungen</h2>';
+  h += '<div class="hinweis">„Gesehen“ bestätigt nur die Kenntnisnahme. Die Ursache ist damit ' +
+       'nicht behoben — der Auftrag bleibt unverändert.</div>';
+  if (!D.meldungen.length)
+    return h + '<div class="karte"><p class="leer">Keine Meldung vorhanden.</p></div>';
+
+  D.meldungen.forEach(m => {
+    const a = auftragVon(m.auftragId);
+    const klasse = m.gesehen ? "erledigt" : (m.art === "ungeprueft" ? "info" : "warn");
+    h += '<div class="meldung '+klasse+'">' +
+      '<h3>'+esc(m.titel)+'</h3>' +
+      '<p class="wann">'+esc(tagKurz(tagVon(m.zeit)))+', '+esc(hhmm(m.zeit))+' Uhr' +
+        (a ? ' · Auftrag '+esc(a.nummer)+' · '+esc(a.kunde) : '')+
+        (a && a.planung.fahrerId ? ' · Fahrer '+esc((fahrerVon(a.planung.fahrerId)||{}).name) : '')+'</p>' +
+      (m.text ? '<p style="margin-top:6px">'+esc(m.text)+'</p>' : '');
+
+    if (m.art === "abweichung" && a) {
+      h += '<div class="gegenueber">' +
+        '<div><div class="was">Erwartet (Dispo)</div><div class="wert">'+
+          esc(contLesbar(a.container.erwartet))+'</div></div>' +
+        '<div><div class="was">Fotografiert / bestätigt</div><div class="wert">'+
+          esc(contLesbar(a.container.bestaetigt))+'</div></div>' +
+        '</div>';
+      if (a.fotos.abholung)
+        h += '<img class="foto" src="'+esc(a.fotos.abholung)+'" alt="Abholfoto" ' +
+             'data-tun="bild" data-wert="Abholfoto">';
+      h += '<p style="margin-top:8px">' +
+        (a.container.trotzdem
+          ? 'Der Fahrer hat ausdrücklich <b>„Trotzdem abholen“</b> bestätigt. ' +
+            'Das ist die Entscheidung des Fahrers und <b>keine Genehmigung durch die Dispo</b>.'
+          : 'Der Fahrer hat <b>nicht</b> „Trotzdem abholen“ gewählt.') + '</p>';
+    }
+
+    h += '<div class="btn-reihe" style="margin-top:10px">' +
+      (a ? '<button class="btn" data-tun="oeffnen" data-wert="'+a.id+'">Auftrag öffnen</button>' : '') +
+      (m.gesehen
+        ? '<span class="marke m-grau">Gesehen</span>'
+        : '<button class="btn haupt" data-tun="gesehen" data-wert="'+m.id+'">Gesehen</button>') +
+      '</div></div>';
+  });
+  return h;
+}
+
+/* ===========================================================
+   11 · Dialoge
+   =========================================================== */
+const dlg = document.getElementById("dlg");
+function frage(kopf, leib, knoepfe){
+  document.getElementById("dlg-kopf").textContent = kopf;
+  document.getElementById("dlg-leib").innerHTML = leib;
+  const fuss = document.getElementById("dlg-fuss");
+  fuss.innerHTML = "";
+  knoepfe.forEach((k,i) => {
+    const b = document.createElement("button");
+    b.className = "btn" + (k.haupt ? " haupt" : "") + (k.gefahr ? " gefahr" : "");
+    b.textContent = k.wort;
+    b.setAttribute("data-dlg-knopf", String(i));
+    b.addEventListener("click", () => { dlg.close(); if (k.tun) k.tun(); });
+    fuss.appendChild(b);
+  });
+  dlg.showModal();
+}
+const bilddlg = document.getElementById("bilddlg");
+document.getElementById("bild-zu").addEventListener("click", () => bilddlg.close());
+function bildZeigen(titel, quelle){
+  document.getElementById("bild-kopf").textContent = titel + " — Demo-Bild, keine Kamera";
+  document.getElementById("bild-leib").innerHTML =
+    '<img src="'+esc(quelle)+'" alt="'+esc(titel)+'">';
+  bilddlg.showModal();
+}
+
+/* ===========================================================
+   12 · Bedienung
+   =========================================================== */
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-tun]");
+  if (!el) return;
+  const tun = el.getAttribute("data-tun");
+  const wert = el.getAttribute("data-wert");
+  const art = el.getAttribute("data-art");
+  const a = auftragVon(U.auftragId);
+
+  if (tun === "bereich") {
+    U.bereich = wert; U.notiz = null; U.fehler = {}; zeichne();
+    document.getElementById("inhalt").focus();
+    return;
+  }
+  if (tun === "tag") {
+    U.tag = wert === "heute" ? HEUTE() : TAG_PLUS(1);
+    U.notiz = null; zeichne(); return;
+  }
+  if (tun === "filter") { U.filter = wert; zeichne(); return; }
+  if (tun === "oeffnen") {
+    U.auftragId = wert; U.bereich = "detail"; U.notiz = null; zeichne();
+    window.scrollTo(0,0); return;
+  }
+  if (tun === "zurueck" || tun === "abbrechen") {
+    U.bereich = "tagesplan"; U.formular = null; U.fehler = {}; U.notiz = null; zeichne(); return;
+  }
+  if (tun === "neu") {
+    U.formular = LEER_FORM(); U.formular.tag = U.tag;
+    U.formular.abholDatum = U.tag; U.formular.lieferDatum = U.tag;
+    U.fehler = {}; U.bereich = "formular"; U.notiz = null; zeichne(); window.scrollTo(0,0); return;
+  }
+  if (tun === "bearbeiten" && a) {
+    U.formular = formAus(a); U.fehler = {}; U.bereich = "formular"; U.notiz = null;
+    zeichne(); window.scrollTo(0,0); return;
+  }
+  if (tun === "entwurf") { formSpeichern(false); return; }
+  if (tun === "freigabeSpeichern") { formSpeichern(true); return; }
+
+  if (tun === "freigeben" && a) {
+    const F = formAus(a);
+    const E = pruefen(F, true);
+    if (Object.keys(E).length) {
+      U.formular = F; U.fehler = E; U.bereich = "formular";
+      U.notiz = "Für die Freigabe fehlen noch Angaben — sie sind unten rot markiert.";
+      zeichne(); return;
+    }
+    a.freigegeben = true;
+    a.verlauf.push(v(jetztIso(),"Für Fahrer freigegeben (Demo)"));
+    speichern();
+    U.notiz = '<b>Demo-Freigabe.</b> Nichts wurde zugestellt — die Fahrer-App ist nicht verbunden.';
+    zeichne(); return;
+  }
+
+  if (tun === "fahrerAendern" && a) {
+    const opts = D.fahrer.map(f =>
+      '<option value="'+f.id+'"'+(a.planung.fahrerId===f.id?" selected":"")+'>'+esc(f.name)+
+      (f.aktiv?"":" — nicht verfügbar")+'</option>').join("");
+    frage("Fahrer ändern",
+      '<div class="feld"><label for="neuerFahrer">Neuer Fahrer</label>' +
+      '<select id="neuerFahrer"><option value="">— nicht zugewiesen —</option>'+opts+'</select>' +
+      '<div class="erklaer">Ein Fahrerwechsel ist eine wesentliche Änderung. Die Fahrer&shy;bestätigung ' +
+      'wird dadurch wieder offen.</div></div>',
+      [{wort:"Abbrechen"},
+       {wort:"Fahrer übernehmen", haupt:true, tun:() => {
+         const neu = document.getElementById("neuerFahrer").value || null;
+         if (neu === a.planung.fahrerId) { U.notiz = "Es wurde derselbe Fahrer gewählt — nichts geändert."; zeichne(); return; }
+         const alt = fahrerVon(a.planung.fahrerId);
+         a.planung.fahrerId = neu;
+         const nf = fahrerVon(neu);
+         a.verlauf.push(v(jetztIso(), "Fahrer geändert: " + (alt?alt.name:"nicht zugewiesen") +
+                                      " → " + (nf?nf.name:"nicht zugewiesen")));
+         if (a.bestaetigt) {
+           a.bestaetigt = null;
+           a.verlauf.push(v(jetztIso(),"Wesentliche Änderung — Fahrerbestätigung ist wieder offen"));
+         }
+         speichern();
+         U.notiz = "Fahrer geändert. Die Fahrerbestätigung ist wieder offen.";
+         zeichne();
+       }}]);
+    return;
+  }
+
+  if (tun === "kopieren" && a) {
+    frage("Auftrag kopieren",
+      '<p>Die wiederkehrende Tour wird übernommen. Erledigte Zustände, Fotos, Zeitpunkte und ' +
+      'die Fahrerbestätigung werden zurückgesetzt.</p>' +
+      '<div class="feld" style="margin-top:12px"><label for="kopieTag">Neues Datum</label>' +
+      '<input type="date" id="kopieTag" value="'+esc(TAG_PLUS(1))+'"></div>' +
+      '<p style="margin-top:10px"><b>Bitte erneut prüfen:</b> Containernummer und Referenz- / ' +
+      'Freistellnummer werden nicht übernommen, weil sie je Sendung verschieden sind.</p>',
+      [{wort:"Abbrechen"},
+       {wort:"Kopie anlegen", haupt:true, tun:() => {
+         const neuTag = document.getElementById("kopieTag").value;
+         if (!neuTag) { U.notiz = "Ohne neues Datum wurde keine Kopie angelegt."; zeichne(); return; }
+         D.laufNummer++;
+         const k = JSON.parse(JSON.stringify(a));
+         k.id = "a"+Date.now(); k.nummer = String(D.laufNummer);
+         k.tag = neuTag;
+         k.abhol.datum = neuTag; k.liefer.datum = neuTag;
+         k.abhol.referenz = "";                       // je Sendung verschieden
+         k.container.erwartet = "";                   // muss neu geprüft werden
+         k.container.bestaetigt = null; k.container.siegel = "";
+         k.container.abweichung = false; k.container.ungeprueft = false; k.container.trotzdem = false;
+         k.container.rueckgabeTermin = null;
+         k.ablauf = { abholung:null, ankunft:null, warten:null, entladenStart:null,
+                      entladenEnde:null, abgabe:null };
+         k.entladeVerlaengerung = null;
+         k.fotos = { abholung:null, abgabe:null };
+         k.dokumente = [];
+         k.bestaetigt = null; k.freigegeben = false; k.storniert = false;
+         k.alarmGesendet = false; k.prognose = null;
+         k.ortungZeit = null; k.datenZeit = null;
+         k.verlauf = [ v(jetztIso(), "Kopie von Auftrag " + a.nummer + " für " + tagLang(neuTag)) ];
+         D.auftraege.push(k);
+         speichern();
+         U.auftragId = k.id; U.tag = neuTag; U.bereich = "detail";
+         U.notiz = '<b>Kopie angelegt als Entwurf.</b> Containernummer und Freistellnummer sind ' +
+                   'bewusst leer — bitte für diese Sendung neu eintragen und prüfen.';
+         zeichne(); window.scrollTo(0,0);
+       }}]);
+    return;
+  }
+
+  if (tun === "anrufen" && a) {
+    const f = fahrerVon(a.planung.fahrerId);
+    frage("Fahrer anrufen",
+      f ? '<p>In der fertigen App würde jetzt <b>'+esc(f.telefon)+'</b> ('+esc(f.name)+') gewählt.</p>' +
+          '<p style="margin-top:8px">In dieser Vorschau wird <b>nicht</b> angerufen.</p>' +
+          '<p style="margin-top:8px">Dispo-Telefon: <b>0421 98994620</b></p>'
+        : '<p>Diesem Auftrag ist kein Fahrer zugewiesen.</p>',
+      [{wort:"Schließen", haupt:true}]);
+    return;
+  }
+
+  if (tun === "stornieren" && a) {
+    frage("Auftrag wirklich stornieren?",
+      '<p>Auftrag <b>'+esc(a.nummer)+'</b> für <b>'+esc(a.kunde)+'</b> wird storniert und zählt ' +
+      'nicht mehr im Tagesplan. Der Verlauf bleibt erhalten.</p>',
+      [{wort:"Nein, behalten"},
+       {wort:"Ja, stornieren", gefahr:true, tun:() => {
+         a.storniert = true;
+         a.verlauf.push(v(jetztIso(),"Auftrag storniert"));
+         speichern();
+         U.notiz = "Auftrag "+a.nummer+" ist storniert.";
+         zeichne();
+       }}]);
+    return;
+  }
+
+  if (tun === "notizSpeichern" && a) {
+    const feld = document.getElementById("notizfeld");
+    a.dispoNotiz = feld ? feld.value : "";
+    a.verlauf.push(v(jetztIso(),"Interne Dispo-Notiz geändert"));
+    speichern();
+    U.notiz = "Notiz gespeichert. Die Fahrerbestätigung bleibt unverändert — eine interne Notiz " +
+              "ist keine wesentliche Änderung.";
+    zeichne(); return;
+  }
+
+  if (tun === "dok" && a) {
+    a.dokumente.push({ art:wert, name:wert+"-"+a.nummer+".pdf", stand:"hinterlegt (Demo, keine Datei)" });
+    a.verlauf.push(v(jetztIso(), wert+" hinterlegt (Demo)"));
+    speichern();
+    U.notiz = wert+" wurde als Demo-Eintrag hinterlegt. Es wurde keine Datei hochgeladen.";
+    zeichne(); return;
+  }
+
+  if (tun === "bild") {
+    const bild = el.getAttribute("src");
+    bildZeigen(wert || "Foto", bild);
+    return;
+  }
+
+  /* Demo-Schritte des Fahrers, damit die Entladelogik erlebbar wird */
+  if (tun === "fahrerschritt" && a) {
+    if (wert === "verlaengern30" || wert === "verlaengern60") {
+      const min = wert === "verlaengern30" ? 30 : 60;
+      a.entladeVerlaengerung = { min, ab:jetztIso(), unbekannt:false };
+      a.verlauf.push(v(jetztIso(), "Fahrer meldet: dauert " + min + " Minuten länger"));
+      a.datenZeit = jetztIso(); a.ortungZeit = jetztIso();
+      speichern();
+      U.notiz = "Die neue Restzeit von " + min + " Minuten zählt ab jetzt — nicht ab dem " +
+                "ursprünglichen Entladebeginn.";
+    } else if (wert === "unbekannt") {
+      a.entladeVerlaengerung = { min:null, ab:jetztIso(), unbekannt:true };
+      a.verlauf.push(v(jetztIso(), "Fahrer meldet: Entladeende weiß er noch nicht"));
+      speichern();
+      U.notiz = "Solange das Entladeende unbekannt ist, wird keine nächste Ankunft vorhergesagt.";
+    } else if (wert === "entladenFertig") {
+      a.ablauf.entladenEnde = jetztIso();
+      a.entladeVerlaengerung = null;
+      a.datenZeit = jetztIso(); a.ortungZeit = jetztIso();
+      a.verlauf.push(v(jetztIso(), "Entladung fertig gemeldet"));
+      speichern();
+      U.notiz = "Entladung beendet. Die Folgeankunft wird ab dem tatsächlichen Entladeende neu " +
+                "gerechnet. Der Auftrag ist damit noch nicht abgeschlossen — die Ablieferung " +
+                "bestätigt der Fahrer getrennt.";
+    }
+    zeichne(); return;
+  }
+
+  if (tun === "gesehen") {
+    const m = D.meldungen.find(x => x.id === wert);
+    if (m) {
+      m.gesehen = true;
+      const au = auftragVon(m.auftragId);
+      if (au) au.verlauf.push(v(jetztIso(),"Meldung von der Dispo zur Kenntnis genommen"));
+      speichern();
+      U.notiz = "Meldung als gesehen markiert. Die Ursache ist damit nicht behoben.";
+    }
+    zeichne(); return;
+  }
+
+  /* Stammdaten */
+  if (tun === "stammNeu" || tun === "stammBearbeiten") {
+    stammDialog(art, tun === "stammBearbeiten" ? wert : null);
+    return;
+  }
+
+  if (tun === "reset") {
+    frage("Demodaten wirklich zurücksetzen?",
+      '<p>Alle in dieser Vorschau eingegebenen Aufträge, Änderungen und Meldungen werden ' +
+      'gelöscht und durch die ursprünglichen Beispieldaten ersetzt.</p>' +
+      '<p style="margin-top:8px">Das lässt sich nicht rückgängig machen.</p>',
+      [{wort:"Nein, behalten"},
+       {wort:"Ja, zurücksetzen", gefahr:true, tun:() => {
+         D = demoDaten(); alarmePruefen(); speichern();
+         U.bereich = "tagesplan"; U.tag = HEUTE(); U.filter = "alle"; U.auftragId = null;
+         U.notiz = "Die Beispieldaten sind wiederhergestellt.";
+         zeichne(); window.scrollTo(0,0);
+       }}]);
+    return;
+  }
+});
+
+/* Datumsauswahl */
+document.addEventListener("change", e => {
+  if (e.target.id === "tagwahl") {
+    U.tag = e.target.value || HEUTE();
+    U.notiz = null; zeichne();
+  }
+  /* „Noch unbekannt“ blendet die Nummernprüfung sinnvoll aus */
+  if (e.target.id === "f_contUnbekannt" && U.formular) {
+    U.formular = formLesen();
+    U.fehler = {};
+    zeichne();
+  }
+});
+
+function stammDialog(art, id){
+  const titel = { fahrer:"Fahrer", zug:"Zugmaschine", chassis:"Chassis" }[art] || "Eintrag";
+  let leib = "";
+  let vorhanden = null;
+  if (art === "fahrer") {
+    vorhanden = id ? D.fahrer.find(x => x.id === id) : null;
+    leib =
+      '<div class="feld"><label for="s_name">Name</label><input id="s_name" type="text" value="'+
+        esc(vorhanden ? vorhanden.name : "")+'"></div>' +
+      '<div class="feld" style="margin-top:10px"><label for="s_tel">Telefon</label>' +
+        '<input id="s_tel" type="tel" value="'+esc(vorhanden ? vorhanden.telefon : "")+'"></div>' +
+      '<div class="feld" style="margin-top:10px"><label for="s_spr">Sprache</label>' +
+        '<select id="s_spr">' + ["Deutsch","Türkisch","Polnisch","Rumänisch","Arabisch"].map(s =>
+          '<option'+(vorhanden && vorhanden.sprache===s ? " selected":"")+'>'+s+'</option>').join("") +
+        '</select></div>' +
+      '<div class="feld" style="margin-top:10px"><label><input id="s_aktiv" type="checkbox" '+
+        'style="width:auto;min-height:0"'+(!vorhanden || vorhanden.aktiv ? " checked":"")+'> Aktiv (sonst: nicht verfügbar)</label></div>';
+  } else if (art === "zug") {
+    vorhanden = id ? D.zugmaschinen.find(x => x.id === id) : null;
+    leib =
+      '<div class="feld"><label for="s_kz">Kennzeichen</label><input id="s_kz" type="text" value="'+
+        esc(vorhanden ? vorhanden.kennzeichen : "")+'"></div>' +
+      '<div class="feld" style="margin-top:10px"><label><input id="s_aktiv" type="checkbox" '+
+        'style="width:auto;min-height:0"'+(!vorhanden || vorhanden.aktiv ? " checked":"")+'> Aktiv (sonst: Werkstatt)</label></div>' +
+      '<div class="feld" style="margin-top:10px"><label for="s_grund">Hinweis</label>' +
+        '<input id="s_grund" type="text" value="'+esc(vorhanden ? (vorhanden.grund||"") : "")+'" ' +
+        'placeholder="zum Beispiel: Werkstatt bis Freitag"></div>';
+  } else {
+    vorhanden = id ? D.chassis.find(x => x.id === id) : null;
+    leib =
+      '<div class="feld"><label for="s_nr">Kennzeichen oder interne Nummer</label>' +
+        '<input id="s_nr" type="text" value="'+esc(vorhanden ? vorhanden.nummer : "")+'"></div>' +
+      '<div class="feld" style="margin-top:10px"><label for="s_gr">Größe / Eignung</label>' +
+        '<input id="s_gr" type="text" value="'+esc(vorhanden ? vorhanden.groesse : "")+'" ' +
+        'placeholder="zum Beispiel: 40 ft Standard"></div>' +
+      '<div class="feld" style="margin-top:10px"><label><input id="s_miete" type="checkbox" '+
+        'style="width:auto;min-height:0"'+(vorhanden && vorhanden.gemietet ? " checked":"")+'> Gemietet</label></div>';
+  }
+
+  frage((id ? titel+" bearbeiten" : titel+" anlegen"), leib,
+    [{wort:"Abbrechen"},
+     {wort:"Speichern", haupt:true, tun:() => {
+       const g = i => { const e = document.getElementById(i); return e ? e.value.trim() : ""; };
+       const c = i => { const e = document.getElementById(i); return e ? e.checked : false; };
+       if (art === "fahrer") {
+         const name = g("s_name");
+         if (!name) { U.notiz = "Ohne Namen wurde kein Fahrer gespeichert."; zeichne(); return; }
+         const o = vorhanden || { id:"f"+Date.now() };
+         o.name = name; o.telefon = g("s_tel"); o.sprache = g("s_spr"); o.aktiv = c("s_aktiv");
+         if (!vorhanden) D.fahrer.push(o);
+       } else if (art === "zug") {
+         const kz = g("s_kz");
+         if (!kz) { U.notiz = "Ohne Kennzeichen wurde keine Zugmaschine gespeichert."; zeichne(); return; }
+         const o = vorhanden || { id:"z"+Date.now() };
+         o.kennzeichen = kz; o.aktiv = c("s_aktiv"); o.grund = g("s_grund");
+         if (!vorhanden) D.zugmaschinen.push(o);
+       } else {
+         const nr = g("s_nr");
+         if (!nr) { U.notiz = "Ohne Nummer wurde kein Chassis gespeichert."; zeichne(); return; }
+         const o = vorhanden || { id:"c"+Date.now() };
+         o.nummer = nr; o.groesse = g("s_gr") || "—"; o.gemietet = c("s_miete");
+         if (!vorhanden) D.chassis.push(o);
+       }
+       speichern();
+       U.notiz = titel + " gespeichert. Der Eintrag steht jetzt in den Auftragsformularen zur Auswahl.";
+       zeichne();
+     }}]);
+}
+
+/* Für Prüfzwecke von außen lesbar. Die Oberfläche benutzt das nicht. */
+window.DISPO = {
+  zustand: () => ({ D, U }),
+  regeln: { GRENZE_ORANGE, GRENZE_ALARM, MAX_ALTER, PLAN },
+  zeitstatus, konflikte, prognose, folgePrognose, contGueltig, massgeblich, entladeRest
+};
+
+start();
+</script>
+</body>
+</html>
