@@ -664,6 +664,356 @@ function fahrzeit(vonAdresse, nachAdresse){
 }
 
 /* ===========================================================
+   2b · Anbieter, Telematik, Routing, Geofences
+
+   Alles, was später an ein echtes System geht, läuft über einen
+   Anbieter. Heute steht überall „demo“. Wird morgen ein echter
+   Dienst angeschlossen, ändert sich hier die Art — nicht die
+   Fachlogik darüber.
+
+   Was hier wirklich gerechnet wird und was nur so tut, steht an
+   jeder Stelle dabei. Nichts gibt vor, mit einem echten Gerät oder
+   Dienst zu sprechen.
+   =========================================================== */
+const ANBIETER = {
+  telematik:   { art:"demo", name:"Demo-Telematik",   geraet:"Teltonika FMC650 (simuliert)" },
+  routing:     { art:"demo", name:"Demo-Lkw-Routing", hinweis:"Luftlinie mal Streckenfaktor, keine echten Straßendaten" },
+  ki:          { art:"demo", name:"Demo-Assistent",   hinweis:"Regeln über den Daten dieser Vorschau, kein Sprachmodell" },
+  karten:      { art:"demo", name:"Demo-Karte",       hinweis:"schematisch, kein Kartendienst" },
+  kamera:      { art:"demo", name:"Demo-Kamera",      geraet:"Teltonika DashCam (simuliert)" },
+  nachrichten: { art:"demo", name:"Demo-Versand",     hinweis:"es wird nichts verschickt" }
+};
+/* Kurzer Satz für die Oberfläche: welcher Anbieter, und dass er simuliert. */
+function anbieterSatz(schluessel){
+  const p = ANBIETER[schluessel] || {};
+  return (p.name || "Demo") + (p.art === "demo" ? " (simuliert)" : "");
+}
+
+/* ---- Orte mit Koordinaten ----
+   Nur die Orte, die in dieser Vorschau vorkommen. Die Koordinaten sind
+   grob und dienen der Entfernungsrechnung, nicht der Navigation. */
+const ORTE = {
+  bremen:      { lat:53.0793, lng:8.8017,  wort:"Bremen" },
+  walsrode:    { lat:52.8617, lng:9.5928,  wort:"Walsrode" },
+  delmenhorst: { lat:53.0503, lng:8.6310,  wort:"Delmenhorst" },
+  verden:      { lat:52.9226, lng:9.2311,  wort:"Verden" },
+  hemelingen:  { lat:53.0533, lng:8.8975,  wort:"Bremen-Hemelingen" }
+};
+function ortSchluessel(adresse){
+  const t = String(adresse||"").toLowerCase();
+  if (t.indexOf("hemelingen") >= 0)   return "hemelingen";
+  if (t.indexOf("walsrode") >= 0)     return "walsrode";
+  if (t.indexOf("delmenhorst") >= 0)  return "delmenhorst";
+  if (t.indexOf("verden") >= 0)       return "verden";
+  if (t.indexOf("bremen") >= 0)       return "bremen";
+  return null;
+}
+function ortVon(adresse){
+  const k = ortSchluessel(adresse);
+  return k ? Object.assign({ schluessel:k }, ORTE[k]) : null;
+}
+
+/* Entfernung zweier Punkte in Kilometern. Das ist echte Rechnung
+   (Haversine), aber eben Luftlinie — keine gefahrene Strecke. */
+function luftlinieKm(aLat, aLng, bLat, bLng){
+  if ([aLat,aLng,bLat,bLng].some(x => typeof x !== "number" || !isFinite(x))) return null;
+  const R = 6371, r = Math.PI/180;
+  const dLat = (bLat-aLat)*r, dLng = (bLng-aLng)*r;
+  const s = Math.sin(dLat/2)**2 +
+            Math.cos(aLat*r)*Math.cos(bLat*r)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.min(1, Math.sqrt(s)));
+}
+const STRECKENFAKTOR = 1.25;   // Luftlinie → Straße, Demo-Annahme
+
+/* Lkw-Vorgaben für das Routing. Ein echter Dienst braucht genau diese
+   Angaben, um Brücken, Tunnel und Fahrverbote zu berücksichtigen. */
+function routingStandard(){
+  return { hoeheM:4.0, breiteM:2.55, laengeM:16.5, gewichtT:40,
+           achslastT:null, gefahrgut:false };
+}
+/* Telematikgerät im Ausgangszustand: nichts verbunden, nichts bekannt.
+   So bekommt auch ein alter gespeicherter Stand ein vollständiges Feld,
+   ohne dass irgendwo eine Verbindung behauptet wird. */
+function telematikStandard(){
+  return { geraet:"FMC650", verbunden:false, letzteMeldung:null,
+           latitude:null, longitude:null, geschwindigkeit:0,
+           zuendung:false, bewegung:false, gpsGueltig:false, signal:"unbekannt",
+           stromversorgung:true, backupBatterie:true, jamming:false, manipulation:false,
+           ort:null };
+}
+function kameraStandard(){
+  return { verbunden:false, letzteMeldung:null, letztesBild:null, ereignisse:[] };
+}
+function sicherungStandard(){
+  return { wegfahrsperre:"aus",      // aus | vorgemerkt | aktiv | fehler
+           vorgemerktAm:null, aktivSeit:null, fehlerGrund:null,
+           diebstahlModus:false, diebstahlSeit:null, spur:[] };
+}
+
+/* ---- Geofences ----
+   Eine Zone ist ein Kreis um eine Adresse. Mehr braucht diese Stufe
+   nicht: Terminal, Depot und Kundenhöfe sind rund genug. */
+function geofenceStandard(){
+  const z = (id, name, adresse, ort, radiusM, art) => {
+    const o = ORTE[ort];
+    return { id, name, adresse, lat:o.lat, lng:o.lng, radiusM, art };
+  };
+  return [
+    z("geo_terminal_bremen", "Hansa Terminal Bremen", "Am Speicher 12, 28197 Bremen",
+      "bremen", 400, "terminal"),
+    z("geo_depot_hemelingen", "Depot Bremen Hemelingen", "Depot Bremen Hemelingen",
+      "hemelingen", 300, "depot"),
+    z("geo_roland_bremen", "Roland Umschlag, Bremen", "Roland Umschlag, Bremen",
+      "bremen", 250, "beladestelle"),
+    z("geo_poco_walsrode", "Poco Einrichtungsmarkt Walsrode", "Zum Gewerbegebiet 5, 29664 Walsrode",
+      "walsrode", 250, "kunde"),
+    z("geo_moeller_walsrode", "Möller Baustoffe GmbH", "Lange Straße 4, 29664 Walsrode",
+      "walsrode", 200, "kunde"),
+    z("geo_nordsee_walsrode", "Nordsee Handel KG", "Industriestraße 7, 29664 Walsrode",
+      "walsrode", 200, "kunde"),
+    z("geo_aller_walsrode", "Aller Papier GmbH", "Bahnhofstraße 60, 29664 Walsrode",
+      "walsrode", 200, "kunde"),
+    z("geo_lueneburger_walsrode", "Lüneburger Holzwerke GmbH", "Sägewerkstraße 3, 29664 Walsrode",
+      "walsrode", 200, "kunde"),
+    z("geo_weserhof_delmenhorst", "Weserhof Logistik", "Annenheider Damm 145, 27755 Delmenhorst",
+      "delmenhorst", 250, "kunde"),
+    z("geo_hansebau_delmenhorst", "Hanse Bau Delmenhorst", "Stedinger Straße 22, 27749 Delmenhorst",
+      "delmenhorst", 200, "kunde"),
+    z("geo_elbe_bremen", "Elbe Stahlhandel GmbH", "Hafenstraße 9, 28237 Bremen",
+      "bremen", 200, "kunde")
+  ];
+}
+/* Welche Zone gehört zu dieser Adresse? Gesucht wird zuerst nach der
+   Adresse selbst, dann nach dem Firmennamen — beides genau, nie geraten. */
+function geofenceFuer(adresse, firma){
+  const liste = D.geofences || [];
+  const gleich = (x,y) => String(x||"").trim().toLowerCase() === String(y||"").trim().toLowerCase();
+  return liste.find(g => gleich(g.adresse, adresse)) ||
+         liste.find(g => gleich(g.name, firma)) || null;
+}
+/* Steht das Fahrzeug in dieser Zone? Reine Rechnung aus Koordinaten. */
+function inZone(lat, lng, zone){
+  if (!zone || typeof lat !== "number" || typeof lng !== "number") return false;
+  const km = luftlinieKm(lat, lng, zone.lat, zone.lng);
+  return km != null && km * 1000 <= zone.radiusM;
+}
+
+/* ===========================================================
+   Routing-Engine
+
+   Ab hier läuft JEDE Fahrzeitberechnung über routeBerechnen(). Die alte
+   fahrzeit() bleibt als Rückfallebene erhalten und wird von hier aus
+   aufgerufen — sie ist nicht verschwunden, sie ist jetzt der Notnagel,
+   wenn kein Ort erkannt wird.
+
+   Ein echter Lkw-Routingdienst bekäme genau dieselben Eingaben:
+   Start, Ziel, Fahrzeugmaße, Abfahrtszeit. Das ist der Grund für diese
+   Signatur.
+   =========================================================== */
+/* Verkehrsaufschlag nach Tageszeit — eine bewusst grobe Demo-Annahme.
+   Ein echter Dienst liefert das aus Messdaten; hier steht eine Tabelle,
+   damit die Zahl nachvollziehbar bleibt statt zufällig zu wirken. */
+function verkehrsFaktor(abfahrtIso){
+  if (!abfahrtIso) return { faktor:1.0, wort:"ohne Verkehrsannahme" };
+  const d = new Date(abfahrtIso);
+  if (isNaN(d)) return { faktor:1.0, wort:"ohne Verkehrsannahme" };
+  const std = d.getHours(), tag = d.getDay();       // 0 = Sonntag
+  if (tag === 0) return { faktor:0.92, wort:"Sonntag, wenig Verkehr" };
+  if (std >= 6 && std < 9)   return { faktor:1.18, wort:"Morgenverkehr" };
+  if (std >= 15 && std < 18) return { faktor:1.22, wort:"Nachmittagsverkehr" };
+  if (std >= 22 || std < 5)  return { faktor:0.90, wort:"Nachtfahrt" };
+  return { faktor:1.0, wort:"normaler Verkehr" };
+}
+
+/* Der einzige Weg zu einer Fahrzeit.
+   Rückgabe: { minuten, km, quelle, verkehr, guete, hinweis, echt }
+     guete: "hoch" | "mittel" | "niedrig" — wie belastbar die Zahl ist.
+     echt:  was davon wirklich gerechnet wurde. */
+function routeBerechnen(von, nach, fahrzeug, abfahrtIso){
+  const prov = ANBIETER.routing;
+  if (prov.art !== "demo") {
+    /* Hier käme der Aufruf des echten Dienstes hin. Solange keiner
+       angeschlossen ist, wird nichts behauptet. */
+    return { minuten:null, km:null, quelle:prov.name, guete:"niedrig",
+             hinweis:"Routingdienst nicht erreichbar", echt:false };
+  }
+  const a = ortVon(von), b = ortVon(nach);
+  const verkehr = verkehrsFaktor(abfahrtIso);
+
+  if (!a || !b) {
+    /* Ort unbekannt: der alte Planwert trägt weiter. Lieber ein grober
+       bekannter Wert als eine erfundene Strecke. */
+    return { minuten:fahrzeit(von, nach), km:null, quelle:"Demo-Planwert",
+             verkehr:null, guete:"niedrig",
+             hinweis:"Ort nicht erkannt, fester Planwert", echt:false };
+  }
+  const luft = luftlinieKm(a.lat, a.lng, b.lat, b.lng);
+  const km = Math.max(1, Math.round(luft * STRECKENFAKTOR));
+
+  /* Schnitt aus Landstraße und Autobahn, je nach Länge. Kurze Wege im
+     Stadtgebiet sind deutlich langsamer als eine Autobahnetappe. */
+  const schnitt = km < 15 ? 32 : km < 40 ? 55 : 68;   // km/h
+  let minuten = (km / schnitt) * 60 * verkehr.faktor;
+
+  /* Lkw-Zuschlag aus den Fahrzeugmaßen. Ein 40-Tonner ist langsamer
+     und darf nicht überall lang — beides kostet Zeit. */
+  const r = (fahrzeug && fahrzeug.routing) || routingStandard();
+  if (r.gewichtT >= 26) minuten *= 1.08;
+  if (r.hoeheM >= 4.0)  minuten *= 1.03;
+  if (r.gefahrgut)      minuten *= 1.05;
+
+  return { minuten:Math.max(5, Math.round(minuten)), km,
+           quelle:ANBIETER.routing.name, verkehr:verkehr.wort, guete:"mittel",
+           hinweis:"Luftlinie × " + STRECKENFAKTOR + ", Demo-Annahmen für Tempo und Verkehr",
+           echt:false };
+}
+
+/* Fahrzeit für die Tourrechnung. Genau eine Stelle, an der die
+   Kettenrechnung an das Routing kommt — damit Tagesplan, Wochenplan,
+   Auftrag und Auftraggeberansicht nie verschiedene Fahrzeiten benutzen. */
+function fahrzeitFuer(von, nach, fahrzeug, abfahrtIso){
+  const r = routeBerechnen(von, nach, fahrzeug, abfahrtIso);
+  return (r && r.minuten != null) ? r.minuten : fahrzeit(von, nach);
+}
+
+/* ===========================================================
+   2c · Eigene Erfahrungswerte („lernende“ Prognose)
+
+   Ein Routingdienst kennt die Straße. Er kennt nicht, dass bei einem
+   bestimmten Kunden montags eine Stunde länger entladen wird. Genau
+   dafür führt TWISTLOCK eigene Beobachtungen mit.
+
+   Hier sind es Beispieldaten. Die Rechnung darüber ist aber echt: es
+   wird tatsächlich gemittelt, nicht geraten — und wenn zu wenig Daten
+   vorliegen, sagt die Funktion das, statt eine Zahl zu erfinden.
+   =========================================================== */
+const LERN_MINDEST = 3;          // weniger Beobachtungen → keine Aussage
+
+function demoHistorie(){
+  /* Gefahrene Strecken: Ort → Ort, Wochentag, Stunde, tatsächliche Minuten.
+     Bewusst so gewählt, dass der Morgen schneller und der Freitagnachmittag
+     deutlich langsamer ist als der Routingwert. */
+  const f = [];
+  const fahrt = (von, nach, tag, std, min, n) => {
+    for (let i = 0; i < n; i++) f.push({ von, nach, tag, stunde:std, minuten:min + (i%3) - 1 });
+  };
+  fahrt("bremen","walsrode", 1,  5, 67, 6);    // Montag früh
+  fahrt("bremen","walsrode", 1,  9, 74, 5);
+  fahrt("bremen","walsrode", 5, 15, 92, 4);    // Freitagnachmittag
+  fahrt("bremen","walsrode", 3, 11, 73, 5);
+  fahrt("walsrode","bremen", 1, 12, 71, 4);
+  fahrt("bremen","delmenhorst", 2, 8, 34, 4);
+  fahrt("bremen","hemelingen", 1, 13, 22, 5);
+
+  /* Standzeiten je Auftraggeber. Zwei sehr verschiedene Kunden, damit
+     der Unterschied sichtbar wird. */
+  const s = [];
+  const stopp = (kunde, art, min, n) => {
+    for (let i = 0; i < n; i++) s.push({ auftraggeberId:kunde, art, minuten:min + (i%5)*3 - 6 });
+  };
+  stopp("kunde_poco",    "entladung", 48, 7);
+  stopp("kunde_nordsee", "entladung", 103, 6);
+  stopp("kunde_elbe",    "entladung", 62, 4);
+  stopp("kunde_moeller", "entladung", 55, 2);     // zu wenige → keine Aussage
+  return { fahrten:f, stopps:s };
+}
+
+function mittel(zahlen){
+  if (!zahlen.length) return null;
+  return Math.round(zahlen.reduce((a,b) => a+b, 0) / zahlen.length);
+}
+
+/* Erfahrungswert für eine Strecke zu einer bestimmten Zeit.
+   Gesucht wird erst eng (gleicher Wochentag, ±2 Stunden), dann weiter
+   (nur die Strecke). Wie eng getroffen wurde, steht im Ergebnis. */
+function lernFahrzeit(vonAdresse, nachAdresse, abfahrtIso){
+  const a = ortSchluessel(vonAdresse), b = ortSchluessel(nachAdresse);
+  const H = (D.historie && D.historie.fahrten) || [];
+  if (!a || !b || !H.length) return { minuten:null, anzahl:0, treffer:"keine" };
+  const passend = H.filter(x => x.von === a && x.nach === b);
+  if (!passend.length) return { minuten:null, anzahl:0, treffer:"keine" };
+
+  const d = abfahrtIso ? new Date(abfahrtIso) : null;
+  if (d && !isNaN(d)) {
+    const tag = d.getDay(), std = d.getHours();
+    const eng = passend.filter(x => x.tag === tag && Math.abs(x.stunde - std) <= 2);
+    if (eng.length >= LERN_MINDEST)
+      return { minuten:mittel(eng.map(x => x.minuten)), anzahl:eng.length, treffer:"genau" };
+  }
+  if (passend.length >= LERN_MINDEST)
+    return { minuten:mittel(passend.map(x => x.minuten)), anzahl:passend.length, treffer:"strecke" };
+  return { minuten:null, anzahl:passend.length, treffer:"zuwenig" };
+}
+
+/* Erfahrungswert für die Standzeit bei einem Auftraggeber. */
+function lernStandzeit(auftraggeberId, art){
+  const S = (D.historie && D.historie.stopps) || [];
+  const passend = S.filter(x => x.auftraggeberId === auftraggeberId && x.art === (art||"entladung"));
+  if (passend.length < LERN_MINDEST)
+    return { minuten:null, anzahl:passend.length, treffer:"zuwenig" };
+  return { minuten:mittel(passend.map(x => x.minuten)), anzahl:passend.length, treffer:"genau" };
+}
+
+/* Routing und Erfahrung zusammenführen.
+   Gibt es genug eigene Fahrten, wiegen sie schwerer als die Modellrechnung —
+   aber die Routingzahl verschwindet nicht, beide stehen im Ergebnis. */
+function lernEta(vonAdresse, nachAdresse, fahrzeug, abfahrtIso){
+  const route = routeBerechnen(vonAdresse, nachAdresse, fahrzeug, abfahrtIso);
+  const lern  = lernFahrzeit(vonAdresse, nachAdresse, abfahrtIso);
+  if (lern.minuten == null || route.minuten == null)
+    return { minuten:route.minuten, route, lern, gewicht:0,
+             guete:route.guete || "niedrig",
+             erklaerung:"Nur Routingwert – zu wenige eigene Fahrten auf dieser Strecke." };
+  /* Gewicht steigt mit der Zahl der Beobachtungen, bleibt aber gedeckelt:
+     eigene Daten sind gut, aber nie die ganze Wahrheit. */
+  const g = lern.treffer === "genau" ? Math.min(0.7, 0.1 * lern.anzahl)
+                                     : Math.min(0.4, 0.07 * lern.anzahl);
+  const minuten = Math.round(route.minuten * (1-g) + lern.minuten * g);
+  return { minuten, route, lern, gewicht:Math.round(g*100),
+           guete: lern.treffer === "genau" ? "hoch" : "mittel",
+           erklaerung:"Routing " + route.minuten + " Min., eigene Fahrten " + lern.minuten +
+                      " Min. aus " + lern.anzahl + " Beobachtungen, gewichtet " +
+                      Math.round(g*100) + " %." };
+}
+
+/* ===========================================================
+   2d · Datenqualität
+
+   Jede Prognose sagt dazu, worauf sie steht. Bei „niedrig“ wird bewusst
+   keine genaue Uhrzeit versprochen.
+   =========================================================== */
+function datenGuete(a){
+  const gruende = [];
+  const z = a && a.planung ? zugVon(a.planung.zugmaschineId) : null;
+  const t = z && z.telematik;
+  let punkte = 0;
+
+  if (t && t.verbunden && t.gpsGueltig &&
+      zeitstempelPruefen(t.letzteMeldung, "Ortungszeitpunkt").ok) {
+    punkte += 2; gruende.push("Ortung frisch");
+  } else if (t && t.verbunden) {
+    gruende.push("Ortung veraltet");
+  } else {
+    gruende.push("keine Ortung");
+  }
+
+  const r = routeBerechnen(a.abhol.adresse, a.liefer.adresse, z, jetztIso());
+  if (r && r.minuten != null && r.km != null) { punkte += 1; gruende.push("Strecke bekannt"); }
+  else gruende.push("Strecke nur als Planwert");
+
+  const l = lernFahrzeit(a.abhol.adresse, a.liefer.adresse, jetztIso());
+  if (l.minuten != null) { punkte += 1; gruende.push("eigene Fahrten vorhanden"); }
+  else gruende.push("kaum eigene Fahrten");
+
+  const e = entladeRest(a);
+  if (e.unklar) { punkte -= 1; gruende.push("Entladeende unklar"); }
+
+  const stufe = punkte >= 4 ? "hoch" : punkte >= 2 ? "mittel" : "niedrig";
+  return { stufe, punkte, gruende,
+           klasse: stufe === "hoch" ? "m-gruen" : stufe === "mittel" ? "m-gelb" : "m-grau" };
+}
+
+/* ===========================================================
    3 · Speicherung
    Demo-Eingaben liegen im localStorage dieses Browsers. Klappt das
    nicht, wird das ehrlich gesagt — es wird nichts behauptet.
@@ -768,11 +1118,58 @@ function demoDaten(){
     { id:"f3", name:"Katrin Sievers",  telefon:"0170 2233445", sprache:"Deutsch", aktiv:true },
     { id:"f4", name:"Dawid Nowak",     telefon:"0170 9988776", sprache:"Polnisch", aktiv:true }
   ];
+  /* Zugmaschinen mit simulierter Telematik. Die Lage jedes Fahrzeugs
+     passt zu dem, was seine Aufträge heute sagen — sonst widersprächen
+     sich Karte und Tagesplan. */
+  const tm = (o) => Object.assign(telematikStandard(), o);
+  const bei = (ort, o) => tm(Object.assign(
+    { verbunden:true, latitude:ORTE[ort].lat, longitude:ORTE[ort].lng,
+      gpsGueltig:true, signal:"gut", ort:ORTE[ort].wort }, o));
   const zugmaschinen = [
-    { id:"z1", kennzeichen:"HB-TL 412", aktiv:true },
-    { id:"z2", kennzeichen:"HB-TL 508", aktiv:true, grund:"" },
-    { id:"z3", kennzeichen:"HB-TL 611", aktiv:true, grund:"" },
-    { id:"z4", kennzeichen:"HB-TL 742", aktiv:true, grund:"" }
+    /* (A) unterwegs, alles frisch */
+    { id:"z1", kennzeichen:"HB-TL 412", aktiv:true,
+      routing:routingStandard(),
+      telematik:bei("verden", { letzteMeldung:inMin(-1), geschwindigkeit:78,
+                                zuendung:true, bewegung:true,
+                                ort:"A27 Höhe Verden" }),
+      kamera:Object.assign(kameraStandard(), {
+        verbunden:true, letzteMeldung:inMin(-1),
+        letztesBild:fotoBild("Kamera nach vorn", "#1B4C78"), ereignisse:[] }),
+      sicherung:sicherungStandard() },
+    /* (F) Ortung veraltet — dazu passt der Auftrag mit alter Ortung */
+    { id:"z2", kennzeichen:"HB-TL 508", aktiv:true, grund:"",
+      routing:routingStandard(),
+      telematik:bei("bremen", { letzteMeldung:inMin(-42), geschwindigkeit:0,
+                                zuendung:true, bewegung:false, gpsGueltig:true,
+                                signal:"schwach", ort:"Bremen, letzte bekannte Position" }),
+      kamera:Object.assign(kameraStandard(), { verbunden:true, letzteMeldung:inMin(-42) }),
+      sicherung:sicherungStandard() },
+    /* (J) steht beim Kunden, Zündung aus — Wegfahrsperre wäre sicher schaltbar */
+    { id:"z3", kennzeichen:"HB-TL 611", aktiv:true, grund:"",
+      routing:routingStandard(),
+      telematik:bei("walsrode", { letzteMeldung:inMin(-2), geschwindigkeit:0,
+                                  zuendung:false, bewegung:false,
+                                  ort:"Poco Einrichtungsmarkt Walsrode" }),
+      kamera:Object.assign(kameraStandard(), {
+        verbunden:true, letzteMeldung:inMin(-2),
+        letztesBild:fotoBild("Kamera Rampe 3", "#47525D") }),
+      sicherung:sicherungStandard() },
+    /* (B/H/I) unterwegs mit Verzögerung, Kameraereignis, Wegfahrsperre
+       vorgemerkt — das Fahrzeug fährt noch, sie darf also nicht greifen */
+    { id:"z4", kennzeichen:"HB-TL 742", aktiv:true, grund:"",
+      routing:Object.assign(routingStandard(), { gewichtT:40, hoeheM:4.0 }),
+      telematik:bei("verden", { letzteMeldung:inMin(-3), geschwindigkeit:82,
+                                zuendung:true, bewegung:true,
+                                ort:"A27 bei Verden, Richtung Walsrode" }),
+      kamera:Object.assign(kameraStandard(), {
+        verbunden:true, letzteMeldung:inMin(-3),
+        letztesBild:fotoBild("Kamera nach vorn", "#8A5200"),
+        ereignisse:[ { id:"ke1", zeit:inMin(-26), art:"bremsung",
+                       titel:"Starke Bremsung erkannt",
+                       text:"Verzögerung über dem eingestellten Schwellwert. Aufnahme liegt im Gerät.",
+                       bild:fotoBild("Ereignisbild 10:04", "#A3161D"), gesehen:false } ] }),
+      sicherung:Object.assign(sicherungStandard(), {
+        wegfahrsperre:"vorgemerkt", vorgemerktAm:inMin(-15) }) }
   ];
   const chassis = [
     { id:"c1", nummer:"CH-01", groesse:"40 ft Standard", gemietet:false },
@@ -1337,9 +1734,13 @@ function demoDaten(){
       status:"deaktiviert" }
   ];
   return { auftraggeber, fahrer, zugmaschinen, chassis, auftraege, links,
-           meldungen:[], laufNummer:4950 };
+           geofenceEreignisse:[], geofences:geofenceStandard(),
+           historie:demoHistorie(), meldungen:[], laufNummer:4950 };
 }
-function v(zeit, text){ return { zeit, text }; }
+/* Verlaufseintrag. Die Quelle gehört dazu: „angekommen“ heißt etwas
+   anderes, wenn es das GPS gemeldet hat, als wenn der Fahrer es gedrückt
+   hat. Ohne Angabe gilt der Eintrag als Eintrag der Dispo. */
+function v(zeit, text, quelle){ return { zeit, text, quelle:quelle || "dispo" }; }
 
 function naechsterMontag(){
   const d = jetzt();
@@ -1381,25 +1782,60 @@ let U = {                     // Oberfläche
 function start(){
   const gespeichert = laden();
   D = gespeichert || demoDaten();
-  /* Ein Stand aus einer aelteren Fassung kennt die neuen Bereiche noch
-     nicht. Fehlende Listen werden ergaenzt, nichts Bestehendes ersetzt. */
-  if (!Array.isArray(D.auftraggeber)) D.auftraggeber = [];
-  if (!Array.isArray(D.links)) D.links = [];
-  D.auftraege.forEach(a => {
-    if (!("auftraggeberId" in a)) a.auftraggeberId = null;
-    if (!Array.isArray(a.bilder)) a.bilder = [];
-    if (!("standort" in a)) a.standort = null;
-    (a.dokumente || []).forEach(dk => { if (!("extern" in dk)) dk.extern = false; });
-  });
+  migrieren();
   if (!gespeichert) { alarmePruefen(); speichern(); }
   U.tag = HEUTE();
   speicherNotizZeichnen();
   ketteRechnen();
+  /* Einmal beim Start: aus der aktuellen Lage die sicheren Statuswechsel
+     ableiten. Bewusst nicht bei jedem Zeichnen — das liefe im Kreis. */
+  automatikLauf();
+  ketteRechnen();
+  risikoRechnen();
   alarmePruefen();
   zeichne();
   uhrZeigen();
   setInterval(uhrZeigen, 20000);
 }
+/* Ein gespeicherter Stand aus einer älteren Fassung kennt die neuen
+   Felder noch nicht. Sie werden ergänzt — nichts wird gelöscht und
+   nichts Bestehendes überschrieben. Genau deshalb bleibt der
+   Speicherschlüssel derselbe. */
+function migrieren(){
+  if (!Array.isArray(D.auftraggeber)) D.auftraggeber = [];
+  if (!Array.isArray(D.links)) D.links = [];
+  if (!Array.isArray(D.meldungen)) D.meldungen = [];
+  if (!Array.isArray(D.geofences) || !D.geofences.length) D.geofences = geofenceStandard();
+  if (!Array.isArray(D.geofenceEreignisse)) D.geofenceEreignisse = [];
+  if (!D.historie || !Array.isArray(D.historie.fahrten)) D.historie = demoHistorie();
+  if (!Array.isArray(D.vorschlaege)) D.vorschlaege = [];
+
+  D.zugmaschinen.forEach(z => {
+    if (!z.telematik) z.telematik = telematikStandard();
+    else Object.keys(telematikStandard()).forEach(k => {
+      if (!(k in z.telematik)) z.telematik[k] = telematikStandard()[k];
+    });
+    if (!z.routing) z.routing = routingStandard();
+    if (!z.kamera) z.kamera = kameraStandard();
+    if (!Array.isArray(z.kamera.ereignisse)) z.kamera.ereignisse = [];
+    if (!z.sicherung) z.sicherung = sicherungStandard();
+    if (!Array.isArray(z.sicherung.spur)) z.sicherung.spur = [];
+  });
+
+  D.auftraege.forEach(a => {
+    if (!("auftraggeberId" in a)) a.auftraggeberId = null;
+    if (!Array.isArray(a.bilder)) a.bilder = [];
+    if (!("standort" in a)) a.standort = null;
+    if (!a.automatik) a.automatik = { an:true, korrigiert:null, letzterWechsel:null };
+    if (!Array.isArray(a.zonen)) a.zonen = [];        // erlebte Geofence-Ereignisse
+    if (!("risiko" in a)) a.risiko = null;
+    (a.dokumente || []).forEach(dk => { if (!("extern" in dk)) dk.extern = false; });
+    /* Verlaufseinträge ohne Quelle stammen aus der Zeit vor dem
+       Ereignisprotokoll — sie gelten als Eintrag der Dispo. */
+    (a.verlauf || []).forEach(e => { if (!e.quelle) e.quelle = "dispo"; });
+  });
+}
+
 function uhrZeigen(){
   document.getElementById("uhr").textContent =
     "Demo-Zeitpunkt (fest): " + jetzt().toLocaleString("de-DE",
@@ -1444,19 +1880,6 @@ function fruehterminHinweis(a){
 }
 
 /* Aktueller Arbeitsschritt in Worten. */
-function schritt(a){
-  if (a.storniert)           return { wort:"Storniert", klasse:"m-grau" };
-  if (!a.planung.fahrerId)   return { wort:"Nicht zugewiesen", klasse:"m-gelb" };
-  if (!a.freigegeben)        return { wort:"Entwurf", klasse:"m-grau" };
-  if (a.ablauf.abgabe)       return { wort:"Fertig", klasse:"m-gruen" };
-  if (a.ablauf.entladenEnde) return { wort:"Entladen fertig", klasse:"m-marine" };
-  if (a.ablauf.entladenStart)return { wort:"Entladung läuft", klasse:"m-marine" };
-  if (a.ablauf.warten)       return { wort:"Wartet", klasse:"m-gelb" };
-  if (a.ablauf.ankunft)      return { wort:"Angekommen", klasse:"m-marine" };
-  if (a.ablauf.abholung)     return { wort:"Unterwegs", klasse:"m-marine" };
-  return { wort:"Geplant", klasse:"m-grau" };
-}
-
 /* Verbleibende Entladezeit.
    Rückgabe: { min } wenn sie bekannt ist, sonst { unklar:true, grund }.
 
@@ -1551,6 +1974,306 @@ function zeitstatus(a){
 }
 
 /* ===========================================================
+   6b · Zentrale Status-Engine
+
+   EIN Zustand je Auftrag, für alle Ansichten. Tagesplan, Wochenplan,
+   Auftragsdetail, Fahrer-App, Auftraggeber-Link und Meldungen lesen
+   ab hier dasselbe. Es gibt keine zweite Statusermittlung.
+
+   Abgeleitet wird ausschließlich aus dem, was vorliegt: Freigabe,
+   Bestätigung des Fahrers und der Ablauf. Nichts davon wird hier
+   geschrieben — diese Funktion urteilt nur.
+   =========================================================== */
+const STATUS_WOERTER = {
+  geplant:            { intern:"Geplant",              extern:"Geplant",                      klasse:"m-grau"   },
+  freigegeben:        { intern:"Freigegeben",          extern:"Geplant",                      klasse:"m-grau"   },
+  auftragGesehen:     { intern:"Fahrer hat bestätigt", extern:"Fahrer hat Auftrag erhalten",  klasse:"m-grau"   },
+  anfahrtAbholung:    { intern:"Anfahrt Abholung",     extern:"Fahrer hat Auftrag erhalten",  klasse:"m-marine" },
+  beiAbholung:        { intern:"An der Abholstelle",   extern:"Fahrer hat Auftrag erhalten",  klasse:"m-marine" },
+  containerUebernommen:{intern:"Container übernommen", extern:"Container übernommen",         klasse:"m-marine" },
+  unterwegsKunde:     { intern:"Unterwegs zum Kunden", extern:"Unterwegs",                    klasse:"m-marine" },
+  angekommenKunde:    { intern:"Beim Kunden angekommen",extern:"Beim Empfänger angekommen",   klasse:"m-marine" },
+  warten:             { intern:"Wartet",               extern:"Wartet auf Entladung",         klasse:"m-gelb"   },
+  entladung:          { intern:"Entladung läuft",      extern:"Entladung läuft",              klasse:"m-marine" },
+  entladungFertig:    { intern:"Entladen fertig",      extern:"Entladung abgeschlossen",      klasse:"m-marine" },
+  nachlauf:           { intern:"Nachlauf",             extern:"Entladung abgeschlossen",      klasse:"m-marine" },
+  abgeschlossen:      { intern:"Fertig",               extern:"Transport abgeschlossen",      klasse:"m-gruen"  },
+  storniert:          { intern:"Storniert",            extern:"Transport abgesagt",           klasse:"m-grau"   },
+  nichtZugewiesen:    { intern:"Nicht zugewiesen",     extern:"Geplant",                      klasse:"m-gelb"   },
+  entwurf:            { intern:"Entwurf",              extern:"Geplant",                      klasse:"m-grau"   }
+};
+
+/* Der eine Zustand. Reihenfolge von hinten nach vorn: der weiteste
+   erreichte Schritt gewinnt. */
+function transportStatus(a){
+  if (!a) return "geplant";
+  if (a.storniert)            return "storniert";
+  if (a.ablauf.abgabe)        return "abgeschlossen";
+  if (a.ablauf.entladenEnde)  return "entladungFertig";
+  if (a.ablauf.entladenStart) return "entladung";
+  if (a.ablauf.warten)        return "warten";
+  if (a.ablauf.ankunft)       return "angekommenKunde";
+  if (a.ablauf.abholung) {
+    /* Nach der Abholung: fährt er noch, oder ist er schon in der
+       Kundenzone? Das entscheidet die Ortung, nicht ein Knopf. */
+    return zoneLage(a).beiKunde ? "angekommenKunde" : "unterwegsKunde";
+  }
+  if (!a.planung.fahrerId)    return "nichtZugewiesen";
+  if (!a.freigegeben)         return "entwurf";
+  if (a.bestaetigt) {
+    const z = zoneLage(a);
+    if (z.beiAbholung) return "beiAbholung";
+    if (z.faehrt)      return "anfahrtAbholung";
+    return "auftragGesehen";
+  }
+  return "freigegeben";
+}
+
+/* Wo steht das Fahrzeug dieses Auftrags gerade — gemessen, nicht geraten.
+   Ohne brauchbare Ortung ist alles false; dann trägt der Ablauf allein. */
+function zoneLage(a){
+  const leer = { beiAbholung:false, beiKunde:false, faehrt:false, zone:null, frisch:false };
+  if (!a || !a.planung || !a.planung.zugmaschineId) return leer;
+  const z = zugVon(a.planung.zugmaschineId);
+  const t = z && z.telematik;
+  if (!t || !t.verbunden || !t.gpsGueltig) return leer;
+  if (!zeitstempelPruefen(t.letzteMeldung, "Ortungszeitpunkt").ok) return leer;
+
+  const zAb = geofenceFuer(a.abhol.adresse, a.abhol.firma);
+  const zKu = geofenceFuer(a.liefer.adresse, a.liefer.firma);
+  const beiAbholung = inZone(t.latitude, t.longitude, zAb);
+  const beiKunde    = inZone(t.latitude, t.longitude, zKu);
+  return { beiAbholung, beiKunde, frisch:true,
+           faehrt: !!t.bewegung && !beiAbholung && !beiKunde,
+           zone: beiKunde ? zKu : beiAbholung ? zAb : null };
+}
+
+/* Anzeige intern. Ersetzt die frühere eigene Ableitung — dieselben
+   Wörter wie bisher, nur jetzt aus der zentralen Engine. */
+function schritt(a){
+  const st = transportStatus(a);
+  const w = STATUS_WOERTER[st] || STATUS_WOERTER.geplant;
+  return { wort:w.intern, klasse:w.klasse, status:st };
+}
+
+/* Wie zuverlässig laufen die Statuswechsel bei diesem Auftrag von
+   allein? Die Dispo muss wissen, worauf sie sich verlässt. */
+function automatisierungsGrad(a){
+  const z = a && a.planung ? zugVon(a.planung.zugmaschineId) : null;
+  const t = z && z.telematik;
+  const zAb = geofenceFuer(a.abhol.adresse, a.abhol.firma);
+  const zKu = geofenceFuer(a.liefer.adresse, a.liefer.firma);
+  if (!t || !t.verbunden)
+    return { stufe:"keine", wort:"Nur manuelle Statusmeldungen", klasse:"m-grau",
+             grund:"Für dieses Fahrzeug ist kein Telematikgerät verbunden." };
+  if (!t.gpsGueltig || !zeitstempelPruefen(t.letzteMeldung, "Ortungszeitpunkt").ok)
+    return { stufe:"gps-alt", wort:"GPS fehlt oder ist veraltet", klasse:"m-gelb",
+             grund:"Letzte Meldung " + (t.letzteMeldung ? hhmm(t.letzteMeldung) + " Uhr" : "unbekannt") +
+                   ". Solange gilt nur, was gemeldet wird." };
+  if (!zAb || !zKu)
+    return { stufe:"teil", wort:"GPS aktiv, Zone fehlt", klasse:"m-gelb",
+             grund:"Für " + (!zAb ? "die Abholstelle" : "den Lieferort") +
+                   " ist keine Zone hinterlegt. Ankunft dort wird nicht automatisch erkannt." };
+  if (a.automatik && a.automatik.an === false)
+    return { stufe:"aus", wort:"Automatik ausgeschaltet", klasse:"m-gelb",
+             grund:"Die Dispo hat die automatischen Statuswechsel für diesen Auftrag abgeschaltet." };
+  return { stufe:"voll", wort:"GPS + Geofence aktiv", klasse:"m-gruen",
+           grund:"Ankunft und Abfahrt an beiden Zonen werden automatisch erkannt." };
+}
+
+/* ===========================================================
+   6c · Ereignisprotokoll und Zero-Touch-Automatik
+
+   Zwei Grundsätze:
+
+   1. Jeder Eintrag im Verlauf sagt, woher er kommt. „Beim Kunden
+      angekommen“ ist etwas anderes, wenn es das GPS gemeldet hat, als
+      wenn der Fahrer es gedrückt hat.
+
+   2. Automatisch gesetzt wird nur, was technisch sicher ist. Dass ein
+      Fahrzeug eine Zone betritt, ist eine Messung. Dass ein CMR
+      unterschrieben ist, ist es nicht — das wird vorgeschlagen und
+      bleibt eine Bestätigung.
+   =========================================================== */
+const QUELLEN = {
+  automatisch: { wort:"Automatisch", klasse:"q-auto",   erklaer:"aus Ortung und Zone erkannt" },
+  fahrer:      { wort:"Fahrer",      klasse:"q-fahrer", erklaer:"vom Fahrer gemeldet" },
+  dispo:       { wort:"Dispo",       klasse:"q-dispo",  erklaer:"von der Disposition eingetragen" },
+  system:      { wort:"System",      klasse:"q-system", erklaer:"von TWISTLOCK berechnet" },
+  ki:          { wort:"Assistent",   klasse:"q-ki",     erklaer:"vom Dispo-Assistenten" }
+};
+
+/* Einen Verlaufseintrag schreiben. Einzige Stelle dafür — damit keine
+   Quelle vergessen wird. */
+function protokoll(a, quelle, text){
+  if (!a) return;
+  if (!Array.isArray(a.verlauf)) a.verlauf = [];
+  a.verlauf.push({ zeit:jetztIso(), text, quelle:quelle || "system" });
+}
+
+/* ---- Zonenwechsel erkennen ----
+   Verglichen wird die aktuelle Lage mit der zuletzt gespeicherten. Nur
+   bei einer Änderung entsteht ein Ereignis — sonst liefe bei jedem
+   Zeichnen dasselbe noch einmal durch. */
+function zonenWechsel(a){
+  const raus = [];
+  const lage = zoneLage(a);
+  if (!lage.frisch) return raus;
+  const vorher = a.zoneStand || null;
+  const jetztZone = lage.beiKunde ? "kunde" : lage.beiAbholung ? "abholung" : "strecke";
+  if (vorher === jetztZone) return raus;
+
+  if (vorher === "abholung" && jetztZone !== "abholung") raus.push({ art:"verlassen", zone:"abholung" });
+  if (vorher === "kunde"    && jetztZone !== "kunde")    raus.push({ art:"verlassen", zone:"kunde" });
+  if (jetztZone === "abholung") raus.push({ art:"betreten", zone:"abholung" });
+  if (jetztZone === "kunde")    raus.push({ art:"betreten", zone:"kunde" });
+  a.zoneStand = jetztZone;
+  return raus;
+}
+
+/* Ein Vorschlag ist kein Status. Er steht sichtbar am Auftrag und wartet
+   auf ein Ja — von der Dispo oder vom Fahrer. */
+function vorschlagAnlegen(a, schluessel, titel, text){
+  if (!Array.isArray(a.vorschlaege)) a.vorschlaege = [];
+  if (a.vorschlaege.some(x => x.schluessel === schluessel && !x.erledigt)) return false;
+  a.vorschlaege.push({ id:"vs"+Date.now()+Math.random().toString(36).slice(2,5),
+                       schluessel, titel, text, zeit:jetztIso(), erledigt:false });
+  return true;
+}
+
+/* Die Automatik. Läuft bewusst nur an klar benannten Stellen: beim Start
+   und nach jedem simulierten Ereignis — nicht bei jedem Zeichnen.
+   Rückgabe: Anzahl der Änderungen, damit der Aufrufer weiß, ob sich
+   überhaupt etwas getan hat. */
+function automatikLauf(){
+  let n = 0;
+  D.auftraege.forEach(a => {
+    if (a.storniert || a.ablauf.abgabe) return;
+    if (!a.automatik) a.automatik = { an:true, korrigiert:null, letzterWechsel:null };
+    if (!a.automatik.an) return;
+
+    zonenWechsel(a).forEach(w => {
+      D.geofenceEreignisse.unshift({ zeit:jetztIso(), auftragId:a.id,
+                                     zone:w.zone, art:w.art });
+      if (D.geofenceEreignisse.length > 80) D.geofenceEreignisse.length = 80;
+
+      /* --- technisch sicher: hier wird gesetzt --- */
+      if (w.art === "betreten" && w.zone === "kunde" && !a.ablauf.ankunft && a.ablauf.abholung) {
+        a.ablauf.ankunft = jetztIso();
+        a.automatik.letzterWechsel = jetztIso();
+        protokoll(a, "automatisch", "Zone „" + a.liefer.firma + "“ betreten – beim Kunden angekommen");
+        n++;
+      }
+      if (w.art === "betreten" && w.zone === "abholung" && !a.ablauf.abholung) {
+        protokoll(a, "automatisch", "Zone „" + a.abhol.firma + "“ betreten – an der Abholstelle");
+        n++;
+      }
+
+      /* --- nicht sicher ableitbar: hier wird nur vorgeschlagen --- */
+      if (w.art === "verlassen" && w.zone === "abholung" && !a.ablauf.abholung) {
+        if (vorschlagAnlegen(a, "abholung", "Container übernommen?",
+              "Das Fahrzeug hat die Abholstelle verlassen. Ob der Container wirklich " +
+              "auf dem Chassis ist, kann die Ortung nicht wissen – bitte bestätigen.")) n++;
+      }
+      if (w.art === "verlassen" && w.zone === "kunde" && a.ablauf.ankunft && !a.ablauf.abgabe) {
+        if (vorschlagAnlegen(a, "abgabe", "Transport abgeschlossen?",
+              "Das Fahrzeug hat den Lieferort verlassen. Ob Ablieferung und Papiere " +
+              "vollständig sind, lässt sich daraus nicht schließen – bitte bestätigen.")) n++;
+      }
+    });
+
+    /* Steht das Fahrzeug beim Kunden und ist angekommen, aber es wurde
+       noch kein Warten vermerkt? Stillstand in der Kundenzone ist eine
+       Messung, kein Geschäftsvorgang — das darf gesetzt werden. */
+    const lage = zoneLage(a);
+    if (lage.beiKunde && a.ablauf.ankunft && !a.ablauf.warten && !a.ablauf.entladenStart) {
+      const z = zugVon(a.planung.zugmaschineId);
+      const steht = z && z.telematik && !z.telematik.bewegung && z.telematik.geschwindigkeit === 0;
+      if (steht && minZw(a.ablauf.ankunft, jetztIso()) >= 2) {
+        a.ablauf.warten = jetztIso();
+        protokoll(a, "automatisch", "Fahrzeug steht beim Kunden – Aufenthalt begonnen");
+        n++;
+      }
+    }
+    /* Entladung selbst ist nie sicher messbar: Rampe, Stapler, Papiere —
+       davon sieht die Ortung nichts. Also nur ein Vorschlag. */
+    if (a.ablauf.warten && !a.ablauf.entladenStart &&
+        minZw(a.ablauf.warten, jetztIso()) >= 10) {
+      if (vorschlagAnlegen(a, "entladenStart", "Entladung begonnen?",
+            "Das Fahrzeug steht seit " + Math.round(minZw(a.ablauf.warten, jetztIso())) +
+            " Minuten beim Kunden. Ob die Entladung läuft, kann die Ortung nicht erkennen.")) n++;
+    }
+  });
+  if (n) speichern();
+  return n;
+}
+
+/* Vorschlag annehmen — von Dispo oder Fahrer. Erst hier wird geschrieben. */
+function vorschlagAnnehmen(a, id, quelle){
+  const vs = (a.vorschlaege || []).find(x => x.id === id);
+  if (!vs || vs.erledigt) return false;
+  const wer = quelle || "dispo";
+  if (vs.schluessel === "abholung" && !a.ablauf.abholung) {
+    a.ablauf.abholung = jetztIso();
+    protokoll(a, wer, "Containerübernahme bestätigt");
+  } else if (vs.schluessel === "entladenStart" && !a.ablauf.entladenStart) {
+    a.ablauf.entladenStart = jetztIso();
+    if (!a.ablauf.warten) a.ablauf.warten = jetztIso();
+    protokoll(a, wer, "Entladung begonnen bestätigt");
+  } else if (vs.schluessel === "abgabe" && !a.ablauf.abgabe) {
+    if (!a.ablauf.entladenEnde) a.ablauf.entladenEnde = jetztIso();
+    a.ablauf.abgabe = jetztIso();
+    protokoll(a, wer, "Ablieferung bestätigt");
+  } else {
+    vs.erledigt = true; return false;
+  }
+  vs.erledigt = true; vs.angenommen = true;
+  ketteRechnen(); speichern();
+  return true;
+}
+function vorschlagAblehnen(a, id){
+  const vs = (a.vorschlaege || []).find(x => x.id === id);
+  if (!vs) return false;
+  vs.erledigt = true; vs.angenommen = false;
+  protokoll(a, "dispo", "Vorschlag abgelehnt: " + vs.titel);
+  speichern();
+  return true;
+}
+
+/* ---- Manuelle Korrektur (Override) ----
+   Die Dispo weiß manchmal mehr als das GPS. Eine Korrektur schaltet die
+   Automatik für diesen Auftrag ab, damit der nächste Zonenwechsel sie
+   nicht sofort wieder überschreibt. */
+const SCHRITT_FELDER = [
+  { k:"abholung",      wort:"Container übernommen" },
+  { k:"ankunft",       wort:"Beim Kunden angekommen" },
+  { k:"warten",        wort:"Aufenthalt begonnen" },
+  { k:"entladenStart", wort:"Entladung begonnen" },
+  { k:"entladenEnde",  wort:"Entladung fertig" },
+  { k:"abgabe",        wort:"Transport abgeschlossen" }
+];
+function statusKorrigieren(a, feld, setzen){
+  const def = SCHRITT_FELDER.find(x => x.k === feld);
+  if (!def) return false;
+  const vorher = a.ablauf[feld];
+  a.ablauf[feld] = setzen ? jetztIso() : null;
+  /* Ein späterer Schritt ohne den früheren wäre widersprüchlich. Beim
+     Zurücknehmen fallen deshalb alle folgenden Schritte mit weg. */
+  if (!setzen) {
+    const ab = SCHRITT_FELDER.findIndex(x => x.k === feld);
+    SCHRITT_FELDER.slice(ab+1).forEach(x => { a.ablauf[x.k] = null; });
+  }
+  a.automatik = a.automatik || {};
+  a.automatik.an = false;
+  a.automatik.korrigiert = jetztIso();
+  protokoll(a, "dispo", (setzen ? "Status gesetzt: " : "Status zurückgenommen: ") + def.wort +
+                        (vorher ? " (war " + hhmm(vorher) + " Uhr)" : "") +
+                        " – Automatik für diesen Auftrag ausgeschaltet");
+  ketteRechnen(); speichern();
+  return true;
+}
+
+/* ===========================================================
    7 · Alarme
    Erst ab 20 Minuten berechneter Verspätung, nur einmal je Auftrag,
    und niemals aus unzuverlässigen Daten.
@@ -1599,6 +2322,93 @@ function alarmePruefen(){
 function meldungAnlegen(m){
   D.meldungen.unshift(Object.assign({ id:"m"+Date.now()+Math.random().toString(36).slice(2,6),
                                       zeit:jetztIso(), gesehen:false }, m));
+}
+
+/* ===========================================================
+   7b · Verspätungsrisiko
+
+   Nicht erst melden, wenn der Termin verloren ist. Das Risiko entsteht
+   aus Dingen, die sich einzeln benennen lassen — deshalb liefert die
+   Funktion immer auch die Gründe mit. Der Prozentwert ist eine
+   Demo-Bewertung dieser Gründe, keine Statistik.
+   =========================================================== */
+function risikoBerechnen(a){
+  if (!a || a.storniert || a.ablauf.abgabe)
+    return { stufe:"keins", prozent:0, gruende:[], guete:null };
+  /* Ein Risiko ist eine Aussage über den laufenden Tag. Für einen Auftrag
+     nächste Woche gibt es nichts vorherzusagen — dort entscheidet die
+     Planung, und dafür ist die Konfliktprüfung zuständig. */
+  const laeuft = !!(a.ablauf.abholung || a.ablauf.ankunft || a.ablauf.entladenStart);
+  if (!laeuft && a.tag !== HEUTE())
+    return { stufe:"keins", prozent:0, gruende:[], guete:null,
+             hinweis:"Noch kein laufender Tag – bewertet wird über die Planung, nicht über ein Risiko." };
+
+  const gruende = [];
+  let p = 0;
+  const g = datenGuete(a);
+
+  /* 1. Wie viel Reserve bleibt nach der laufenden Rechnung? */
+  const s = zeitstatus(a);
+  if (s.res != null) {
+    if (s.res < 0)      { p += 55; gruende.push("Berechnete Ankunft liegt bereits " + Math.abs(s.res) + " Minuten nach dem Termin."); }
+    else if (s.res < 10){ p += 30; gruende.push("Nur noch " + s.res + " Minuten Reserve bis zum Termin."); }
+    else if (s.res < 20){ p += 15; gruende.push(s.res + " Minuten Reserve – wenig Spielraum für Störungen."); }
+  } else if (!s.nurPlan) {
+    p += 20; gruende.push("Ankunft derzeit nicht belastbar berechenbar.");
+  }
+
+  /* 2. Läuft die Entladung länger als geplant? */
+  const e = entladeRest(a);
+  if (e.unklar) { p += 20; gruende.push(e.grund || "Entladeende unklar."); }
+  if (a.entladeVerlaengerung && !a.entladeVerlaengerung.unbekannt) {
+    p += 15; gruende.push("Der Fahrer hat die Entladung um " +
+                          a.entladeVerlaengerung.min + " Minuten verlängert.");
+  }
+
+  /* 3. Was sagen unsere eigenen Erfahrungen über diesen Kunden? */
+  const lern = lernStandzeit(a.auftraggeberId, "entladung");
+  if (lern.minuten != null && a.planung.entladenMin &&
+      lern.minuten > a.planung.entladenMin + 10) {
+    p += 15;
+    gruende.push("Bei diesem Auftraggeber dauerte die Entladung bisher im Schnitt " +
+                 lern.minuten + " Minuten, geplant sind " + a.planung.entladenMin + ".");
+  }
+
+  /* 4. Ist die Strecke gerade langsamer als der Planwert? */
+  const z = zugVon(a.planung.zugmaschineId);
+  const r = routeBerechnen(a.abhol.adresse, a.liefer.adresse, z, jetztIso());
+  const plan = fahrzeit(a.abhol.adresse, a.liefer.adresse);
+  if (laeuft && r.minuten != null && r.minuten > plan + 8) {
+    p += 12;
+    gruende.push("Aktuelle Routenlage " + r.minuten + " Minuten gegenüber " + plan +
+                 " Minuten Planwert (" + (r.verkehr || "Demo-Annahme") + ").");
+  }
+
+  /* 5. Hängt ein Vorgänger? */
+  if (a.rechnung2 && a.rechnung2.ausKette && s.res != null && s.res < 20) {
+    p += 10; gruende.push("Der vorherige Auftrag dieser Tour verschiebt die Ankunft mit.");
+  }
+
+  /* 6. Bei schlechter Datenlage keine Genauigkeit vortäuschen. */
+  if (g.stufe === "niedrig" && p > 0) {
+    gruende.push("Datenqualität niedrig – die Einschätzung ist entsprechend grob.");
+  }
+
+  p = Math.max(0, Math.min(95, p));
+  const stufe = p >= 55 ? "hoch" : p >= 25 ? "mittel" : p > 0 ? "niedrig" : "keins";
+  return { stufe, prozent:p, gruende, guete:g.stufe,
+           klasse: stufe === "hoch" ? "m-rot" : stufe === "mittel" ? "m-gelb"
+                 : stufe === "niedrig" ? "m-marine" : "m-grau" };
+}
+
+/* Einmal je Durchlauf für alle Aufträge rechnen und am Auftrag ablegen.
+   So muss keine Ansicht das je Zeile neu tun. */
+function risikoRechnen(){
+  D.auftraege.forEach(a => { a.risiko = risikoBerechnen(a); });
+}
+function risikoVon(a){
+  if (!a.risiko) a.risiko = risikoBerechnen(a);
+  return a.risiko;
 }
 
 /* ===========================================================
@@ -1872,18 +2682,18 @@ function linkAufloesen(token){
   return { ok:true, link:l, kunde:k, auftraege:liste };
 }
 
-/* Kundensprache. Abgeleitet aus demselben Ablauf, den auch die Dispo
-   liest — interne Begriffe kommen hier nicht vor. */
+/* Kundensprache. Genommen wird der Zustand der zentralen Status-Engine
+   und nur übersetzt — es gibt hier keine zweite Ableitung. */
 function externStatus(a){
-  const b = a.ablauf;
-  if (b.abgabe)        return { wort:"Transport abgeschlossen",  klasse:"x-fertig" };
-  if (b.entladenEnde)  return { wort:"Entladung abgeschlossen",  klasse:"x-gut" };
-  if (b.entladenStart) return { wort:"Entladung läuft",          klasse:"x-aktiv" };
-  if (b.warten)        return { wort:"Wartet auf Entladung",     klasse:"x-aktiv" };
-  if (b.ankunft)       return { wort:"Beim Empfänger angekommen",klasse:"x-gut" };
-  if (b.abholung)      return { wort:"Unterwegs",                klasse:"x-aktiv" };
-  if (a.bestaetigt)    return { wort:"Fahrer hat Auftrag erhalten", klasse:"x-plan" };
-  return { wort:"Geplant", klasse:"x-plan" };
+  const st = transportStatus(a);
+  const w = STATUS_WOERTER[st] || STATUS_WOERTER.geplant;
+  const klasse = st === "abgeschlossen" ? "x-fertig"
+               : (st === "entladungFertig" || st === "angekommenKunde" || st === "nachlauf") ? "x-gut"
+               : (st === "unterwegsKunde" || st === "entladung" || st === "warten" ||
+                  st === "containerUebernommen" || st === "beiAbholung" ||
+                  st === "anfahrtAbholung") ? "x-aktiv"
+               : "x-plan";
+  return { wort:w.extern, klasse, status:st };
 }
 
 /* Der für den Auftraggeber maßgebliche Termin ist immer die Anlieferung
@@ -4331,6 +5141,10 @@ function stammDialog(art, id){
 window.DISPO = {
   zustand: () => ({ D, U }),
   linkAufloesen, linkZustand, linkAdresse, kundeVon, tokenBauen,
+  ANBIETER, routeBerechnen, fahrzeitFuer, lernEta, lernFahrzeit, lernStandzeit,
+  datenGuete, transportStatus, zoneLage, automatisierungsGrad, geofenceFuer, inZone,
+  automatikLauf, vorschlagAnnehmen, vorschlagAblehnen, statusKorrigieren, protokoll,
+  risikoBerechnen, risikoVon, risikoRechnen, luftlinieKm, telematikStandard,
   externStatus, externVerspaetung, externAnkunft, externOrtung,
   externZeitleiste, externOeffnen,
   regeln: { GRENZE_ORANGE, GRENZE_ALARM, MAX_ALTER, PLAN },
