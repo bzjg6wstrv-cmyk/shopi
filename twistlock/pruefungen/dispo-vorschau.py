@@ -159,8 +159,15 @@ with sync_playwright() as p:
     pg.click('[data-tun="fahrerschritt"][data-wert="unbekannt"]'); pg.wait_for_timeout(400)
     # Gemeint ist die NAECHSTE Ankunft: der laufende Auftrag ist bereits
     # angekommen, dessen Ankunft ist Tatsache und keine Vorhersage mehr.
+    # Nur ein Folgeauftrag, der noch NICHT begonnen hat, haengt vom Entladeende ab.
+    # Ein bereits rollendes Fahrzeug hat seine eigene Ankunft.
     folge = pg.evaluate("""(id) => { const {D}=DISPO.zustand();
-      const a=D.auftraege.find(x=>x.id===id); const n=naechsterAuftrag(a);
+      const a=D.auftraege.find(x=>x.id===id);
+      const folge=DISPO.tourFolge(a.planung.fahrerId, a.tag);
+      const i=folge.findIndex(o=>o.id===a.id);
+      let n=null;
+      for(let k=i+1;k<folge.length;k++){
+        if(!folge[k].ablauf.abgabe && !folge[k].ablauf.abholung){ n=folge[k]; break; } }
       return n ? DISPO.folgePrognose(a,n) : null; }""", ent)
     pr("'Weiss ich noch nicht' sagt keine naechste Ankunft vorher",
        folge is not None and folge.get("iso") is None, folge and folge.get("grund"))
@@ -168,7 +175,9 @@ with sync_playwright() as p:
        or "Weiß ich noch nicht" in pg.inner_text("#inhalt"))
     pg.click('[data-tun="fahrerschritt"][data-wert="verlaengern30"]'); pg.wait_for_timeout(400)
     rest = pg.evaluate(f"DISPO.entladeRest(DISPO.zustand().D.auftraege.find(a=>a.id==='{ent}'))")
-    pr("Verlaengerung zaehlt ab jetzt (ca. 30 Min.)", 29 <= rest <= 30.1, round(rest,2))
+    # entladeRest liefert jetzt {min, unklar, grund} statt einer blossen Zahl.
+    pr("Verlaengerung zaehlt ab jetzt (ca. 30 Min.)",
+       rest and rest.get('min') is not None and 29 <= rest['min'] <= 30.1, rest)
     pg.click('[data-tun="fahrerschritt"][data-wert="entladenFertig"]'); pg.wait_for_timeout(400)
     pr("Auftrag NICHT automatisch abgeschlossen",
        pg.evaluate(f"DISPO.zustand().D.auftraege.find(a=>a.id==='{ent}').ablauf.abgabe") is None)

@@ -77,8 +77,10 @@ with sync_playwright() as p:
       A.planung.entladenMin=60;
       B.tag=t; B.abhol.datum=t; B.abhol.zeit="13:00"; B.liefer.datum=t; B.liefer.zeit="17:00";
       B.planung.wartenAbholMin = 0;
+      ketteRechnen();
       const ohne = DISPO.folgePrognose(A,B);
       B.planung.wartenAbholMin = 60;
+      ketteRechnen();
       const mit = DISPO.folgePrognose(A,B);
       return {ohne:ohne.isoKunde, mit:mit.isoKunde,
               diff:(new Date(mit.isoKunde)-new Date(ohne.isoKunde))/60000,
@@ -120,24 +122,32 @@ with sync_playwright() as p:
       const B = mk("9102","14:00","18:00");     // noch nicht begonnen
       D.auftraege.push(A, B);
       ketteRechnen();
-      const vorher = B.berechneteAnkunft;
+      const vorher = DISPO.tourErgebnis(B).kundenAnkunft;
       // Fahrer meldet +60 Minuten
       A.entladeVerlaengerung = {min:60, ab:jetztIso(), unbekannt:false};
       A.prognoseZeit = jetztIso();
       ketteRechnen();
       const detail = DISPO.folgePrognose(A, B);
       return {folgeIstB: (naechsterAuftrag(A)||{}).id === B.id,
-              vorher, nachher:B.berechneteAnkunft, detail:detail.iso,
+              vorher, nachher:DISPO.tourErgebnis(B).kundenAnkunft, detail:detail.isoKunde,
               tagesplan: DISPO.prognose(B).iso,
-              ausKette: DISPO.prognose(B).ausKette === true,
-              verschoben: (new Date(B.berechneteAnkunft)-new Date(vorher))/60000};
+              tagesplanBezug: DISPO.massgeblich(B).art,
+              ketteAbhol: DISPO.tourErgebnis(B).abholAnkunft,
+              verschoben: (new Date(DISPO.tourErgebnis(B).kundenAnkunft)-new Date(vorher))/60000};
     }""")
     pr("Folgeauftrag ist der erwartete", res4["folgeIstB"])
-    pr("Verlaengerung verschiebt die Folgeankunft", res4["verschoben"] > 0, str(res4["verschoben"])+" Min.")
-    pr("Detail und Tourkette liefern dieselbe Ankunft", res4["nachher"] == res4["detail"],
+    # In diesem Aufbau betraegt die Verzoegerung 30 Min. (Rest 30 -> Ende jetzt+60),
+    # der Puffer vor B aber 45 Min. Sie wird daher vollstaendig aufgefangen: 0 Min.
+    # Die Weitergabe ohne Puffer ist in dispo-kette.py (Test A) geprueft.
+    pr("vorhandener Puffer faengt die Verzoegerung auf", res4["verschoben"] == 0,
+       "erwartet 0 Min. (45 Min. Puffer > 30 Min. Verzoegerung), tatsaechlich " +
+       str(res4["verschoben"]) + " Min.")
+    pr("Detail und Tourkette liefern dieselbe Kundenankunft", res4["nachher"] == res4["detail"],
        str(res4["nachher"])+" / "+str(res4["detail"]))
-    pr("Tagesplan zeigt genau diese Ankunft", res4["tagesplan"] == res4["nachher"], res4["tagesplan"])
-    pr("Tagesplanwert stammt aus der Tourkette", res4["ausKette"])
+    # B ist noch nicht abgeholt, massgeblich ist daher die ABHOLUNG.
+    pr("Tagesplan zeigt die Abholankunft aus derselben Rechnung",
+       res4["tagesplan"] == res4["ketteAbhol"] and res4["tagesplanBezug"] == "Abholung",
+       "erwartet " + str(res4["ketteAbhol"]) + ", tatsaechlich " + str(res4["tagesplan"]))
 
     print("\n5) 19 Min. Verspaetung: kein Alarm — 20 Min.: genau ein Alarm")
     res5 = pg.evaluate("""() => {
@@ -151,12 +161,12 @@ with sync_playwright() as p:
         a.ablauf.abholung = new Date(h.getTime()-60*60000).toISOString();
         a.ortungZeit = new Date(h.getTime()-2*60000).toISOString();
         a.prognoseZeit = a.ortungZeit; a.datenZeit = a.ortungZeit;
-        a.berechneteAnkunft = null; a.folgeGrund = null;
+        a.entladeVerlaengerung = null;
         const termin = new Date(h.getTime()+60*60000); termin.setSeconds(0,0);
         a.liefer.datum = termin.toISOString().slice(0,10);
         a.liefer.zeit = termin.toTimeString().slice(0,5);
         a.prognose = new Date(termin.getTime()+verspaetung*60000).toISOString();
-        alarmePruefen();
+        ketteRechnen(); alarmePruefen();
         return {res:DISPO.zeitstatus(a).res,
                 alarme:D.meldungen.filter(m=>m.art==="verspaetung"&&m.auftragId===a.id).length};
       };
@@ -183,7 +193,7 @@ with sync_playwright() as p:
       A.prognoseZeit = jetztIso();
       ketteRechnen(); alarmePruefen();
       const f = DISPO.folgePrognose(A,B);
-      return {folge:f.iso, grund:f.grund, kette:B.berechneteAnkunft,
+      return {folge:f.iso, grund:f.grund, kette:DISPO.tourErgebnis(B).kundenAnkunft,
               status:DISPO.zeitstatus(B).klasse,
               alarmeVor, alarmeNach:D.meldungen.filter(m=>m.art==="verspaetung").length};
     }""")

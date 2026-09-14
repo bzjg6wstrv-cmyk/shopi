@@ -352,15 +352,37 @@ function ampel(res){
   if (res <= GRENZE_ORANGE) return "gelb";
   return "gruen";
 }
-/* Sind Prognose und Ortung frisch genug, um überhaupt etwas zu behaupten? */
-function datenZuverlaessig(datenZeit, ortungZeit){
-  if (!ortungZeit) return {ok:false, grund:"Keine Ortung vorhanden"};
-  if (minZw(ortungZeit, jetztIso()) > MAX_ALTER)
-    return {ok:false, grund:"Ortung ist älter als "+MAX_ALTER+" Minuten"};
-  if (!datenZeit) return {ok:false, grund:"Keine Berechnung vorhanden"};
-  if (minZw(datenZeit, jetztIso()) > MAX_ALTER)
-    return {ok:false, grund:"Berechnung ist älter als "+MAX_ALTER+" Minuten"};
-  return {ok:true, grund:null};
+/* Erlaubte Uhrabweichung: Geräteuhren gehen selten exakt. Ein Zeitstempel
+   darf deshalb ein kleines Stück in der Zukunft liegen, ohne verworfen zu
+   werden. Alles darüber ist unplausibel und wird nicht geglaubt. */
+const UHR_TOLERANZ = 2;      // Minuten
+
+/* Prüft EINEN Zeitstempel vollständig: vorhanden, überhaupt ein gültiges
+   Datum mit endlichem Zeitwert, nicht veraltet, nicht unplausibel in der
+   Zukunft. Eine bloße Zeichenfolge reicht nicht. */
+function zeitstempelPruefen(wert, bezeichnung){
+  if (wert == null || wert === "")
+    return { ok:false, grund:"Kein " + bezeichnung + " vorhanden" };
+  const d = new Date(wert);
+  const ms = d.getTime();
+  if (typeof ms !== "number" || !isFinite(ms) || isNaN(ms))
+    return { ok:false, grund:bezeichnung + " ist unlesbar" };
+  const alter = minZw(d.toISOString(), jetztIso());   // positiv = Vergangenheit
+  if (alter < -UHR_TOLERANZ)
+    return { ok:false, grund:bezeichnung + " liegt unplausibel in der Zukunft" };
+  if (alter > MAX_ALTER)
+    return { ok:false, grund:bezeichnung + " ist älter als " + MAX_ALTER + " Minuten" };
+  return { ok:true, grund:null };
+}
+
+/* Sind Prognose UND Ortung brauchbar? Beide werden einzeln geprüft und
+   bleiben getrennt — eine Neuberechnung macht keine alte Ortung frisch. */
+function datenZuverlaessig(prognoseZeit, ortungZeit){
+  const o = zeitstempelPruefen(ortungZeit, "Ortungszeitpunkt");
+  if (!o.ok) return o;
+  const p = zeitstempelPruefen(prognoseZeit, "Prognosezeitpunkt");
+  if (!p.ok) return p;
+  return { ok:true, grund:null };
 }
 
 /* ===========================================================
@@ -915,53 +937,69 @@ function schritt(a){
   return { wort:"Geplant", klasse:"m-grau" };
 }
 
-/* Verbleibende Entladezeit in Minuten, oder null wenn offen. */
+/* Verbleibende Entladezeit.
+   Rückgabe: { min } wenn sie bekannt ist, sonst { unklar:true, grund }.
+
+   Wichtig: Ein abgelaufener Planwert heißt NICHT „fertig“. Fertig ist die
+   Entladung erst, wenn der Fahrer sie bestätigt. Läuft die geplante Zeit
+   ab, ohne dass er sich meldet, ist das Ende unklar — daraus darf keine
+   sofortige Abfahrt gerechnet werden. */
 function entladeRest(a){
-  if (!a.ablauf.entladenStart || a.ablauf.entladenEnde) return null;
+  if (!a.ablauf.entladenStart || a.ablauf.entladenEnde)
+    return { min:null, unklar:false, grund:null };
+
   const ver = a.entladeVerlaengerung;
-  if (ver && ver.unbekannt) return null;              // ausdrücklich unbekannt
-  if (ver) {
-    // Die neue Restzeit zählt ab dem Zeitpunkt der Eingabe.
-    return Math.max(0, ver.min - minZw(ver.ab, jetztIso()));
-  }
-  const verbraucht = minZw(a.ablauf.entladenStart, jetztIso());
-  return Math.max(0, a.planung.entladenMin - verbraucht);
+  if (ver && ver.unbekannt)
+    return { min:null, unklar:true,
+             grund:"Der Fahrer hat „Weiß ich noch nicht“ gewählt." };
+
+  /* „Dauert länger“: die neue Restzeit zählt ab dem Zeitpunkt der Eingabe. */
+  const start = ver ? ver.ab : a.ablauf.entladenStart;
+  const dauer = ver ? ver.min : a.planung.entladenMin;
+  const rest = dauer - minZw(start, jetztIso());
+  if (rest <= 0)
+    return { min:null, unklar:true,
+             grund:"Entladeende unklar: die geplante Entladezeit ist abgelaufen, " +
+                   "der Fahrer hat aber noch nicht „Entladung fertig“ gemeldet." };
+  return { min:rest, unklar:false, grund:null };
+}
+
+/* Das Ergebnis der Tourrechnung zu diesem Auftrag. Es ist die EINE
+   Grundlage für Tagesplan, Auftragsdetail, Belegung und Alarmprüfung —
+   damit nirgends zwei verschiedene Zahlen für dieselbe Sache stehen. */
+function tourErgebnis(a){
+  if (!a.rechnung2) ketteRechnen();
+  return a.rechnung2 || null;
 }
 
 /* Voraussichtliche Ankunft am maßgeblichen Termin.
-   Läuft die Entladung, wird aus der Restzeit gerechnet — sonst wird
-   der hinterlegte Demo-Wert benutzt. Beides ist simuliert. */
+   Abholankunft und Kundenankunft werden getrennt geführt: „Termin 11:00“
+   heißt je nach Stand Abholung oder Anlieferung, und beide Ankünfte
+   verschieben sich unterschiedlich. */
 function prognose(a){
   const m = massgeblich(a);
   if (!m.iso) return { iso:null, grund:"Kein Termin hinterlegt" };
   if (a.ablauf.abgabe) return { iso:null, grund:"Auftrag ist abgeschlossen" };
 
-  /* Ist der Fahrer schon da, ist die Ankunft keine Vorhersage mehr, sondern
-     eine Tatsache. Dann wird die tatsächliche Ankunft gegen den Termin
-     gehalten — und nicht etwa das Entladeende, das gar nicht gemeint ist. */
-  if (a.ablauf.ankunft) return { iso:a.ablauf.ankunft, grund:null, istAnkunft:true };
+  /* Ist der Fahrer schon da, ist die Ankunft keine Vorhersage mehr,
+     sondern eine Tatsache. */
+  if (m.art === "Anlieferung" && a.ablauf.ankunft)
+    return { iso:a.ablauf.ankunft, grund:null, istAnkunft:true };
+  if (m.art === "Abholung" && a.ablauf.abholung)
+    return { iso:a.ablauf.abholung, grund:null, istAnkunft:true };
 
-  /* Prognosezeitpunkt und Ortungszeitpunkt werden getrennt geführt.
-     Neu gerechnet wird oft, geortet nicht — beides muss frisch sein. */
+  /* Prognosezeitpunkt und Ortungszeitpunkt werden getrennt geführt und
+     einzeln geprüft. Neu gerechnet wird oft, geortet nicht. */
   const zuv = datenZuverlaessig(a.prognoseZeit || a.datenZeit, a.ortungZeit);
   if (!zuv.ok) return { iso:null, grund:zuv.grund };
 
-  if (a.ablauf.entladenStart && !a.ablauf.entladenEnde) {
-    const rest = entladeRest(a);
-    if (rest == null) return { iso:null, grund:"Entladeende noch unbekannt" };
-    return { iso:inMin(rest), grund:null };
-  }
-  /* Ist der Auftrag bereits abgeholt, rollt das Fahrzeug: dann gilt seine
-     eigene, laufende Ankunftsprognose. Eine Kettenrechnung vom vorherigen
-     Stopp wäre hier die schlechtere Auskunft. */
-  if (a.ablauf.abholung && a.prognose) return { iso:a.prognose, grund:null };
+  const r = tourErgebnis(a);
+  if (!r) return { iso:null, grund:"Keine Berechnung vorhanden" };
+  if (r.unklar) return { iso:null, grund:r.grund };
 
-  /* Noch nicht begonnen: dann zählt, was beim vorherigen Auftrag der Tour
-     tatsächlich passiert ist. */
-  if (a.berechneteAnkunft) return { iso:a.berechneteAnkunft, grund:null, ausKette:true };
-  if (a.folgeGrund) return { iso:null, grund:a.folgeGrund };
-  if (a.prognose) return { iso:a.prognose, grund:null };
-  return { iso:null, grund:"Keine Berechnung vorhanden" };
+  const iso = m.art === "Abholung" ? r.abholAnkunft : r.kundenAnkunft;
+  if (!iso) return { iso:null, grund:r.grund || "Keine Berechnung vorhanden" };
+  return { iso, grund:null, ausKette:!!r.ausKette, bezug:m.art };
 }
 
 /* Zeitstatus: Farbe plus der Satz, der sie erklärt. */
@@ -1050,7 +1088,12 @@ function meldungAnlegen(m){
 
    Gerechnet wird durchgehend mit echten Zeitpunkten, deshalb greift das
    auch über Mitternacht. Der Einsatztag spielt dabei keine Rolle. */
-function belegung(a){
+/* GEPLANTE Belegung: allein aus den vereinbarten Terminen und Planwerten.
+   Das ist der Anspruch an die Planung — unabhängig davon, wie der Tag
+   tatsächlich läuft. Sie ist die Grundlage der Konfliktprüfung: Ob zwei
+   Aufträge zusammen passen, entscheidet sich am Plan, nicht daran, dass
+   die Tourkette sie ohnehin hintereinander legt. */
+function belegungGeplant(a){
   const p = a.planung || {};
   const abIso = zeitpunkt(a.abhol.datum, a.abhol.zeit);
   const anIso = zeitpunkt(a.liefer.datum, a.liefer.zeit);
@@ -1062,29 +1105,19 @@ function belegung(a){
 
   const fahrtHin = fahrzeit(a.abhol.adresse, a.liefer.adresse);
   const wartenAbhol = p.wartenAbholMin || 0;
-
-  /* Startpunkt: der Abholtermin. Fehlt er, wird er aus dem Liefertermin
-     zurückgerechnet — sonst bliebe die halbe Tour unsichtbar. */
-  const abholStart = abIso
-    ? abIso
-    : inMin(-(wartenAbhol + p.ladenMin + fahrtHin), anIso);
+  const abholStart = abIso || inMin(-(wartenAbhol + p.ladenMin + fahrtHin), anIso);
 
   const abschnitte = [];
-  const schritt = (min, wort) => { if (min > 0) abschnitte.push({ min, wort }); };
-
-  const von = inMin(-PLAN.anfahrtAbholung, abholStart);
-  schritt(PLAN.anfahrtAbholung, "Anfahrt zur Abholung");
   let t = abholStart;
-  const weiter = (min, wort) => { schritt(min, wort); t = inMin(min, t); };
+  const weiter = (min, wort) => { if (min > 0) { abschnitte.push({min, wort}); t = inMin(min, t); } };
+  abschnitte.push({ min:PLAN.anfahrtAbholung, wort:"Anfahrt zur Abholung" });
+  const von = inMin(-PLAN.anfahrtAbholung, abholStart);
 
   weiter(wartenAbhol, "Warten bei der Abholung");
   weiter(p.ladenMin, "Beladung");
   weiter(fahrtHin, "Fahrt zum Kunden");
-  /* Kommt das Fahrzeug vor dem Liefertermin an, wartet es dort. */
-  if (anIso && new Date(t) < new Date(anIso)) {
-    const wartetBis = Math.round(minZw(t, anIso));
-    weiter(wartetBis, "Warten bis zum Liefertermin");
-  }
+  if (anIso && new Date(t) < new Date(anIso))
+    weiter(Math.round(minZw(t, anIso)), "Warten bis zum Liefertermin");
   weiter(p.wartenMin || 0, "Warten beim Kunden");
   weiter(p.entladenMin, "Entladung");
   weiter(PLAN.nacharbeit, "Restarbeiten");
@@ -1093,8 +1126,30 @@ function belegung(a){
     weiter(PLAN.depotstopp, "Rückgabe / Depotstopp");
   }
   weiter(PLAN.uebergang, "Übergangsfahrt zum nächsten Auftrag");
-
   return { von, bis:t, abschnitte, unvollstaendig:false };
+}
+
+/* AKTUELLE Belegung aus der Tourrechnung: was der Tag gerade hergibt.
+   Eine verlängerte Entladung verschiebt sie; ein unklares Entladeende
+   lässt sie offen. Beides wird getrennt von der geplanten Belegung
+   ausgewiesen, damit nichts Altes als aktuelle Aussage durchgeht. */
+function belegung(a){
+  const geplant = belegungGeplant(a);
+  if (geplant.unvollstaendig) return geplant;
+
+  const r = tourErgebnis(a);
+  if (!r) return { von:geplant.von, bis:geplant.bis, offen:false,
+                   geplant, abschnitte:geplant.abschnitte, unvollstaendig:false };
+
+  if (r.unklar || !r.belegungBis) {
+    return { von:r.belegungVon || geplant.von, bis:null, offen:true,
+             grund:r.grund || "Entladeende unklar",
+             geplant, geplantBis:geplant.bis,
+             abschnitte:r.abschnitte || [], unvollstaendig:false };
+  }
+  return { von:r.belegungVon, bis:r.belegungBis, offen:false,
+           geplant, geplantBis:geplant.bis,
+           abschnitte:r.abschnitte || [], unvollstaendig:false };
 }
 
 function konflikte(a){
@@ -1103,21 +1158,39 @@ function konflikte(a){
   const b = belegung(a);
   if (!b || b.unvollstaendig) return raus;
 
+  const ueberschneidet = (x, y) =>
+    !!(x && y && x.von && x.bis && y.von && y.bis &&
+       new Date(x.von) < new Date(y.bis) && new Date(y.von) < new Date(x.bis));
+
   D.auftraege.forEach(o => {
     /* Ein anderer Einsatztag schließt einen Konflikt NICHT aus — eine Tour
        kann über Mitternacht laufen. Deshalb wird hier nicht nach Tag gefiltert. */
     if (o.id === a.id || o.storniert || o.ablauf.abgabe) return;
     const ob = belegung(o);
     if (!ob || ob.unvollstaendig) return;
-    const ueberlappt = new Date(b.von) < new Date(ob.bis) && new Date(ob.von) < new Date(b.bis);
+
+    /* Zwei Arten von Konflikt, beide zählen:
+       - Der Plan selbst geht nicht auf (geplant gegen geplant).
+       - Die tatsächliche Bindung frisst in das zugesagte Fenster des
+         anderen hinein (aktuell gegen geplant). Damit ändert sich die
+         Anzeige, sobald eine Entladung länger dauert. */
+    const ueberlappt = ueberschneidet(b.geplant, ob.geplant) ||
+                       ueberschneidet(b, ob.geplant) ||
+                       ueberschneidet(b.geplant, ob);
     if (!ueberlappt) return;
 
-    /* Wer ist zuerst dran? Daraus wird der konkrete Satz gebaut. */
-    const frueher = new Date(b.von) <= new Date(ob.von) ? {auf:a, bel:b} : {auf:o, bel:ob};
-    const spaeter = frueher.auf === a ? {auf:o, bel:ob} : {auf:a, bel:b};
-    const satz = "Gebunden noch bis etwa " + hhmm(frueher.bel.bis) +
-                 " Uhr (Auftrag " + frueher.auf.nummer + "). Nächste Abholung bereits um " +
-                 hhmm(inMin(PLAN.anfahrtAbholung, spaeter.bel.von)) + " Uhr.";
+    /* Wer ist zuerst dran? Daraus wird der konkrete Satz gebaut.
+       Genannt wird die tatsächliche Bindung, ersatzweise die geplante. */
+    const nimmBel = x => (x.bis ? x : x.geplant);
+    const bA = nimmBel(b), bO = nimmBel(ob);
+    const frueher = new Date(bA.von) <= new Date(bO.von) ? {auf:a, bel:bA} : {auf:o, bel:bO};
+    const spaeter = frueher.auf === a ? {auf:o, bel:bO} : {auf:a, bel:bA};
+    const satz = (frueher.bel.bis
+        ? "Gebunden noch bis etwa " + hhmm(frueher.bel.bis) + " Uhr (Auftrag " +
+          frueher.auf.nummer + ")."
+        : "Bindung von Auftrag " + frueher.auf.nummer + " ist offen.") +
+      " Nächste Abholung bereits um " +
+      hhmm(inMin(PLAN.anfahrtAbholung, spaeter.bel.von)) + " Uhr.";
 
     const nimm = (was, wer) => raus.push({ was, wer, mit:o, satz });
     if (a.planung.fahrerId && a.planung.fahrerId === o.planung.fahrerId)
@@ -1146,6 +1219,11 @@ function konfliktLage(a){
   const b = belegung(a);
   if (b && b.unvollstaendig)
     return { pruefbar:false, konflikte:[], fehlt:b.fehlt };
+  /* Offenes Entladeende: es gibt kein belastbares Belegungsende. Dann wird
+     weder ein Konflikt noch „kein Konflikt“ behauptet. */
+  if (b && b.offen)
+    return { pruefbar:false, offen:true, konflikte:[], grund:b.grund,
+             text:"Belegung offen – nächste Tour derzeit nicht sicher planbar." };
   return { pruefbar:true, konflikte:konflikte(a) };
 }
 
@@ -1296,7 +1374,9 @@ function ansichtTagesplan(){
       '<td data-titel="Schritt"><span class="marke '+sc.klasse+'">'+esc(sc.wort)+'</span>' +
         (a.entwurf ? '<span class="neben" style="color:#8A5200;font-weight:600">'+
                      'Änderungen nicht freigegeben</span>' : '') +
-        (!kl.pruefbar ? '<span class="neben" style="color:#8A5200;font-weight:600">'+
+        (kl.offen ? '<span class="neben" style="color:#8A5200;font-weight:600">'+
+                    'Belegung offen</span>'
+         : !kl.pruefbar ? '<span class="neben" style="color:#8A5200;font-weight:600">'+
                         'Planung nicht vollständig prüfbar</span>' : '') +
         (kf.length ? '<span class="neben" style="color:#A3161D;font-weight:600">Konflikt mit '+
                      esc(konfliktAuftraege(kf).join(", "))+'</span>' : '')+'</td>' +
@@ -1398,7 +1478,12 @@ function ansichtDetail(){
       '</div></div>';
   }
 
-  if (!kl.pruefbar) {
+  if (kl.offen) {
+    h += '<div class="warnkasten"><b>Belegung offen – nächste Tour derzeit nicht sicher planbar.</b>' +
+         '<br>' + esc(kl.grund || "") +
+         ' Solange das Entladeende nicht feststeht, wird hier weder ein Konflikt noch ' +
+         '„kein Konflikt“ behauptet.</div>';
+  } else if (!kl.pruefbar) {
     h += '<div class="warnkasten"><b>Planung nicht vollständig prüfbar.</b> Es fehlt: ' +
          esc((kl.fehlt||[]).join(", ")) + '. Solange das fehlt, wird hier <b>nicht</b> ' +
          '„kein Konflikt“ behauptet.</div>';
@@ -1426,7 +1511,16 @@ function ansichtDetail(){
 
   /* Die Tourbindung offenlegen, damit die Warnung nachvollziehbar ist. */
   const bel = belegung(a);
-  if (bel && !bel.unvollstaendig) {
+  if (bel && !bel.unvollstaendig && bel.offen) {
+    h += '<div class="karte"><h2>Bindung des Gespanns</h2>' +
+      '<div class="warnkasten" style="margin-bottom:0">' +
+      '<b>Belegung offen – nächste Tour derzeit nicht sicher planbar.</b><br>' +
+      esc(bel.grund || "") +
+      (bel.geplantBis
+        ? '<br>Ursprünglich <b>geplantes</b> Ende wäre ' + esc(hhmm(bel.geplantBis)) +
+          ' Uhr gewesen — das ist keine aktuelle Aussage, sondern nur der alte Planwert.'
+        : '') + '</div></div>';
+  } else if (bel && !bel.unvollstaendig) {
     h += '<div class="karte"><h2>Bindung des Gespanns</h2>' +
       '<p>Von <b>'+esc(hhmm(bel.von))+' Uhr</b> bis <b>'+esc(hhmm(bel.bis))+' Uhr</b>' +
       (tagVon(bel.von) !== tagVon(bel.bis) ? ' (über Mitternacht)' : '') + '.</p>' +
@@ -1712,128 +1806,165 @@ function naechsterAuftrag(a){
   return null;
 }
 
-/* Wann ist der aktuelle Auftrag voraussichtlich erledigt?
-   Es wird nur gezählt, was noch aussteht — und nichts übersprungen.
-   Rückgabe: { iso, rechnung:[{wort,min,bis}], grund } */
-function fertigAb(a){
-  const r = [];
-  const schritt = (min, wort, ab) => {
-    const bis = inMin(min, ab);
-    r.push({ wort, min:Math.round(min), bis });
-    return bis;
-  };
-
-  if (a.ablauf.abgabe)
-    return { iso:a.ablauf.abgabe, rechnung:[{wort:"Bereits abgeliefert", min:0, bis:a.ablauf.abgabe}] };
-
-  if (a.ablauf.entladenEnde)
-    return { iso:a.ablauf.entladenEnde,
-             rechnung:[{wort:"Entladung fertig", min:0, bis:a.ablauf.entladenEnde}] };
-
-  /* Entladung läuft: aus der Restzeit rechnen. Ist das Ende ausdrücklich
-     unbekannt, bleibt es unbekannt — auch ein abgelaufener Timer behauptet
-     keine sofortige Abfahrt. */
-  if (a.ablauf.entladenStart) {
-    const rest = entladeRest(a);
-    if (rest == null)
-      return { iso:null, rechnung:null,
-               grund:"Der Fahrer hat „Weiß ich noch nicht“ gewählt. Solange das Entladeende " +
-                     "offen ist, wird keine Folgeankunft vorhergesagt." };
-    const bis = schritt(rest, "Restliche Entladung", jetztIso());
-    return { iso:bis, rechnung:r };
-  }
-
-  /* Angekommen, aber die Entladung hat noch nicht begonnen.
-     Ankunft ist nicht Entladebeginn: die Entladezeit darf deshalb NICHT
-     seit der Ankunft heruntergezählt werden, sie beginnt erst noch. */
-  if (a.ablauf.ankunft) {
-    let t = jetztIso();
-    r.push({ wort:"Wartet beim Kunden, Entladung noch nicht begonnen", min:0, bis:t });
-    t = schritt(a.planung.entladenMin, "Entladung (geplant, ab jetzt)", t);
-    return { iso:t, rechnung:r };
-  }
-
-  /* Noch nicht beim Kunden. Abholung und Transport dürfen nicht
-     übersprungen werden. Bekannte Verzögerungen zählen mit: Grundlage ist
-     die aktuelle Ankunftsprognose, nicht der ursprüngliche Termin. */
-  const p = prognose(a);
-  let t;
-  if (a.ablauf.abholung) {
-    if (!p.iso) return { iso:null, rechnung:null,
-                         grund:p.grund || "Für den aktuellen Auftrag fehlt eine Ankunftsprognose." };
-    t = p.iso;
-    r.push({ wort:"Unterwegs, Ankunft beim Kunden voraussichtlich", min:0, bis:t });
-  } else {
-    /* Noch nicht abgeholt: ganze Tour ab der Abholung. */
-    const abIso = zeitpunkt(a.abhol.datum, a.abhol.zeit);
-    const anIso = zeitpunkt(a.liefer.datum, a.liefer.zeit);
-    const start = abIso || (p.iso ? inMin(-(a.planung.ladenMin + fahrzeit(a.abhol.adresse, a.liefer.adresse)), p.iso) : null);
-    if (!start) return { iso:null, rechnung:null,
-                         grund:"Für den aktuellen Auftrag fehlt ein Abhol- oder Liefertermin." };
-    t = start;
-    r.push({ wort:"Abholung geplant", min:0, bis:t });
-    t = schritt(a.planung.wartenAbholMin || 0, "Warten bei der Abholung", t);
-    t = schritt(a.planung.ladenMin, "Beladung", t);
-    t = schritt(fahrzeit(a.abhol.adresse, a.liefer.adresse), "Fahrt zum Kunden", t);
-    if (anIso && new Date(t) < new Date(anIso))
-      t = schritt(Math.round(minZw(t, anIso)), "Warten bis zum Liefertermin", t);
-  }
-  t = schritt(a.planung.wartenMin || 0, "Warten beim Kunden", t);
-  t = schritt(a.planung.entladenMin, "Entladung (geplant)", t);
-  return { iso:t, rechnung:r };
-}
-
-/* Prognose für den Folgeauftrag. Abschnittsweise, mit Minuten je Abschnitt,
-   und ohne bereits Erledigtes doppelt zu zählen. */
-function folgePrognose(a, n){
-  const basis = fertigAb(a);
-  if (!basis.iso) return { iso:null, rechnung:null, grund:basis.grund };
-
-  const rechnung = basis.rechnung.slice();
-  let t = basis.iso;
-  const schritt = (min, wort) => {
-    if (!min || min <= 0) return;
-    t = inMin(min, t);
-    rechnung.push({ wort, min:Math.round(min), bis:t });
-  };
-
-  schritt(PLAN.nacharbeit, "Restarbeiten am aktuellen Auftrag");
-  /* Rückgabe-/Depotstopp nur, wenn er noch aussteht. */
-  if (a.container && a.container.rueckgabeOrt && !a.ablauf.abgabe) {
-    schritt(PLAN.fahrtZumDepot, "Fahrt zur Leercontainer-Rückgabe");
-    schritt(PLAN.depotstopp, "Rückgabe / Depotstopp");
-  }
-  schritt(PLAN.pause, "Eingeplante Pause");
-  schritt(fahrzeit(a.liefer.adresse, n.abhol.adresse), "Fahrt zur nächsten Abholung");
-  const isoAbholung = t;                       // Ankunft an der nächsten Abholstelle
-  schritt(n.planung.wartenAbholMin || 0, "Warten bei der nächsten Abholung");
-  schritt(n.planung.ladenMin, "Beladung");
-  schritt(fahrzeit(n.abhol.adresse, n.liefer.adresse), "Fahrt zum nächsten Kunden");
-  const isoKunde = t;
-
-  /* Welche der beiden Ankünfte zählt, hängt davon ab, worauf sich der
-     maßgebliche Termin des Folgeauftrags bezieht. Sonst würde eine
-     Kundenankunft gegen einen Abholtermin gehalten. */
-  const m = massgeblich(n);
-  return { iso: m.art === "Abholung" ? isoAbholung : isoKunde,
-           isoAbholung, isoKunde, bezug:m.art, rechnung, grund:null };
-}
-
 /* ===========================================================
-   Tourkette: eine Rechnung für alle, nicht nur fürs Detail.
-   Nach „Dauert länger“, „Entladung fertig“ oder einer Planänderung
-   werden alle Folgeaufträge in ihrer geplanten Reihenfolge neu
-   gerechnet. Tagesplan, Detail, Konfliktprüfung und Alarmprüfung
-   benutzen danach genau dieselbe Zahl.
+   Tourrechnung — die EINE Grundlage
 
-   Wichtig: Nur der Prognosezeitpunkt wird dabei frisch. Der
-   Ortungszeitpunkt bleibt unberührt — eine Neuberechnung ist keine
-   neue Ortung und darf keine Frische vortäuschen.
+   Für jeden Fahrer und Einsatztag wird die Tour einmal durchgerechnet.
+   Ergebnis je Auftrag liegt danach in a.rechnung2 und speist Tagesplan,
+   Auftragsdetail, Belegung, Konfliktprüfung und Alarme. Es gibt bewusst
+   keine zweite Rechnung daneben.
+
+   Grundgedanke: Ein Auftrag beginnt, wenn der Fahrer nach dem Vorgänger
+   verfügbar ist — frühestens jedoch zum vereinbarten Abholtermin. Dadurch
+   fängt vorhandene Leerzeit eine Verzögerung von selbst auf, statt dass
+   pauschal Minuten auf alle Termine addiert werden.
+
+   Abholankunft und Kundenankunft werden getrennt geführt. Ist das
+   Entladeende unklar, bleibt alles Nachfolgende ebenfalls unklar.
    =========================================================== */
-function ketteRechnen(){
-  D.auftraege.forEach(a => {
-    a.berechneteAnkunft = null; a.folgeRechnung = null; a.folgeGrund = null;
+function tourRechnen(folge){
+  let freiAb = null;          // wann der Fahrer nach dem Vorgänger frei ist
+  let vorher = null;          // vorheriger Auftrag (für die Übergangsfahrt)
+  let unklarGrund = null;     // ab hier ist die Kette nicht mehr bestimmbar
+
+  folge.forEach(o => {
+    const p = o.planung || {};
+    const schritte = [];
+    const schritt = (min, wort, bis) => {
+      if (min > 0 || min === 0) schritte.push({ wort, min:Math.round(min), bis });
+    };
+    const geplantAbhol = zeitpunkt(o.abhol.datum, o.abhol.zeit);
+    const geplantLiefer = zeitpunkt(o.liefer.datum, o.liefer.zeit);
+    const fahrtHin = fahrzeit(o.abhol.adresse, o.liefer.adresse);
+    const wartenAbhol = p.wartenAbholMin || 0;
+
+    /* Ein abgeschlossener Auftrag bindet nichts mehr. */
+    if (o.ablauf.abgabe) {
+      o.rechnung2 = { abholAnkunft:o.ablauf.abholung, kundenAnkunft:o.ablauf.ankunft,
+                      entladeEnde:o.ablauf.entladenEnde, belegungVon:null, belegungBis:null,
+                      abschnitte:[], unklar:false, grund:null, erledigt:true, ausKette:false };
+      freiAb = o.ablauf.abgabe; vorher = o; return;
+    }
+
+    /* --- 1 · Ankunft an der Abholstelle ------------------------------- */
+    let abholAnkunft = null, ausKette = false;
+    if (o.ablauf.abholung) {
+      abholAnkunft = o.ablauf.abholung;                 // Tatsache
+      schritt(0, "Abholung bestätigt", abholAnkunft);
+    } else if (unklarGrund) {
+      o.rechnung2 = { abholAnkunft:null, kundenAnkunft:null, entladeEnde:null,
+                      belegungVon:null, belegungBis:null, abschnitte:[],
+                      unklar:true, grund:unklarGrund, ausKette:true };
+      vorher = o; return;
+    } else if (freiAb) {
+      /* Verfügbarkeit nach dem Vorgänger, zuzüglich Übergangsfahrt. */
+      const uebergang = vorher ? fahrzeit(vorher.liefer.adresse, o.abhol.adresse) : 0;
+      const frueheste = inMin(uebergang, freiAb);
+      schritt(uebergang, "Fahrt zur nächsten Abholung", frueheste);
+      /* Freie Zeit fängt Verzögerung auf: es gilt der spätere der beiden. */
+      if (geplantAbhol && new Date(geplantAbhol) > new Date(frueheste)) {
+        abholAnkunft = geplantAbhol;
+        schritt(Math.round(minZw(frueheste, geplantAbhol)),
+                "Wartet bis zum vereinbarten Abholtermin", abholAnkunft);
+      } else {
+        abholAnkunft = frueheste;
+        ausKette = true;                                 // verspätet aus der Tour
+      }
+    } else {
+      abholAnkunft = geplantAbhol;
+      if (abholAnkunft) schritt(0, "Abholung geplant", abholAnkunft);
+    }
+
+    if (!abholAnkunft && !geplantLiefer) {
+      o.rechnung2 = { abholAnkunft:null, kundenAnkunft:null, entladeEnde:null,
+                      belegungVon:null, belegungBis:null, abschnitte:schritte,
+                      unklar:true, grund:"Kein Abhol- oder Liefertermin hinterlegt",
+                      ausKette:false };
+      vorher = o; return;
+    }
+    if (!abholAnkunft)
+      abholAnkunft = inMin(-(wartenAbhol + p.ladenMin + fahrtHin), geplantLiefer);
+
+    /* --- 2 · Ankunft beim Kunden -------------------------------------- */
+    let kundenAnkunft, t = abholAnkunft;
+    if (o.ablauf.ankunft) {
+      kundenAnkunft = o.ablauf.ankunft;                 // Tatsache
+      schritt(0, "Beim Kunden angekommen", kundenAnkunft);
+    } else if (o.ablauf.abholung && o.prognose &&
+               datenZuverlaessig(o.prognoseZeit || o.datenZeit, o.ortungZeit).ok) {
+      /* Fahrzeug rollt: seine eigene laufende Prognose ist die bessere
+         Auskunft als eine Rechnung vom Vorgängerstopp. */
+      kundenAnkunft = o.prognose;
+      schritt(0, "Unterwegs, Ankunft beim Kunden voraussichtlich", kundenAnkunft);
+    } else {
+      t = inMin(wartenAbhol, t); if (wartenAbhol) schritt(wartenAbhol, "Warten bei der Abholung", t);
+      t = inMin(p.ladenMin, t);  schritt(p.ladenMin, "Beladung", t);
+      t = inMin(fahrtHin, t);    schritt(fahrtHin, "Fahrt zum Kunden", t);
+      kundenAnkunft = t;
+    }
+
+    /* --- 3 · Entladeende ---------------------------------------------- */
+    let entladeEnde = null, entladeUnklar = null;
+    if (o.ablauf.entladenEnde) {
+      entladeEnde = o.ablauf.entladenEnde;
+      schritt(0, "Entladung fertig gemeldet", entladeEnde);
+    } else if (o.ablauf.entladenStart) {
+      const rest = entladeRest(o);
+      if (rest.unklar) { entladeUnklar = rest.grund; }
+      else { entladeEnde = inMin(rest.min); schritt(rest.min, "Restliche Entladung", entladeEnde); }
+    } else {
+      /* Vor dem Liefertermin wird gewartet; Entladen beginnt nicht früher. */
+      let start = kundenAnkunft;
+      if (geplantLiefer && new Date(start) < new Date(geplantLiefer)) {
+        const w = Math.round(minZw(start, geplantLiefer));
+        start = geplantLiefer; schritt(w, "Warten bis zum Liefertermin", start);
+      }
+      if (p.wartenMin) { start = inMin(p.wartenMin, start); schritt(p.wartenMin, "Warten beim Kunden", start); }
+      entladeEnde = inMin(p.entladenMin, start);
+      schritt(p.entladenMin, "Entladung (geplant)", entladeEnde);
+    }
+
+    /* --- 4 · Belegung und Verfügbarkeit für den nächsten Auftrag ------- */
+    const belegungVon = inMin(-PLAN.anfahrtAbholung, abholAnkunft);
+    let belegungBis = null, geplantBelegungBis = null;
+    const nachlauf = (ab) => {
+      let x = inMin(PLAN.nacharbeit, ab);
+      if (o.container && o.container.rueckgabeOrt)
+        x = inMin(PLAN.fahrtZumDepot + PLAN.depotstopp, x);
+      return x;
+    };
+    if (entladeEnde) {
+      const nach = nachlauf(entladeEnde);
+      schritt(PLAN.nacharbeit, "Restarbeiten", inMin(PLAN.nacharbeit, entladeEnde));
+      if (o.container && o.container.rueckgabeOrt)
+        schritt(PLAN.fahrtZumDepot + PLAN.depotstopp, "Rückgabe / Depotstopp", nach);
+      belegungBis = inMin(PLAN.uebergang, nach);
+      freiAb = inMin(PLAN.pause, nach);
+      schritt(PLAN.pause, "Eingeplante Pause", freiAb);
+    } else {
+      /* Unklares Ende: kein Belegungsende behaupten. Der geplante Wert
+         bleibt als ausdrücklich so benannter Vergleich erhalten. */
+      const geplantEnde = inMin(p.entladenMin, o.ablauf.entladenStart || kundenAnkunft);
+      geplantBelegungBis = inMin(PLAN.uebergang, nachlauf(geplantEnde));
+      unklarGrund = entladeUnklar;
+      freiAb = null;
+    }
+
+    o.rechnung2 = { abholAnkunft, kundenAnkunft, entladeEnde,
+                    belegungVon, belegungBis, geplantBelegungBis,
+                    abschnitte:schritte, unklar:!!entladeUnklar,
+                    grund:entladeUnklar, ausKette };
+    vorher = o;
   });
+}
+
+/* Alle Touren neu rechnen. Nach „Dauert länger“, „Entladung fertig“,
+   jeder Planänderung und beim Start.
+   Wichtig: Nur der Prognosezeitpunkt wird dabei frisch — der
+   Ortungszeitpunkt bleibt unberührt. */
+function ketteRechnen(){
+  D.auftraege.forEach(a => { a.rechnung2 = null; });
+
   /* Je Fahrer und Einsatztag eine eigene Kette. */
   const gruppen = [];
   D.auftraege.forEach(a => {
@@ -1842,18 +1973,26 @@ function ketteRechnen(){
     if (gruppen.indexOf(s) < 0) gruppen.push(s);
   });
   gruppen.forEach(s => {
-    const teile = s.split("|"), fid = teile[0], tag = teile[1];
-    const folge = tourFolge(fid, tag).filter(o => !o.ablauf.abgabe);
-    for (let i = 1; i < folge.length; i++) {
-      const vor = folge[i-1], dieser = folge[i];
-      const f = folgePrognose(vor, dieser);
-      dieser.berechneteAnkunft = f.iso || null;
-      dieser.folgeRechnung = f.rechnung || null;
-      dieser.folgeGrund = f.grund || null;
-      dieser.folgeVon = vor.nummer;
-      dieser.prognoseZeit = jetztIso();     // nur Prognose, NICHT die Ortung
-    }
+    const teile = s.split("|");
+    tourRechnen(tourFolge(teile[0], teile[1]));
   });
+
+  /* Aufträge ohne Fahrer stehen für sich allein. */
+  D.auftraege.forEach(a => {
+    if (!a.rechnung2 && !a.storniert) tourRechnen([a]);
+  });
+}
+
+/* Prognose für den Folgeauftrag — dieselbe Rechnung, nur aus Sicht des
+   aktuellen Auftrags dargestellt. */
+function folgePrognose(a, n){
+  const r = tourErgebnis(n);
+  if (!r) return { iso:null, rechnung:null, grund:"Keine Berechnung vorhanden" };
+  if (r.unklar) return { iso:null, rechnung:null, grund:r.grund };
+  const m = massgeblich(n);
+  return { iso: m.art === "Abholung" ? r.abholAnkunft : r.kundenAnkunft,
+           isoAbholung:r.abholAnkunft, isoKunde:r.kundenAnkunft,
+           bezug:m.art, rechnung:r.abschnitte, grund:null };
 }
 
 /* ---------- Formular ---------- */
@@ -2706,7 +2845,8 @@ function stammDialog(art, id){
 window.DISPO = {
   zustand: () => ({ D, U }),
   regeln: { GRENZE_ORANGE, GRENZE_ALARM, MAX_ALTER, PLAN },
-  zeitstatus, konflikte, konfliktLage, belegung, prognose, folgePrognose, fertigAb,
+  zeitstatus, konflikte, konfliktLage, belegung, prognose, folgePrognose,
+  tourRechnen, tourErgebnis, zeitstempelPruefen, datenZuverlaessig, UHR_TOLERANZ,
   contGueltig, massgeblich, entladeRest, tourFolge, naechsterAuftrag,
   ketteRechnen, alarmePruefen, entwurfUnterschiede, fahrzeit
 };
