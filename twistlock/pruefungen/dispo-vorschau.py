@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Klickbare Dispo-Vorschau: Bedienabläufe und Regeln pruefen."""
 from playwright.sync_api import sync_playwright
-URL = "http://localhost:8090/twistlock-dispo-vorschau.html"
+URL = "http://localhost:8089/twistlock-dispo-vorschau.html"
 ok_all = True
 def pr(n, ok, d=""):
     global ok_all; ok_all = ok_all and ok
@@ -57,7 +57,16 @@ with sync_playwright() as p:
               graueHatAlarm: D.auftraege.some(a=>a.ortungZeit &&
                  (Date.now()-new Date(a.ortungZeit))/60000>10 && a.alarmGesendet)};
     }""")
-    pr("genau ein Verspaetungsalarm", al["anzahl"] == 1, al["anzahl"])
+    # Seit die Tourkette die Alarme speist, sind auch Folgeauftraege und der
+    # gewollte Montagskonflikt dabei. Geprueft wird deshalb der Auftrag, um
+    # den es geht: genau ein Alarm fuer den 24-Minuten-Fall.
+    proAuftrag = pg.evaluate("""() => { const {D}=DISPO.zustand();
+      const a = D.auftraege.find(x=>x.nummer==='4804');
+      return D.meldungen.filter(m=>m.art==='verspaetung'&&m.auftragId===a.id).length; }""")
+    pr("genau ein Verspaetungsalarm fuer den 24-Minuten-Auftrag", proAuftrag == 1, proAuftrag)
+    pr("kein Alarm fuer den 12-Minuten-Auftrag", pg.evaluate("""() => {
+      const {D}=DISPO.zustand(); const a=D.auftraege.find(x=>x.nummer==='4803');
+      return D.meldungen.filter(m=>m.art==='verspaetung'&&m.auftragId===a.id).length; }""") == 0)
     pr("kein Alarm aus unzuverlaessigen Daten", al["graueHatAlarm"] is False)
     vorher = al["anzahl"]
     pg.evaluate("alarmePruefen(); alarmePruefen();")
