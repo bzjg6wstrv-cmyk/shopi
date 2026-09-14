@@ -278,6 +278,25 @@ dialog::backdrop{background:rgba(21,32,43,.55)}
   body{font-size:16px}
   .demo-kopf h1{font-size:18px}
 }
+/* Prognosegrundlage, Vorschläge, Ereignisquellen */
+.lernkasten{margin-top:12px;background:var(--grau-flaeche);border:1px solid var(--linie2);
+  border-radius:var(--radius);padding:11px 13px;font-size:15px}
+.lernkasten p{margin:6px 0 0;color:var(--soft)}
+.lernkasten b{color:var(--ink)}
+.vorschlagliste{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.vorschlag{border:2px solid var(--gelb);border-left-width:8px;background:var(--gelb-flaeche);
+  border-radius:0 var(--radius) var(--radius) 0;padding:11px 13px}
+.vorschlag b{font-size:17px}
+.vorschlag p{margin:5px 0 10px;font-size:15px;color:#5E3A00}
+.quelle{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.03em;
+  padding:1px 7px;border-radius:4px;border:1px solid;margin-right:7px;white-space:nowrap}
+.q-auto  {color:var(--marine);background:var(--marine-flaeche);border-color:#B9CFE3}
+.q-fahrer{color:var(--gruen); background:var(--gruen-flaeche); border-color:#B7DCC6}
+.q-dispo {color:var(--ink);   background:#fff;                 border-color:var(--linie)}
+.q-system{color:var(--soft);  background:var(--grau-flaeche);  border-color:var(--linie)}
+.q-ki    {color:var(--gelb);  background:var(--gelb-flaeche);  border-color:#E0C489}
+.verlauf li{display:flex;gap:4px;flex-wrap:wrap;align-items:baseline}
+
 /* Freigabelinks in der Dispo */
 .link-kasten{
   border:1px solid var(--linie2); border-radius:var(--radius);
@@ -904,6 +923,8 @@ function demoHistorie(){
   fahrt("walsrode","bremen", 1, 12, 71, 4);
   fahrt("bremen","delmenhorst", 2, 8, 34, 4);
   fahrt("bremen","hemelingen", 1, 13, 22, 5);
+  fahrt("verden","walsrode", 1, 10, 29, 4);
+  fahrt("verden","walsrode", 1, 16, 34, 3);
 
   /* Standzeiten je Auftraggeber. Zwei sehr verschiedene Kunden, damit
      der Unterschied sichtbar wird. */
@@ -3620,6 +3641,10 @@ function ansichtDetail(){
   /* Freigabelink für den Auftraggeber */
   h += karteFreigabelink(a);
 
+  /* Route, ETA und Automatik */
+  h += karteRouteEta(a);
+  h += karteAutomatik(a);
+
   /* Nächster Auftrag */
   const naechster = naechsterAuftrag(a);
   h += '<div class="karte"><h2>Nächster Auftrag</h2>';
@@ -3671,10 +3696,16 @@ function ansichtDetail(){
   h += '</div>';
 
   /* Verlauf */
+  /* Jeder Eintrag nennt seine Quelle: „angekommen“ heißt etwas anderes,
+     wenn das GPS es gemeldet hat, als wenn der Fahrer es gedrückt hat. */
   h += '<div class="karte"><h2>Verlauf</h2><ul class="verlauf">' +
-    a.verlauf.slice().reverse().map(e =>
-      '<li><b>'+esc(tagKurz(tagVon(e.zeit)))+' '+esc(hhmm(e.zeit))+' Uhr</b> — '+esc(e.text)+'</li>').join("") +
-    '</ul></div>';
+    a.verlauf.slice().reverse().map(e => {
+      const q = QUELLEN[e.quelle] || QUELLEN.dispo;
+      return '<li><span class="quelle '+q.klasse+'" title="'+esc(q.erklaer)+'">'+esc(q.wort)+'</span>' +
+        '<b>'+esc(tagKurz(tagVon(e.zeit)))+' '+esc(hhmm(e.zeit))+' Uhr</b> — '+esc(e.text)+'</li>';
+    }).join("") +
+    '</ul><p class="sim-satz">Automatisch = aus Ortung und Zone erkannt. Fahrer = in der ' +
+    'Fahrer-App gemeldet. Dispo = hier eingetragen. System = berechnet.</p></div>';
 
   /* Dispo-Notiz */
   h += '<div class="karte"><h2>Interne Dispo-Notiz</h2>' +
@@ -3694,6 +3725,150 @@ function ansichtDetail(){
     '</div></div>';
   return h;
 }
+/* ---------- Route & ETA im Auftrag ----------
+   Eine Karte, die zusammenfasst, worauf die Ankunft beruht: wo das
+   Fahrzeug steht, welcher Weg noch vor ihm liegt, was die Rechnung
+   daraus macht und wie belastbar das ist. */
+function karteRouteEta(a){
+  const z = zugVon(a.planung.zugmaschineId);
+  const t = z && z.telematik;
+  const g = datenGuete(a);
+  const auto = automatisierungsGrad(a);
+
+  let h = '<div class="karte"><h2>Route &amp; ETA</h2>';
+
+  if (!t || !t.verbunden) {
+    h += '<p style="color:#47525D">Für ' +
+      esc(z ? z.kennzeichen : "dieses Fahrzeug") + ' ist kein Telematikgerät verbunden. ' +
+      'Ohne Position lässt sich keine Reststrecke bestimmen; es gilt die Planung.</p>';
+    h += '<div class="paar" style="margin-top:10px">' +
+      zeile("Automatisierung", auto.wort) +
+      zeile("Routing", anbieterSatz("routing")) + '</div></div>';
+    return h;
+  }
+
+  /* Wohin geht es als Nächstes? Vor der Abholung zur Abholstelle,
+     danach zum Kunden. Dieselbe Unterscheidung wie überall sonst. */
+  const zumKunden = !!a.ablauf.abholung;
+  const ziel = zumKunden
+    ? { firma:a.liefer.firma, adresse:a.liefer.adresse }
+    : { firma:a.abhol.firma,  adresse:a.abhol.adresse };
+  const zielOrt = ortVon(ziel.adresse);
+  const frisch = zeitstempelPruefen(t.letzteMeldung, "Ortungszeitpunkt").ok;
+
+  /* Reststrecke aus den Koordinaten — nicht aus dem Ortsnamen im
+     Positionstext. „A27 bei Verden, Richtung Walsrode“ enthält beide
+     Orte; daraus eine Strecke zu lesen, ginge zwangsläufig schief. */
+  const restKm = (zielOrt && typeof t.latitude === "number")
+    ? Math.round(luftlinieKm(t.latitude, t.longitude, zielOrt.lat, zielOrt.lng) * STRECKENFAKTOR)
+    : null;
+  /* Die Erfahrungswerte gehören zur Strecke des Auftrags, nicht zum
+     Reststück ab der aktuellen Position. */
+  const le = lernEta(a.abhol.adresse, a.liefer.adresse, z, jetztIso());
+  const p = prognose(a);
+  /* Genau EINE Ankunftszeit: die der laufenden Berechnung. Die
+     verbleibende Fahrzeit wird daraus abgeleitet, nicht daneben neu
+     gerechnet — sonst stünden zwei Zahlen da, die sich widersprechen. */
+  const restMin = p.iso ? Math.max(0, Math.round(minZw(jetztIso(), p.iso))) : null;
+  const m = massgeblich(a);
+  const res = (p.iso && m.iso) ? reserve(m.iso, p.iso) : null;
+  const lage = zoneLage(a);
+
+  h += '<div class="paar">' +
+    zeile("Aktuelle Position", (t.ort || "unbekannt") +
+      (t.geschwindigkeit ? " · " + t.geschwindigkeit + " km/h" : " · steht")) +
+    zeile("Nächstes Ziel", ziel.firma + (zielOrt ? " (" + zielOrt.wort + ")" : "")) +
+    zeile("Reststrecke", restKm != null ? restKm + " km" : "—") +
+    zeile("Verbleibende Zeit bis Ankunft", restMin != null ? restMin + " Min." : "—") +
+    zeile("ETA", p.iso ? hhmm(p.iso) + " Uhr" : "nicht belastbar bestimmbar") +
+    zeile("Termin", (m.zeit ? m.zeit + " Uhr" : "—") + " — " + m.art) +
+    '<div class="zeile"><div class="was">Reserve</div><div class="wert">' +
+      (res == null ? '<span class="marke m-grau">nicht bestimmbar</span>'
+                   : '<span class="marke ' + (res < 0 ? "m-rot" : res <= GRENZE_ORANGE ? "m-gelb" : "m-gruen") +
+                     '">' + (res < 0 ? Math.abs(res) + " Min. zu spät" : res + " Min.") + '</span>') +
+      '</div></div>' +
+    zeile("Datenstand", frisch
+      ? "Ortung " + hhmm(t.letzteMeldung) + " Uhr, aktuell"
+      : "Ortung " + (t.letzteMeldung ? hhmm(t.letzteMeldung) + " Uhr" : "unbekannt") +
+        " — älter als " + MAX_ALTER + " Minuten") +
+    zeile("Routing", anbieterSatz("routing")) +
+    '<div class="zeile"><div class="was">Datenqualität</div><div class="wert">' +
+      '<span class="marke ' + g.klasse + '">' + esc(g.stufe.charAt(0).toUpperCase()+g.stufe.slice(1)) + '</span>' +
+      '</div></div>' +
+    '</div>';
+
+  if (lage.frisch && (lage.beiKunde || lage.beiAbholung))
+    h += '<p class="sim-satz">Das Fahrzeug befindet sich in der Zone „' +
+         esc(lage.zone ? lage.zone.name : "") + '“.</p>';
+
+  if (!frisch)
+    h += '<div class="warnkasten" style="margin:10px 0 0">' +
+         '<b>Ankunftszeit derzeit nicht belastbar.</b> Die letzte Ortung ist zu alt. ' +
+         'Es wird bewusst keine genaue Uhrzeit angezeigt.</div>';
+
+  h += '<p class="sim-satz">' + simMarke("Simuliert") + ' Position, Verkehr und Routing stammen ' +
+       'aus dieser Vorschau. ' + esc((ANBIETER.routing.hinweis||"")) + '. ' +
+       '<b>Echt gerechnet:</b> Entfernung, Reserve und die Gewichtung der Erfahrungswerte.</p>';
+
+  /* Lern-/Routingvergleich offenlegen, damit die Zahl nicht vom Himmel fällt. */
+  h += '<div class="lernkasten"><b>Prognosegrundlage</b> ' + simMarke("KI-/Lernprognose – Demo") +
+       '<p>Die angezeigte ETA kommt aus der laufenden Tourberechnung — es gibt nur diese eine. ' +
+       'Darunter steht, woraus sich die Fahrzeit für die Strecke ' +
+       esc(kurzOrt(a.abhol.adresse)) + ' → ' + esc(kurzOrt(a.liefer.adresse)) + ' speist:</p>' +
+       '<p>' + esc(le.erklaerung) + '</p>';
+  const ls = lernStandzeit(a.auftraggeberId, "entladung");
+  if (ls.minuten != null)
+    h += '<p>Standzeit bei diesem Auftraggeber bisher im Schnitt <b>' + ls.minuten +
+         ' Minuten</b> aus ' + ls.anzahl + ' Beobachtungen (geplant: ' +
+         esc(String(a.planung.entladenMin)) + ' Minuten).</p>';
+  else
+    h += '<p>Für diesen Auftraggeber liegen noch zu wenige eigene Standzeiten vor – ' +
+         'es wird mit dem Planwert gerechnet.</p>';
+  h += '</div>';
+  return h + '</div>';
+}
+
+/* ---------- Automatisierung, Vorschläge und Korrektur ---------- */
+function karteAutomatik(a){
+  const auto = automatisierungsGrad(a);
+  const st = transportStatus(a);
+  const offen = (a.vorschlaege || []).filter(x => !x.erledigt);
+
+  let h = '<div class="karte"><h2>Automatischer Status</h2>' +
+    '<div class="paar">' +
+    '<div class="zeile"><div class="was">Automatisierung</div><div class="wert">' +
+      '<span class="marke ' + auto.klasse + '">' + esc(auto.wort) + '</span></div></div>' +
+    zeile("Aktueller Zustand", (STATUS_WOERTER[st]||{}).intern || st) +
+    '</div>' +
+    '<p class="sim-satz">' + esc(auto.grund) + '</p>';
+
+  if (a.automatik && a.automatik.an === false)
+    h += '<div class="hinweis" style="margin-top:10px">Die Automatik ist für diesen Auftrag ' +
+         'ausgeschaltet, weil der Status von Hand korrigiert wurde' +
+         (a.automatik.korrigiert ? ' (' + esc(hhmm(a.automatik.korrigiert)) + ' Uhr)' : '') +
+         '. Automatische Zonenwechsel überschreiben die Korrektur nicht.</div>';
+
+  if (offen.length) {
+    h += '<div class="vorschlagliste">';
+    offen.forEach(vs => {
+      h += '<div class="vorschlag"><b>' + esc(vs.titel) + '</b>' +
+        '<p>' + esc(vs.text) + '</p>' +
+        '<div class="btn-reihe">' +
+        '<button class="btn haupt" data-tun="vorschlagJa" data-wert="'+esc(vs.id)+'">Bestätigen</button>' +
+        '<button class="btn" data-tun="vorschlagNein" data-wert="'+esc(vs.id)+'">Nicht bestätigen</button>' +
+        '</div></div>';
+    });
+    h += '</div>';
+  }
+
+  h += '<div class="btn-reihe" style="margin-top:12px">' +
+    '<button class="btn" data-tun="statusKorrigieren">Status korrigieren</button>' +
+    '<button class="btn" data-tun="automatikSchalten">' +
+      (a.automatik && a.automatik.an === false ? "Automatik wieder einschalten" : "Automatik ausschalten") +
+    '</button></div>';
+  return h + '</div>';
+}
+
 function zeile(was, wert){
   return '<div class="zeile"><div class="was">'+esc(was)+'</div><div class="wert">'+esc(wert==null?"—":wert)+'</div></div>';
 }
@@ -4621,6 +4796,62 @@ document.addEventListener("click", e => {
     return;                       // alles andere ist hier nicht bedienbar
   }
 
+  /* ---- Automatischer Status: Vorschläge und Korrektur ---- */
+  if (tun === "vorschlagJa") {
+    if (!a) return;
+    if (vorschlagAnnehmen(a, wert, "dispo")) {
+      risikoRechnen(); alarmePruefen();
+      U.notiz = "Bestätigt. Der Schritt steht jetzt im Ablauf und im Verlauf — mit der Dispo als Quelle.";
+    }
+    zeichne(); return;
+  }
+  if (tun === "vorschlagNein") {
+    if (!a) return;
+    vorschlagAblehnen(a, wert);
+    U.notiz = "Vorschlag abgelehnt. Am Auftrag ändert sich nichts.";
+    zeichne(); return;
+  }
+  if (tun === "automatikSchalten") {
+    if (!a) return;
+    a.automatik = a.automatik || { an:true };
+    a.automatik.an = (a.automatik.an === false);      // aus → an, sonst aus
+    protokoll(a, "dispo", a.automatik.an
+      ? "Automatische Statuswechsel wieder eingeschaltet"
+      : "Automatische Statuswechsel ausgeschaltet");
+    speichern();
+    U.notiz = a.automatik.an
+      ? "Automatik eingeschaltet. Zonenwechsel setzen wieder, was sicher messbar ist."
+      : "Automatik ausgeschaltet. Der Status ändert sich nur noch durch Meldungen und Eingaben.";
+    zeichne(); return;
+  }
+  if (tun === "statusKorrigieren") {
+    if (!a) return;
+    const zeilen = SCHRITT_FELDER.map(f => {
+      const da = !!a.ablauf[f.k];
+      return '<div class="liste-zeile"><span class="name">' + esc(f.wort) +
+        '<span class="neben">' + (da ? esc(hhmm(a.ablauf[f.k])) + " Uhr" : "nicht gesetzt") + '</span></span>' +
+        '<button class="btn' + (da ? ' gefahr' : '') + '" data-tun="korrSetzen" ' +
+        'data-wert="' + esc(f.k) + '" data-art="' + (da ? "aus" : "an") + '">' +
+        (da ? "Zurücknehmen" : "Jetzt setzen") + '</button></div>';
+    }).join("");
+    frage("Status korrigieren",
+      "<p>Die Dispo weiß manchmal mehr als die Ortung — etwa wenn das Fahrzeug nur " +
+      "die falsche Einfahrt genommen hat.</p>" +
+      "<p><b>Jede Korrektur schaltet die Automatik für diesen Auftrag ab</b>, damit der " +
+      "nächste Zonenwechsel sie nicht sofort wieder überschreibt. Sie wird im Verlauf " +
+      "als Eintrag der Dispo festgehalten.</p>" + zeilen,
+      [{ wort:"Schließen", haupt:true }]);
+    return;
+  }
+  if (tun === "korrSetzen") {
+    if (!a) return;
+    dlg.close();
+    statusKorrigieren(a, wert, art === "an");
+    risikoRechnen(); alarmePruefen();
+    U.notiz = "Status korrigiert. Die Automatik ist für diesen Auftrag jetzt aus.";
+    zeichne(); return;
+  }
+
   /* ---- Freigabelinks ---- */
   if (tun === "linkEinzelNeu") {
     const ziel = auftragVon(wert);
@@ -5141,6 +5372,7 @@ function stammDialog(art, id){
 window.DISPO = {
   zustand: () => ({ D, U }),
   linkAufloesen, linkZustand, linkAdresse, kundeVon, tokenBauen,
+  jetztIso, minZw, hhmm, MAX_ALTER, GRENZE_ALARM,
   ANBIETER, routeBerechnen, fahrzeitFuer, lernEta, lernFahrzeit, lernStandzeit,
   datenGuete, transportStatus, zoneLage, automatisierungsGrad, geofenceFuer, inZone,
   automatikLauf, vorschlagAnnehmen, vorschlagAblehnen, statusKorrigieren, protokoll,

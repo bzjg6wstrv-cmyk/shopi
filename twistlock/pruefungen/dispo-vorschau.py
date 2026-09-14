@@ -54,8 +54,11 @@ with sync_playwright() as p:
       const {D}=DISPO.zustand();
       const v = D.meldungen.filter(m=>m.art==="verspaetung");
       return {anzahl:v.length, proAuftrag:v.map(m=>m.auftragId),
+              /* Alter IMMER an der Demo-Uhr der Anwendung messen, nie an
+                 Date.now(): die Demo-Uhr steht fest auf 10:30, sonst gilt
+                 abends jede Ortung faelschlich als veraltet. */
               graueHatAlarm: D.auftraege.some(a=>a.ortungZeit &&
-                 (Date.now()-new Date(a.ortungZeit))/60000>10 && a.alarmGesendet)};
+                 DISPO.minZw(a.ortungZeit, DISPO.jetztIso())>DISPO.MAX_ALTER && a.alarmGesendet)};
     }""")
     # Seit die Tourkette die Alarme speist, sind auch Folgeauftraege und der
     # gewollte Montagskonflikt dabei. Geprueft wird deshalb der Auftrag, um
