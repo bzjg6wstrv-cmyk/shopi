@@ -297,6 +297,34 @@ dialog::backdrop{background:rgba(21,32,43,.55)}
 .q-ki    {color:var(--gelb);  background:var(--gelb-flaeche);  border-color:#E0C489}
 .verlauf li{display:flex;gap:4px;flex-wrap:wrap;align-items:baseline}
 
+/* Dispo-Assistent */
+.empfehlung{border:2px solid var(--linie);border-left-width:8px;border-radius:0 var(--radius) var(--radius) 0;
+  padding:12px 14px;margin-bottom:12px;background:var(--paper)}
+.empfehlung.e-hoch{border-left-color:var(--rot);background:var(--rot-flaeche)}
+.empfehlung.e-mittel{border-left-color:var(--gelb);background:var(--gelb-flaeche)}
+.empfehlung.e-klein{border-left-color:var(--marine);background:var(--marine-flaeche)}
+.e-kopf{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:8px}
+.e-kopf b{flex:1 1 320px;font-size:17px}
+.warum{margin:0 0 10px}
+.warum>summary{cursor:pointer;font-weight:700;font-size:15px;padding:6px 0;min-height:32px}
+.warum>summary:hover{text-decoration:underline}
+.warum ul{margin:4px 0 0 18px;font-size:15px}
+.warum li{padding:2px 0}
+.tabelle.vergleich{min-width:0}
+.tabelle.vergleich td:nth-child(2){color:var(--soft)}
+.tabelle.vergleich td:nth-child(3){font-weight:700}
+.wennkasten{margin-top:14px;border:2px solid var(--marine);border-radius:var(--radius);
+  padding:13px;background:var(--marine-flaeche)}
+.wennkasten h3{font-size:18px;margin-bottom:10px}
+.wennkasten ul{margin:4px 0 0 18px}
+.ki-beispiele{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.ki-beispiele .btn{font-size:14px;padding:7px 11px;min-height:38px}
+.ki-antwort{margin-top:14px;border:2px solid var(--linie);border-radius:var(--radius);
+  padding:13px;background:var(--grau-flaeche)}
+.ki-satz{font-size:17px;font-weight:700}
+.ki-antwort ul{margin:8px 0 0 18px}
+.ki-antwort li{padding:3px 0}
+
 /* Freigabelinks in der Dispo */
 .link-kasten{
   border:1px solid var(--linie2); border-radius:var(--radius);
@@ -1796,6 +1824,8 @@ let U = {                     // Oberfläche
   formular:null,
   fehler:{},
   notiz:null,
+  wennAuftrag:null, wennFall:"entladen30", wennErgebnis:null,
+  kiFrage:"", kiAntwort:null,
   extern:null,         // {token, auftragId, demo} — nur in der Vorschau gesetzt
   externRueckweg:null  // wohin „Zurück zur Dispo“ führt
 };
@@ -2640,6 +2670,7 @@ const BEREICHE = [
   { k:"tagesplan",  wort:"Tagesplan" },
   { k:"wochenplan", wort:"Wochenplan" },
   { k:"auftraege",  wort:"Aufträge" },
+  { k:"smart",      wort:"Smart Dispo" },
   { k:"stamm",      wort:"Stammdaten" },
   { k:"meldungen",  wort:"Meldungen" }
 ];
@@ -3041,6 +3072,7 @@ function zeichne(){
   if (U.bereich === "tagesplan") html += ansichtTagesplan();
   else if (U.bereich === "wochenplan") html += ansichtWochenplan();
   else if (U.bereich === "auftraege") html += ansichtAuftraege();
+  else if (U.bereich === "smart") html += ansichtSmart();
   else if (U.bereich === "stamm") html += ansichtStamm();
   else if (U.bereich === "meldungen") html += ansichtMeldungen();
   else if (U.bereich === "detail") html += ansichtDetail();
@@ -4717,6 +4749,819 @@ function ansichtMeldungen(){
 }
 
 /* ===========================================================
+   13 · Dispo-Assistent („Smart Dispo“)
+
+   Der Assistent entscheidet nichts. Er rechnet mit denselben Funktionen,
+   die auch die Dispo benutzt — Tourkette, Belegung, Konfliktprüfung,
+   Routing, Risiko — und macht daraus Vorschläge. Jeder Vorschlag nennt
+   seine Gründe, und übernommen wird er erst, wenn ein Mensch zustimmt.
+
+   Was hier NICHT passiert: Aufträge umverteilen, stornieren, Dokumente
+   freigeben, eine Wegfahrsperre schalten oder eine Fahrerentscheidung
+   überschreiben. Dafür gibt es keinen Weg durch diesen Code.
+   =========================================================== */
+
+/* Eine Änderung durchspielen, ohne den echten Stand anzufassen.
+   Vorgehen: Sicherung ziehen, ändern, mit den normalen Funktionen neu
+   rechnen, messen, Sicherung zurückspielen. Dadurch gibt es auch in der
+   Simulation keine zweite Rechenlogik. */
+function simulieren(aendern, messen){
+  const sicherung = JSON.stringify({ auftraege:D.auftraege, meldungen:D.meldungen });
+  let ergebnis = null;
+  try {
+    aendern();
+    ketteRechnen();
+    risikoRechnen();
+    ergebnis = messen();
+  } finally {
+    const zurueck = JSON.parse(sicherung);
+    D.auftraege = zurueck.auftraege;
+    D.meldungen = zurueck.meldungen;
+    ketteRechnen();
+    risikoRechnen();
+  }
+  return ergebnis;
+}
+
+/* Kennzahlen eines Tages — dieselben Zahlen vor und nach einer
+   Simulation, damit der Vergleich ALT/NEU ehrlich ist. */
+function tagesLage(tag){
+  const liste = D.auftraege.filter(a => a.tag === tag && !a.storniert);
+  let konfliktZahl = 0, knapp = 0, zuSpaet = 0, unklar = 0;
+  const zeilen = liste.map(a => {
+    const s = zeitstatus(a);
+    const kf = konflikte(a);
+    if (kf.length) konfliktZahl++;
+    if (s.res != null && s.res < 0) zuSpaet++;
+    else if (s.res != null && s.res <= GRENZE_ORANGE) knapp++;
+    if (s.res == null && !s.nurPlan && !a.ablauf.abgabe) unklar++;
+    return { id:a.id, nummer:a.nummer, kunde:a.kunde, res:s.res, satz:s.satz,
+             fahrerId:a.planung.fahrerId, zugId:a.planung.zugmaschineId,
+             ankunft:s.ankunft, risiko:(risikoVon(a)||{}).stufe || "keins" };
+  });
+  return { tag, anzahl:liste.length, konflikte:konfliktZahl, knapp, zuSpaet, unklar, zeilen };
+}
+
+/* Wie lange fährt dieses Gespann heute leer? Summe der Übergangsfahrten
+   zwischen dem Lieferort eines Auftrags und der Abholstelle des nächsten. */
+function leerfahrtMinuten(fahrerId, tag){
+  const folge = tourFolge(fahrerId, tag);
+  let summe = 0;
+  for (let i = 1; i < folge.length; i++) {
+    const z = zugVon(folge[i].planung.zugmaschineId);
+    const r = routeBerechnen(folge[i-1].liefer.adresse, folge[i].abhol.adresse, z,
+                             zeitpunkt(folge[i].abhol.datum, folge[i].abhol.zeit));
+    if (r && r.minuten != null) summe += r.minuten;
+  }
+  return summe;
+}
+
+/* Ist dieses Gespann für diesen Auftrag frei — nach derselben
+   Konfliktprüfung, die auch sonst gilt? */
+function gespannFrei(a, fahrerId, zugId, chsId){
+  return simulieren(() => {
+    const ziel = D.auftraege.find(x => x.id === a.id);
+    if (!ziel) return;
+    ziel.planung.fahrerId = fahrerId;
+    ziel.planung.zugmaschineId = zugId;
+    ziel.planung.chassisId = chsId;
+  }, () => {
+    const ziel = D.auftraege.find(x => x.id === a.id);
+    const kf = konflikte(ziel);
+    const s = zeitstatus(ziel);
+    return { frei:kf.length === 0, konflikte:kf.length, res:s.res, satz:s.satz,
+             ankunft:s.ankunft };
+  });
+}
+
+/* ---- Vorschläge sammeln ----
+   EIN Eintrag je Auftrag, nicht je Befund. Ein Auftrag mit Konflikt,
+   verlorenem Termin und hohem Risiko ist ein Problem, nicht drei —
+   und ein Konflikt zwischen zwei Aufträgen wird einmal berichtet,
+   nicht von beiden Seiten. */
+function vorschlaegeSammeln(tag){
+  const liste = D.auftraege.filter(a => a.tag === tag && !a.storniert);
+  const eintraege = new Map();
+  const paare = new Set();
+
+  const zu = (a, schwere, befund, gruende, aenderung) => {
+    let e = eintraege.get(a.id);
+    if (!e) {
+      e = { id:"v_"+a.id, auftragId:a.id, nummer:a.nummer, kunde:a.kunde,
+            schwere:0, befunde:[], warum:[], aenderung:null };
+      eintraege.set(a.id, e);
+    }
+    e.schwere = Math.max(e.schwere, schwere);
+    e.befunde.push(befund);
+    gruende.forEach(g => { if (g && e.warum.indexOf(g) < 0) e.warum.push(g); });
+    if (aenderung && !e.aenderung) e.aenderung = aenderung;
+  };
+
+  liste.forEach(a => {
+    const termin = "Termin " + (massgeblich(a).zeit || "—") + " Uhr bei " + (a.liefer.firma || "—") + ".";
+
+    /* 1. Noch nicht vollständig disponiert */
+    const fehlt = [];
+    if (!a.planung.fahrerId)      fehlt.push("Fahrer");
+    if (!a.planung.zugmaschineId) fehlt.push("Zugmaschine");
+    if (!a.planung.chassisId)     fehlt.push("Chassis");
+    if (fehlt.length) {
+      const passend = passendesGespann(a);
+      zu(a, 2, "nicht vollständig disponiert",
+         ["Es fehlt: " + fehlt.join(", ") + ".", termin]
+           .concat(passend ? passend.warum : ["Derzeit ist kein Gespann ohne Konflikt frei."]),
+         passend ? passend.aenderung : null);
+    }
+
+    /* 2. Konflikt – nur einmal je Paar */
+    const kf = konflikte(a);
+    if (kf.length) {
+      const neueKf = kf.filter(k => {
+        const schluessel = [a.id, k.mit.id].sort().join("|");
+        if (paare.has(schluessel)) return false;
+        paare.add(schluessel); return true;
+      });
+      if (neueKf.length) {
+        const passend = passendesGespann(a, true);
+        zu(a, 3, "Planungskonflikt",
+           konfliktSaetze(neueKf).concat(
+             passend ? passend.warum : ["Kein anderes Gespann ist zu dieser Zeit frei."]),
+           passend ? passend.aenderung : null);
+      }
+    }
+
+    /* 3. Mit dem aktuellen Plan nicht erreichbar */
+    const s = zeitstatus(a);
+    if (s.res != null && s.res < 0 && !a.ablauf.abgabe) {
+      const passend = passendesGespann(a, true);
+      zu(a, 3, "Termin rechnerisch verloren",
+         ["Berechnete Ankunft " + (s.ankunft ? hhmm(s.ankunft) + " Uhr" : "unklar") +
+          ", Termin " + (massgeblich(a).zeit || "—") + " Uhr — " + Math.abs(s.res) + " Minuten zu spät."]
+           .concat(passend ? passend.warum : []),
+         passend ? passend.aenderung : null);
+    }
+
+    /* 4. Früher Termin ohne Vortagsbeladung */
+    const fh = fruehterminHinweis(a);
+    if (fh) {
+      zu(a, 1, "Vortagsbeladung empfohlen",
+         [fh,
+          "Abholung " + (a.abhol.zeit || "—") + " Uhr heißt Anfahrt, Warten und Beladen noch davor.",
+          "Mit Beladung am Vortag beginnt der Einsatztag direkt mit der Fahrt zum Kunden."],
+         { art:"vortag", auftragId:a.id });
+    }
+
+    /* 5. Hohes Verspätungsrisiko heute */
+    const rs = risikoVon(a);
+    if (rs && rs.stufe === "hoch" && !a.ablauf.abgabe) {
+      zu(a, 2, "hohes Verspätungsrisiko" + (rs.prozent ? " (" + rs.prozent + " % – simuliert)" : ""),
+         rs.gruende.slice(), null);
+    }
+  });
+
+  /* 6. Zu wenig Luft zwischen zwei Touren desselben Fahrers */
+  D.fahrer.forEach(f => {
+    const folge = tourFolge(f.id, tag);
+    for (let i = 1; i < folge.length; i++) {
+      const vorB = belegung(folge[i-1]);
+      const nachB = belegungGeplant(folge[i]);
+      if (!vorB || vorB.unvollstaendig || !vorB.bis || !nachB || nachB.unvollstaendig) continue;
+      const luft = Math.round(minZw(vorB.bis, nachB.von));
+      if (luft >= 0 && luft < 15) {
+        zu(folge[i], 2, "nur " + luft + " Minuten Reserve zum vorherigen Auftrag",
+           ["Auftrag " + folge[i-1].nummer + " bindet das Gespann bis " + hhmm(vorB.bis) + " Uhr.",
+            "Auftrag " + folge[i].nummer + " beginnt planmäßig " + hhmm(nachB.von) + " Uhr.",
+            "Eine Verzögerung von mehr als " + luft + " Minuten schlägt direkt durch."], null);
+      }
+    }
+  });
+
+  /* 7. Leerfahrt: ein anderes Gespann steht näher */
+  liste.forEach(a => {
+    if (!a.planung.fahrerId || a.ablauf.abholung) return;
+    const eigen = leerAnfahrt(a, a.planung.fahrerId);
+    if (eigen == null) return;
+    let bestes = null;
+    D.fahrer.forEach(f => {
+      if (f.id === a.planung.fahrerId || !f.aktiv) return;
+      const wert = leerAnfahrt(a, f.id);
+      if (wert == null || eigen - wert < 20) return;
+      const g = freiesGespannVon(f.id);
+      if (!g) return;
+      const pr = gespannFrei(a, f.id, g.zugId, g.chsId);
+      if (!pr.frei) return;
+      if (!bestes || wert < bestes.wert) bestes = { f, g, wert };
+    });
+    if (bestes) {
+      const kz = (zugVon(bestes.g.zugId)||{}).kennzeichen || "—";
+      zu(a, 1, (eigen - bestes.wert) + " Minuten Leerfahrt vermeidbar",
+         ["Anfahrt mit dem bisherigen Gespann: " + eigen + " Minuten.",
+          "Anfahrt mit " + kz + ": " + bestes.wert + " Minuten.",
+          "Für " + bestes.f.name + " entsteht dabei kein Konflikt.",
+          "Routing: " + anbieterSatz("routing") + "."],
+         { art:"gespann", auftragId:a.id, fahrerId:bestes.f.id,
+           zugId:bestes.g.zugId, chsId:bestes.g.chsId });
+    }
+  });
+
+  const raus = Array.from(eintraege.values());
+  raus.forEach(e => {
+    e.titel = "Auftrag " + e.nummer + (e.kunde ? " · " + e.kunde : "") + ": " +
+              e.befunde.join(", ") + ".";
+  });
+  raus.sort((x,y) => y.schwere - x.schwere || (x.nummer > y.nummer ? 1 : -1));
+  return raus;
+}
+
+/* Anfahrtszeit zu diesem Auftrag, wenn dieser Fahrer ihn übernähme:
+   vom Ende seiner vorherigen Tour zur Abholstelle. */
+function leerAnfahrt(a, fahrerId){
+  const folge = tourFolge(fahrerId, a.tag).filter(o => o.id !== a.id);
+  const abIso = zeitpunkt(a.abhol.datum, a.abhol.zeit) || massgeblich(a).iso;
+  let vorher = null;
+  folge.forEach(o => {
+    const b = belegungGeplant(o);
+    if (b && !b.unvollstaendig && abIso && new Date(b.bis) <= new Date(abIso)) vorher = o;
+  });
+  const von = vorher ? vorher.liefer.adresse : "Am Speicher 12, 28197 Bremen";
+  const z = zugVon((vorher && vorher.planung.zugmaschineId) || null);
+  const r = routeBerechnen(von, a.abhol.adresse, z, abIso);
+  return r && r.minuten != null ? r.minuten : null;
+}
+
+/* Welches Gespann fährt dieser Fahrer üblicherweise? Sonst das erste
+   freie aktive. */
+function freiesGespannVon(fahrerId){
+  const eigene = D.auftraege.find(o => o.planung.fahrerId === fahrerId && o.planung.zugmaschineId);
+  if (eigene) return { zugId:eigene.planung.zugmaschineId, chsId:eigene.planung.chassisId };
+  const z = D.zugmaschinen.find(x => x.aktiv), c = D.chassis[0];
+  return z && c ? { zugId:z.id, chsId:c.id } : null;
+}
+
+/* Ein Gespann suchen, das diesen Auftrag ohne Konflikt fahren kann.
+   Geprüft wird mit der echten Konfliktprüfung in der Simulation. */
+function passendesGespann(a, auchWechsel){
+  const kandidaten = [];
+  D.fahrer.filter(f => f.aktiv).forEach(f => {
+    if (!auchWechsel && f.id === a.planung.fahrerId) return;
+    const g = freiesGespannVon(f.id);
+    if (!g) return;
+    if (f.id === a.planung.fahrerId && g.zugId === a.planung.zugmaschineId) return;
+    const z = zugVon(g.zugId);
+    if (z && z.aktiv === false) return;
+    const pr = gespannFrei(a, f.id, g.zugId, g.chsId);
+    if (!pr.frei) return;
+    kandidaten.push({ f, g, pr, anfahrt:leerAnfahrt(a, f.id) });
+  });
+  if (!kandidaten.length) return null;
+  /* Bestes = größte Reserve, bei Gleichstand kürzere Anfahrt. */
+  kandidaten.sort((x,y) => (y.pr.res == null ? -1e9 : y.pr.res) - (x.pr.res == null ? -1e9 : x.pr.res)
+                           || (x.anfahrt||999) - (y.anfahrt||999));
+  const b = kandidaten[0];
+  const z = zugVon(b.g.zugId);
+  return {
+    warum:[ "Vorschlag: " + b.f.name + " mit " + (z ? z.kennzeichen : "—") + ".",
+            (z ? z.kennzeichen : "Dieses Gespann") + " ist zu dieser Zeit frei – die " +
+            "Konfliktprüfung meldet nichts.",
+            b.pr.res != null
+              ? "Erwartete Ankunft " + (b.pr.ankunft ? hhmm(b.pr.ankunft) + " Uhr" : "—") +
+                ", dadurch " + (b.pr.res < 0 ? Math.abs(b.pr.res) + " Minuten zu spät"
+                                             : b.pr.res + " Minuten Reserve") + "."
+              : "Eine Ankunftszeit lässt sich dafür nicht belastbar bestimmen.",
+            b.anfahrt != null ? "Anfahrt zur Abholstelle: " + b.anfahrt + " Minuten." : null
+          ].filter(Boolean),
+    aenderung:{ art:"gespann", auftragId:a.id, fahrerId:b.f.id,
+                zugId:b.g.zugId, chsId:b.g.chsId }
+  };
+}
+
+/* ---- Eine Änderung vorher zeigen: ALT gegen NEU ----
+   Übernommen wird nichts, bevor die Dispo beides nebeneinander gesehen
+   hat. Gerechnet wird die NEU-Seite in der Simulation, also mit denselben
+   Funktionen wie der echte Stand. */
+function aenderungVorschau(ae){
+  const a = auftragVon(ae.auftragId);
+  if (!a) return null;
+  const altS = zeitstatus(a), altK = konfliktAuftraege(konflikte(a));
+  const alt = {
+    fahrer: (fahrerVon(a.planung.fahrerId)||{}).name || "—",
+    zug:    (zugVon(a.planung.zugmaschineId)||{}).kennzeichen || "—",
+    chassis:(chsVon(a.planung.chassisId)||{}).nummer || "—",
+    beladung: vortagBeladen(a) ? "am Vortag" : "am selben Tag",
+    ankunft: altS.ankunft ? hhmm(altS.ankunft) + " Uhr" : "unklar",
+    reserve: altS.res == null ? "nicht bestimmbar"
+             : (altS.res < 0 ? Math.abs(altS.res) + " Min. zu spät" : altS.res + " Min."),
+    konflikte: altK.length,
+    leerfahrt: leerfahrtMinuten(a.planung.fahrerId, a.tag)
+  };
+  const neu = simulieren(() => aenderungAnwenden(ae, true), () => {
+    const z = D.auftraege.find(x => x.id === ae.auftragId);
+    const s = zeitstatus(z), k = konfliktAuftraege(konflikte(z));
+    return {
+      fahrer: (fahrerVon(z.planung.fahrerId)||{}).name || "—",
+      zug:    (zugVon(z.planung.zugmaschineId)||{}).kennzeichen || "—",
+      chassis:(chsVon(z.planung.chassisId)||{}).nummer || "—",
+      beladung: vortagBeladen(z) ? "am Vortag" : "am selben Tag",
+      ankunft: s.ankunft ? hhmm(s.ankunft) + " Uhr" : "unklar",
+      reserve: s.res == null ? "nicht bestimmbar"
+               : (s.res < 0 ? Math.abs(s.res) + " Min. zu spät" : s.res + " Min."),
+      konflikte: k.length,
+      leerfahrt: leerfahrtMinuten(z.planung.fahrerId, z.tag)
+    };
+  });
+  return { auftrag:a, alt, neu };
+}
+
+/* Die Änderung wirklich anwenden. `inSimulation` unterscheidet nur, ob
+   protokolliert und gespeichert wird — gerechnet wird identisch. */
+function aenderungAnwenden(ae, inSimulation){
+  const a = D.auftraege.find(x => x.id === ae.auftragId);
+  if (!a) return false;
+  if (ae.art === "gespann") {
+    const altF = (fahrerVon(a.planung.fahrerId)||{}).name || "keinem Fahrer";
+    const altZ = (zugVon(a.planung.zugmaschineId)||{}).kennzeichen || "keiner Zugmaschine";
+    a.planung.fahrerId = ae.fahrerId;
+    a.planung.zugmaschineId = ae.zugId;
+    a.planung.chassisId = ae.chsId;
+    /* Ein Fahrerwechsel macht die Bestätigung des alten Fahrers
+       gegenstandslos — genau wie beim Wechsel von Hand. */
+    a.bestaetigt = null;
+    if (!inSimulation) {
+      protokoll(a, "dispo", "Vorschlag des Assistenten übernommen: von " + altF + " / " + altZ +
+        " auf " + ((fahrerVon(ae.fahrerId)||{}).name || "—") + " / " +
+        ((zugVon(ae.zugId)||{}).kennzeichen || "—") + ". Fahrerbestätigung zurückgesetzt.");
+    }
+  } else if (ae.art === "vortag") {
+    a.beladung = { art:"vortag", datum:tagPlusVon(a.tag, -1), zeit:"17:00",
+                   stelle:a.abhol.firma || "Roland Umschlag, Bremen",
+                   hinweis:"Vom Assistenten vorgeschlagen, von der Dispo übernommen." };
+    if (!inSimulation)
+      protokoll(a, "dispo", "Vorschlag des Assistenten übernommen: Beladung am Vortag.");
+  } else if (ae.art === "termin") {
+    a.liefer.zeit = ae.zeit;
+    if (!inSimulation)
+      protokoll(a, "dispo", "Liefertermin auf " + ae.zeit + " Uhr geändert.");
+  } else if (ae.art === "entladenMin") {
+    a.planung.entladenMin = ae.minuten;
+    if (!inSimulation)
+      protokoll(a, "dispo", "Geplante Entladezeit auf " + ae.minuten + " Minuten geändert.");
+  } else if (ae.art === "storno") {
+    a.storniert = true;
+    if (!inSimulation) protokoll(a, "dispo", "Auftrag storniert.");
+  } else if (ae.art === "ausfall") {
+    /* Fahrzeugausfall: alle Aufträge dieses Gespanns verlieren die
+       Zuordnung — sie tauchen dann als „nicht disponiert“ auf. */
+    D.auftraege.forEach(o => {
+      if (o.planung.zugmaschineId === ae.zugId && o.tag === ae.tag && !o.ablauf.abgabe) {
+        o.planung.zugmaschineId = null; o.planung.fahrerId = null; o.bestaetigt = null;
+      }
+    });
+  } else return false;
+  return true;
+}
+
+/* ---- Tag optimieren ----
+   Erzeugt einen Vorschlag für die Reihenfolge und Zuordnung eines Tages.
+   Gespeichert wird nichts: das Ergebnis ist eine Liste, die die Dispo
+   annehmen oder verwerfen kann. */
+function tagOptimieren(tag){
+  const offen = D.auftraege.filter(a => a.tag === tag && !a.storniert && !a.ablauf.abgabe);
+  if (!offen.length) return { moeglich:false, grund:"Für diesen Tag gibt es nichts zu planen." };
+
+  /* Nach maßgeblichem Termin sortieren — der frühere Termin hat Vorrang. */
+  const reihenfolge = offen.slice().sort(planVergleich);
+  const gespanne = D.zugmaschinen.filter(z => z.aktiv !== false).map(z => {
+    const eigner = D.auftraege.find(o => o.planung.zugmaschineId === z.id && o.planung.fahrerId);
+    return { zug:z, fahrerId: eigner ? eigner.planung.fahrerId : null,
+             chsId: eigner ? eigner.planung.chassisId : (D.chassis[0]||{}).id, belegt:[] };
+  }).filter(g => g.fahrerId);
+
+  if (!gespanne.length) return { moeglich:false, grund:"Es ist kein Gespann mit Fahrer hinterlegt." };
+
+  const plan = [], ohne = [];
+  reihenfolge.forEach(a => {
+    const b = belegungGeplant(a);
+    if (!b || b.unvollstaendig) { ohne.push({ a, grund:"Termine unvollständig" }); return; }
+    /* Erstes Gespann, das zeitlich passt und die kürzeste Anfahrt hat. */
+    const frei = gespanne.filter(g => g.belegt.every(x =>
+      new Date(b.bis) <= new Date(x.von) || new Date(b.von) >= new Date(x.bis)));
+    if (!frei.length) { ohne.push({ a, grund:"Kein Gespann zu dieser Zeit frei" }); return; }
+    frei.sort((x,y) => (leerAnfahrt(a, x.fahrerId) || 999) - (leerAnfahrt(a, y.fahrerId) || 999));
+    const g = frei[0];
+    g.belegt.push({ von:b.von, bis:b.bis });
+    plan.push({ auftragId:a.id, nummer:a.nummer, kunde:a.kunde,
+                zeit:(massgeblich(a).zeit || "—"), zugId:g.zug.id, fahrerId:g.fahrerId,
+                chsId:g.chsId,
+                geaendert: a.planung.zugmaschineId !== g.zug.id ||
+                           a.planung.fahrerId !== g.fahrerId });
+  });
+
+  /* Was bringt der Vorschlag? Beides in der Simulation messen. */
+  const vorher = tagesLage(tag);
+  const nachher = simulieren(() => {
+    plan.forEach(p => {
+      const a = D.auftraege.find(x => x.id === p.auftragId);
+      if (!a) return;
+      a.planung.zugmaschineId = p.zugId;
+      a.planung.fahrerId = p.fahrerId;
+      a.planung.chassisId = p.chsId;
+    });
+  }, () => tagesLage(tag));
+
+  return { moeglich:true, tag, plan, ohne, vorher, nachher,
+           gespanne: gespanne.map(g => ({
+             zug:g.zug, fahrer:fahrerVon(g.fahrerId),
+             auftraege: plan.filter(p => p.zugId === g.zug.id).map(p => p.nummer) })) };
+}
+
+function optimierungUebernehmen(erg){
+  if (!erg || !erg.moeglich) return 0;
+  let n = 0;
+  erg.plan.forEach(p => {
+    const a = auftragVon(p.auftragId);
+    if (!a || !p.geaendert) return;
+    const altZ = (zugVon(a.planung.zugmaschineId)||{}).kennzeichen || "—";
+    a.planung.zugmaschineId = p.zugId;
+    a.planung.fahrerId = p.fahrerId;
+    a.planung.chassisId = p.chsId;
+    a.bestaetigt = null;
+    protokoll(a, "dispo", "Tagesoptimierung übernommen: " + altZ + " → " +
+      ((zugVon(p.zugId)||{}).kennzeichen || "—") + ". Fahrerbestätigung zurückgesetzt.");
+    n++;
+  });
+  if (n) { ketteRechnen(); risikoRechnen(); alarmePruefen(); speichern(); }
+  return n;
+}
+
+/* ---- Was wäre, wenn … ----
+   Fälle, die eine Dispo wirklich durchspielt. Gerechnet wird in der
+   Simulation; übernommen erst auf ausdrücklichen Wunsch. */
+const WENN_FAELLE = [
+  { k:"entladen30", wort:"Entladung dauert 30 Minuten länger" },
+  { k:"entladen60", wort:"Entladung dauert 60 Minuten länger" },
+  { k:"storno",     wort:"Auftrag wird storniert" },
+  { k:"termin14",   wort:"Liefertermin wird auf 14:00 Uhr verschoben" },
+  { k:"fahrer",     wort:"Ein anderes Gespann übernimmt" },
+  { k:"ausfall",    wort:"Die Zugmaschine fällt aus" }
+];
+
+function wasWaereWenn(auftragId, fall){
+  const a = auftragVon(auftragId);
+  if (!a) return null;
+  const vorher = tagesLage(a.tag);
+  const vorherKette = ketteBild(a);
+
+  let aenderung = null;
+  if (fall === "entladen30") aenderung = { art:"entladenMin", auftragId:a.id, minuten:(a.planung.entladenMin||0)+30 };
+  if (fall === "entladen60") aenderung = { art:"entladenMin", auftragId:a.id, minuten:(a.planung.entladenMin||0)+60 };
+  if (fall === "storno")     aenderung = { art:"storno", auftragId:a.id };
+  if (fall === "termin14")   aenderung = { art:"termin", auftragId:a.id, zeit:"14:00" };
+  if (fall === "ausfall")    aenderung = { art:"ausfall", auftragId:a.id, zugId:a.planung.zugmaschineId, tag:a.tag };
+  if (fall === "fahrer") {
+    const p = passendesGespann(a, true);
+    if (!p) return { moeglich:false, grund:"Es ist kein anderes Gespann ohne Konflikt frei." };
+    aenderung = p.aenderung;
+  }
+  if (!aenderung) return null;
+
+  const vorherFolgen = folgenBetroffen(a);
+  const nachher = simulieren(() => aenderungAnwenden(aenderung, true), () => {
+    const z = D.auftraege.find(x => x.id === a.id);
+    return { lage:tagesLage(a.tag), kette:z ? ketteBild(z) : null,
+             folgen:folgenBetroffen(z) };
+  });
+  /* Folgeaufträge als Vorher/Nachher-Paare — eine Zahl allein sagt nicht,
+     ob die Simulation etwas bewegt hat. */
+  const folgen = nachher.folgen.map(nf => {
+    const vf = vorherFolgen.find(x => x.nummer === nf.nummer) || null;
+    return { nummer:nf.nummer, vorher:vf, nachher:nf,
+             geaendert: !vf || vf.satz !== nf.satz || vf.res !== nf.res };
+  });
+
+  return { moeglich:true, auftrag:a, fall,
+           wort:(WENN_FAELLE.find(x => x.k === fall)||{}).wort || fall,
+           vorher, vorherKette, nachher, folgen, aenderung };
+}
+
+/* Kurzbild der Tour eines Auftrags: Ankunft, Reserve, Risiko. */
+function ketteBild(a){
+  const s = zeitstatus(a);
+  return { nummer:a.nummer, ankunft:s.ankunft ? hhmm(s.ankunft) : null, res:s.res,
+           satz:s.satz, risiko:(risikoVon(a)||{}).stufe || "keins" };
+}
+/* Welche Folgeaufträge desselben Fahrers hängen daran? */
+function folgenBetroffen(a){
+  if (!a) return [];
+  const folge = tourFolge(a.planung.fahrerId, a.tag);
+  const i = folge.findIndex(o => o.id === a.id);
+  if (i < 0) return [];
+  return folge.slice(i+1).map(ketteBild);
+}
+
+/* ---- Assistent als Frage/Antwort ----
+   Kein Sprachmodell. Die Frage wird auf bekannte Absichten abgebildet,
+   und geantwortet wird ausschließlich mit dem, was in den Daten steht.
+   Findet sich keine Absicht, sagt der Assistent das — statt zu raten. */
+const KI_FRAGEN = [
+  { k:"problem",   muster:["problematisch","probleme","auffällig","kritisch","gefährdet"] },
+  { k:"puffer",    muster:["puffer","reserve","knapp","luft"] },
+  { k:"offen",     muster:["nicht disponiert","unvollständig","offen","ohne fahrer","nicht zugewiesen"] },
+  { k:"konflikt",  muster:["konflikt","doppelt","kollision","überschneid"] },
+  { k:"wenn",      muster:["was passiert","was wäre","länger braucht","verzögert sich"] },
+  { k:"fahrzeug",  muster:["welcher lkw","welches fahrzeug","welche zugmaschine","übernehmen","fahren"] },
+  { k:"risiko",    muster:["risiko","verspätung","zu spät","termin halten"] },
+  { k:"flotte",    muster:["wo ist","position","flotte","standort","unterwegs"] }
+];
+function frageDeuten(text){
+  const t = String(text||"").toLowerCase();
+  for (const f of KI_FRAGEN) if (f.muster.some(m => t.indexOf(m) >= 0)) return f.k;
+  return null;
+}
+/* Nummern aus der Frage lesen — „Auftrag 4916“ oder nur „4916“. */
+function nummernAus(text){
+  const raus = (String(text||"").match(/\b\d{4}\b/g) || []);
+  return raus.filter(n => D.auftraege.some(a => a.nummer === n));
+}
+function tagAus(text){
+  const t = String(text||"").toLowerCase();
+  if (t.indexOf("morgen") >= 0) return TAG_PLUS(1);
+  return U.tag || HEUTE();
+}
+
+function assistentAntwort(text){
+  const art = frageDeuten(text);
+  const tag = tagAus(text);
+  const nummern = nummernAus(text);
+  const tagWort = tag === HEUTE() ? "heute" : tagKurz(tag);
+  const liste = D.auftraege.filter(a => a.tag === tag && !a.storniert);
+  const zeilen = [];
+
+  const antwort = (satz, punkte, hinweis) =>
+    ({ satz, punkte:punkte||[], hinweis:hinweis||null, tag });
+
+  if (!art && !nummern.length)
+    return antwort("Diese Frage verstehe ich nicht.",
+      ["Der Assistent erkennt feste Stichworte, er liest keinen freien Text.",
+       "Beispiele stehen unter dem Eingabefeld – oder nennen Sie eine Auftragsnummer."]);
+
+  if (art === "offen") {
+    liste.forEach(a => {
+      const fehlt = [];
+      if (!a.planung.fahrerId) fehlt.push("Fahrer");
+      if (!a.planung.zugmaschineId) fehlt.push("Zugmaschine");
+      if (!a.planung.chassisId) fehlt.push("Chassis");
+      if (!a.freigegeben) fehlt.push("Freigabe");
+      if (fehlt.length) zeilen.push("Auftrag " + a.nummer + " (" + (a.kunde||"—") + "): es fehlt " +
+        fehlt.join(", ") + ".");
+    });
+    return antwort(zeilen.length
+      ? zeilen.length + " Auftrag/Aufträge " + tagWort + " sind noch nicht vollständig disponiert."
+      : "Für " + tagWort + " ist alles vollständig disponiert.", zeilen);
+  }
+
+  if (art === "puffer") {
+    let knappe = 0, ueber = 0;
+    D.fahrer.forEach(f => {
+      const folge = tourFolge(f.id, tag);
+      for (let i = 1; i < folge.length; i++) {
+        const b1 = belegung(folge[i-1]), b2 = belegungGeplant(folge[i]);
+        if (!b1 || b1.unvollstaendig || !b1.bis || !b2 || b2.unvollstaendig) continue;
+        const luft = Math.round(minZw(b1.bis, b2.von));
+        /* Negativ heißt nicht „wenig Puffer“, sondern Überschneidung —
+           das ist ein Konflikt und wird auch so benannt. */
+        if (luft < 0) {
+          ueber++;
+          zeilen.push(f.name + ": " + folge[i-1].nummer + " und " + folge[i].nummer +
+            " überschneiden sich um " + Math.abs(luft) + " Minuten (Konflikt, kein Puffer).");
+        } else if (luft < 15) {
+          knappe++;
+          zeilen.push(f.name + ": zwischen " + folge[i-1].nummer + " und " +
+            folge[i].nummer + " nur " + luft + " Minuten.");
+        }
+      }
+    });
+    const satz = !zeilen.length
+      ? "Kein Übergang " + tagWort + " liegt unter 15 Minuten Puffer."
+      : knappe && ueber
+        ? knappe + " Übergang/Übergänge " + tagWort + " haben unter 15 Minuten Puffer, " +
+          ueber + " überschneiden sich sogar:"
+        : knappe
+          ? "Diese Übergänge haben " + tagWort + " weniger als 15 Minuten Puffer:"
+          : "Kein Übergang " + tagWort + " hat wenig Puffer – dafür " + ueber +
+            " echte Überschneidung(en):";
+    return antwort(satz, zeilen,
+      "Eine Überschneidung ist kein knapper Puffer, sondern ein Konflikt – " +
+      "sie steht hier getrennt.");
+  }
+
+  if (art === "konflikt") {
+    liste.forEach(a => {
+      const kf = konflikte(a);
+      if (kf.length) zeilen.push("Auftrag " + a.nummer + ": " + konfliktSaetze(kf).join(" "));
+    });
+    return antwort(zeilen.length
+      ? zeilen.length + " Auftrag/Aufträge " + tagWort + " haben einen Planungskonflikt."
+      : "Für " + tagWort + " meldet die Konfliktprüfung nichts.", zeilen);
+  }
+
+  if (art === "risiko" || art === "problem") {
+    liste.forEach(a => {
+      const r = risikoVon(a);
+      const s = zeitstatus(a);
+      if (r && (r.stufe === "hoch" || r.stufe === "mittel"))
+        zeilen.push("Auftrag " + a.nummer + " (" + (a.kunde||"—") + "): Risiko " + r.stufe +
+          (r.prozent ? " (" + r.prozent + " % – simuliert)" : "") + ". " + (r.gruende[0] || ""));
+      else if (s.res != null && s.res < 0)
+        zeilen.push("Auftrag " + a.nummer + ": " + Math.abs(s.res) + " Minuten zu spät.");
+      else if (konflikte(a).length)
+        zeilen.push("Auftrag " + a.nummer + ": Planungskonflikt.");
+    });
+    return antwort(zeilen.length
+      ? "Diese Aufträge brauchen " + tagWort + " Aufmerksamkeit:"
+      : "Für " + tagWort + " sieht es unauffällig aus.", zeilen,
+      "Risikoprozente sind eine Demo-Bewertung der genannten Gründe, keine Statistik.");
+  }
+
+  if (art === "flotte") {
+    D.zugmaschinen.forEach(z => {
+      const t = z.telematik || {};
+      const frisch = zeitstempelPruefen(t.letzteMeldung, "Ortungszeitpunkt").ok;
+      zeilen.push(z.kennzeichen + ": " + (t.verbunden ? (t.ort || "Position unbekannt") : "nicht verbunden") +
+        (t.verbunden ? ", " + (t.geschwindigkeit ? t.geschwindigkeit + " km/h" : "steht") : "") +
+        (t.verbunden && !frisch ? " – letzte Meldung " + (t.letzteMeldung ? hhmm(t.letzteMeldung) + " Uhr" : "unbekannt") +
+          ", veraltet" : ""));
+    });
+    return antwort("Stand der Flotte (simulierte Ortung):", zeilen);
+  }
+
+  if (art === "fahrzeug" || nummern.length) {
+    const nr = nummern[0];
+    const a = nr ? D.auftraege.find(x => x.nummer === nr) : null;
+    if (!a) return antwort("Zu welchem Auftrag? Bitte die Auftragsnummer nennen.",
+      ["Beispiel: „Welcher Lkw sollte Auftrag 4916 fahren?“"]);
+    if (art === "wenn") {
+      const erg = wasWaereWenn(a.id, "entladen60");
+      if (!erg || !erg.moeglich) return antwort("Das lässt sich für diesen Auftrag nicht durchrechnen.");
+      const f = erg.nachher.folgen;
+      return antwort("Wenn die Entladung bei Auftrag " + a.nummer + " 60 Minuten länger dauert:",
+        ["Dieser Auftrag: " + (erg.nachher.kette ? erg.nachher.kette.satz : "—") +
+         " (vorher: " + erg.vorherKette.satz + ")."].concat(
+         f.length ? f.map(x => "Folgeauftrag " + x.nummer + ": " + x.satz + ".")
+                  : ["Es hängt kein Folgeauftrag desselben Fahrers daran."]),
+        "Nur durchgerechnet – am Auftrag ändert sich dadurch nichts.");
+    }
+    const p = passendesGespann(a, true);
+    if (!p) return antwort("Für Auftrag " + a.nummer + " ist derzeit kein anderes Gespann ohne Konflikt frei.",
+      ["Aktuell: " + ((fahrerVon(a.planung.fahrerId)||{}).name || "kein Fahrer") + " mit " +
+       ((zugVon(a.planung.zugmaschineId)||{}).kennzeichen || "keiner Zugmaschine") + "."]);
+    return antwort("Vorschlag für Auftrag " + a.nummer + ":", p.warum,
+      "Der Assistent ändert nichts – übernehmen lässt sich das unter „Empfehlungen“.");
+  }
+
+  if (art === "wenn")
+    return antwort("Für welchen Auftrag?",
+      ["Bitte die Auftragsnummer mitgeben, zum Beispiel: „Was passiert, wenn 4806 60 Minuten länger braucht?“"]);
+
+  return antwort("Dazu finde ich in den Daten dieser Vorschau nichts.");
+}
+
+/* ---------- Smart Dispo: Ansicht ---------- */
+function ansichtSmart(){
+  const tag = U.tag || HEUTE();
+  const vs = vorschlaegeSammeln(tag);
+  const lage = tagesLage(tag);
+
+  let h = '<div class="leiste">' +
+    '<h2 style="font-size:22px">Dispo-Assistent</h2>' +
+    '<button class="btn" data-tun="tag" data-wert="heute">Heute</button>' +
+    '<button class="btn" data-tun="tag" data-wert="morgen">Morgen</button>' +
+    '<span class="tag">'+esc(tagLang(tag))+'</span>' +
+    '<button class="btn haupt" data-tun="tagOptimieren" style="margin-left:auto">Tag optimieren</button>' +
+    '</div>';
+
+  h += '<div class="hinweis">' + simMarke("Assistent – Demo") +
+       ' Gerechnet wird mit denselben Funktionen wie in der Dispo: Tourkette, Belegung, ' +
+       'Konfliktprüfung, Routing und Risiko. Der Assistent ändert nichts von allein — ' +
+       'jede Übernahme zeigt vorher ALT und NEU. Kein Sprachmodell, keine externe KI.</div>';
+
+  h += '<div class="zahlen">' +
+    zahlFeld(lage.anzahl, "Aufträge an diesem Tag", false) +
+    zahlFeld(vs.filter(x => x.schwere >= 3).length, "Brauchen Entscheidung", vs.some(x => x.schwere >= 3)) +
+    zahlFeld(lage.konflikte, "Planungskonflikte", lage.konflikte > 0) +
+    zahlFeld(lage.zuSpaet, "Termine rechnerisch verloren", lage.zuSpaet > 0) +
+    '</div>';
+
+  /* Empfehlungen */
+  h += '<div class="karte"><h2>Empfehlungen</h2>';
+  if (!vs.length) {
+    h += '<p class="leer" style="background:none">Für diesen Tag hat der Assistent nichts anzumerken.</p>';
+  } else {
+    vs.forEach(x => {
+      const farbe = x.schwere >= 3 ? "e-hoch" : x.schwere === 2 ? "e-mittel" : "e-klein";
+      h += '<div class="empfehlung '+farbe+'">' +
+        '<div class="e-kopf"><b>'+esc(x.titel)+'</b>' +
+        '<span class="marke '+(x.schwere>=3?"m-rot":x.schwere===2?"m-gelb":"m-marine")+'">' +
+          (x.schwere>=3?"Entscheidung nötig":x.schwere===2?"Prüfen":"Hinweis")+'</span></div>' +
+        '<details class="warum"><summary>Warum?</summary><ul>' +
+          x.warum.map(w => '<li>'+esc(w)+'</li>').join("") + '</ul></details>' +
+        '<div class="btn-reihe">' +
+        '<button class="btn" data-tun="vsAuftrag" data-wert="'+esc(x.auftragId)+'">Auftrag ansehen</button>' +
+        (x.aenderung
+          ? '<button class="btn haupt" data-tun="vsAnsehen" data-wert="'+esc(x.id)+'">Vorschlag ansehen</button>'
+          : '') +
+        '<button class="btn" data-tun="vsWenn" data-wert="'+esc(x.auftragId)+'">Was wäre, wenn …</button>' +
+        '</div></div>';
+    });
+  }
+  h += '</div>';
+
+  /* Was-wäre-wenn */
+  h += '<div class="karte"><h2>Was wäre, wenn …</h2>' +
+    '<p style="margin-top:0;color:#47525D">Durchgerechnet wird auf einer Kopie des Standes. ' +
+    'Am Auftrag ändert sich dabei nichts — erst „Änderung wirklich übernehmen“ schreibt etwas.</p>' +
+    '<div class="felder">' +
+    '<div class="feld"><label for="wennAuftrag">Auftrag</label><select id="wennAuftrag">' +
+      D.auftraege.filter(a => a.tag === tag && !a.storniert)
+        .map(a => '<option value="'+esc(a.id)+'"'+(U.wennAuftrag===a.id?" selected":"")+'>' +
+          esc(a.nummer + " · " + (a.kunde||"—")) + '</option>').join("") +
+      '</select></div>' +
+    '<div class="feld"><label for="wennFall">Fall</label><select id="wennFall">' +
+      WENN_FAELLE.map(f => '<option value="'+f.k+'"'+(U.wennFall===f.k?" selected":"")+'>' +
+        esc(f.wort)+'</option>').join("") +
+      '</select></div></div>' +
+    '<div class="btn-reihe" style="margin-top:10px">' +
+    '<button class="btn haupt" data-tun="wennRechnen">Durchrechnen</button></div>';
+  if (U.wennErgebnis) h += wennErgebnisHtml(U.wennErgebnis);
+  h += '</div>';
+
+  /* Assistent */
+  h += '<div class="karte"><h2>Assistent fragen ' + simMarke("KI-Assistent – Demo") + '</h2>' +
+    '<div class="feld"><label for="kiFrage">Frage</label>' +
+    '<input type="text" id="kiFrage" value="'+esc(U.kiFrage||"")+'" ' +
+      'placeholder="Welche Aufträge sind heute problematisch?"></div>' +
+    '<div class="btn-reihe" style="margin-top:8px">' +
+    '<button class="btn haupt" data-tun="kiFragen">Fragen</button></div>' +
+    '<div class="ki-beispiele">' +
+      ["Welche Aufträge sind heute problematisch?",
+       "Welche Touren haben weniger als 15 Minuten Puffer?",
+       "Welche Aufträge sind noch nicht vollständig disponiert?",
+       "Gibt es Konflikte morgen?",
+       "Welcher Lkw sollte Auftrag 4916 fahren?",
+       "Wo ist die Flotte gerade?"].map(f =>
+        '<button class="btn" data-tun="kiBeispiel" data-wert="'+esc(f)+'">'+esc(f)+'</button>').join("") +
+    '</div>';
+  if (U.kiAntwort) {
+    const A = U.kiAntwort;
+    h += '<div class="ki-antwort"><p class="ki-satz">'+esc(A.satz)+'</p>' +
+      (A.punkte.length ? '<ul>'+A.punkte.map(p => '<li>'+esc(p)+'</li>').join("")+'</ul>' : '') +
+      (A.hinweis ? '<p class="sim-satz">'+esc(A.hinweis)+'</p>' : '') +
+      '<p class="sim-satz">' + simMarke("Demo") + ' Antwort aus den Daten dieser Vorschau. ' +
+      'Kein Sprachmodell, keine externe Anfrage. Anbieter: ' + esc(anbieterSatz("ki")) + '.</p></div>';
+  }
+  h += '</div>';
+  return h;
+}
+
+function wennErgebnisHtml(e){
+  if (!e) return "";
+  if (!e.moeglich)
+    return '<div class="hinweis" style="margin-top:12px">'+esc(e.grund||"Nicht durchrechenbar.")+'</div>';
+  const v = e.vorher, n = e.nachher.lage;
+  const zeile2 = (was, alt, neu) =>
+    '<tr><td>'+esc(was)+'</td><td class="num">'+esc(String(alt))+'</td><td class="num">'+esc(String(neu))+'</td></tr>';
+  let h = '<div class="wennkasten"><h3>' + esc(e.wort) + ' — Auftrag ' + esc(e.auftrag.nummer) + '</h3>' +
+    '<div class="tabellen-karte" style="padding:0"><table class="tabelle vergleich"><thead><tr>' +
+    '<th>Kennzahl</th><th>Jetzt</th><th>Danach</th></tr></thead><tbody>' +
+    zeile2("Aufträge am Tag", v.anzahl, n.anzahl) +
+    zeile2("Planungskonflikte", v.konflikte, n.konflikte) +
+    zeile2("Termine rechnerisch verloren", v.zuSpaet, n.zuSpaet) +
+    zeile2("Knappe Termine (≤ " + GRENZE_ORANGE + " Min.)", v.knapp, n.knapp) +
+    zeile2("Ankunft nicht bestimmbar", v.unklar, n.unklar) +
+    '</tbody></table></div>';
+  h += '<p style="margin-top:10px"><b>Dieser Auftrag:</b> ' +
+       esc(e.vorherKette.satz) + ' → ' + esc(e.nachher.kette ? e.nachher.kette.satz : "entfällt") + '</p>';
+  const F = e.folgen || [];
+  if (F.length) {
+    const bewegt = F.filter(f => f.geaendert);
+    h += '<p style="margin-top:10px"><b>Folgeaufträge desselben Fahrers</b> ' +
+         (bewegt.length ? '– ' + bewegt.length + ' davon verändern sich:' : '– keiner verändert sich:') +
+         '</p><ul>' +
+      F.map(f => '<li>Auftrag ' + esc(f.nummer) + ': ' +
+        esc(f.vorher ? f.vorher.satz : "—") + ' → ' + esc(f.nachher.satz) +
+        (f.geaendert ? '' : ' (unverändert)') +
+        (f.nachher.risiko !== "keins" ? ' · Risiko ' + esc(f.nachher.risiko) : '') +
+        '</li>').join("") + '</ul>';
+  } else {
+    h += '<p style="margin-top:6px">Es hängt kein Folgeauftrag desselben Fahrers daran.</p>';
+  }
+  h += '<div class="btn-reihe" style="margin-top:12px">' +
+    '<button class="btn gefahr" data-tun="wennUebernehmen">Änderung wirklich übernehmen</button>' +
+    '<button class="btn" data-tun="wennVerwerfen">Simulation schließen</button></div>' +
+    '<p class="sim-satz">Bis hierhin wurde nichts geändert.</p></div>';
+  return h;
+}
+
+/* ===========================================================
    11 · Dialoge
    =========================================================== */
 const dlg = document.getElementById("dlg");
@@ -4794,6 +5639,122 @@ document.addEventListener("click", e => {
     }
     if (tun === "bild") { bildZeigen(wert || "Foto", el.getAttribute("src")); return; }
     return;                       // alles andere ist hier nicht bedienbar
+  }
+
+  /* ---- Dispo-Assistent ---- */
+  if (tun === "vsAuftrag") {
+    U.vorher = "smart"; U.auftragId = wert; U.bereich = "detail"; U.notiz = null;
+    zeichne(); window.scrollTo(0,0); return;
+  }
+  if (tun === "vsAnsehen") {
+    const alle = vorschlaegeSammeln(U.tag || HEUTE());
+    const x = alle.find(y => y.id === wert);
+    if (!x || !x.aenderung) return;
+    const vor = aenderungVorschau(x.aenderung);
+    if (!vor) return;
+    const zei = (was, alt, neu) =>
+      '<tr><td>'+esc(was)+'</td><td>'+esc(String(alt))+'</td><td>'+esc(String(neu))+'</td></tr>';
+    frage("Vorschlag ansehen",
+      "<p><b>"+esc(x.titel)+"</b></p>" +
+      "<p><b>Warum:</b></p><ul>"+x.warum.map(w => "<li>"+esc(w)+"</li>").join("")+"</ul>" +
+      '<div class="tabellen-karte" style="padding:0"><table class="tabelle vergleich"><thead><tr>' +
+      '<th>Angabe</th><th>ALT</th><th>NEU</th></tr></thead><tbody>' +
+      zei("Fahrer", vor.alt.fahrer, vor.neu.fahrer) +
+      zei("Zugmaschine", vor.alt.zug, vor.neu.zug) +
+      zei("Chassis", vor.alt.chassis, vor.neu.chassis) +
+      zei("Beladung", vor.alt.beladung, vor.neu.beladung) +
+      zei("Erwartete Ankunft", vor.alt.ankunft, vor.neu.ankunft) +
+      zei("Reserve", vor.alt.reserve, vor.neu.reserve) +
+      zei("Konflikte", vor.alt.konflikte, vor.neu.konflikte) +
+      zei("Leerfahrt am Tag", vor.alt.leerfahrt + " Min.", vor.neu.leerfahrt + " Min.") +
+      "</tbody></table></div>" +
+      (x.aenderung.art === "gespann"
+        ? "<p style='margin-top:10px'>Ein Gespannwechsel setzt die Bestätigung des bisherigen " +
+          "Fahrers zurück — genau wie beim Wechsel von Hand.</p>" : ""),
+      [{ wort:"Ablehnen" },
+       { wort:"Übernehmen", haupt:true, tun:() => {
+           aenderungAnwenden(x.aenderung, false);
+           ketteRechnen(); risikoRechnen(); alarmePruefen(); speichern();
+           U.notiz = "Vorschlag übernommen. Die Änderung steht im Verlauf des Auftrags.";
+           zeichne();
+         } }]);
+    return;
+  }
+  if (tun === "vsWenn") {
+    U.wennAuftrag = wert; U.wennFall = U.wennFall || "entladen30";
+    U.wennErgebnis = wasWaereWenn(wert, U.wennFall);
+    zeichne();
+    const k = document.querySelector(".wennkasten");
+    if (k) k.scrollIntoView({ block:"center" });
+    return;
+  }
+  if (tun === "wennRechnen") {
+    const aId = (document.getElementById("wennAuftrag")||{}).value;
+    const fall = (document.getElementById("wennFall")||{}).value;
+    U.wennAuftrag = aId; U.wennFall = fall;
+    U.wennErgebnis = wasWaereWenn(aId, fall);
+    zeichne();
+    const k = document.querySelector(".wennkasten");
+    if (k) k.scrollIntoView({ block:"center" });
+    return;
+  }
+  if (tun === "wennVerwerfen") { U.wennErgebnis = null; zeichne(); return; }
+  if (tun === "wennUebernehmen") {
+    const e = U.wennErgebnis;
+    if (!e || !e.moeglich) return;
+    frage("Änderung wirklich übernehmen?",
+      "<p>" + esc(e.wort) + " — Auftrag " + esc(e.auftrag.nummer) + ".</p>" +
+      "<p>Bis jetzt war das nur eine Simulation. Mit „Übernehmen“ wird die Änderung " +
+      "am Auftrag gespeichert und im Verlauf festgehalten.</p>",
+      [{ wort:"Abbrechen" },
+       { wort:"Übernehmen", gefahr:true, tun:() => {
+           aenderungAnwenden(e.aenderung, false);
+           ketteRechnen(); risikoRechnen(); alarmePruefen(); speichern();
+           U.wennErgebnis = null;
+           U.notiz = "Änderung übernommen.";
+           zeichne();
+         } }]);
+    return;
+  }
+  if (tun === "tagOptimieren") {
+    const erg = tagOptimieren(U.tag || HEUTE());
+    if (!erg.moeglich) { U.notiz = erg.grund; zeichne(); return; }
+    const v = erg.vorher, n = erg.nachher;
+    const zei = (was, alt, neu) =>
+      '<tr><td>'+esc(was)+'</td><td class="num">'+esc(String(alt))+'</td><td class="num">'+esc(String(neu))+'</td></tr>';
+    frage("Empfohlene Planung für " + tagKurz(erg.tag),
+      '<div class="tabellen-karte" style="padding:0"><table class="tabelle vergleich"><thead><tr>' +
+      '<th>Kennzahl</th><th>Jetzt</th><th>Vorschlag</th></tr></thead><tbody>' +
+      zei("Planungskonflikte", v.konflikte, n.konflikte) +
+      zei("Termine rechnerisch verloren", v.zuSpaet, n.zuSpaet) +
+      zei("Knappe Termine", v.knapp, n.knapp) +
+      '</tbody></table></div>' +
+      '<p style="margin-top:10px"><b>Vorgeschlagene Reihenfolge:</b></p><ul>' +
+      erg.gespanne.map(g => '<li><b>' + esc(g.zug.kennzeichen) + '</b>' +
+        (g.fahrer ? ' (' + esc(g.fahrer.name) + ')' : '') + ': ' +
+        (g.auftraege.length ? esc(g.auftraege.join(" → ")) : "keine Tour")+'</li>').join("") + '</ul>' +
+      (erg.ohne.length
+        ? '<p><b>Nicht eingeplant:</b></p><ul>' + erg.ohne.map(o =>
+            '<li>Auftrag ' + esc(o.a.nummer) + ' — ' + esc(o.grund) + '</li>').join("") + '</ul>'
+        : '') +
+      '<p>Geändert würden ' + erg.plan.filter(p => p.geaendert).length +
+      ' Zuordnungen. Gespeichert ist bis hierhin nichts.</p>',
+      [{ wort:"Verwerfen" },
+       { wort:"Planung übernehmen", haupt:true, tun:() => {
+           const n2 = optimierungUebernehmen(erg);
+           U.notiz = n2
+             ? n2 + " Zuordnung(en) übernommen. Betroffene Fahrerbestätigungen wurden zurückgesetzt."
+             : "Der Vorschlag entspricht der bestehenden Planung – nichts geändert.";
+           zeichne();
+         } }]);
+    return;
+  }
+  if (tun === "kiBeispiel") {
+    U.kiFrage = wert; U.kiAntwort = assistentAntwort(wert); zeichne(); return;
+  }
+  if (tun === "kiFragen") {
+    const f = (document.getElementById("kiFrage")||{}).value || "";
+    U.kiFrage = f; U.kiAntwort = assistentAntwort(f); zeichne(); return;
   }
 
   /* ---- Automatischer Status: Vorschläge und Korrektur ---- */
