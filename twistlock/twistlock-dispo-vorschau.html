@@ -214,7 +214,7 @@ dialog::backdrop{background:rgba(21,32,43,.55)}
 .liste-zeile{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:11px 0;
   border-bottom:2px solid var(--linie2)}
 .liste-zeile .name{font-weight:700;font-size:17px;flex:1 1 180px}
-.liste-zeile .neben{font-size:15px;color:var(--soft)}
+.liste-zeile .neben{display:block;font-size:15px;font-weight:400;color:var(--soft);margin-top:2px}
 
 /* ---------- Wochenplan ----------
    Gleiche Bausteine wie sonst: weiße Karten, dieselben Statusmarken,
@@ -349,11 +349,13 @@ body.extern-an .inhalt{ padding:0; background:transparent; }
   font-size:15px; letter-spacing:.05em; text-transform:uppercase;
   color:var(--soft); margin:0 0 8px;
 }
-.x-tag.leer h2{ opacity:.72; }
-.x-leer{ margin:0; color:var(--soft); font-size:15px; }
-.x-tag.leer .x-leer{
-  background:var(--grau-flaeche); border-radius:var(--radius); padding:11px 14px;
+.x-tag.leer{ margin-bottom:10px; }
+.x-tag.leer h2{
+  display:flex; flex-wrap:wrap; gap:6px 10px; align-items:baseline;
+  margin:0; padding:8px 12px; background:var(--grau-flaeche); border-radius:8px;
 }
+.x-leer{ margin:0; color:var(--soft); font-size:15px; }
+.x-tag.leer .x-leer{ text-transform:none; letter-spacing:0; font-weight:400; }
 
 .x-karte{
   background:#fff; border:1px solid var(--linie2); border-left:5px solid var(--linie);
@@ -378,7 +380,10 @@ body.extern-an .inhalt{ padding:0; background:transparent; }
 .x-gut   { background:var(--gruen-flaeche);  color:var(--gruen); border-color:#B7DCC6; }
 .x-fertig{ background:var(--gruen-flaeche);  color:var(--gruen); border-color:#B7DCC6; }
 
-.x-karte.x-plan  { border-left-color:var(--linie); }
+.x-karte.k-plan  { border-left-color:#9FA9A2; }
+.x-karte.k-aktiv { border-left-color:var(--marine); }
+.x-karte.k-gut,
+.x-karte.k-fertig{ border-left-color:var(--gruen); }
 
 .x-zurueck-liste{
   background:none; border:0; font:inherit; font-size:16px; font-weight:700;
@@ -454,8 +459,11 @@ body.extern-an .inhalt{ padding:0; background:transparent; }
 .x-sperrhilfe{ font-size:16px; color:var(--soft); margin:10px 0 0; }
 
 @media (min-width:720px){
-  .x-woche{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 16px; }
-  .x-summe{ grid-column:1 / -1; }
+  /* Zwei Spalten, aber gepackt statt im Raster: sonst reissen kurze Tage
+     neben einem vollen Montag grosse Luecken auf. */
+  .x-woche{ column-count:2; column-gap:18px; }
+  .x-summe{ column-span:all; }
+  .x-tag{ break-inside:avoid; page-break-inside:avoid; }
   .x-bilder{ grid-template-columns:repeat(3,minmax(0,1fr)); }
 }
 @media (max-width:520px){
@@ -1251,9 +1259,9 @@ function demoDaten(){
                    entladenStart:uhr(w.li, 9), entladenEnde:uhr(w.li, 86),
                    abgabe:uhr(w.li, 92) };
       a.fotos = { abholung:fotoBild(w.cont, "#1B4C78"), abgabe:fotoBild("Abliefernachweis", "#0A6B31") };
-      a.bilder = [ bild(-7, "Container übernommen", "#1B4C78", w.cont),
-                   bild(-5, "Containernummer", "#0A6B31", w.cont),
-                   bild(-3, "Siegel SL 4711", "#8A5200", "SIEGEL SL 4711"),
+      a.bilder = [ bild(2, "Container übernommen", "#1B4C78", w.cont),
+                   bild(3, "Containernummer", "#0A6B31", w.cont),
+                   bild(4, "Siegel SL 4711", "#8A5200", "SIEGEL SL 4711"),
                    { zeit:uhr(w.li, 88), bez:"Ablieferung",
                      bild:fotoBild("Abliefernachweis", "#0A6B31") } ];
       a.dokumente = [
@@ -1270,8 +1278,8 @@ function demoDaten(){
       a.ablauf.warten = uhr(w.li, 4);
       a.ablauf.entladenStart = uhr(w.li, 9);
       a.fotos = { abholung:fotoBild(w.cont, "#1B4C78"), abgabe:null };
-      a.bilder = [ bild(-7, "Container übernommen", "#1B4C78", w.cont),
-                   bild(-3, "Siegel SL 4711", "#8A5200", "SIEGEL SL 4711") ];
+      a.bilder = [ bild(4, "Container übernommen", "#1B4C78", w.cont),
+                   bild(6, "Siegel SL 4711", "#8A5200", "SIEGEL SL 4711") ];
       a.dokumente = [
         { art:"CMR", name:"CMR-"+w.nr+".pdf", stand:"vorhanden (Demo)", extern:true },
         { art:"EIR", name:"EIR-"+w.nr+".pdf", stand:"vorhanden (Demo)", extern:false }
@@ -1285,8 +1293,8 @@ function demoDaten(){
       a.bestaetigt = uhr(w.ab, -40);
       a.ablauf.abholung = uhr(w.ab, 8);
       a.fotos = { abholung:fotoBild(w.cont, "#1B4C78"), abgabe:null };
-      a.bilder = [ bild(-6, "Container übernommen", "#1B4C78", w.cont),
-                   bild(-4, "Siegel SL 4711", "#8A5200", "SIEGEL SL 4711") ];
+      a.bilder = [ bild(6, "Container übernommen", "#1B4C78", w.cont),
+                   bild(8, "Siegel SL 4711", "#8A5200", "SIEGEL SL 4711") ];
       a.dokumente = [
         { art:"CMR", name:"CMR-"+w.nr+".pdf", stand:"vorhanden (Demo)", extern:true }
       ];
@@ -2024,10 +2032,16 @@ function externWoche(r){
        ' in dieser Woche</p>';
   tage.forEach(t => {
     const liste = r.auftraege.filter(a => a.tag === t);
-    h += '<section class="x-tag' + (liste.length ? "" : " leer") + '">' +
-      '<h2>' + esc(tagKurz(t)) + '</h2>';
-    if (!liste.length) h += '<p class="x-leer">Kein Transport geplant.</p>';
-    else h += liste.map(a => externKarte(a)).join("");
+    /* Leere Tage bleiben sichtbar, nehmen aber nur eine Zeile ein —
+       sonst scrollt man auf dem Handy an nichts vorbei. */
+    if (!liste.length) {
+      h += '<section class="x-tag leer"><h2>' + esc(tagKurz(t)) +
+           ' <span class="x-leer">Kein Transport geplant.</span></h2>';
+      h += '</section>';
+      return;
+    }
+    h += '<section class="x-tag">' + '<h2>' + esc(tagKurz(t)) + '</h2>';
+    h += liste.map(a => externKarte(a)).join("");
     h += '</section>';
   });
   return h + '</main>';
@@ -2046,7 +2060,11 @@ function externKarte(a){
   const st = externStatus(a);
   const vsp = externVerspaetung(a);
   const m = externTermin(a);
-  return '<article class="x-karte" data-tun="externAuftrag" data-wert="' + esc(a.id) + '" tabindex="0">' +
+  /* Nur die Kante bekommt die Farbe. Die Karte bleibt weiß — das Wort im
+     Statusfeld sagt ohnehin, was gemeint ist. */
+  return '<article class="x-karte ' + st.klasse.replace("x-","k-") +
+    '" data-tun="externAuftrag" data-wert="' +
+    esc(a.id) + '" tabindex="0">' +
     '<div class="x-karte-kopf">' +
       '<span class="x-nummer">Transport ' + esc(a.nummer) + '</span>' +
       '<span class="x-status ' + st.klasse + '">' + esc(st.wort) + '</span>' +
@@ -2155,6 +2173,17 @@ function externDokumente(a){
     dk.map(d => '<li><b>' + esc(d.art) + '</b> <span>' + esc(d.name) + '</span></li>').join("") +
     '</ul><p class="x-sim">Demo – die Dateien sind hier nicht hinterlegt. ' +
     'Sichtbar ist nur, was I&amp;M CARGO für Sie freigegeben hat.</p></section>';
+}
+
+/* Die einzige Stelle, an der die Auftraggeberansicht an neue Daten käme.
+   Heute gibt es hier nichts zu holen: alles steht schon im Speicher dieses
+   Browsers. Später tritt hier ein Aufruf an den Server an die Stelle des
+   Rückgabewerts — entweder auf Anforderung (Schaltfläche) oder von selbst
+   über eine offene Verbindung, die dann genau dieselbe Funktion aufruft.
+   Wichtig dabei: mitgegeben wird nur das Token. Welche Aufträge es
+   freigibt, entscheidet der Server, nicht diese Seite. */
+function externStandHolen(token){
+  return { echt:false, token, stand:linkAufloesen(token) };
 }
 
 /* Vorschau öffnen — im Demo-Modus aus der Dispo heraus. */
@@ -3766,9 +3795,11 @@ document.addEventListener("click", e => {
       zeichne(); window.scrollTo(0,0); return;
     }
     if (tun === "externAktualisieren") {
-      /* Bewusst ohne Datenänderung: es gibt keinen Server, der etwas
-         Neues liefern könnte. Genau das sagt der Hinweis auch. */
+      /* Geht durch dieselbe Stelle, die später den Server fragt. Heute
+         liefert sie den vorhandenen Stand — und sagt das auch. */
+      const antwort = externStandHolen(U.extern.token);
       zeichne();
+      if (antwort.echt) return;
       frage("Status aktualisieren",
         "<p>Demo – keine echte Serveraktualisierung. Die Anzeige stammt aus den " +
         "Beispieldaten dieser Vorschau.</p><p>Später holt diese Schaltfläche den Stand " +
