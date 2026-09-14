@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Klickbare Dispo-Vorschau: Bedienabläufe und Regeln pruefen."""
 from playwright.sync_api import sync_playwright
-URL = "http://localhost:8089/twistlock-dispo-vorschau.html"
+URL = "http://localhost:8088/twistlock-dispo-vorschau.html"
 ok_all = True
 def pr(n, ok, d=""):
     global ok_all; ok_all = ok_all and ok
@@ -15,9 +15,9 @@ with sync_playwright() as p:
     pg.goto(URL, wait_until="load"); pg.wait_for_timeout(600)
 
     print("\nA) Startseite Tagesplan")
-    pr("vier Hauptbereiche vorhanden",
+    pr("fuenf Hauptbereiche vorhanden (Wochenplan ergaenzt)",
        pg.eval_on_selector_all('#navi button','e=>e.map(x=>x.textContent.replace(/\\d+$/,"").trim())')
-       == ["Tagesplan","Aufträge","Fahrer & Fahrzeuge","Meldungen"])
+       == ["Tagesplan","Wochenplan","Aufträge","Fahrer & Fahrzeuge","Meldungen"])
     pr("Tabelle wird angezeigt", pg.locator("table.tabelle").count() == 1)
     pr("Schaltflaeche 'Neuer Auftrag'", pg.locator('[data-tun="neu"]').count() >= 1)
     pr("kein horizontales Scrollen der Seite",
@@ -25,8 +25,8 @@ with sync_playwright() as p:
     # Fruehere Fassung hat die letzte Spalte per overflow:hidden abgeschnitten.
     # Deshalb hier pruefen, dass die Schaltflaeche wirklich benutzbar ist.
     pr("Schaltflaeche 'Öffnen' ist sichtbar und klickbar",
-       pg.locator('table.tabelle [data-tun="oeffnen"]').first.is_visible())
-    pg.locator('table.tabelle [data-tun="oeffnen"]').first.click(); pg.wait_for_timeout(350)
+       pg.locator('table.tabelle [data-tun="oeffnenAus"]').first.is_visible())
+    pg.locator('table.tabelle [data-tun="oeffnenAus"]').first.click(); pg.wait_for_timeout(350)
     pr("Klick auf 'Öffnen' fuehrt ins Auftragsdetail",
        pg.evaluate("DISPO.zustand().U.bereich") == "detail")
     pg.click('[data-tun="zurueck"]'); pg.wait_for_timeout(300)

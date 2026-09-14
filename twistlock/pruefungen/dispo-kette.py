@@ -2,7 +2,7 @@
 """Tests A-F: Verzoegerungsweitergabe, Belegung, Zeitstempel, Entladeende.
 Alle Pruefungen rufen die echten Anwendungsfunktionen auf."""
 from playwright.sync_api import sync_playwright
-URL = "http://localhost:8089/twistlock-dispo-vorschau.html"
+URL = "http://localhost:8088/twistlock-dispo-vorschau.html"
 ok_all = True
 def pr(n, ok, erwartet="", tatsaechlich=""):
     global ok_all; ok_all = ok_all and ok

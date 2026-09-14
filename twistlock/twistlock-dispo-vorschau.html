@@ -216,6 +216,38 @@ dialog::backdrop{background:rgba(21,32,43,.55)}
 .liste-zeile .name{font-weight:700;font-size:17px;flex:1 1 180px}
 .liste-zeile .neben{font-size:15px;color:var(--soft)}
 
+/* ---------- Wochenplan ----------
+   Gleiche Bausteine wie sonst: weiße Karten, dieselben Statusmarken,
+   Farbe nie allein. Keine Diagramme, kein Ziehen mit der Maus. */
+.tabelle.woche{min-width:1180px}
+.tabelle.woche th,.tabelle.woche td{vertical-align:top;width:13%}
+.tabelle.woche .woche-name{width:9%;min-width:150px;background:var(--grau-flaeche)}
+.woche-leer{color:var(--soft)}
+.woche-offen{display:flex;flex-wrap:wrap;gap:10px}
+.woche-offen .wkarte{flex:1 1 260px;max-width:340px}
+
+.wkarte{border:2px solid var(--linie);border-left-width:6px;border-radius:10px;
+  padding:8px 9px;margin-bottom:8px;background:var(--paper)}
+.wkarte:last-child{margin-bottom:0}
+.wkarte-konflikt{border-left-color:var(--rot)}
+.wkarte-offen{border-left-color:#B07100;background:#FFFDF5}
+.wkarte-kopf{display:block;width:100%;text-align:left;border:0;background:none;padding:0 0 4px;
+  cursor:pointer;font-family:inherit;color:var(--ink)}
+.wkarte-kopf:hover .wnummer{text-decoration:underline}
+.wzeit{font-weight:700;font-size:17px}
+.wnummer{font-weight:700;font-size:15px;margin-left:6px}
+.wbezug{display:block;font-size:13px;color:var(--soft);font-weight:400}
+.wzeile{font-size:14px;line-height:1.35}
+.wzeile.neben{color:var(--soft)}
+.wmarken{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.wmarken .marke{font-size:13px;padding:1px 7px;border-width:2px}
+.whinweis{margin-top:6px;font-size:13px;font-weight:600;color:var(--gelb);
+  background:var(--gelb-flaeche);border-left:5px solid var(--gelb);padding:4px 7px;border-radius:0 4px 4px 0}
+.wkonflikt{margin-top:6px;font-size:13px;font-weight:600;color:var(--rot);
+  background:var(--rot-flaeche);border-left:5px solid var(--rot);padding:4px 7px;border-radius:0 4px 4px 0}
+.wtun{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.wtun .btn{font-size:14px;padding:7px 10px;min-height:38px}
+
 /* Handy: Tabellen werden zu Karten, damit nichts quer gescrollt werden muss */
 @media (max-width:820px){
   .rahmen{flex-direction:column}
@@ -225,6 +257,9 @@ dialog::backdrop{background:rgba(21,32,43,.55)}
   .inhalt{padding:12px}
   .tabellen-karte{overflow-x:visible}
   .tabelle{min-width:0}
+  .tabelle.woche{min-width:0}
+  .tabelle.woche th,.tabelle.woche td,.tabelle.woche .woche-name{width:auto}
+  .woche-offen .wkarte{max-width:none}
   .tabelle thead{display:none}
   .tabelle,.tabelle tbody,.tabelle tr,.tabelle td{display:block;width:100%}
   .tabelle tr{border:2px solid var(--linie);border-radius:var(--radius);margin-bottom:12px;
@@ -543,6 +578,7 @@ function demoDaten(){
       dokumente:[],
       bestaetigt:null,                     // ISO, wenn Fahrer gesehen und bestätigt hat
       dispoNotiz:"",
+      beladung:{ art:"selberTag", datum:null, zeit:null, stelle:"", hinweis:"" },
       ortungZeit:inMin(-2), datenZeit:inMin(-2), prognoseZeit:inMin(-2), entwurf:null,
       prognose:null,                       // ISO, simulierte Ankunft am maßgeblichen Termin
       alarmGesendet:false,
@@ -850,6 +886,69 @@ function demoDaten(){
     verlauf:[ v(inMin(-600),"Auftrag angelegt für morgen") ]
   }));
 
+  /* ---- Volle Arbeitswoche, damit der Wochenplan etwas zu zeigen hat ----
+     Die Woche beginnt am kommenden Montag (derselbe wie beim Beispiel oben).
+     Bewusst gemischt: zugewiesen und offen, mit und ohne Vortagsbeladung. */
+  const woTag = n => {                       // n = 0 (Montag) bis 6 (Sonntag)
+    const d = new Date(montag + "T12:00:00");
+    d.setDate(d.getDate() + n);
+    return tagVon(d.toISOString());
+  };
+  const WOCHE = [
+    /* Montag früh: Klassiker — Termin 06:30, deshalb schon sonntags beladen. */
+    { nr:"4910", n:0, f:"f2", z:"z2", c:"c2", kunde:"Möller Baustoffe GmbH", ref:"BST-10101",
+      ab:"05:45", li:"06:30", ziel:"Lange Straße 4, 29664 Walsrode", cont:"MSCU1234566",
+      vortag:{ tage:-1, zeit:"17:00", stelle:"Roland Umschlag, Bremen",
+               hinweis:"Chassis steht ab 16:00 Uhr bereit." } },
+    /* Montag früh OHNE Vortagsbeladung — hier greift die Frühtermin-Warnung. */
+    { nr:"4911", n:0, f:"f1", z:"z1", c:"c1", kunde:"Nordsee Handel KG", ref:"NSH-10102",
+      ab:"06:00", li:"07:00", ziel:"Industriestraße 7, 29664 Walsrode", cont:"TGHU7654320" },
+    { nr:"4912", n:1, f:"f1", z:"z1", c:"c1", kunde:"Aller Papier GmbH", ref:"AP-10103",
+      ab:"08:00", li:"10:30", ziel:"Bahnhofstraße 60, 29664 Walsrode", cont:"HLXU9988779" },
+    { nr:"4913", n:1, f:"f2", z:"z2", c:"c2", kunde:"Hanse Bau Delmenhorst GmbH", ref:"HBD-10104",
+      ab:"09:30", li:"11:00", ziel:"Stedinger Straße 22, 27749 Delmenhorst", cont:"CAIU4567890" },
+    { nr:"4914", n:2, f:"f1", z:"z1", c:"c1", kunde:"Weserhof Logistik GmbH & Co. KG", ref:"WH-10105",
+      ab:"07:30", li:"09:30", ziel:"Annenheider Damm 145, 27755 Delmenhorst", cont:"MSCU1234566" },
+    { nr:"4915", n:2, f:"f2", z:"z2", c:"c2", kunde:"Elbe Stahlhandel GmbH", ref:"ESH-10106",
+      ab:"12:00", li:"13:30", ziel:"Hafenstraße 9, 28237 Bremen", cont:"TGHU7654320" },
+    /* Donnerstag früh, wieder am Vortag beladen. */
+    { nr:"4916", n:3, f:"f1", z:"z1", c:"c1", kunde:"Möller Baustoffe GmbH", ref:"BST-10107",
+      ab:"05:30", li:"06:15", ziel:"Lange Straße 4, 29664 Walsrode", cont:"HLXU9988779",
+      vortag:{ tage:-1, zeit:"16:30", stelle:"Roland Umschlag, Bremen", hinweis:"" } },
+    { nr:"4917", n:3, f:"f2", z:"z2", c:"c2", kunde:"Lüneburger Holzwerke GmbH", ref:"LHW-10108",
+      ab:"10:00", li:"12:30", ziel:"Sägewerkstraße 3, 29664 Walsrode", cont:"CAIU4567890" },
+    { nr:"4918", n:4, f:"f1", z:"z1", c:"c1", kunde:"Nordsee Handel KG", ref:"NSH-10109",
+      ab:"07:45", li:"10:00", ziel:"Industriestraße 7, 29664 Walsrode", cont:"MSCU1234566" },
+    /* Freitag noch ohne Fahrer: taucht unter „Nicht zugewiesen“ auf. */
+    { nr:"4919", n:4, f:null, z:null, c:null, kunde:"Aller Papier GmbH", ref:"AP-10110",
+      ab:"11:00", li:"13:30", ziel:"Bahnhofstraße 60, 29664 Walsrode", cont:"" },
+    /* Samstag: nur eine Tour, Sonntag bleibt frei. */
+    { nr:"4920", n:5, f:"f2", z:"z2", c:"c2", kunde:"Hanse Bau Delmenhorst GmbH", ref:"HBD-10111",
+      ab:"08:00", li:"09:30", ziel:"Stedinger Straße 22, 27749 Delmenhorst", cont:"TGHU7654320" }
+  ];
+  WOCHE.forEach(w => {
+    const tag = woTag(w.n);
+    const bel = w.vortag
+      ? { art:"vortag", datum:woTag(w.n + w.vortag.tage), zeit:w.vortag.zeit,
+          stelle:w.vortag.stelle, hinweis:w.vortag.hinweis }
+      : { art:"selberTag", datum:null, zeit:null, stelle:"", hinweis:"" };
+    auftraege.push(auf({
+      nummer:w.nr, tag, kunde:w.kunde, kundenRef:w.ref,
+      freigegeben: !!w.f,
+      beladung: bel,
+      abhol:{ firma:"Hansa Terminal Bremen", adresse:"Am Speicher 12, 28197 Bremen",
+              datum:tag, zeit:w.ab, referenz:"FRST-" + w.nr, hinweis:"Tor 2" },
+      liefer:{ firma:w.kunde, adresse:w.ziel, datum:tag, zeit:w.li,
+               ansprech:"", telefon:"", hinweis:"" },
+      container:{ erwartet:w.cont, bestaetigt:null, groesse:"40 ft", typ:"Standard", siegel:"",
+                  beladen:"beladen", rueckgabeOrt:"Depot Bremen Hemelingen", rueckgabeTermin:null,
+                  ungeprueft:false, abweichung:false, trotzdem:false },
+      planung:{ fahrerId:w.f, zugmaschineId:w.z, chassisId:w.c,
+                ladenMin:30, wartenAbholMin:0, wartenMin:0, entladenMin:120, pufferMin:15 },
+      bestaetigt:null, prognose:null,
+      verlauf:[ v(inMin(-1400), "Auftrag angelegt für " + tagLang(tag)) ]
+    }));
+  });
   return { fahrer, zugmaschinen, chassis, auftraege, meldungen:[], laufNummer:4950 };
 }
 function v(zeit, text){ return { zeit, text }; }
@@ -878,6 +977,9 @@ function fotoBild(text, farbe){
 let D = null;                 // Daten
 let U = {                     // Oberfläche
   bereich:"tagesplan",
+  vorher:"tagesplan",         // woher das Detail geöffnet wurde
+  woche:null,                 // Montag der angezeigten Woche
+
   tag:null,
   filter:"alle",
   auftragId:null,
@@ -916,11 +1018,29 @@ const auftragVon= id => D.auftraege.find(x => x.id === id) || null;
    Vor der Abholung zählt der Abholtermin, danach der Liefertermin.
    Das muss sichtbar sein — „Termin 11:00“ allein ist zweideutig. */
 function massgeblich(a){
-  if (!a.ablauf.abholung && a.abhol.zeit)
+  /* Ist am Vortag beladen worden, gibt es am Einsatztag keinen Abholtermin
+     mehr, auf den man pünktlich sein müsste — dann zählt die Anlieferung. */
+  if (!vortagBeladen(a) && !a.ablauf.abholung && a.abhol.zeit)
     return { art:"Abholung", ort:a.abhol.firma, datum:a.abhol.datum, zeit:a.abhol.zeit,
              iso:zeitpunkt(a.abhol.datum, a.abhol.zeit) };
   return { art:"Anlieferung", ort:a.liefer.firma, datum:a.liefer.datum, zeit:a.liefer.zeit,
            iso:zeitpunkt(a.liefer.datum, a.liefer.zeit) };
+}
+
+/* Wurde der Container schon am Vortag auf das Chassis gezogen?
+   Dann entfällt am Einsatztag die Beladezeit — das Fahrzeug fährt los. */
+function vortagBeladen(a){
+  return !!(a && a.beladung && a.beladung.art === "vortag");
+}
+/* Sehr früher Termin bei Beladung am selben Tag: sachlicher Hinweis,
+   keine Sperre. Grenze bewusst als Konstante, damit sie auffindbar ist. */
+const FRUEH_AB = "07:30";
+function fruehterminHinweis(a){
+  if (vortagBeladen(a)) return null;
+  const m = massgeblich(a);
+  const zeit = (a.abhol && a.abhol.zeit) || m.zeit;
+  if (!zeit || zeit >= FRUEH_AB) return null;
+  return "Früher Termin – Beladung am Vortag prüfen.";
 }
 
 /* Aktueller Arbeitsschritt in Worten. */
@@ -999,7 +1119,7 @@ function prognose(a){
 
   const iso = m.art === "Abholung" ? r.abholAnkunft : r.kundenAnkunft;
   if (!iso) return { iso:null, grund:r.grund || "Keine Berechnung vorhanden" };
-  return { iso, grund:null, ausKette:!!r.ausKette, bezug:m.art };
+  return { iso, grund:null, ausKette:!!r.ausKette, nurPlan:!!r.nurPlan, bezug:m.art };
 }
 
 /* Zeitstatus: Farbe plus der Satz, der sie erklärt. */
@@ -1009,6 +1129,12 @@ function zeitstatus(a){
   if (a.storniert) return { klasse:"m-grau", satz:"Storniert", res:null, ankunft:null };
   if (a.ablauf.abgabe) return { klasse:"m-gruen", satz:"Abgeliefert", res:null, ankunft:null };
   if (!p.iso) return { klasse:"m-grau", satz:"Ankunft unklar", zusatz:p.grund, res:null, ankunft:null };
+  /* Reiner Plan ohne Ortung und ohne Verzug: sachlich „nach Plan“, nicht
+     „0 Min. Reserve“. Eine knappe Lage wäre eine Behauptung ohne Daten. */
+  if (p.nurPlan)
+    return { klasse:"m-marine", satz:"Nach Plan",
+             zusatz:"noch keine Ortung, keine Abweichung berechnet",
+             res:null, ankunft:p.iso, nurPlan:true };
   const res = reserve(m.iso, p.iso);
   const k = ampel(res);
   /* Bereits angekommen: das ist Vergangenheit, keine Vorhersage. */
@@ -1105,16 +1231,30 @@ function belegungGeplant(a){
 
   const fahrtHin = fahrzeit(a.abhol.adresse, a.liefer.adresse);
   const wartenAbhol = p.wartenAbholMin || 0;
-  const abholStart = abIso || inMin(-(wartenAbhol + p.ladenMin + fahrtHin), anIso);
-
   const abschnitte = [];
-  let t = abholStart;
-  const weiter = (min, wort) => { if (min > 0) { abschnitte.push({min, wort}); t = inMin(min, t); } };
-  abschnitte.push({ min:PLAN.anfahrtAbholung, wort:"Anfahrt zur Abholung" });
-  const von = inMin(-PLAN.anfahrtAbholung, abholStart);
+  let t, von;
 
-  weiter(wartenAbhol, "Warten bei der Abholung");
-  weiter(p.ladenMin, "Beladung");
+  if (vortagBeladen(a)) {
+    /* Am Vortag beladen: am Einsatztag entfallen Anfahrt zur Abholung,
+       Warten und Beladen. Das Gespann startet mit der Fahrt zum Kunden.
+       Es wird keine zusätzliche Fahrzeit erfunden — nur weggelassen,
+       was an diesem Tag nicht mehr anfällt. */
+    const losfahrt = anIso ? inMin(-fahrtHin, anIso) : null;
+    if (!losfahrt) return { unvollstaendig:true, fehlt:["Liefertermin"] };
+    von = losfahrt; t = losfahrt;
+    abschnitte.push({ min:0, wort:"Am Vortag beladen — keine Beladezeit am Einsatztag" });
+  } else {
+    const abholStart = abIso || inMin(-(wartenAbhol + p.ladenMin + fahrtHin), anIso);
+    von = inMin(-PLAN.anfahrtAbholung, abholStart);
+    t = abholStart;
+    abschnitte.push({ min:PLAN.anfahrtAbholung, wort:"Anfahrt zur Abholung" });
+  }
+  const weiter = (min, wort) => { if (min > 0) { abschnitte.push({min, wort}); t = inMin(min, t); } };
+
+  if (!vortagBeladen(a)) {
+    weiter(wartenAbhol, "Warten bei der Abholung");
+    weiter(p.ladenMin, "Beladung");
+  }
   weiter(fahrtHin, "Fahrt zum Kunden");
   if (anIso && new Date(t) < new Date(anIso))
     weiter(Math.round(minZw(t, anIso)), "Warten bis zum Liefertermin");
@@ -1266,10 +1406,11 @@ const simMarke = txt => '<span class="sim">'+esc(txt||"Simuliert")+'</span>';
    10 · Zeichnen
    =========================================================== */
 const BEREICHE = [
-  { k:"tagesplan", wort:"Tagesplan" },
-  { k:"auftraege", wort:"Aufträge" },
-  { k:"stamm",     wort:"Fahrer & Fahrzeuge" },
-  { k:"meldungen", wort:"Meldungen" }
+  { k:"tagesplan",  wort:"Tagesplan" },
+  { k:"wochenplan", wort:"Wochenplan" },
+  { k:"auftraege",  wort:"Aufträge" },
+  { k:"stamm",      wort:"Fahrer & Fahrzeuge" },
+  { k:"meldungen",  wort:"Meldungen" }
 ];
 
 function zeichne(){
@@ -1278,6 +1419,7 @@ function zeichne(){
   let html = "";
   if (U.notiz) html += '<div class="hinweis">'+U.notiz+'</div>';
   if (U.bereich === "tagesplan") html += ansichtTagesplan();
+  else if (U.bereich === "wochenplan") html += ansichtWochenplan();
   else if (U.bereich === "auftraege") html += ansichtAuftraege();
   else if (U.bereich === "stamm") html += ansichtStamm();
   else if (U.bereich === "meldungen") html += ansichtMeldungen();
@@ -1288,8 +1430,11 @@ function zeichne(){
 function naviZeichnen(){
   const offeneMeldungen = D.meldungen.filter(m => !m.gesehen).length;
   document.getElementById("navi").innerHTML = BEREICHE.map(b => {
+    /* Detail und Formular gehören optisch zu dem Bereich, aus dem sie
+       geöffnet wurden — sonst springt die Markierung willkürlich. */
     const aktiv = (U.bereich === b.k) ||
-                  (b.k === "tagesplan" && (U.bereich === "detail" || U.bereich === "formular"));
+                  ((U.bereich === "detail" || U.bereich === "formular") &&
+                   b.k === (U.vorher || "tagesplan"));
     const zahl = (b.k === "meldungen" && offeneMeldungen)
       ? '<span class="zahl">'+offeneMeldungen+'</span>' : "";
     return '<button data-tun="bereich" data-wert="'+b.k+'"'+
@@ -1378,6 +1523,10 @@ function ansichtTagesplan(){
                     'Belegung offen</span>'
          : !kl.pruefbar ? '<span class="neben" style="color:#8A5200;font-weight:600">'+
                         'Planung nicht vollständig prüfbar</span>' : '') +
+        (vortagBeladen(a) ? '<span class="neben" style="color:#1B4C78;font-weight:600">'+
+                            'Am Vortag beladen</span>' : '') +
+        (fruehterminHinweis(a) ? '<span class="neben" style="color:#8A5200;font-weight:600">'+
+                                 'Früher Termin – Vortag prüfen</span>' : '') +
         (kf.length ? '<span class="neben" style="color:#A3161D;font-weight:600">Konflikt mit '+
                      esc(konfliktAuftraege(kf).join(", "))+'</span>' : '')+'</td>' +
       '<td data-titel="Voraussichtliche Ankunft" class="num">'+
@@ -1388,7 +1537,7 @@ function ansichtTagesplan(){
         (a.bestaetigt
           ? '<span class="marke m-gruen">Gesehen</span><span class="neben">'+esc(hhmm(a.bestaetigt))+' Uhr</span>'
           : '<span class="marke m-grau">Noch nicht</span>')+'</td>' +
-      '<td data-titel="Aktion"><button class="btn" data-tun="oeffnen" data-wert="'+a.id+'">Öffnen</button></td>' +
+      '<td data-titel="Aktion"><button class="btn" data-tun="oeffnenAus" data-wert="'+a.id+'" data-aus="tagesplan">Öffnen</button></td>' +
       '</tr>';
   });
   h += '</tbody></table></div>';
@@ -1418,6 +1567,163 @@ function kurzOrt(adresse){
   return letzter.replace(/^\d{5}\s*/,"") || adresse;
 }
 
+/* ---------- Wochenplan ----------
+   Zeilen: Fahrer bzw. Gespanne. Spalten: Montag bis Sonntag.
+   Die Konfliktprüfung ist dieselbe wie überall (konfliktLage) — hier wird
+   bewusst keine zweite Logik gebaut. Ein Klick öffnet die vorhandene
+   Auftragsdetailansicht, es gibt keine zweite Auftragsmaske. */
+const WOCHENTAGE = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"];
+
+/* Montag der Woche, in der dieses Datum liegt. */
+function wochenStart(datum){
+  const d = new Date((datum || HEUTE()) + "T12:00:00");
+  if (isNaN(d)) return HEUTE();
+  const versatz = (d.getDay() + 6) % 7;          // Montag = 0
+  d.setDate(d.getDate() - versatz);
+  return tagVon(d.toISOString());
+}
+function tagPlusVon(datum, n){
+  const d = new Date(datum + "T12:00:00");
+  d.setDate(d.getDate() + n);
+  return tagVon(d.toISOString());
+}
+
+function ansichtWochenplan(){
+  const start = U.woche || wochenStart(U.tag || HEUTE());
+  const tage = [];
+  for (let i = 0; i < 7; i++) tage.push(tagPlusVon(start, i));
+
+  let h = '<div class="leiste">' +
+    '<button class="btn" data-tun="wocheZurueck">← Vorige Woche</button>' +
+    '<button class="btn" data-tun="wocheHeute">Diese Woche</button>' +
+    '<button class="btn" data-tun="wocheVor">Nächste Woche →</button>' +
+    '<span class="tag">' + esc(tagKurz(start)) + ' bis ' + esc(tagKurz(tage[6])) + '</span>' +
+    '<button class="btn haupt gross" data-tun="neu" style="margin-left:auto">+ Neuer Auftrag</button>' +
+    '</div>';
+
+  /* --- Nicht zugewiesen: eigener, gut sichtbarer Bereich --- */
+  const offen = D.auftraege.filter(a => !a.storniert && tage.indexOf(a.tag) >= 0 &&
+    (!a.planung.fahrerId || !a.planung.zugmaschineId || !a.planung.chassisId));
+  h += '<div class="karte" style="border-color:#B07100;background:#FFF8E1">' +
+    '<h2>Nicht zugewiesen (' + offen.length + ')</h2>';
+  if (!offen.length) {
+    h += '<p style="color:#47525D">Für diese Woche ist jeder Auftrag vollständig disponiert.</p>';
+  } else {
+    h += '<p style="margin-bottom:10px">Diese Aufträge sind <b>noch nicht vollständig ' +
+         'disponiert</b> — es fehlt Fahrer, Zugmaschine oder Chassis.</p>' +
+         '<div class="woche-offen">';
+    offen.forEach(a => { h += wochenKarte(a, true); });
+    h += '</div>';
+  }
+  h += '</div>';
+
+  /* --- Raster: Fahrer × Wochentage --- */
+  const fahrer = D.fahrer.slice();
+  h += '<div class="karte tabellen-karte" style="padding:0">' +
+    '<table class="tabelle woche"><thead><tr><th class="woche-name">Fahrer / Gespann</th>' +
+    tage.map((t,i) => '<th>' + esc(WOCHENTAGE[i]) + '<span class="neben">' +
+      esc(tagKurz(t)) + '</span></th>').join("") +
+    '</tr></thead><tbody>';
+
+  fahrer.forEach(f => {
+    h += '<tr><td class="woche-name" data-titel="Fahrer"><span class="haupt-zelle">' +
+      esc(f.name) + '</span>' +
+      '<span class="neben">' + esc(f.aktiv ? "aktiv" : "nicht verfügbar") + '</span></td>';
+    tage.forEach((t, i) => {
+      const liste = D.auftraege
+        .filter(a => !a.storniert && a.tag === t && a.planung.fahrerId === f.id)
+        .sort(planVergleich);
+      h += '<td data-titel="' + esc(WOCHENTAGE[i] + ", " + tagKurz(t)) + '">' +
+        (liste.length ? liste.map(a => wochenKarte(a, false)).join("")
+                      : '<span class="woche-leer">—</span>') + '</td>';
+    });
+    h += '</tr>';
+  });
+  h += '</tbody></table></div>';
+
+  h += '<div class="hinweis"><b>Zur Lesart:</b> Jede Karte zeigt Uhrzeit, Auftrag, Kunde, ' +
+       'Strecke, Gespann, Container und Zustand. Konflikte stammen aus derselben Prüfung ' +
+       'wie im Tagesplan und im Auftragsdetail. „Am Vortag beladen“ heißt: der Container ' +
+       'liegt schon auf dem Chassis, am Einsatztag fällt keine Beladezeit mehr an. ' +
+       'Alle Zeiten sind ' + simMarke("Demo-Planwerte") + '.</div>';
+  return h;
+}
+
+/* Eine kompakte Auftragskarte für den Wochenplan. */
+function wochenKarte(a, ohneFahrerSpalte){
+  const m = massgeblich(a);
+  const s = zeitstatus(a);
+  const sc = schritt(a);
+  const kl = konfliktLage(a);
+  const f = fahrerVon(a.planung.fahrerId);
+  const z = zugVon(a.planung.zugmaschineId);
+  const c = chsVon(a.planung.chassisId);
+  const frueh = fruehterminHinweis(a);
+
+  let h = '<div class="wkarte' + (kl.konflikte.length ? ' wkarte-konflikt' : '') +
+          (a.planung.fahrerId ? '' : ' wkarte-offen') + '">' +
+    '<button class="wkarte-kopf" data-tun="oeffnenAus" data-wert="' + a.id + '" ' +
+      'data-aus="wochenplan">' +
+      '<span class="wzeit num">' + esc(m.zeit || "—") + '</span> ' +
+      '<span class="wnummer">Auftrag ' + esc(a.nummer) + '</span>' +
+      '<span class="wbezug">' + esc(m.art) + '</span>' +
+    '</button>' +
+    '<div class="wzeile"><b>' + esc(a.kunde || "ohne Kunde") + '</b></div>' +
+    '<div class="wzeile neben">' + esc(kurzOrt(a.abhol.adresse)) + ' → ' +
+      esc(kurzOrt(a.liefer.adresse)) + '</div>' +
+    '<div class="wzeile neben">' +
+      esc(f ? f.name : "kein Fahrer") + ' · ' +
+      esc(z ? z.kennzeichen : "keine Zugmaschine") + ' · ' +
+      esc(c ? c.nummer : "kein Chassis") + '</div>' +
+    '<div class="wzeile neben">Container ' +
+      esc(a.container.bestaetigt ? contLesbar(a.container.bestaetigt)
+          : a.container.erwartet ? contLesbar(a.container.erwartet) : "noch unbekannt") + '</div>' +
+    '<div class="wmarken">' +
+      '<span class="marke ' + sc.klasse + '">' + esc(sc.wort) + '</span>' +
+      '<span class="marke ' + s.klasse + '">' + esc(s.satz) + '</span>' +
+      (vortagBeladen(a) ? '<span class="marke m-marine">Am Vortag beladen</span>' : '') +
+      (a.entwurf ? '<span class="marke m-gelb">Änderungen offen</span>' : '') +
+      (a.freigegeben ? '' : '<span class="marke m-grau">Entwurf</span>') +
+    '</div>';
+
+  if (frueh)
+    h += '<div class="whinweis">' + esc(frueh) + '</div>';
+
+  if (kl.offen)
+    h += '<div class="wkonflikt">Belegung offen – nächste Tour derzeit nicht sicher planbar.</div>';
+  else if (kl.konflikte.length) {
+    /* In der schmalen Wochenspalte höchstens zwei Sätze, sonst erschlägt
+       ein Konflikt die ganze Karte. Vollständig steht es im Detail. */
+    const saetze = konfliktSaetze(kl.konflikte);
+    h += '<div class="wkonflikt">' + saetze.slice(0,2).map(esc).join("<br>") +
+      (saetze.length > 2 ? '<br>und ' + (saetze.length - 2) + ' weitere — siehe Auftrag.' : '') +
+      '</div>';
+  }
+
+  h += '<div class="wtun">' +
+    '<button class="btn" data-tun="oeffnenAus" data-wert="' + a.id + '" data-aus="wochenplan">Öffnen</button>' +
+    '<button class="btn" data-tun="bearbeitenAus" data-wert="' + a.id + '" data-aus="wochenplan">Bearbeiten</button>' +
+    '<button class="btn" data-tun="fahrerAendernAus" data-wert="' + a.id + '" data-aus="wochenplan">Fahrer ändern</button>' +
+    '</div></div>';
+  return h;
+}
+
+/* Konkrete Konfliktsätze: welches Mittel kollidiert mit welchem Auftrag.
+   Benutzt die vorhandene Konfliktliste, formuliert sie nur aus. */
+function konfliktSaetze(kf){
+  const raus = [];
+  kf.forEach(k => {
+    const satz = k.was === "Fahrer"
+      ? "Fahrer " + (k.wer || "") + " überschneidet sich mit Auftrag " + k.mit.nummer + "."
+      : k.was === "Zugmaschine"
+      ? "Zugmaschine " + (k.wer || "") + " ist zu diesem Zeitpunkt bereits durch Auftrag " +
+        k.mit.nummer + " belegt."
+      : "Chassis " + (k.wer || "") + " ist zu diesem Zeitpunkt bereits durch Auftrag " +
+        k.mit.nummer + " belegt.";
+    if (raus.indexOf(satz) < 0) raus.push(satz);
+  });
+  return raus;
+}
 /* ---------- Aufträge (alle Tage) ---------- */
 function ansichtAuftraege(){
   const liste = D.auftraege.slice().sort((x,y) =>
@@ -1441,7 +1747,7 @@ function ansichtAuftraege(){
       '<td data-titel="Zustand"><span class="marke '+sc.klasse+'">'+esc(sc.wort)+'</span>' +
         (a.freigegeben ? '' : '<span class="neben">Entwurf, nicht freigegeben</span>')+'</td>' +
       '<td data-titel="Fahrer">'+esc(f ? f.name : "—")+'</td>' +
-      '<td data-titel="Aktion"><button class="btn" data-tun="oeffnen" data-wert="'+a.id+'">Öffnen</button></td>' +
+      '<td data-titel="Aktion"><button class="btn" data-tun="oeffnenAus" data-wert="'+a.id+'" data-aus="auftraege">Öffnen</button></td>' +
       '</tr>';
   });
   h += '</tbody></table></div>';
@@ -1458,7 +1764,9 @@ function ansichtDetail(){
   const kl = konfliktLage(a);
   const kf = kl.konflikte;
 
-  let h = '<div class="leiste"><button class="btn" data-tun="zurueck">← Zurück zum Tagesplan</button>' +
+  const zurueckWort = { tagesplan:"Tagesplan", wochenplan:"Wochenplan",
+                        auftraege:"Aufträge", meldungen:"Meldungen" }[U.vorher] || "Tagesplan";
+  let h = '<div class="leiste"><button class="btn" data-tun="zurueck">← Zurück zu: '+esc(zurueckWort)+'</button>' +
     '<h2 style="font-size:22px">Auftrag '+esc(a.nummer)+' — '+esc(a.kunde||"ohne Kunde")+'</h2>' +
     '<span class="marke '+sc.klasse+'" style="margin-left:auto">'+esc(sc.wort)+'</span></div>';
 
@@ -1499,9 +1807,8 @@ function ansichtDetail(){
     h += '<div class="warnkasten"><b>Planungskonflikt — bleibt bestehen, bis er aufgelöst wird:</b>' +
          '<ul style="margin:6px 0 0 18px">';
     jeAuftrag.forEach(k => {
-      h += '<li>Auch für Auftrag '+esc(k.mit.nummer)+' ('+esc(k.mit.kunde)+') eingeplant: ' +
-           esc(k.mittel.join(", ")) + '.<br>' +
-           '<span style="font-weight:600">'+esc(k.satz)+'</span></li>';
+      h += '<li>' + konfliktSaetze(kf.filter(x => x.mit.id === k.mit.id)).map(esc).join("<br>") +
+           '<br><span style="font-weight:600">'+esc(k.satz)+'</span></li>';
     });
     h += '</ul><p style="margin-top:6px">Gerechnet über die ganze Tour: Anfahrt, Warten und ' +
          'Beladen, Fahrt, Warten und Entladen, Restarbeiten, Rückgabestopp und Übergangsfahrt ' +
@@ -1551,6 +1858,29 @@ function ansichtDetail(){
     zeile("Einsatztag", tagLang(a.tag)) +
     zeile("Freigabe", a.freigegeben ? "Für Fahrer freigegeben (Demo)" : "Entwurf, nicht freigegeben") +
     '</div></div>';
+
+  /* Beladung: am selben Tag oder schon am Vortag. */
+  const frueh = fruehterminHinweis(a);
+  h += '<div class="karte"><h2>Beladung</h2>';
+  if (vortagBeladen(a)) {
+    h += '<p>' + marke("m-marine","Am Vortag beladen") + '</p><div class="paar">' +
+      zeile("Datum der Beladung", a.beladung.datum ? tagLang(a.beladung.datum) : "—") +
+      zeile("Geplante Uhrzeit", a.beladung.zeit ? a.beladung.zeit + " Uhr" : "—") +
+      zeile("Beladestelle", a.beladung.stelle || "—") +
+      zeile("Hinweis", a.beladung.hinweis || "—") +
+      '</div>' +
+      '<p class="hinweis" style="margin-top:10px">Der Container liegt bereits auf dem Chassis. ' +
+      'Am Einsatztag fällt deshalb <b>keine Beladezeit</b> mehr an — das Gespann startet direkt ' +
+      'mit der Fahrt zum Kunden. Es wird keine zusätzliche Fahrzeit angenommen.</p>';
+  } else {
+    h += '<p>' + marke("m-grau","Am selben Tag") + ' Anfahrt, Warten und Beladen fallen am ' +
+         'Einsatztag an und sind in der Tourrechnung enthalten.</p>';
+    if (frueh)
+      h += '<div class="warnkasten" style="margin-top:10px"><b>' + esc(frueh) + '</b><br>' +
+           'Der Termin liegt vor ' + FRUEH_AB + ' Uhr. Das ist ein Hinweis, keine Sperre — ' +
+           'der Auftrag lässt sich unverändert speichern und freigeben.</div>';
+  }
+  h += '</div>';
 
   h += '<div class="karte"><h2>Abholung</h2><div class="paar">' +
     zeile("Firma / Terminal / Depot", a.abhol.firma) + zeile("Adresse", a.abhol.adresse) +
@@ -1872,7 +2202,9 @@ function tourRechnen(folge){
       }
     } else {
       abholAnkunft = geplantAbhol;
-      if (abholAnkunft) schritt(0, "Abholung geplant", abholAnkunft);
+      /* Bei Vortagsbeladung gibt es am Einsatztag keine Abholung — der
+         Schritt würde die Rechnung nur verwirren. */
+      if (abholAnkunft && !vortagBeladen(o)) schritt(0, "Abholung geplant", abholAnkunft);
     }
 
     if (!abholAnkunft && !geplantLiefer) {
@@ -1896,6 +2228,16 @@ function tourRechnen(folge){
          Auskunft als eine Rechnung vom Vorgängerstopp. */
       kundenAnkunft = o.prognose;
       schritt(0, "Unterwegs, Ankunft beim Kunden voraussichtlich", kundenAnkunft);
+    } else if (vortagBeladen(o)) {
+      /* Am Vortag beladen: es wird nur noch gefahren. Frühestens los geht
+         es, wenn der Fahrer frei ist; ohne Vorgänger zum Liefertermin hin
+         gerechnet. Keine erfundene Zusatzzeit. */
+      const losSpaetestens = geplantLiefer ? inMin(-fahrtHin, geplantLiefer) : abholAnkunft;
+      const los = (freiAb && new Date(abholAnkunft) > new Date(losSpaetestens))
+        ? abholAnkunft : losSpaetestens;
+      schritt(0, "Am Vortag beladen — Abfahrt ohne Beladezeit", los);
+      t = inMin(fahrtHin, los); schritt(fahrtHin, "Fahrt zum Kunden", t);
+      kundenAnkunft = t;
     } else {
       t = inMin(wartenAbhol, t); if (wartenAbhol) schritt(wartenAbhol, "Warten bei der Abholung", t);
       t = inMin(p.ladenMin, t);  schritt(p.ladenMin, "Beladung", t);
@@ -1925,7 +2267,11 @@ function tourRechnen(folge){
     }
 
     /* --- 4 · Belegung und Verfügbarkeit für den nächsten Auftrag ------- */
-    const belegungVon = inMin(-PLAN.anfahrtAbholung, abholAnkunft);
+    /* Am Vortag beladen: die Bindung am Einsatztag beginnt mit der Abfahrt
+       zum Kunden, nicht mit einer Anfahrt zur Abholstelle. */
+    const belegungVon = vortagBeladen(o)
+      ? inMin(-fahrzeit(o.abhol.adresse, o.liefer.adresse), kundenAnkunft)
+      : inMin(-PLAN.anfahrtAbholung, abholAnkunft);
     let belegungBis = null, geplantBelegungBis = null;
     const nachlauf = (ab) => {
       let x = inMin(PLAN.nacharbeit, ab);
@@ -1950,10 +2296,17 @@ function tourRechnen(folge){
       freiAb = null;
     }
 
+    /* Reiner Planauftrag: nichts ist passiert, nichts wurde geortet und die
+       Tour hat ihn nicht verschoben. Dann ist die „Ankunft“ einfach der
+       vereinbarte Termin — daraus darf keine knappe Reserve abgeleitet
+       werden, das wäre eine Aussage, die die Daten nicht hergeben. */
+    const nurPlan = !ausKette && !o.ablauf.abholung && !o.ablauf.ankunft &&
+                    !o.ablauf.entladenStart && !o.prognose;
+
     o.rechnung2 = { abholAnkunft, kundenAnkunft, entladeEnde,
                     belegungVon, belegungBis, geplantBelegungBis,
                     abschnitte:schritte, unklar:!!entladeUnklar,
-                    grund:entladeUnklar, ausKette };
+                    grund:entladeUnklar, ausKette, nurPlan };
     vorher = o;
   });
 }
@@ -2006,7 +2359,9 @@ const LEER_FORM = () => ({
   contSiegel:"", contBeladen:"beladen", contRueckgabe:"Depot Bremen Hemelingen", contRueckTermin:"",
   fahrerId:"", zugId:"", chsId:"",
   ladenMin:PLAN.laden, wartenAbholMin:0, wartenMin:0,
-  entladenMin:PLAN.entladen, pufferMin:PLAN.puffer
+  entladenMin:PLAN.entladen, pufferMin:PLAN.puffer,
+  beladungArt:"selberTag", beladungDatum:"", beladungZeit:"",
+  beladungStelle:"", beladungHinweis:""
 });
 
 function formAus(auftrag){
@@ -2027,7 +2382,12 @@ function formAus(auftrag){
     fahrerId:a.planung.fahrerId||"", zugId:a.planung.zugmaschineId||"", chsId:a.planung.chassisId||"",
     ladenMin:a.planung.ladenMin, wartenAbholMin:a.planung.wartenAbholMin || 0,
     wartenMin:a.planung.wartenMin,
-    entladenMin:a.planung.entladenMin, pufferMin:a.planung.pufferMin
+    entladenMin:a.planung.entladenMin, pufferMin:a.planung.pufferMin,
+    beladungArt:(a.beladung && a.beladung.art) || "selberTag",
+    beladungDatum:(a.beladung && a.beladung.datum) || "",
+    beladungZeit:(a.beladung && a.beladung.zeit) || "",
+    beladungStelle:(a.beladung && a.beladung.stelle) || "",
+    beladungHinweis:(a.beladung && a.beladung.hinweis) || ""
   };
 }
 
@@ -2047,6 +2407,27 @@ function ansichtFormular(){
     feld("kundenRef","Kundenreferenz", F.kundenRef, E, "text", "optional") +
     feld("tag","Einsatztag", F.tag, E, "date") +
     '</div></fieldset>';
+
+  const vortag = F.beladungArt === "vortag";
+  h += '<fieldset class="gruppe"><legend>Beladung</legend><div class="felder">' +
+    feldAuswahlObj("beladungArt","Wann wird beladen?", F.beladungArt,
+      [{w:"selberTag", t:"Am selben Tag"}, {w:"vortag", t:"Bereits am Vortag beladen"}], E, null) +
+    (vortag
+      ? feld("beladungDatum","Datum der Beladung", F.beladungDatum, E, "date") +
+        feld("beladungZeit","Geplante Uhrzeit", F.beladungZeit, E, "time") +
+        feld("beladungStelle","Beladestelle", F.beladungStelle, E, "text",
+             "zum Beispiel: Roland Umschlag") +
+        feld("beladungHinweis","Hinweis", F.beladungHinweis, E, "text", "optional")
+      : '<div class="feld breit"><div class="erklaer">Bei „Bereits am Vortag beladen“ ' +
+        'werden Datum, Uhrzeit und Beladestelle abgefragt. Am Einsatztag entfällt dann ' +
+        'die Beladezeit — es wird direkt zum Kunden gefahren.</div></div>') +
+    '</div>' +
+    (F.lieferZeit && F.lieferZeit < FRUEH_AB && !vortag
+      ? '<p class="hinweis" style="margin-top:10px"><b>Früher Termin – Beladung am Vortag prüfen.</b> ' +
+        'Der Termin liegt vor ' + FRUEH_AB + ' Uhr. Das ist nur ein Hinweis und hält den ' +
+        'Auftrag nicht auf.</p>'
+      : '') +
+    '</fieldset>';
 
   h += '<fieldset class="gruppe"><legend>Abholung</legend><div class="felder">' +
     feld("abholFirma","Firma / Terminal / Depot", F.abholFirma, E, "text") +
@@ -2150,7 +2531,9 @@ function formLesen(){
   ["kunde","kundenRef","tag","abholFirma","abholAdresse","abholDatum","abholZeit","abholRef",
    "abholHinweis","lieferFirma","lieferAdresse","lieferDatum","lieferZeit","lieferAnsprech",
    "lieferTelefon","lieferHinweis","contErwartet","contGroesse","contTyp","contSiegel",
-   "contBeladen","contRueckgabe","contRueckTermin","fahrerId","zugId","chsId"].forEach(k => F[k] = g(k));
+   "contBeladen","contRueckgabe","contRueckTermin","fahrerId","zugId","chsId",
+   "beladungArt","beladungDatum","beladungZeit","beladungStelle","beladungHinweis"
+  ].forEach(k => F[k] = g(k));
   ["ladenMin","wartenAbholMin","wartenMin","entladenMin","pufferMin"].forEach(k => F[k] = Number(g(k)) || 0);
   F.contUnbekannt = c("contUnbekannt");
   return F;
@@ -2194,7 +2577,7 @@ function pruefen(F, fuerFreigabe){
 function wesentlichesAus(q){
   return JSON.stringify([
     q.abhol, q.liefer, q.planung.fahrerId, q.planung.zugmaschineId,
-    q.planung.chassisId, q.container.erwartet, q.tag
+    q.planung.chassisId, q.container.erwartet, q.tag, q.beladung || null
   ]);
 }
 /* Formularwerte in die Auftragsform bringen — ohne sie schon zu setzen. */
@@ -2214,7 +2597,12 @@ function formZuStand(F, alt){
     }),
     planung:{ fahrerId:F.fahrerId||null, zugmaschineId:F.zugId||null, chassisId:F.chsId||null,
               ladenMin:F.ladenMin, wartenMin:F.wartenMin, wartenAbholMin:F.wartenAbholMin,
-              entladenMin:F.entladenMin, pufferMin:F.pufferMin }
+              entladenMin:F.entladenMin, pufferMin:F.pufferMin },
+    beladung:{ art:F.beladungArt || "selberTag",
+               datum:F.beladungArt === "vortag" ? (F.beladungDatum || null) : null,
+               zeit: F.beladungArt === "vortag" ? (F.beladungZeit || null) : null,
+               stelle:F.beladungArt === "vortag" ? (F.beladungStelle || "") : "",
+               hinweis:F.beladungArt === "vortag" ? (F.beladungHinweis || "") : "" }
   };
 }
 /* Welche Angaben unterscheiden den Entwurf vom freigegebenen Stand?
@@ -2232,6 +2620,7 @@ function entwurfUnterschiede(a){
   if (e.planung.fahrerId !== a.planung.fahrerId) raus.push("Fahrer");
   if (e.planung.zugmaschineId !== a.planung.zugmaschineId) raus.push("Zugmaschine");
   if (e.planung.chassisId !== a.planung.chassisId) raus.push("Chassis");
+  if (JSON.stringify(e.beladung||null) !== JSON.stringify(a.beladung||null)) raus.push("Beladung");
   if (!gleich([e.planung.ladenMin,e.planung.wartenAbholMin,e.planung.wartenMin,
                e.planung.entladenMin,e.planung.pufferMin],
               [a.planung.ladenMin,a.planung.wartenAbholMin,a.planung.wartenMin,
@@ -2245,6 +2634,7 @@ function standSetzen(a, s){
   a.abhol = s.abhol; a.liefer = s.liefer;
   a.container = Object.assign({}, a.container, s.container);
   a.planung = s.planung;
+  if (s.beladung) a.beladung = s.beladung;
 }
 /* Was steht beim Bearbeiten im Formular: der Entwurf, sonst der freigegebene Stand. */
 function standZumBearbeiten(a){
@@ -2296,7 +2686,8 @@ function formSpeichern(fuerFreigabe){
       bestaetigt:null, dispoNotiz:"", entwurf:null,
       ortungZeit:null, datenZeit:null, prognoseZeit:null, prognose:null,
       alarmGesendet:false, verlauf:[ v(jetztIso(),"Auftrag angelegt") ],
-      container:{}, planung:{}, abhol:{}, liefer:{}
+      container:{}, planung:{}, abhol:{}, liefer:{},
+      beladung:{ art:"selberTag", datum:null, zeit:null, stelle:"", hinweis:"" }
     };
     D.auftraege.push(a);
   }
@@ -2469,7 +2860,8 @@ document.addEventListener("click", e => {
   const a = auftragVon(U.auftragId);
 
   if (tun === "bereich") {
-    U.bereich = wert; U.notiz = null; U.fehler = {}; zeichne();
+    U.bereich = wert; U.vorher = wert;
+    U.notiz = null; U.fehler = {}; zeichne();
     document.getElementById("inhalt").focus();
     return;
   }
@@ -2479,11 +2871,39 @@ document.addEventListener("click", e => {
   }
   if (tun === "filter") { U.filter = wert; zeichne(); return; }
   if (tun === "oeffnen") {
+    /* Herkunft merken, damit „Zurück“ wieder dorthin führt. */
+    U.vorher = U.bereich === "detail" || U.bereich === "formular"
+      ? (U.vorher || "tagesplan") : U.bereich;
     U.auftragId = wert; U.bereich = "detail"; U.notiz = null; zeichne();
     window.scrollTo(0,0); return;
   }
+  /* Aus dem Wochenplan: öffnen, bearbeiten, Fahrer ändern — jeweils in die
+     vorhandenen Ansichten, ohne zweite Auftragsmaske. */
+  if (tun === "oeffnenAus" || tun === "bearbeitenAus" || tun === "fahrerAendernAus") {
+    const ziel = auftragVon(wert);
+    if (!ziel) return;
+    U.vorher = el.getAttribute("data-aus") || "wochenplan";
+    U.auftragId = ziel.id; U.notiz = null;
+    if (tun === "oeffnenAus") { U.bereich = "detail"; zeichne(); window.scrollTo(0,0); return; }
+    if (tun === "bearbeitenAus") {
+      U.formular = formAus(ziel); U.fehler = {}; U.bereich = "formular";
+      zeichne(); window.scrollTo(0,0); return;
+    }
+    /* Fahrer ändern benutzt denselben Dialog wie im Detail. */
+    U.bereich = "detail"; zeichne(); window.scrollTo(0,0);
+    const knopf = document.querySelector('[data-tun="fahrerAendern"]');
+    if (knopf) knopf.click();
+    return;
+  }
   if (tun === "zurueck" || tun === "abbrechen") {
-    U.bereich = "tagesplan"; U.formular = null; U.fehler = {}; U.notiz = null; zeichne(); return;
+    U.bereich = U.vorher || "tagesplan";
+    U.formular = null; U.fehler = {}; U.notiz = null; zeichne(); return;
+  }
+  if (tun === "wocheZurueck" || tun === "wocheVor" || tun === "wocheHeute") {
+    const start = U.woche || wochenStart(U.tag || HEUTE());
+    U.woche = tun === "wocheHeute" ? wochenStart(HEUTE())
+            : tagPlusVon(start, tun === "wocheVor" ? 7 : -7);
+    U.notiz = null; zeichne(); return;
   }
   if (tun === "neu") {
     U.formular = LEER_FORM(); U.formular.tag = U.tag;
@@ -2848,7 +3268,8 @@ window.DISPO = {
   zeitstatus, konflikte, konfliktLage, belegung, prognose, folgePrognose,
   tourRechnen, tourErgebnis, zeitstempelPruefen, datenZuverlaessig, UHR_TOLERANZ,
   contGueltig, massgeblich, entladeRest, tourFolge, naechsterAuftrag,
-  ketteRechnen, alarmePruefen, entwurfUnterschiede, fahrzeit
+  ketteRechnen, alarmePruefen, entwurfUnterschiede, fahrzeit,
+  wochenStart, vortagBeladen, fruehterminHinweis, konfliktSaetze, planVergleich
 };
 
 start();

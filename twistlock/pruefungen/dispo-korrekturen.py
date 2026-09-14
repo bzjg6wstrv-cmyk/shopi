@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Die neun gezielt geforderten Pruefungen zu den vier Korrekturen."""
 from playwright.sync_api import sync_playwright
-URL = "http://localhost:8089/twistlock-dispo-vorschau.html"
+URL = "http://localhost:8088/twistlock-dispo-vorschau.html"
 ok_all = True
 def pr(n, ok, d=""):
     global ok_all; ok_all = ok_all and ok
